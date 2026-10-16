@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session details</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 16px; padding: 20px 20px 0; flex: 1; overflow: hidden">
+<a href="Sessions.dc.html" aria-label="Back to sessions" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12px; font-weight: 700">Confirmed</span>
+<h1 style="margin: 4px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.4px">Mon 19 Oct, 18:00</h1>
+<span style="font-size: 15px; color: #4F5D57">50 min · Audio · English</span>
+</div>
+<a href="Specialist.dc.html" style="display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; color: #14201C; text-decoration: none">
+<div aria-hidden="true" style="width: 44px; height: 44px; border-radius: 50%; background: #F2C58A; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; color: #4A2F0B">NE</div>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Dr. Ngo Ebode Clarisse</span><span style="font-size: 13.5px; color: #4F5D57">Your 5th session together</span></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5D57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+</a>
+<label style="position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC"><span style="flex: 1; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; font-size: 15px">Share my tracking summary</span><span style="font-size: 13.5px; line-height: 1.45; color: #4F5D57">Mood and sleep trends since your last session, shown to Dr. Ngo Ebode before you meet.</span></span><input type="checkbox" role="switch" checked style="position: absolute; opacity: 0; width: 1px; height: 1px"><span aria-hidden="true" style="flex-shrink: 0; width: 48px; height: 28px; border-radius: 14px; background: #1E5A4E; display: flex; align-items: center; justify-content: flex-end; padding: 3px; box-sizing: border-box"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></span></label>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 15px; font-weight: 700">Before you join</h2>
+<ul style="margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.45; color: #2C3833">
+<li>Find a private, quiet spot</li>
+<li>Earphones help keep it private</li>
+<li>Charge your phone and stay on one network</li>
+</ul>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button type="button" style="height: 46px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 15px Figtree, sans-serif">Receipt</button>
+<a href="CancelSession.dc.html" style="display: flex; align-items: center; justify-content: center; height: 46px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font-weight: 600; font-size: 15px; text-decoration: none">Change or cancel</a>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<a href="WaitingRoom.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Join session</a>
+<span style="text-align: center; font-size: 13px; color: #4F5D57">Joining opens at 17:50</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Compagnon</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 12px 20px; background: #FFFFFF">
+<a href="Home_fr.dc.html" aria-label="Retour à l&#x27;accueil" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div style="flex: 1; display: flex; flex-direction: column"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 19px">Compagnon d'exercices</h1><span style="font-size: 12.5px; color: #4F5D57">Guide IA · suit le plan de votre spécialiste</span></div>
+<a href="Crisis_fr.dc.html" aria-label="Obtenir de l&#x27;aide urgente" style="width: 44px; height: 44px; border-radius: 50%; background: #FBE9E7; color: #8C1D18; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg></a>
+</div>
+<div style="display: flex; gap: 12px; align-items: center; margin: 0 16px; padding: 14px; border-radius: 0 0 18px 18px; background: #FFFFFF; border-top: 1px solid #EEF1EC">
+<div aria-hidden="true" style="width: 44px; height: 44px; border-radius: 50%; border: 4px solid #3F6FB5; border-left-color: #DDE3DC; box-sizing: border-box"></div>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Fiche de pensées · 2 sur 3 faites</span><span style="font-size: 13px; color: #4F5D57">Donné par Dr. Ngo Ebode · avant le lun. 19 oct.</span></span>
+</div>
+<div role="log" aria-label="Conversation" style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px; overflow: hidden">
+<div style="align-self: flex-start; max-width: 84%; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: #FFFFFF; border: 1px solid #DDE3DC; font-size: 15px; line-height: 1.45">Faisons votre troisième fiche de pensées. Qu'est-ce qui vous a contrarié aujourd'hui ?</div>
+<div style="align-self: flex-end; max-width: 84%; padding: 12px 14px; border-radius: 18px 18px 6px 18px; background: #1E5A4E; color: #FFFFFF; font-size: 15px; line-height: 1.45">Mon responsable m'a demandé un point et je me suis figée.</div>
+<div style="align-self: flex-start; max-width: 84%; padding: 12px 14px; border-radius: 18px 18px 18px 6px; background: #FFFFFF; border: 1px solid #DDE3DC; font-size: 15px; line-height: 1.45">Merci. Quelle pensée vous a traversé l'esprit à ce moment-là ?</div>
+<div style="align-self: flex-start; display: flex; flex-direction: column; gap: 6px; width: 84%; padding: 12px 14px; border-radius: 14px; background: #E3EEEA; font-size: 13.5px; color: #143F37">
+<span style="font-weight: 700">Votre fiche jusqu'ici</span>
+<span>Situation : point demandé, je me suis figée</span>
+<span style="color: #4F5D57">Pensée · Émotion · Regard plus doux</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px; align-items: center; padding: 12px 16px 26px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<label for="msg" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Votre réponse</label>
+<input id="msg" type="text" placeholder="Écrivez votre réponse…" style="flex: 1; min-width: 0; height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid #7F8B84; background: #F4F6F2; font: 400 15px Figtree, sans-serif; color: #14201C">
+<button type="button" aria-label="Envoyer" style="width: 48px; height: 48px; border-radius: 50%; border: 0; background: #1E5A4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

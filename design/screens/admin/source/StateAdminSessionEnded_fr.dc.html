@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Session terminée</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #4A5450; font-family: 'Figtree', system-ui, sans-serif; color: #14201C; display: flex; align-items: center; justify-content: center; padding: 24px">
+<div role="dialog" aria-modal="true" aria-labelledby="se-title" style="width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 20px; background: #FFFFFF">
+<h1 id="se-title" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.4px; font-size: 24px">Votre session est terminée</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #4F5D57">Vous avez été déconnecté après [15] minutes d'inactivité. Ce que vous avez enregistré est conservé ; un brouillon en cours reste sur cet ordinateur.</p>
+<a href="Main_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none; border: 0; font-family: Figtree, sans-serif">Se reconnecter</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

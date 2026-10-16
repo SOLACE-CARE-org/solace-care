@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Specialist application: credentials</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 0; flex: 1; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="SpecSignup.dc.html" aria-label="Back" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div role="progressbar" aria-label="Step 2 of 7" aria-valuemin="1" aria-valuemax="7" aria-valuenow="2" style="flex: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px"><span style="height: 6px; border-radius: 3px; background: #1E5A4E"></span><span style="height: 6px; border-radius: 3px; background: #1E5A4E"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span></div>
+<span style="font-size: 13px; font-weight: 600; color: #4F5D57">2 of 7</span>
+</div>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -0.4px">Your practice</h1>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="role" style="font-size: 13px; font-weight: 600; color: #4F5D57">Profession</label>
+<div style="position: relative"><select id="role" style="appearance: none; height: 50px; padding: 0 40px 0 14px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%"><option>Clinical psychologist</option><option>Psychiatrist</option><option>Licensed counsellor</option><option>Gynaecologist</option><option>Endocrinologist</option></select><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F5D57" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 14px; top: 16px; pointer-events: none"><path d="M6 9l6 6 6-6"/></svg></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="lic" style="font-size: 13px; font-weight: 600; color: #4F5D57">Licence number</label>
+<input id="lic" type="text" value="[Licence no.]" style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="yrs" style="font-size: 13px; font-weight: 600; color: #4F5D57">Years in practice</label>
+<input id="yrs" type="number" value="8" style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="body" style="font-size: 13px; font-weight: 600; color: #4F5D57">Issuing professional body</label>
+<input id="body" type="text" value="[Licensing body]" style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #4F5D57">Areas you work with (up to 5)</legend>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button type="button" aria-pressed="true" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 13.5px Figtree, sans-serif">Anxiety</button>
+<button type="button" aria-pressed="true" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 13.5px Figtree, sans-serif">Low mood</button>
+<button type="button" aria-pressed="true" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 13.5px Figtree, sans-serif">Grief</button>
+<button type="button" aria-pressed="true" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 13.5px Figtree, sans-serif">Life transitions</button>
+<button type="button" aria-pressed="false" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 13.5px Figtree, sans-serif">Trauma</button>
+<button type="button" aria-pressed="false" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 13.5px Figtree, sans-serif">Couples</button>
+<button type="button" aria-pressed="false" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 13.5px Figtree, sans-serif">Sleep</button>
+</div>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="bio" style="font-size: 13px; font-weight: 600; color: #4F5D57">Short bio for your profile</label>
+<textarea id="bio" rows="3" style="resize: none; padding: 10px 12px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; font: 400 14.5px/1.45 Figtree, sans-serif; color: #14201C">I help adults through anxiety, low mood, grief and big life changes, using CBT in a warm, person-centred space.</textarea>
+<span style="font-size: 12.5px; color: #4F5D57">We'll draft the French version for you to check before it goes live.</span>
+</div>
+</div>
+<div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<a href="SpecLanguages.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Continue</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

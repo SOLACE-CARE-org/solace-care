@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Vos préférences</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 20px; padding: 20px 20px 0; flex: 1; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="SeekerSignup_fr.dc.html" aria-label="Retour" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div role="progressbar" aria-label="Étape 2 sur 4" aria-valuemin="1" aria-valuemax="4" aria-valuenow="2" style="flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px"><span style="height: 6px; border-radius: 3px; background: #1E5A4E"></span><span style="height: 6px; border-radius: 3px; background: #1E5A4E"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span><span style="height: 6px; border-radius: 3px; background: #DDE3DC"></span></div>
+<span style="font-size: 13px; font-weight: 600; color: #4F5D57">2 sur 4</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.4px">À votre image</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.45; color: #4F5D57">Cela nous aide à vous suggérer des spécialistes. Modifiable à tout moment.</p>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 15px; font-weight: 700">Langue de l'application</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<label style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E; font-weight: 600; font-size: 15px"><input type="radio" name="app" checked style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0">Anglais</label>
+<label style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; font-weight: 600; font-size: 15px"><input type="radio" name="app" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0">Français</label>
+</div>
+</fieldset>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 15px; font-weight: 700">Langues dans lesquelles vous voulez parler</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<label style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E; font-weight: 600; font-size: 15px"><input type="checkbox" checked style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0">Anglais</label>
+<label style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E; font-weight: 600; font-size: 15px"><input type="checkbox" checked style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0">Français</label>
+</div>
+</fieldset>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 15px; font-weight: 700">Pour quoi souhaitez-vous de l'aide ? <span style="font-weight: 500; color: #4F5D57">(facultatif)</span></legend>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button type="button" aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 14px Figtree, sans-serif">Anxiété</button>
+<button type="button" aria-pressed="false" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Moral bas</button>
+<button type="button" aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 14px Figtree, sans-serif">Sommeil</button>
+<button type="button" aria-pressed="false" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Relations</button>
+<button type="button" aria-pressed="false" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Deuil</button>
+<button type="button" aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 2px solid #1E5A4E; background: #E3EEEA; color: #143F37; font: 700 14px Figtree, sans-serif">Santé des femmes</button>
+<button type="button" aria-pressed="false" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Santé des hommes</button>
+<button type="button" aria-pressed="false" style="height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Stress au travail</button>
+</div>
+</fieldset>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 15px; font-weight: 700">Préférence de spécialiste</legend>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<label style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E; font-weight: 600; font-size: 14px"><input type="radio" name="pref" checked style="accent-color: #1E5A4E; width: 16px; height: 16px; margin: 0">Indifférent</label>
+<label style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; font-weight: 600; font-size: 14px"><input type="radio" name="pref" style="accent-color: #1E5A4E; width: 16px; height: 16px; margin: 0">Femme</label>
+<label style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; font-weight: 600; font-size: 14px"><input type="radio" name="pref" style="accent-color: #1E5A4E; width: 16px; height: 16px; margin: 0">Homme</label>
+</div>
+</fieldset>
+</div>
+<div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<a href="SeekerConsent_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Continuer</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

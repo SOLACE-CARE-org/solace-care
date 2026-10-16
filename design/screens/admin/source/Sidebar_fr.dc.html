@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Menu admin</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="min-height: 960px; box-sizing: border-box; background: #FFFFFF; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px; padding: 20px 14px 18px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+<img src="/_blob/c8f75a929454d3d94725e57b5747ecba" alt="Solace Care" width="96" height="32" style="display: block; width: 96px; height: 32px">
+<span style="padding: 3px 8px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12px; font-weight: 700">Admin</span>
+</div>
+<nav aria-label="Admin" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">EN DIRECT</span>
+<a href="Overview_fr.dc.html" aria-current="{{c.overview}}" style="{{s.overview}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span style="flex: 1">Vue d'ensemble</span></a>
+<a href="CrisisQueue_fr.dc.html" aria-current="{{c.crisis}}" style="{{s.crisis}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg><span style="flex: 1">File de crise</span><span aria-label="2 non prises en charge" style="min-width: 22px; height: 22px; border-radius: 11px; background: #B3261E; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">SPÉCIALISTES</span>
+<a href="Applications_fr.dc.html" aria-current="{{c.applications}}" style="{{s.applications}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 12h6M9 16h4"/></svg><span style="flex: 1">Candidatures</span><span style="font-size: 12.5px; font-weight: 700; color: #4F5D57">6</span></a>
+<a href="SpecialistRecord_fr.dc.html" aria-current="{{c.specialists}}" style="{{s.specialists}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c1-4 4-6 7-6s6 2 7 6"/><path d="M16 11l2 2 4-4"/></svg><span style="flex: 1">Fiches spécialistes</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">USAGERS ET RÉSERVATIONS</span>
+<a href="People_fr.dc.html" aria-current="{{c.people}}" style="{{s.people}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c1-4 4-6 7-6s6 2 7 6"/><path d="M16 4a4 4 0 0 1 0 8M19 15c1.5 1 2.5 3 3 6"/></svg><span style="flex: 1">Personnes</span></a>
+<a href="Bookings_fr.dc.html" aria-current="{{c.bookings}}" style="{{s.bookings}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span style="flex: 1">Réservations</span></a>
+<a href="Reviews_fr.dc.html" aria-current="{{c.reviews}}" style="{{s.reviews}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg><span style="flex: 1">Avis</span><span style="font-size: 12.5px; font-weight: 700; color: #4F5D57">4</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">FINANCES</span>
+<a href="Payments_fr.dc.html" aria-current="{{c.payments}}" style="{{s.payments}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></svg><span style="flex: 1">Paiements</span><span style="font-size: 12.5px; font-weight: 700; color: #4F5D57">2</span></a>
+<a href="PayoutRun_fr.dc.html" aria-current="{{c.payouts}}" style="{{s.payouts}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span style="flex: 1">Lots de versements</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">OFFRE DE SOINS</span>
+<a href="Modules_fr.dc.html" aria-current="{{c.modules}}" style="{{s.modules}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span style="flex: 1">Modules de suivi</span></a>
+<a href="HealthCheck_fr.dc.html" aria-current="{{c.healthcheck}}" style="{{s.healthcheck}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11l1.5 1.5L13 10M9 16h6"/></svg><span style="flex: 1">Bilan de santé</span></a>
+<a href="Catalogue_fr.dc.html" aria-current="{{c.catalogue}}" style="{{s.catalogue}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg><span style="flex: 1">Catalogue</span></a>
+<a href="Content_fr.dc.html" aria-current="{{c.content}}" style="{{s.content}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><span style="flex: 1">Contenus</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">ANALYSE</span>
+<a href="Analytics_fr.dc.html" aria-current="{{c.analytics}}" style="{{s.analytics}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span style="flex: 1">Statistiques</span></a>
+<a href="AIControls_fr.dc.html" aria-current="{{c.ai}}" style="{{s.ai}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg><span style="flex: 1">Contrôles IA</span></a>
+<a href="Copilot_fr.dc.html" aria-current="{{c.copilot}}" style="{{s.copilot}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span style="flex: 1">Copilote</span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: #4F5D57">ADMIN</span>
+<a href="AuditLog_fr.dc.html" aria-current="{{c.audit}}" style="{{s.audit}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg><span style="flex: 1">Journal d'audit</span></a>
+<a href="Team_fr.dc.html" aria-current="{{c.team}}" style="{{s.team}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><span style="flex: 1">Équipe et rôles</span></a>
+<a href="Settings_fr.dc.html" aria-current="{{c.settings}}" style="{{s.settings}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span style="flex: 1">Paramètres</span></a>
+</div>
+</nav>
+<div style="flex: 1"></div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-top: 1px solid #EEF1EC">
+<div aria-hidden="true" style="width: 36px; height: 36px; border-radius: 50%; background: #CFE2DA; color: #143F37; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center">NE</div>
+<div style="flex: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 600; font-size: 14px">Nadine Ebai</span><span style="font-size: 12.5px; color: #4F5D57">Opérations</span></div>
+<a href="Main_fr.dc.html" aria-label="Se déconnecter" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4F5D57"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11"/></svg></a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":null,"default":"overview"},"$preview":{"width":248,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var active = this.props.active ?? 'overview';
+    var keys = ['overview','crisis','applications','specialists','people','bookings','reviews','payments','payouts','modules','healthcheck','catalogue','content','analytics','ai','copilot','audit','team','settings'];
+    var base = 'display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 0 10px; border-radius: 10px; text-decoration: none; font-size: 14.5px; ';
+    var on = base + 'background: #E3EEEA; color: #143F37; font-weight: 700';
+    var off = base + 'background: transparent; color: #2C3833; font-weight: 500';
+    var s = {}, c = {};
+    keys.forEach(function (k) { s[k] = k === active ? on : off; c[k] = k === active ? 'page' : 'false'; });
+    return { s: s, c: c };
+  }
+}
+</script>
+</body>
+</html>

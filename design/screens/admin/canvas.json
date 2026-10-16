@@ -1,0 +1,1157 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-16T13:40:00Z"
+ },
+ "title": "Solace Admin Portal",
+ "launch": {
+  "view": "canvas",
+  "page": "p1"
+ },
+ "pages": [
+  {
+   "id": "p1",
+   "name": "Launch (Phase 1)"
+  },
+  {
+   "id": "p2",
+   "name": "Tracking and health check (Phase 2)"
+  },
+  {
+   "id": "p34",
+   "name": "AI (Phases 3 and 4)"
+  },
+  {
+   "id": "p1-fr",
+   "name": "Launch (Phase 1, FR)"
+  },
+  {
+   "id": "p2-fr",
+   "name": "Tracking and health check (Phase 2, FR)"
+  },
+  {
+   "id": "p34-fr",
+   "name": "AI (Phases 3 and 4, FR)"
+  },
+  {
+   "id": "states",
+   "name": "States"
+  },
+  {
+   "id": "states-fr",
+   "name": "States (FR)"
+  }
+ ],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "1 · Sign in",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Overview.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "2 · Overview",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "CrisisQueue.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "3 · Crisis queue",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "CrisisPhone.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "3 · Crisis queue on a phone",
+   "is_interactive": true,
+   "page": "p1",
+   "radius": 36
+  },
+  "Sidebar.dc.html": {
+   "x": 5030,
+   "y": 0,
+   "w": 248,
+   "h": 960,
+   "title": "Sidebar (shared)",
+   "is_interactive": true,
+   "page": "p1"
+  },
+  "Applications.dc.html": {
+   "x": 0,
+   "y": 1380,
+   "w": 1440,
+   "h": 960,
+   "title": "4 · Specialist applications",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "ApplicationReview.dc.html": {
+   "x": 1520,
+   "y": 1380,
+   "w": 1440,
+   "h": 1080,
+   "title": "5 · Application review",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "SpecialistRecord.dc.html": {
+   "x": 3040,
+   "y": 1380,
+   "w": 1440,
+   "h": 960,
+   "title": "6 · Specialist record",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "People.dc.html": {
+   "x": 0,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "9 · People",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "PersonRecord.dc.html": {
+   "x": 1520,
+   "y": 2880,
+   "w": 1440,
+   "h": 1000,
+   "title": "10 · Person record",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Bookings.dc.html": {
+   "x": 3040,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "7 · Bookings",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "BookingDetail.dc.html": {
+   "x": 4560,
+   "y": 2880,
+   "w": 1440,
+   "h": 1000,
+   "title": "8 · Booking detail",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Reviews.dc.html": {
+   "x": 6080,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "13 · Reviews",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Payments.dc.html": {
+   "x": 0,
+   "y": 4300,
+   "w": 1440,
+   "h": 960,
+   "title": "11 · Payments",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "PayoutRun.dc.html": {
+   "x": 1520,
+   "y": 4300,
+   "w": 1440,
+   "h": 1000,
+   "title": "12 · Payout run",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Catalogue.dc.html": {
+   "x": 0,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "14 · Catalogue and policies",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Content.dc.html": {
+   "x": 1520,
+   "y": 5720,
+   "w": 1440,
+   "h": 960,
+   "title": "15 · Content",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "ContentEditor.dc.html": {
+   "x": 3040,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "16 · Content editor",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Analytics.dc.html": {
+   "x": 4560,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "17 · Analytics",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "AuditLog.dc.html": {
+   "x": 0,
+   "y": 7140,
+   "w": 1440,
+   "h": 960,
+   "title": "18 · Audit log",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Team.dc.html": {
+   "x": 1520,
+   "y": 7140,
+   "w": 1440,
+   "h": 960,
+   "title": "19 · Team and roles",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Settings.dc.html": {
+   "x": 3040,
+   "y": 7140,
+   "w": 1440,
+   "h": 1000,
+   "title": "20 · Settings and flags",
+   "is_interactive": true,
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Modules.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "21 · Tracking modules",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "ModuleDetails.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 1080,
+   "title": "22 · Builder: details",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "ModuleElements.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "23 · Builder: elements",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "ModuleRules.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 1120,
+   "title": "24 · Builder: rules",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "ModuleReview.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 1080,
+   "title": "25 · Clinical review",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "AIControls.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "26 · AI controls",
+   "is_interactive": true,
+   "page": "p34",
+   "expand": "fill"
+  },
+  "Copilot.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "27 · Admin copilot",
+   "is_interactive": true,
+   "page": "p34",
+   "expand": "fill"
+  },
+  "Main_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 1 · Sign in",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Overview_fr.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 2 · Overview",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "CrisisQueue_fr.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 3 · Crisis queue",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "CrisisPhone_fr.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · 3 · Crisis queue on a phone",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "radius": 36
+  },
+  "Sidebar_fr.dc.html": {
+   "x": 5030,
+   "y": 0,
+   "w": 248,
+   "h": 960,
+   "title": "FR · Sidebar (shared)",
+   "is_interactive": true,
+   "page": "p1-fr"
+  },
+  "Applications_fr.dc.html": {
+   "x": 0,
+   "y": 1380,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 4 · Specialist applications",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "ApplicationReview_fr.dc.html": {
+   "x": 1520,
+   "y": 1380,
+   "w": 1440,
+   "h": 1080,
+   "title": "FR · 5 · Application review",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "SpecialistRecord_fr.dc.html": {
+   "x": 3040,
+   "y": 1380,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 6 · Specialist record",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "People_fr.dc.html": {
+   "x": 0,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 9 · People",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "PersonRecord_fr.dc.html": {
+   "x": 1520,
+   "y": 2880,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 10 · Person record",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Bookings_fr.dc.html": {
+   "x": 3040,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 7 · Bookings",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "BookingDetail_fr.dc.html": {
+   "x": 4560,
+   "y": 2880,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 8 · Booking detail",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Reviews_fr.dc.html": {
+   "x": 6080,
+   "y": 2880,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 13 · Reviews",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Payments_fr.dc.html": {
+   "x": 0,
+   "y": 4300,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 11 · Payments",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "PayoutRun_fr.dc.html": {
+   "x": 1520,
+   "y": 4300,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 12 · Payout run",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Catalogue_fr.dc.html": {
+   "x": 0,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 14 · Catalogue and policies",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Content_fr.dc.html": {
+   "x": 1520,
+   "y": 5720,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 15 · Content",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "ContentEditor_fr.dc.html": {
+   "x": 3040,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 16 · Content editor",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Analytics_fr.dc.html": {
+   "x": 4560,
+   "y": 5720,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 17 · Analytics",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "AuditLog_fr.dc.html": {
+   "x": 0,
+   "y": 7140,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 18 · Audit log",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Team_fr.dc.html": {
+   "x": 1520,
+   "y": 7140,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 19 · Team and roles",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Settings_fr.dc.html": {
+   "x": 3040,
+   "y": 7140,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 20 · Settings and flags",
+   "is_interactive": true,
+   "page": "p1-fr",
+   "expand": "fill"
+  },
+  "Modules_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 21 · Tracking modules",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "ModuleDetails_fr.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 1080,
+   "title": "FR · 22 · Builder: details",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "ModuleElements_fr.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 23 · Builder: elements",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "ModuleRules_fr.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 1120,
+   "title": "FR · 24 · Builder: rules",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "ModuleReview_fr.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 1080,
+   "title": "FR · 25 · Clinical review",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "AIControls_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 26 · AI controls",
+   "is_interactive": true,
+   "page": "p34-fr",
+   "expand": "fill"
+  },
+  "Copilot_fr.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · 27 · Admin copilot",
+   "is_interactive": true,
+   "page": "p34-fr",
+   "expand": "fill"
+  },
+  "StateAdminLoading.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "Bookings loading",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "StateAdminCrisisEmpty.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "No open alerts",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "StateAdminError.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "Payments partly loaded",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "StateAdminNoAccess.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "No access",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "StateAdminSessionEnded.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "Session ended",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "StateAdminLoading_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · Bookings loading",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  },
+  "StateAdminCrisisEmpty_fr.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · No open alerts",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  },
+  "StateAdminError_fr.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · Payments partly loaded",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  },
+  "StateAdminNoAccess_fr.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · No access",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  },
+  "StateAdminSessionEnded_fr.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "FR · Session ended",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  },
+  "HealthCheck.dc.html": {
+   "x": 0,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "28 · Health check",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "HealthCheckQuestions.dc.html": {
+   "x": 1520,
+   "y": 1700,
+   "w": 1440,
+   "h": 1120,
+   "title": "29 · Health check: questions",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "HealthCheckScoring.dc.html": {
+   "x": 3040,
+   "y": 1700,
+   "w": 1440,
+   "h": 1440,
+   "title": "30 · Health check: scoring",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "HealthCheckReview.dc.html": {
+   "x": 4560,
+   "y": 1700,
+   "w": 1440,
+   "h": 1040,
+   "title": "31 · Health check: test and review",
+   "is_interactive": true,
+   "page": "p2",
+   "expand": "fill"
+  },
+  "HealthCheck_fr.dc.html": {
+   "x": 0,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 28 · Health check",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "HealthCheckQuestions_fr.dc.html": {
+   "x": 1520,
+   "y": 1700,
+   "w": 1440,
+   "h": 1120,
+   "title": "FR · 29 · Health check: questions",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "HealthCheckScoring_fr.dc.html": {
+   "x": 3040,
+   "y": 1700,
+   "w": 1440,
+   "h": 1440,
+   "title": "FR · 30 · Health check: scoring",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "HealthCheckReview_fr.dc.html": {
+   "x": 4560,
+   "y": 1700,
+   "w": 1440,
+   "h": 1040,
+   "title": "FR · 31 · Health check: test and review",
+   "is_interactive": true,
+   "page": "p2-fr",
+   "expand": "fill"
+  },
+  "FirstSignIn.dc.html": {
+   "x": 0,
+   "y": 1380,
+   "w": 1440,
+   "h": 1040,
+   "title": "1b · First sign-in: new password and authenticator",
+   "is_interactive": true,
+   "page": "states",
+   "expand": "fill"
+  },
+  "FirstSignIn_fr.dc.html": {
+   "x": 0,
+   "y": 1380,
+   "w": 1440,
+   "h": 1040,
+   "title": "FR · 1b · First sign-in",
+   "is_interactive": true,
+   "page": "states-fr",
+   "expand": "fill"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Overview.dc.html",
+  "CrisisQueue.dc.html",
+  "CrisisPhone.dc.html",
+  "Sidebar.dc.html",
+  "Applications.dc.html",
+  "ApplicationReview.dc.html",
+  "SpecialistRecord.dc.html",
+  "People.dc.html",
+  "PersonRecord.dc.html",
+  "Bookings.dc.html",
+  "BookingDetail.dc.html",
+  "Reviews.dc.html",
+  "Payments.dc.html",
+  "PayoutRun.dc.html",
+  "Catalogue.dc.html",
+  "Content.dc.html",
+  "ContentEditor.dc.html",
+  "Analytics.dc.html",
+  "AuditLog.dc.html",
+  "Team.dc.html",
+  "Settings.dc.html",
+  "Modules.dc.html",
+  "ModuleDetails.dc.html",
+  "ModuleElements.dc.html",
+  "ModuleRules.dc.html",
+  "ModuleReview.dc.html",
+  "HealthCheck.dc.html",
+  "HealthCheckQuestions.dc.html",
+  "HealthCheckScoring.dc.html",
+  "HealthCheckReview.dc.html",
+  "AIControls.dc.html",
+  "Copilot.dc.html",
+  "Main_fr.dc.html",
+  "Overview_fr.dc.html",
+  "CrisisQueue_fr.dc.html",
+  "CrisisPhone_fr.dc.html",
+  "Sidebar_fr.dc.html",
+  "Applications_fr.dc.html",
+  "ApplicationReview_fr.dc.html",
+  "SpecialistRecord_fr.dc.html",
+  "People_fr.dc.html",
+  "PersonRecord_fr.dc.html",
+  "Bookings_fr.dc.html",
+  "BookingDetail_fr.dc.html",
+  "Reviews_fr.dc.html",
+  "Payments_fr.dc.html",
+  "PayoutRun_fr.dc.html",
+  "Catalogue_fr.dc.html",
+  "Content_fr.dc.html",
+  "ContentEditor_fr.dc.html",
+  "Analytics_fr.dc.html",
+  "AuditLog_fr.dc.html",
+  "Team_fr.dc.html",
+  "Settings_fr.dc.html",
+  "Modules_fr.dc.html",
+  "ModuleDetails_fr.dc.html",
+  "ModuleElements_fr.dc.html",
+  "ModuleRules_fr.dc.html",
+  "ModuleReview_fr.dc.html",
+  "HealthCheck_fr.dc.html",
+  "HealthCheckQuestions_fr.dc.html",
+  "HealthCheckScoring_fr.dc.html",
+  "HealthCheckReview_fr.dc.html",
+  "AIControls_fr.dc.html",
+  "Copilot_fr.dc.html",
+  "StateAdminLoading.dc.html",
+  "StateAdminCrisisEmpty.dc.html",
+  "StateAdminError.dc.html",
+  "StateAdminNoAccess.dc.html",
+  "StateAdminSessionEnded.dc.html",
+  "StateAdminLoading_fr.dc.html",
+  "StateAdminCrisisEmpty_fr.dc.html",
+  "StateAdminError_fr.dc.html",
+  "StateAdminNoAccess_fr.dc.html",
+  "StateAdminSessionEnded_fr.dc.html",
+  "FirstSignIn.dc.html",
+  "FirstSignIn_fr.dc.html"
+ ],
+ "notes": {
+  "row-p1-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Sign in and now",
+   "kind": "title1",
+   "maxW": 5278,
+   "page": "p1"
+  },
+  "row-p1-1": {
+   "x": 0,
+   "y": 1080,
+   "text": "Specialists",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "p1"
+  },
+  "row-p1-2": {
+   "x": 0,
+   "y": 2580,
+   "text": "Seekers and bookings",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "p1"
+  },
+  "row-p1-3": {
+   "x": 0,
+   "y": 4000,
+   "text": "Money",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "p1"
+  },
+  "row-p1-4": {
+   "x": 0,
+   "y": 5420,
+   "text": "Care setup and insight",
+   "kind": "title1",
+   "maxW": 6000,
+   "page": "p1"
+  },
+  "row-p1-5": {
+   "x": 0,
+   "y": 6840,
+   "text": "Admin",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "p1"
+  },
+  "row-p2-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Tracking module builder",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "p2"
+  },
+  "row-p34-0": {
+   "x": 0,
+   "y": -300,
+   "text": "AI controls and copilot",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "p34"
+  },
+  "p1-sticky": {
+   "x": 5358,
+   "y": 0,
+   "text": "Every page uses the shared sidebar, which shows only the entries a staff member's roles allow. Contacts are masked until revealed, and every reveal, change and clinical-data view is written to the audit log. No screen shows tracking entries, notes, intake answers or transcripts.",
+   "w": 340,
+   "fill": "teal",
+   "page": "p1"
+  },
+  "p2-sticky": {
+   "x": 7600,
+   "y": 0,
+   "text": "The builder follows the Tracking Service Spec: Draft, In review, Published, Retired. The person who drafts a version cannot approve it. Numbers in brackets are placeholders until clinicians set them.",
+   "w": 340,
+   "fill": "teal",
+   "page": "p2"
+  },
+  "row-p1-0-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Connexion et temps réel",
+   "kind": "title1",
+   "maxW": 5278,
+   "page": "p1-fr"
+  },
+  "row-p1-1-fr": {
+   "x": 0,
+   "y": 1080,
+   "text": "Spécialistes",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "p1-fr"
+  },
+  "row-p1-2-fr": {
+   "x": 0,
+   "y": 2580,
+   "text": "Usagers et réservations",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "p1-fr"
+  },
+  "row-p1-3-fr": {
+   "x": 0,
+   "y": 4000,
+   "text": "Finances",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "p1-fr"
+  },
+  "row-p1-4-fr": {
+   "x": 0,
+   "y": 5420,
+   "text": "Offre de soins et analyse",
+   "kind": "title1",
+   "maxW": 6000,
+   "page": "p1-fr"
+  },
+  "row-p1-5-fr": {
+   "x": 0,
+   "y": 6840,
+   "text": "Administration",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "p1-fr"
+  },
+  "row-p2-0-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Créateur de modules de suivi",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "p2-fr"
+  },
+  "row-p34-0-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Contrôles IA et copilote",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "p34-fr"
+  },
+  "sticky-p1-fr": {
+   "x": 5358,
+   "y": -300,
+   "w": 340,
+   "fill": "blue",
+   "page": "p1-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "sticky-p2-fr": {
+   "x": 7600,
+   "y": -300,
+   "w": 340,
+   "fill": "blue",
+   "page": "p2-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "sticky-p34-fr": {
+   "x": 3040,
+   "y": -300,
+   "w": 340,
+   "fill": "blue",
+   "page": "p34-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "row-states-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Admin states",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "states"
+  },
+  "rules-states": {
+   "x": 7640,
+   "y": 0,
+   "text": "State rules. Loading: skeletons after 300 ms, never a spinner over content; after 10 s, offer a retry. Empty: say what will appear here and give one next step. Errors: say what happened, whether anything was lost or charged, and one way forward; a small reference code for support, never a raw error. Offline: a banner on every screen; tracking, crisis numbers and the safety plan keep working; booking, payment and calls are disabled with the reason. Permissions: explain before the phone asks, and how to fix it after a refusal.",
+   "w": 360,
+   "fill": "teal",
+   "page": "states"
+  },
+  "row-states-fr-0": {
+   "x": 0,
+   "y": -300,
+   "text": "États de l'admin",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "states-fr"
+  },
+  "rules-states-fr": {
+   "x": 7640,
+   "y": 0,
+   "text": "State rules. Loading: skeletons after 300 ms, never a spinner over content; after 10 s, offer a retry. Empty: say what will appear here and give one next step. Errors: say what happened, whether anything was lost or charged, and one way forward; a small reference code for support, never a raw error. Offline: a banner on every screen; tracking, crisis numbers and the safety plan keep working; booking, payment and calls are disabled with the reason. Permissions: explain before the phone asks, and how to fix it after a refusal.",
+   "w": 360,
+   "fill": "teal",
+   "page": "states-fr"
+  },
+  "row-p2-hc": {
+   "x": 0,
+   "y": 1400,
+   "text": "Health check builder",
+   "kind": "title1",
+   "maxW": 5960,
+   "page": "p2"
+  },
+  "row-p2-hc-fr": {
+   "x": 0,
+   "y": 1400,
+   "text": "Créateur du bilan de santé",
+   "kind": "title1",
+   "maxW": 5960,
+   "page": "p2-fr"
+  },
+  "p2-hc-sticky": {
+   "x": 6080,
+   "y": 1700,
+   "w": 340,
+   "fill": "blue",
+   "page": "p2",
+   "text": "Health check builder. A Clinical reviewer writes a version and a different one approves it. Screener items (PHQ-9, GAD-7) and the safety question are locked: their wording comes from the official EN and FR versions and the safety rule is in every version. Tests use made-up answer sets only; no screen shows a real person's answers. Numbers in brackets are placeholders for clinicians to set."
+  },
+  "row-states-1": {
+   "x": 0,
+   "y": 1080,
+   "text": "Staff accounts",
+   "kind": "title1",
+   "maxW": 1440,
+   "page": "states"
+  },
+  "row-states-fr-1": {
+   "x": 0,
+   "y": 1080,
+   "text": "Comptes de l’équipe",
+   "kind": "title1",
+   "maxW": 1440,
+   "page": "states-fr"
+  },
+  "staff-sticky": {
+   "x": 1520,
+   "y": 1380,
+   "w": 340,
+   "fill": "blue",
+   "page": "states",
+   "text": "Staff accounts. A Super admin adds each staff member; Solace generates a unique temporary password to hand over in person. It works once and expires after 72 hours. First sign-in forces a new password and an authenticator app. Built on Keycloak required actions (update password, configure OTP); nobody signs themselves up."
+  }
+ },
+ "designSystems": []
+}

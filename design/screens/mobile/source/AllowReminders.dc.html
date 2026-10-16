@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turn on reminders</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; padding: 56px 20px 32px; gap: 24px">
+<div aria-hidden="true" style="position: relative; height: 280px; border-radius: 28px; background: #E3EEEA; overflow: hidden">
+<div style="position: absolute; width: 200px; height: 200px; border-radius: 50%; background: #CFE2DA; right: -60px; bottom: -70px"></div>
+<div style="position: absolute; left: 50%; top: 34px; width: 88px; height: 88px; margin-left: -44px; border-radius: 50%; background: #1E5A4E; display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F2C58A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></div>
+<div style="position: absolute; left: 22px; right: 22px; top: 150px; display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 18px; background: #FFFFFF">
+<img src="/_blob/c907217592f04d3c1da868c9534be840" alt="" width="32" height="32" style="display: block; flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px">
+<div style="display: flex; flex-direction: column; gap: 3px"><span style="font-weight: 700; font-size: 14px">Solace Care</span><span style="font-size: 14px; line-height: 1.35; color: #2C3833">You have an appointment today at 10:00.</span></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.1; letter-spacing: -0.5px">Turn on reminders?</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4F5D57">We'll remind you before each session and, if you track, once a day at a time you choose. Reminders use neutral wording, so nothing private shows on your lock screen.</p>
+</div>
+<div style="flex: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Turn on reminders</a>
+<a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 16px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 16px; text-decoration: none">Not now</a>
+<p style="margin: 0; text-align: center; font-size: 13px; color: #4F5D57">Change this any time in Settings.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

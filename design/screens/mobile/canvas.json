@@ -1,0 +1,2131 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-15T15:40:00Z"
+ },
+ "title": "Solace App Screens",
+ "launch": {
+  "view": "canvas",
+  "page": "start"
+ },
+ "pages": [
+  {
+   "id": "start",
+   "name": "Start & sign-up"
+  },
+  {
+   "id": "seeker",
+   "name": "Seeker"
+  },
+  {
+   "id": "specialist",
+   "name": "Specialist"
+  },
+  {
+   "id": "start-fr",
+   "name": "Start & sign-up (FR)"
+  },
+  {
+   "id": "seeker-fr",
+   "name": "Seeker (FR)"
+  },
+  {
+   "id": "specialist-fr",
+   "name": "Specialist (FR)"
+  },
+  {
+   "id": "states",
+   "name": "States"
+  },
+  {
+   "id": "states-fr",
+   "name": "States (FR)"
+  }
+ ],
+ "boards": {
+  "Splash.dc.html": {
+   "x": 0,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Splash",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Language.dc.html": {
+   "x": 470,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Choose language (EN/FR)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Onboard1.dc.html": {
+   "x": 940,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Intro 1: talk to a specialist",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Onboard2.dc.html": {
+   "x": 1410,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Intro 2: book without an account",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Onboard3.dc.html": {
+   "x": 1880,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Intro 3: track privately",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "AllowReminders.dc.html": {
+   "x": 2350,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "Reminders permission",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Welcome (EN/FR)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "RoleChoice.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Choose account type",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SignIn.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "VerifyCode.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Verify code",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SeekerSignup.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker sign-up: details",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SeekerPreferences.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker sign-up: preferences",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SeekerConsent.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker sign-up: privacy choices",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SeekerModules.dc.html": {
+   "x": 1410,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker sign-up: tracking",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SeekerReady.dc.html": {
+   "x": 1880,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker sign-up: done",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecSignup.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: account",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecProfessional.dc.html": {
+   "x": 470,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: credentials",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecLanguages.dc.html": {
+   "x": 940,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: languages",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecDocuments.dc.html": {
+   "x": 1410,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: documents",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecServices.dc.html": {
+   "x": 1880,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: services & prices",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecAvailability.dc.html": {
+   "x": 2350,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: weekly hours",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecPayout.dc.html": {
+   "x": 2820,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: payouts",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "SpecReview.dc.html": {
+   "x": 3290,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist: under review",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start"
+  },
+  "Matches.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Matches from the health check",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Search.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Find a specialist",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Specialist.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Specialist profile",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Book.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Choose a session",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Checkout.dc.html": {
+   "x": 1410,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Verify and pay (guest)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "PaymentPending.dc.html": {
+   "x": 1880,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Approve payment",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "BookingConfirmed.dc.html": {
+   "x": 2350,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Booking confirmed",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Sessions.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "My sessions",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "SessionDetail.dc.html": {
+   "x": 470,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Session details",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "CancelSession.dc.html": {
+   "x": 940,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Cancel or reschedule",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "GuestJoin.dc.html": {
+   "x": 1410,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Guest: open booking from SMS",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "WaitingRoom.dc.html": {
+   "x": 1880,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Waiting room",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Call.dc.html": {
+   "x": 2350,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "In session (audio)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "VideoCall.dc.html": {
+   "x": 2820,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "In session (video)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "RateSession.dc.html": {
+   "x": 3290,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "Rate your session",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Home.dc.html": {
+   "x": 0,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Seeker home",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "TrackHub.dc.html": {
+   "x": 470,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Track tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "ModuleCatalog.dc.html": {
+   "x": 940,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Add a tracking module",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Tracking.dc.html": {
+   "x": 1410,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Log today (PCOS & cycle)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Checkin.dc.html": {
+   "x": 1880,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Log today (daily check-in)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Trends.dc.html": {
+   "x": 2350,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Daily check-in trends",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Insights.dc.html": {
+   "x": 2820,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "Recommendation",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Companion.dc.html": {
+   "x": 0,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "Companion & homework",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Crisis.dc.html": {
+   "x": 470,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "Urgent help",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "SafetyPlan.dc.html": {
+   "x": 940,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "Safety plan",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Profile.dc.html": {
+   "x": 0,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "You tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "EditProfile.dc.html": {
+   "x": 470,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "Edit profile",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "PrivacyCentre.dc.html": {
+   "x": 940,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "Privacy & data",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Notifications.dc.html": {
+   "x": 1410,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "Settings.dc.html": {
+   "x": 1880,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "Settings",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "SpecialistToday.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Today",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "SpecCalendar.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Calendar & availability",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "SessionBrief.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Pre-session brief",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "SpecCall.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "In session (specialist, video)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "NotesList.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Notes",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "NoteReview.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Review AI note draft",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "AssignHomework.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Assign homework",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "Earnings.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Earnings & payouts",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "Reviews.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Reviews",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "SpecProfile.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "Profile tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist"
+  },
+  "Splash_fr.dc.html": {
+   "x": 0,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Splash",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Language_fr.dc.html": {
+   "x": 470,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Choose language (EN/FR)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Onboard1_fr.dc.html": {
+   "x": 940,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Intro 1: talk to a specialist",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Onboard2_fr.dc.html": {
+   "x": 1410,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Intro 2: book without an account",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Onboard3_fr.dc.html": {
+   "x": 1880,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Intro 3: track privately",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "AllowReminders_fr.dc.html": {
+   "x": 2350,
+   "y": -1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Reminders permission",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Main_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Welcome (EN/FR)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "RoleChoice_fr.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Choose account type",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SignIn_fr.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Sign in",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "VerifyCode_fr.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Verify code",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SeekerSignup_fr.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker sign-up: details",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SeekerPreferences_fr.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker sign-up: preferences",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SeekerConsent_fr.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker sign-up: privacy choices",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SeekerModules_fr.dc.html": {
+   "x": 1410,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker sign-up: tracking",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SeekerReady_fr.dc.html": {
+   "x": 1880,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker sign-up: done",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecSignup_fr.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: account",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecProfessional_fr.dc.html": {
+   "x": 470,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: credentials",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecLanguages_fr.dc.html": {
+   "x": 940,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: languages",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecDocuments_fr.dc.html": {
+   "x": 1410,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: documents",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecServices_fr.dc.html": {
+   "x": 1880,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: services & prices",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecAvailability_fr.dc.html": {
+   "x": 2350,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: weekly hours",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecPayout_fr.dc.html": {
+   "x": 2820,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: payouts",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "SpecReview_fr.dc.html": {
+   "x": 3290,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist: under review",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "start-fr"
+  },
+  "Matches_fr.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Matches from the health check",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Search_fr.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Find a specialist",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Specialist_fr.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Specialist profile",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Book_fr.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Choose a session",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Checkout_fr.dc.html": {
+   "x": 1410,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Verify and pay (guest)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "PaymentPending_fr.dc.html": {
+   "x": 1880,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Approve payment",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "BookingConfirmed_fr.dc.html": {
+   "x": 2350,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Booking confirmed",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Sessions_fr.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · My sessions",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "SessionDetail_fr.dc.html": {
+   "x": 470,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Session details",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "CancelSession_fr.dc.html": {
+   "x": 940,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Cancel or reschedule",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "GuestJoin_fr.dc.html": {
+   "x": 1410,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Guest: open booking from SMS",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "WaitingRoom_fr.dc.html": {
+   "x": 1880,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Waiting room",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Call_fr.dc.html": {
+   "x": 2350,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · In session (audio)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "VideoCall_fr.dc.html": {
+   "x": 2820,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · In session (video)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "RateSession_fr.dc.html": {
+   "x": 3290,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Rate your session",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Home_fr.dc.html": {
+   "x": 0,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Seeker home",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "TrackHub_fr.dc.html": {
+   "x": 470,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Track tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "ModuleCatalog_fr.dc.html": {
+   "x": 940,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Add a tracking module",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Tracking_fr.dc.html": {
+   "x": 1410,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Log today (PCOS & cycle)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Checkin_fr.dc.html": {
+   "x": 1880,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Log today (daily check-in)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Trends_fr.dc.html": {
+   "x": 2350,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Daily check-in trends",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Insights_fr.dc.html": {
+   "x": 2820,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Recommendation",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Companion_fr.dc.html": {
+   "x": 0,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Companion & homework",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Crisis_fr.dc.html": {
+   "x": 470,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Urgent help",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "SafetyPlan_fr.dc.html": {
+   "x": 940,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Safety plan",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Profile_fr.dc.html": {
+   "x": 0,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "FR · You tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "EditProfile_fr.dc.html": {
+   "x": 470,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Edit profile",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "PrivacyCentre_fr.dc.html": {
+   "x": 940,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Privacy & data",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Notifications_fr.dc.html": {
+   "x": 1410,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Notifications",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "Settings_fr.dc.html": {
+   "x": 1880,
+   "y": 6500,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Settings",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "SpecialistToday_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Today",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "SpecCalendar_fr.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Calendar & availability",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "SessionBrief_fr.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Pre-session brief",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "SpecCall_fr.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · In session (specialist, video)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "NotesList_fr.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Notes",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "NoteReview_fr.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Review AI note draft",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "AssignHomework_fr.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Assign homework",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "Earnings_fr.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Earnings & payouts",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "Reviews_fr.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Reviews",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "SpecProfile_fr.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Profile tab",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "specialist-fr"
+  },
+  "StateSearchLoading.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Loading specialists",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateSearchEmpty.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "No specialists match",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateSessionsEmpty.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "No sessions yet",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateTrackEmpty.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Not tracking yet",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateSpecialistQuietDay.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "No sessions today",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateLoadError.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Could not load",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StatePaymentFailed.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Payment did not go through",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateCodeWrong.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Wrong code",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateMicBlocked.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Microphone blocked",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateCallReconnecting.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Reconnecting",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateOfflineHome.dc.html": {
+   "x": 2350,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Home while offline",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateLogSavedOffline.dc.html": {
+   "x": 2820,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "Saved offline",
+   "is_interactive": true,
+   "page": "states",
+   "radius": 36
+  },
+  "StateSearchLoading_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Loading specialists",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateSearchEmpty_fr.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · No specialists match",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateSessionsEmpty_fr.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · No sessions yet",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateTrackEmpty_fr.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Not tracking yet",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateSpecialistQuietDay_fr.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · No sessions today",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateLoadError_fr.dc.html": {
+   "x": 0,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Could not load",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StatePaymentFailed_fr.dc.html": {
+   "x": 470,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Payment did not go through",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateCodeWrong_fr.dc.html": {
+   "x": 940,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Wrong code",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateMicBlocked_fr.dc.html": {
+   "x": 1410,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Microphone blocked",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateCallReconnecting_fr.dc.html": {
+   "x": 1880,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Reconnecting",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateOfflineHome_fr.dc.html": {
+   "x": 2350,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Home while offline",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "StateLogSavedOffline_fr.dc.html": {
+   "x": 2820,
+   "y": 1264,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Saved offline",
+   "is_interactive": true,
+   "page": "states-fr",
+   "radius": 36
+  },
+  "HealthCheckIntro.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: start",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckTopics.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: topics",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckScale.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: screener question",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckUrgent.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: urgent help (safety answer)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckPrefs.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: preferences",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckResult.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Health check: your suggestion",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker"
+  },
+  "HealthCheckIntro_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: start",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "HealthCheckTopics_fr.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: topics",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "HealthCheckScale_fr.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: screener question",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "HealthCheckUrgent_fr.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: urgent help (safety answer)",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "HealthCheckPrefs_fr.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: preferences",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  },
+  "HealthCheckResult_fr.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "FR · Health check: your suggestion",
+   "is_interactive": true,
+   "radius": 36,
+   "page": "seeker-fr"
+  }
+ },
+ "order": [
+  "Splash.dc.html",
+  "Language.dc.html",
+  "Onboard1.dc.html",
+  "Onboard2.dc.html",
+  "Onboard3.dc.html",
+  "AllowReminders.dc.html",
+  "Main.dc.html",
+  "RoleChoice.dc.html",
+  "SignIn.dc.html",
+  "VerifyCode.dc.html",
+  "SeekerSignup.dc.html",
+  "SeekerPreferences.dc.html",
+  "SeekerConsent.dc.html",
+  "SeekerModules.dc.html",
+  "SeekerReady.dc.html",
+  "SpecSignup.dc.html",
+  "SpecProfessional.dc.html",
+  "SpecLanguages.dc.html",
+  "SpecDocuments.dc.html",
+  "SpecServices.dc.html",
+  "SpecAvailability.dc.html",
+  "SpecPayout.dc.html",
+  "SpecReview.dc.html",
+  "HealthCheckIntro.dc.html",
+  "HealthCheckTopics.dc.html",
+  "HealthCheckScale.dc.html",
+  "HealthCheckUrgent.dc.html",
+  "HealthCheckPrefs.dc.html",
+  "HealthCheckResult.dc.html",
+  "Matches.dc.html",
+  "Search.dc.html",
+  "Specialist.dc.html",
+  "Book.dc.html",
+  "Checkout.dc.html",
+  "PaymentPending.dc.html",
+  "BookingConfirmed.dc.html",
+  "Sessions.dc.html",
+  "SessionDetail.dc.html",
+  "CancelSession.dc.html",
+  "GuestJoin.dc.html",
+  "WaitingRoom.dc.html",
+  "Call.dc.html",
+  "VideoCall.dc.html",
+  "RateSession.dc.html",
+  "Home.dc.html",
+  "TrackHub.dc.html",
+  "ModuleCatalog.dc.html",
+  "Tracking.dc.html",
+  "Checkin.dc.html",
+  "Trends.dc.html",
+  "Insights.dc.html",
+  "Companion.dc.html",
+  "Crisis.dc.html",
+  "SafetyPlan.dc.html",
+  "Profile.dc.html",
+  "EditProfile.dc.html",
+  "PrivacyCentre.dc.html",
+  "Notifications.dc.html",
+  "Settings.dc.html",
+  "SpecialistToday.dc.html",
+  "SpecCalendar.dc.html",
+  "SessionBrief.dc.html",
+  "SpecCall.dc.html",
+  "NotesList.dc.html",
+  "NoteReview.dc.html",
+  "AssignHomework.dc.html",
+  "Earnings.dc.html",
+  "Reviews.dc.html",
+  "SpecProfile.dc.html",
+  "Splash_fr.dc.html",
+  "Language_fr.dc.html",
+  "Onboard1_fr.dc.html",
+  "Onboard2_fr.dc.html",
+  "Onboard3_fr.dc.html",
+  "AllowReminders_fr.dc.html",
+  "Main_fr.dc.html",
+  "RoleChoice_fr.dc.html",
+  "SignIn_fr.dc.html",
+  "VerifyCode_fr.dc.html",
+  "SeekerSignup_fr.dc.html",
+  "SeekerPreferences_fr.dc.html",
+  "SeekerConsent_fr.dc.html",
+  "SeekerModules_fr.dc.html",
+  "SeekerReady_fr.dc.html",
+  "SpecSignup_fr.dc.html",
+  "SpecProfessional_fr.dc.html",
+  "SpecLanguages_fr.dc.html",
+  "SpecDocuments_fr.dc.html",
+  "SpecServices_fr.dc.html",
+  "SpecAvailability_fr.dc.html",
+  "SpecPayout_fr.dc.html",
+  "SpecReview_fr.dc.html",
+  "HealthCheckIntro_fr.dc.html",
+  "HealthCheckTopics_fr.dc.html",
+  "HealthCheckScale_fr.dc.html",
+  "HealthCheckUrgent_fr.dc.html",
+  "HealthCheckPrefs_fr.dc.html",
+  "HealthCheckResult_fr.dc.html",
+  "Matches_fr.dc.html",
+  "Search_fr.dc.html",
+  "Specialist_fr.dc.html",
+  "Book_fr.dc.html",
+  "Checkout_fr.dc.html",
+  "PaymentPending_fr.dc.html",
+  "BookingConfirmed_fr.dc.html",
+  "Sessions_fr.dc.html",
+  "SessionDetail_fr.dc.html",
+  "CancelSession_fr.dc.html",
+  "GuestJoin_fr.dc.html",
+  "WaitingRoom_fr.dc.html",
+  "Call_fr.dc.html",
+  "VideoCall_fr.dc.html",
+  "RateSession_fr.dc.html",
+  "Home_fr.dc.html",
+  "TrackHub_fr.dc.html",
+  "ModuleCatalog_fr.dc.html",
+  "Tracking_fr.dc.html",
+  "Checkin_fr.dc.html",
+  "Trends_fr.dc.html",
+  "Insights_fr.dc.html",
+  "Companion_fr.dc.html",
+  "Crisis_fr.dc.html",
+  "SafetyPlan_fr.dc.html",
+  "Profile_fr.dc.html",
+  "EditProfile_fr.dc.html",
+  "PrivacyCentre_fr.dc.html",
+  "Notifications_fr.dc.html",
+  "Settings_fr.dc.html",
+  "SpecialistToday_fr.dc.html",
+  "SpecCalendar_fr.dc.html",
+  "SessionBrief_fr.dc.html",
+  "SpecCall_fr.dc.html",
+  "NotesList_fr.dc.html",
+  "NoteReview_fr.dc.html",
+  "AssignHomework_fr.dc.html",
+  "Earnings_fr.dc.html",
+  "Reviews_fr.dc.html",
+  "SpecProfile_fr.dc.html",
+  "StateSearchLoading.dc.html",
+  "StateSearchEmpty.dc.html",
+  "StateSessionsEmpty.dc.html",
+  "StateTrackEmpty.dc.html",
+  "StateSpecialistQuietDay.dc.html",
+  "StateLoadError.dc.html",
+  "StatePaymentFailed.dc.html",
+  "StateCodeWrong.dc.html",
+  "StateMicBlocked.dc.html",
+  "StateCallReconnecting.dc.html",
+  "StateOfflineHome.dc.html",
+  "StateLogSavedOffline.dc.html",
+  "StateSearchLoading_fr.dc.html",
+  "StateSearchEmpty_fr.dc.html",
+  "StateSessionsEmpty_fr.dc.html",
+  "StateTrackEmpty_fr.dc.html",
+  "StateSpecialistQuietDay_fr.dc.html",
+  "StateLoadError_fr.dc.html",
+  "StatePaymentFailed_fr.dc.html",
+  "StateCodeWrong_fr.dc.html",
+  "StateMicBlocked_fr.dc.html",
+  "StateCallReconnecting_fr.dc.html",
+  "StateOfflineHome_fr.dc.html",
+  "StateLogSavedOffline_fr.dc.html"
+ ],
+ "notes": {
+  "row-start": {
+   "x": 0,
+   "y": -300,
+   "text": "Welcome and sign in",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "start"
+  },
+  "start-sticky": {
+   "x": 1880,
+   "y": 0,
+   "text": "Verify code is shared. Sign in, seeker sign-up, specialist sign-up and guest checkout all send a 6-digit code to the phone or email given, then continue to their next step.",
+   "w": 320,
+   "fill": "orange",
+   "page": "start"
+  },
+  "row-seeker-signup": {
+   "x": 0,
+   "y": 1000,
+   "text": "Seeker sign-up",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "start"
+  },
+  "row-spec-signup": {
+   "x": 0,
+   "y": 2300,
+   "text": "Specialist sign-up and verification",
+   "kind": "title1",
+   "maxW": 3680,
+   "page": "start"
+  },
+  "row-guest": {
+   "x": 0,
+   "y": 1000,
+   "text": "Find and book",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "seeker"
+  },
+  "row-sessions": {
+   "x": 0,
+   "y": 2300,
+   "text": "Sessions",
+   "kind": "title1",
+   "maxW": 3680,
+   "page": "seeker"
+  },
+  "row-seeker": {
+   "x": 0,
+   "y": 3600,
+   "text": "Tracking to care",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "seeker"
+  },
+  "tracking-sticky": {
+   "x": 3290,
+   "y": 3900,
+   "text": "Tracking rules for these screens: module cards, names and card images come from the admin module builder. Each logging row is an element seeded by engineers, drawn with its own view and icon. No scores, notes stay private, and the urgent-help button sits on every logging screen.",
+   "w": 320,
+   "fill": "teal",
+   "page": "seeker"
+  },
+  "row-between": {
+   "x": 0,
+   "y": 4900,
+   "text": "Between sessions",
+   "kind": "title1",
+   "maxW": 1130,
+   "page": "seeker"
+  },
+  "row-profile": {
+   "x": 0,
+   "y": 6200,
+   "text": "Profile and settings",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "seeker"
+  },
+  "row-specialist": {
+   "x": 0,
+   "y": -300,
+   "text": "Daily work",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "specialist"
+  },
+  "row-spec-business": {
+   "x": 0,
+   "y": 1000,
+   "text": "Earnings and profile",
+   "kind": "title1",
+   "maxW": 1130,
+   "page": "specialist"
+  },
+  "row-onboarding": {
+   "x": 0,
+   "y": -1600,
+   "text": "Splash and onboarding",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "start"
+  },
+  "onboarding-sticky": {
+   "x": 2820,
+   "y": -1300,
+   "text": "First launch only: splash, language, three intro screens, then the reminders question, then Welcome. Skip jumps to the reminders question. Later launches go from the splash straight to Home when signed in, or to Welcome. The app language set here is separate from the session language, which is picked per booking. The phone's own permission prompt appears only after Turn on reminders.",
+   "w": 320,
+   "fill": "teal",
+   "page": "start"
+  },
+  "row-start-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Accueil et connexion",
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "start-fr"
+  },
+  "row-seeker-signup-fr": {
+   "x": 0,
+   "y": 1000,
+   "text": "Inscription usager",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "start-fr"
+  },
+  "row-spec-signup-fr": {
+   "x": 0,
+   "y": 2300,
+   "text": "Inscription et vérification des spécialistes",
+   "kind": "title1",
+   "maxW": 3680,
+   "page": "start-fr"
+  },
+  "row-guest-fr": {
+   "x": 0,
+   "y": 1000,
+   "text": "Trouver et réserver",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "seeker-fr"
+  },
+  "row-sessions-fr": {
+   "x": 0,
+   "y": 2300,
+   "text": "Séances",
+   "kind": "title1",
+   "maxW": 3680,
+   "page": "seeker-fr"
+  },
+  "row-seeker-fr": {
+   "x": 0,
+   "y": 3600,
+   "text": "Du suivi au soin",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "seeker-fr"
+  },
+  "row-between-fr": {
+   "x": 0,
+   "y": 4900,
+   "text": "Entre les séances",
+   "kind": "title1",
+   "maxW": 1130,
+   "page": "seeker-fr"
+  },
+  "row-profile-fr": {
+   "x": 0,
+   "y": 6200,
+   "text": "Profil et paramètres",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "seeker-fr"
+  },
+  "row-specialist-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Travail quotidien",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "specialist-fr"
+  },
+  "row-spec-business-fr": {
+   "x": 0,
+   "y": 1000,
+   "text": "Revenus et profil",
+   "kind": "title1",
+   "maxW": 1130,
+   "page": "specialist-fr"
+  },
+  "row-onboarding-fr": {
+   "x": 0,
+   "y": -1600,
+   "text": "Démarrage et présentation",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "start-fr"
+  },
+  "sticky-start-fr": {
+   "x": 3000,
+   "y": -1900,
+   "w": 340,
+   "fill": "blue",
+   "page": "start-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "sticky-seeker-fr": {
+   "x": 3800,
+   "y": -300,
+   "w": 340,
+   "fill": "blue",
+   "page": "seeker-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "sticky-specialist-fr": {
+   "x": 3300,
+   "y": -300,
+   "w": 340,
+   "fill": "blue",
+   "page": "specialist-fr",
+   "text": "French versions of the screens on the English page with the same name. Links stay inside the French set. People's names, prices, times and content stored in a specific language (reviews as written, EN/FR editor fields, flagged crisis text) are unchanged on purpose."
+  },
+  "row-states-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Loading and empty",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "states"
+  },
+  "row-states-1": {
+   "x": 0,
+   "y": 964,
+   "text": "Errors, offline and permissions",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "states"
+  },
+  "rules-states": {
+   "x": 3330,
+   "y": 0,
+   "text": "State rules. Loading: skeletons after 300 ms, never a spinner over content; after 10 s, offer a retry. Empty: say what will appear here and give one next step. Errors: say what happened, whether anything was lost or charged, and one way forward; a small reference code for support, never a raw error. Offline: a banner on every screen; tracking, crisis numbers and the safety plan keep working; booking, payment and calls are disabled with the reason. Permissions: explain before the phone asks, and how to fix it after a refusal.",
+   "w": 360,
+   "fill": "teal",
+   "page": "states"
+  },
+  "row-states-fr-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Chargement et écrans vides",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "states-fr"
+  },
+  "row-states-fr-1": {
+   "x": 0,
+   "y": 964,
+   "text": "Erreurs, hors ligne et autorisations",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "states-fr"
+  },
+  "rules-states-fr": {
+   "x": 3330,
+   "y": 0,
+   "text": "State rules. Loading: skeletons after 300 ms, never a spinner over content; after 10 s, offer a retry. Empty: say what will appear here and give one next step. Errors: say what happened, whether anything was lost or charged, and one way forward; a small reference code for support, never a raw error. Offline: a banner on every screen; tracking, crisis numbers and the safety plan keep working; booking, payment and calls are disabled with the reason. Permissions: explain before the phone asks, and how to fix it after a refusal.",
+   "w": 360,
+   "fill": "teal",
+   "page": "states-fr"
+  },
+  "row-hc": {
+   "x": 0,
+   "y": -300,
+   "text": "Health check",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "seeker"
+  },
+  "row-hc-fr": {
+   "x": 0,
+   "y": -300,
+   "text": "Bilan de santé",
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "seeker-fr"
+  },
+  "hc-sticky": {
+   "x": 3290,
+   "y": 0,
+   "w": 340,
+   "fill": "blue",
+   "page": "seeker",
+   "text": "Health check rules. Questions, answers and scoring come from the version clinicians publish in the admin portal; the app shows only that version. The safety question is always asked: any answer but No opens Urgent help, and for a signed-in seeker also alerts the on-call specialist. Screener items use the official GAD-7 and PHQ-9 wording in each language. Preferences filter matches but never change the suggestion. Guests can take it without an account."
+  }
+ },
+ "designSystems": []
+}

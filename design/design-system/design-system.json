@@ -1,0 +1,64 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-16T14:16:34Z"
+ },
+ "title": "Solace Care",
+ "namespace": "SolaceCare",
+ "libraries": [],
+ "sections": {},
+ "groups": [
+  "Logos"
+ ],
+ "assetGroups": {
+  "Logos": {
+   "name": "Logos",
+   "tile": "m",
+   "order": [
+    "solace-care-wordmark.svg",
+    "solace-care-splash.svg",
+    "solace-care-mark.svg",
+    "solace-care-app-icon.svg"
+   ],
+   "files": {
+    "solace-care-wordmark.svg": {
+     "name": "solace-care-wordmark.svg",
+     "blob": "f2c9cac9dcb0cec5cc86e4bbe51c9948",
+     "size": 8257,
+     "type": "image/svg+xml"
+    },
+    "solace-care-splash.svg": {
+     "name": "solace-care-splash.svg",
+     "blob": "e7ee3430b49db98ef959d576ca42d841",
+     "size": 6687,
+     "type": "image/svg+xml"
+    },
+    "solace-care-mark.svg": {
+     "name": "solace-care-mark.svg",
+     "blob": "326f348e71628f88d30749c0da6704af",
+     "size": 387,
+     "type": "image/svg+xml"
+    },
+    "solace-care-app-icon.svg": {
+     "name": "solace-care-app-icon.svg",
+     "blob": "94d03f37c3cf2859eb288ca6414f8432",
+     "size": 465,
+     "type": "image/svg+xml"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Banseka",
+  "at": "2026-10-16T14:50:49Z",
+  "via": "Claude",
+  "note": "Contrast fixes applied: ink-faint, new line-control, rating-star, warning, success"
+ }
+}

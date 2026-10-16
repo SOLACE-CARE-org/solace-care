@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bienvenue sur Solace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; padding: 28px 24px 32px; gap: 24px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 10px">
+<img src="/_blob/d33f9c09554a51ea212e286125ef36ec" alt="Solace Care" width="108" height="36" style="display: block; width: 108px; height: 36px">
+</div>
+<div role="group" aria-label="Langue de l&#x27;application" style="display: flex; background: #FFFFFF; border: 1px solid #DDE3DC; border-radius: 999px; padding: 4px; gap: 2px">
+<button type="button" aria-pressed="{{enPressed}}" onClick="{{setEn}}" style="{{enStyle}}">EN</button>
+<button type="button" aria-pressed="{{frPressed}}" onClick="{{setFr}}" style="{{frStyle}}">FR</button>
+</div>
+</div>
+<div aria-hidden="true" style="position: relative; height: 230px; border-radius: 28px; background: #E3EEEA; overflow: hidden">
+<div style="position: absolute; width: 220px; height: 220px; border-radius: 50%; background: #CFE2DA; right: -60px; top: -70px"></div>
+<div style="position: absolute; left: 28px; top: 44px; width: 170px; height: 64px; border-radius: 24px 24px 24px 6px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 18px; box-sizing: border-box">
+<div style="height: 8px; width: 110px; border-radius: 4px; background: #CFE2DA"></div>
+<div style="height: 8px; width: 74px; border-radius: 4px; background: #CFE2DA"></div>
+</div>
+<div style="position: absolute; right: 28px; top: 124px; width: 160px; height: 64px; border-radius: 24px 24px 6px 24px; background: #1E5A4E; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 18px; box-sizing: border-box">
+<div style="height: 8px; width: 96px; border-radius: 4px; background: #F2C58A"></div>
+<div style="height: 8px; width: 60px; border-radius: 4px; background: #5E8C80"></div>
+</div>
+<div style="position: absolute; left: 40px; bottom: 26px; width: 44px; height: 44px; border-radius: 50%; background: #F2C58A"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.08; letter-spacing: -0.6px">{{t.title}}</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4F5D57">{{t.sub}}</p>
+</div>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<a href="Search_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">{{t.cta}}</a>
+<a href="RoleChoice_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 16px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 17px; text-decoration: none">{{t.account}}</a>
+<p style="margin: 0; text-align: center; font-size: 13px; line-height: 1.4; color: #4F5D57">{{t.note}}</p>
+<a href="SignIn_fr.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 44px; font-weight: 700; font-size: 15px">{{t.signin}}</a>
+</div>
+<a href="Crisis_fr.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; background: #FBE9E7; color: #8C1D18; font-weight: 600; font-size: 15px; text-decoration: none">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>
+{{t.crisis}}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lang: 'fr' }; }
+  renderVals() {
+    var copy = {
+      en: {
+        title: 'Someone to talk to, in your language.',
+        sub: 'Book a private audio or video session with a licensed specialist. No account needed.',
+        cta: 'Find a specialist',
+        account: 'Create an account',
+        note: 'An account unlocks health tracking and your session history.',
+        crisis: 'In crisis? Get help now',
+        signin: 'I already have an account · Sign in'
+      },
+      fr: {
+        title: "Quelqu'un à qui parler, dans votre langue.",
+        sub: 'Réservez une séance privée, audio ou vidéo, avec un spécialiste agréé. Aucun compte requis.',
+        cta: 'Trouver un spécialiste',
+        account: 'Créer un compte',
+        note: "Un compte débloque le suivi de santé et l'historique de vos séances.",
+        crisis: 'En crise ? Obtenez de l’aide maintenant',
+        signin: "J'ai déjà un compte · Se connecter"
+      }
+    };
+    var on = 'min-width: 48px; height: 36px; border: 0; border-radius: 999px; background: #1E5A4E; color: #FFFFFF; font: 600 14px Figtree, sans-serif; cursor: pointer';
+    var off = 'min-width: 48px; height: 36px; border: 0; border-radius: 999px; background: transparent; color: #4F5D57; font: 600 14px Figtree, sans-serif; cursor: pointer';
+    var en = this.state.lang === 'en';
+    return {
+      t: copy[this.state.lang],
+      enStyle: en ? on : off,
+      frStyle: en ? off : on,
+      enPressed: en ? 'true' : 'false',
+      frPressed: en ? 'false' : 'true',
+      setEn: () => this.setState({ lang: 'en' }),
+      setFr: () => this.setState({ lang: 'fr' })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Health check: test and review</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:#4F5D57;font-size:12.5px;padding:10px 14px;border-bottom:1px solid #DDE3DC;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #EEF1EC;vertical-align:top}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 248px; background: #FFFFFF; border-right: 1px solid #DDE3DC"><dc-import name="Sidebar" active="healthcheck" hint-size="248px,960px"></dc-import></div>
+<main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 18px">
+<a href="HealthCheck.dc.html" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Health check</a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.4px; font-size: 28px">Health check</h1><span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; background: #FDF3E4; color: #5A4318; font-size: 12.5px; font-weight: 600; white-space: nowrap">v1.1 in review</span></div>
+<nav aria-label="Builder steps" style="display: flex; flex-wrap: wrap; gap: 6px"><a href="HealthCheckQuestions.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 14px; text-decoration: none">1 Questions</a><a href="HealthCheckScoring.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 14px; text-decoration: none">2 Scoring</a><a href="HealthCheckReview.dc.html" aria-current="step" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none">3 Test and review</a></nav>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<span style="font-size: 14px; color: #4F5D57">Written by Dr. Fomba Grace today · reviewing as Tchakounté Arnaud, clinical reviewer</span>
+<div style="display: flex; gap: 8px"><button type="button" style="display: inline-flex; align-items: center; height: 42px; padding: 0 16px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font-weight: 600; font-size: 14.5px; text-decoration: none; font-family: Figtree, sans-serif">Return with comments</button><button type="button" style="display: inline-flex; align-items: center; height: 42px; padding: 0 18px; border-radius: 12px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 14.5px; text-decoration: none; border: 0; font-family: Figtree, sans-serif">Approve v1.1</button></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<div style="flex: 3 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<section style="border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; overflow: hidden">
+<h2 style="margin: 0; padding: 16px 20px 6px; font-size: 16px; font-weight: 700">What changed from v1</h2>
+<div style="overflow-x: auto"><table><thead><tr><th scope="col">Part</th><th scope="col">v1 (published)</th><th scope="col">v1.1 (this draft)</th></tr></thead><tbody><tr><td style="font-weight: 600">daily_impact, FR wording</td><td style="color: #4F5D57">Est-ce que cela affecte votre quotidien ?</td><td>À quel point cela gêne-t-il votre vie quotidienne : travail, études ou maison ?</td></tr><tr><td style="font-weight: 600">worry_moderate, points</td><td style="color: #4F5D57">Clinical psychologist +2</td><td>Clinical psychologist +3</td></tr><tr><td style="font-weight: 600">Safety rule</td><td style="color: #4F5D57">Locked</td><td>Locked · no change</td></tr></tbody></table></div>
+</section>
+<section style="border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 16px 20px 6px"><h2 style="margin: 0; font-size: 16px; font-weight: 700">Made-up answer sets</h2><span style="font-size: 13px; color: #4F5D57">Run against v1 and v1.1. No real answers are used.</span></div>
+<div style="overflow-x: auto"><table><thead><tr><th scope="col">Answer set</th><th scope="col">v1 suggests</th><th scope="col">v1.1 suggests</th></tr></thead><tbody><tr><td>Work stress and sleep, GAD-7 11</td><td>Clinical psychologist</td><td>Clinical psychologist</td></tr><tr style="background: #FDF3E4"><td>Worry, GAD-7 10, daily life affected a little</td><td>Licensed counsellor</td><td style="font-weight: 700">Clinical psychologist <span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; background: #FDF3E4; color: #5A4318; font-size: 12.5px; font-weight: 600; white-space: nowrap">Changed</span></td></tr><tr><td>Grief, PHQ-2 2</td><td>Licensed counsellor</td><td>Licensed counsellor</td></tr><tr><td>Low mood, PHQ-9 21, medicine Yes</td><td>Psychiatrist</td><td>Psychiatrist</td></tr><tr><td>Cycle and low mood, PHQ-9 8</td><td>Gynaecologist · also psychologist</td><td>Gynaecologist · also psychologist</td></tr><tr><td>Safety answer Yes, sometimes</td><td><span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; background: #FBE9E7; color: #8C1D18; font-size: 12.5px; font-weight: 600; white-space: nowrap"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Urgent help</span></td><td><span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; background: #FBE9E7; color: #8C1D18; font-size: 12.5px; font-weight: 600; white-space: nowrap"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Urgent help</span></td></tr></tbody></table></div>
+<div style="padding: 12px 20px; font-size: 13.5px"><a href="#" style="font-weight: 600; text-decoration: none">1 of 12 sets changes. Show all 12</a></div>
+</section>
+</div>
+<aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 16px; font-weight: 700">Reviewer checklist</h2>
+<label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4"><input type="checkbox" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0">Every threshold matches the published cut-offs</label><label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4"><input type="checkbox" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0">Reasons describe answers, never a diagnosis</label><label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4"><input type="checkbox" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0">EN and FR say the same thing</label><label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4"><input type="checkbox" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0">Screener items use the official wording</label><label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4"><input type="checkbox" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0">The safety rule is present and unchanged</label>
+<span style="padding-top: 10px; border-top: 1px solid #EEF1EC; font-size: 13px; color: #4F5D57">The person who wrote a version cannot approve it.</span>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

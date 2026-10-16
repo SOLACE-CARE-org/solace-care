@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Content editor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 248px; background: #FFFFFF; border-right: 1px solid #DDE3DC"><dc-import name="Sidebar" active="content" hint-size="248px,960px"></dc-import></div>
+<main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 18px">
+<a href="Content.dc.html" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Content</a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 28px">Emergency numbers, Cameroon</h1><span style="font-size: 14px; color: #4F5D57">Crisis resource · shown on the urgent-help screen and in every crisis flow</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" style="height: 42px; padding: 0 16px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14.5px Figtree, sans-serif">Preview in the app</button>
+<button type="button" style="height: 42px; padding: 0 18px; border-radius: 12px; border: 0; background: #1E5A4E; color: #FFFFFF; font: 600 14.5px Figtree, sans-serif">Publish</button>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 13px; font-weight: 700">English done</span>
+<span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 13px; font-weight: 700">French done</span>
+<span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #FDF3E4; color: #5A4318; font-size: 13px; font-weight: 700">Clinical check needed again after edits</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 15px; font-weight: 700; color: #4F5D57">ENGLISH</h2>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px">Title<input value="Emergency numbers" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 15px Figtree, sans-serif"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px">Body<textarea rows="8" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 400 15px/1.5 Figtree, sans-serif">If you or someone near you is in danger right now, call:
+
+Police: [number]
+Ambulance and emergency medical help: [number]
+Fire and rescue: [number]
+
+These numbers work without data.</textarea></label>
+</section>
+<section lang="fr" style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 15px; font-weight: 700; color: #4F5D57">FRANÇAIS</h2>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px">Titre<input value="Numéros d'urgence" style="height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 15px Figtree, sans-serif"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px">Texte<textarea rows="8" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 400 15px/1.5 Figtree, sans-serif">Si vous ou une personne près de vous êtes en danger maintenant, appelez :
+
+Police : [numéro]
+Ambulance et urgences médicales : [numéro]
+Pompiers et secours : [numéro]
+
+Ces numéros fonctionnent sans données mobiles.</textarea></label>
+</section>
+</div>
+<section style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<span style="flex: 1; min-width: 260px; font-size: 14px">Crisis resources need a clinical reviewer's approval after every edit. Publishing is blocked until then.</span>
+<button type="button" style="height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 14px Figtree, sans-serif">Send for clinical check</button>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:#4F5D57;font-size:12.5px;padding:10px 14px;border-bottom:1px solid #DDE3DC;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #EEF1EC;vertical-align:middle}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 248px; background: #FFFFFF; border-right: 1px solid #DDE3DC"><dc-import name="Sidebar" active="overview" hint-size="248px,960px"></dc-import></div>
+<main style="flex: 999 1 560px; min-width: 0; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.4px">Overview</h1>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #4F5D57"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #2E7D4F"></span>Live · Friday 16 October, 14:32 Douala time</span>
+</div>
+</div>
+<a href="CrisisQueue.dc.html" style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 16px; background: #FBE9E7; border: 1px solid #E8BDB7; color: #5E1410; text-decoration: none">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>
+<span style="flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 16px">2 crisis alerts are not acknowledged</span><span style="font-size: 14px">The oldest was raised 6 minutes ago. On call: Dr. Fomba Grace.</span></span>
+<span style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 12px; background: #8C1D18; color: #FFFFFF; font-weight: 600; font-size: 14px">Open crisis queue</span>
+</a>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC"><span style="font-size: 13.5px; color: #4F5D57">In session now</span><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px">7</span><span style="font-size: 13px; color: #4F5D57">5 video · 2 audio</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC"><span style="font-size: 13.5px; color: #4F5D57">Sessions today</span><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px">48</span><span style="font-size: 13px; color: #4F5D57">31 completed · 2 no-shows</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC"><span style="font-size: 13.5px; color: #4F5D57">New bookings today</span><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px">26</span><span style="font-size: 13px; color: #4F5D57">14 French · 12 English</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC"><span style="font-size: 13.5px; color: #4F5D57">Payments captured today</span><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px">412 000 XAF</span><span style="font-size: 13px; color: #4F5D57">1 failed, retrying</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section style="flex: 2 1 560px; min-width: 0; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 18px"><h2 style="margin: 0; font-size: 17px; font-weight: 700">Sessions now</h2><a href="Bookings.dc.html" style="font-weight: 600; font-size: 14px">All bookings</a></div>
+<div style="overflow-x: auto">
+<table>
+<thead><tr><th scope="col">Time</th><th scope="col">Specialist</th><th scope="col">Seeker</th><th scope="col">Type</th><th scope="col">Language</th><th scope="col">Status</th></tr></thead>
+<tbody>
+<tr><td>14:00</td><td>Ngo Biyong Claire</td><td>Seeker #4821</td><td>Video</td><td>French</td><td><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">In session</span></td></tr>
+<tr><td>14:00</td><td>Tchakounté Arnaud</td><td>Guest #G-2210</td><td>Audio</td><td>French</td><td><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">In session</span></td></tr>
+<tr><td>14:15</td><td>Dr. Fomba Grace</td><td>Seeker #3907</td><td>Video</td><td>English</td><td><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">In session</span></td></tr>
+<tr><td>14:30</td><td>Dr. Mbarga Solange</td><td>Seeker #5112</td><td>Video</td><td>French</td><td><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #FDF3E4; color: #5A4318; font-size: 12.5px; font-weight: 600">Waiting room: seeker only</span></td></tr>
+<tr><td>14:30</td><td>Dr. Eyong Peter</td><td>Guest #G-2231</td><td>Audio</td><td>English</td><td><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #EEF1EC; color: #3B4842; font-size: 12.5px; font-weight: 600">Starts in 0 min</span></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+<div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<section style="padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 700">Needs attention</h2>
+<a href="Applications.dc.html" style="display: flex; justify-content: space-between; min-height: 40px; align-items: center; color: #14201C; text-decoration: none; border-bottom: 1px solid #EEF1EC"><span>Specialist applications waiting</span><span style="font-weight: 700">6</span></a>
+<a href="Payments.dc.html" style="display: flex; justify-content: space-between; min-height: 40px; align-items: center; color: #14201C; text-decoration: none; border-bottom: 1px solid #EEF1EC"><span>Refunds to approve</span><span style="font-weight: 700">2</span></a>
+<a href="Reviews.dc.html" style="display: flex; justify-content: space-between; min-height: 40px; align-items: center; color: #14201C; text-decoration: none; border-bottom: 1px solid #EEF1EC"><span>Reviews to moderate</span><span style="font-weight: 700">4</span></a>
+<a href="BookingDetail.dc.html" style="display: flex; justify-content: space-between; min-height: 40px; align-items: center; color: #14201C; text-decoration: none; border-bottom: 1px solid #EEF1EC"><span>No-show disputes</span><span style="font-weight: 700">1</span></a>
+<a href="PersonRecord.dc.html" style="display: flex; justify-content: space-between; min-height: 40px; align-items: center; color: #14201C; text-decoration: none"><span>Data requests due this week</span><span style="font-weight: 700">1</span></a>
+</section>
+<section style="padding: 16px 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 17px; font-weight: 700">Service health</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px"><span>Core</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">Healthy</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px"><span>AI and safety monitor</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">Healthy</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px"><span>Calls (LiveKit)</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">Healthy</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px"><span>Mobile money</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #FDF3E4; color: #5A4318; font-size: 12.5px; font-weight: 600">Slow confirmations</span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px"><span>SMS</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #E3EEEA; color: #143F37; font-size: 12.5px; font-weight: 600">Healthy</span></div>
+</section>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

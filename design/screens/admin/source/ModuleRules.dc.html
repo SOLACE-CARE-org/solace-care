@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Module builder: rules</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 248px; background: #FFFFFF; border-right: 1px solid #DDE3DC"><dc-import name="Sidebar" active="modules" hint-size="248px,960px"></dc-import></div>
+<main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 18px">
+<a href="Modules.dc.html" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Tracking modules</a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 28px">Stress</h1><span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: #EEF1EC; color: #3B4842; font-size: 13px; font-weight: 700">v1 draft</span></div>
+<nav aria-label="Builder steps" style="display: flex; gap: 6px">
+<a href="ModuleDetails.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 14px; text-decoration: none">1 Details</a>
+<a href="ModuleElements.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 14px; text-decoration: none">2 Elements</a>
+<a href="ModuleRules.dc.html" aria-current="step" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none">3 Rules</a>
+</nav>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section style="flex: 2 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 16px; background: #FFFFFF; border: 2px solid #1E5A4E">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px"><h2 style="margin: 0; font-size: 17px; font-weight: 700">stress.high_days</h2><span style="font-size: 13.5px; color: #4F5D57">Conditions: all must hold (1–3)</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; padding: 14px; border-radius: 12px; background: #F4F6F2">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Signal<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>Stress level, daily</option><option>Mood, daily</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Operator<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>days in window</option><option>average in window</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Comparison<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>equal to</option><option>one of</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Value<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>high</option><option>some</option><option>low</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">At least<input value="[10]" style="width: 70px; height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 14px Figtree, sans-serif"></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Of the last<input value="[14] days" style="width: 90px; height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 14px Figtree, sans-serif"></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Minimum logged<input value="[10] days" style="width: 90px; height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 14px Figtree, sans-serif"></label>
+</div>
+<button type="button" style="align-self: flex-start; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px dashed #66726C; background: #FFFFFF; font: 600 13.5px Figtree, sans-serif; color: #14201C">Add a condition</button>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Outcome<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>Invite to a specialty</option><option>Pattern only</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Specialty<select style="height: 40px; padding: 0 8px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 14px Figtree, sans-serif"><option>Psychologist or counsellor</option></select></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Cooldown<input value="[30] days" style="height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #7F8B84; font: 500 14px Figtree, sans-serif"></label>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Message · EN<textarea rows="2" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 400 14px/1.4 Figtree, sans-serif">You logged high stress on {n} of the last {window} days. Talking it through with someone can help.</textarea></label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600">Message · FR<textarea lang="fr" rows="2" style="resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid #7F8B84; font: 400 14px/1.4 Figtree, sans-serif">Vous avez noté un stress élevé {n} jours sur les {window} derniers. En parler avec quelqu'un peut aider.</textarea></label>
+</div>
+<span style="font-size: 13px; color: #4F5D57">Words that suggest a diagnosis are blocked. Unless conditions: none (profile fields and the enrolment answer can only switch a rule off).</span>
+</section>
+<aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-size: 16px; font-weight: 700">Test run</h2><button type="button" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #7F8B84; background: #FFFFFF; font: 600 13.5px Figtree, sans-serif; color: #14201C">Run again</button></div>
+<span style="font-size: 14px">Fires on <span style="font-weight: 700">6 of 40</span> synthetic histories. No real seeker data is used.</span>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 13.5px">
+<div style="display: flex; justify-content: space-between; padding: 10px; border-radius: 10px; background: #F4F6F2"><span>High stress, steady logger</span><span style="font-weight: 700; color: #143F37">Fires</span></div>
+<div style="display: flex; justify-content: space-between; padding: 10px; border-radius: 10px; background: #F4F6F2"><span>High stress, 6 days logged</span><span style="font-weight: 700; color: #4F5D57">Not enough data</span></div>
+<div style="display: flex; justify-content: space-between; padding: 10px; border-radius: 10px; background: #F4F6F2"><span>Fired 12 days ago</span><span style="font-weight: 700; color: #4F5D57">Cooldown</span></div>
+<div style="display: flex; justify-content: space-between; padding: 10px; border-radius: 10px; background: #F4F6F2"><span>Mixed stress, 14 days logged</span><span style="font-weight: 700; color: #4F5D57">Does not fire</span></div>
+</div>
+</aside>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<a href="ModuleElements.dc.html" style="display: inline-flex; align-items: center; height: 42px; padding: 0 16px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font-weight: 600; font-size: 14px; text-decoration: none">Back</a>
+<a href="ModuleReview.dc.html" style="display: inline-flex; align-items: center; height: 42px; padding: 0 18px; border-radius: 12px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none">Submit for clinical review</a>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

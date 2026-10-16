@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Assign homework</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 0; flex: 1; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="NoteReview.dc.html" aria-label="Back to note" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div style="display: flex; flex-direction: column"><span style="font-size: 13px; color: #4F5D57">For Awa N. · before Thu 22 Oct</span><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.3px">Assign homework</h1></div>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 15px; font-weight: 700">Exercise</legend>
+<label style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E"><input type="radio" name="ex" checked style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Thought record</span><span style="font-size: 13px; color: #2C3833">Situation, thought, feeling, kinder view</span></span></label>
+<label style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84"><input type="radio" name="ex" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Sleep diary</span><span style="font-size: 13px; color: #4F5D57">Bedtime, wake time, how rested</span></span></label>
+<label style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84"><input type="radio" name="ex" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Worry time</span><span style="font-size: 13px; color: #4F5D57">A set 15 minutes to note worries</span></span></label>
+<label style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84"><input type="radio" name="ex" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="font-weight: 700; font-size: 15px">Write my own task</span></label>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="times" style="font-size: 13px; font-weight: 600; color: #4F5D57">How many times</label>
+<select id="times" style="height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 15px Figtree, sans-serif; color: #14201C"><option>3 times before next session</option><option>Daily</option><option>Once</option></select>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="msg" style="font-size: 13px; font-weight: 600; color: #4F5D57">Note to Awa</label>
+<textarea id="msg" rows="2" style="resize: none; padding: 10px 12px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; font: 400 14.5px/1.45 Figtree, sans-serif; color: #14201C">Try one before each team meeting this week.</textarea>
+</div>
+<label style="position: relative; display: flex; gap: 12px; align-items: center"><span style="flex: 1; font-size: 14px; line-height: 1.4; color: #2C3833">Let the AI companion guide Awa through it</span><input type="checkbox" role="switch" checked style="position: absolute; opacity: 0; width: 1px; height: 1px"><span aria-hidden="true" style="width: 48px; height: 28px; border-radius: 14px; background: #1E5A4E; display: flex; align-items: center; justify-content: flex-end; padding: 3px; box-sizing: border-box"><span style="width: 22px; height: 22px; border-radius: 50%; background: #FFFFFF"></span></span></label>
+</div>
+<div style="padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<a href="SpecialistToday.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Assign</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

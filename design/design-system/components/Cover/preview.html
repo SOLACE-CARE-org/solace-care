@@ -1,0 +1,42 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8">
+<style>
+  html, body { margin: 0; }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--surface-page); }
+  .cover svg { position: absolute; left: 0; top: 0; }
+  .brand { fill: var(--brand); }
+  .deep { fill: var(--brand-deep); }
+  .accent { fill: var(--accent); }
+  .tint { fill: var(--brand-tint-strong); }
+  .ring { fill: var(--brand-splash-ring); }
+  .r18 { rx: var(--radius-18); }
+  .name { position: absolute; left: 40px; bottom: 40px; max-width: 440px; }
+  .name h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 104px; line-height: .95; letter-spacing: -2px; color: var(--ink); }
+  .name p { margin: 14px 0 0; font-family: var(--font-body); font-size: 14px; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+<!--
+  blocks: brand 272×288 slab (bleeds top and bottom); brand-deep 160×144 top right (bleeds top and right); accent 136×104 with radius-18; brand-tint-strong disc 96 across
+  arrangement: one tall slab with satellites to its right, the way the splash and home cards stack a big green field with smaller warm pieces
+  pattern: discs. The README calls the shape soft and rounded, and the splash screen itself uses brand-splash-ring discs cut off at the edges, so the cover repeats that motif: two ring discs clipped to the slab, one brand-tint-strong disc
+  steps and radii: gaps of space-16 (16px), satellites placed on a 24px step, radius-18 on the accent block, discs as full circles
+-->
+<defs><clipPath id="slab"><rect x="512" y="-1" width="272" height="290"/></clipPath></defs>
+<rect class="brand" x="512" y="-1" width="272" height="290"/>
+<g clip-path="url(#slab)"><circle class="ring" cx="760" cy="8" r="104"/><circle class="ring" cx="560" cy="300" r="72"/></g>
+<rect class="deep" x="800" y="-1" width="161" height="145"/>
+<rect class="accent r18" x="800" y="160" width="136" height="104"/>
+<circle class="tint" cx="648" cy="168" r="48"/>
+</svg>
+<div class="name">
+<h1>Solace<br>Care</h1>
+<p>Calm, plain care in English and French.</p>
+</div>
+</div>
+</body>
+</html>

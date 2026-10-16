@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audio session</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2C58A}a:hover{color:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #12302A; color: #FFFFFF; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; padding: 28px 24px 40px; gap: 20px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #A9C2BA"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Private · not recorded</span>
+<span style="font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px">12:48</span>
+</div>
+<div role="status" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 14px; background: #1E4A40; font-size: 14px; line-height: 1.4; color: #E3EEEA">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2C58A" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0"><path d="M4 20v-2M9 20v-6M14 20v-10" /><path d="M19 20v-14" stroke-opacity="0.35"/></svg>
+<span>Your connection is weak. Audio is protected, so you can keep talking.</span>
+</div>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px">
+<div aria-hidden="true" style="position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center">
+<div style="position: absolute; inset: 0; border-radius: 50%; background: #1E4A40"></div>
+<div style="position: absolute; inset: 22px; border-radius: 50%; background: #2A5E52"></div>
+<div style="position: relative; width: 120px; height: 120px; border-radius: 50%; background: #F2C58A; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 40px; color: #4A2F0B">NE</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 24px">Dr. Ngo Ebode Clarisse</h1>
+<span style="font-size: 15px; color: #A9C2BA">Audio session · English</span>
+<span style="font-size: 14px; color: #F2C58A; font-weight: 600">Speaking…</span>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 0 8px">
+<button type="button" aria-label="Mute microphone" style="width: 64px; height: 64px; border-radius: 50%; border: 0; background: #2A5E52; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button type="button" aria-label="Speaker" style="width: 64px; height: 64px; border-radius: 50%; border: 0; background: #2A5E52; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9c1.5 1.5 1.5 4.5 0 6M19.5 6.5c3 3 3 8 0 11"/></svg></button>
+<button type="button" aria-label="Turn on video" disabled style="width: 64px; height: 64px; border-radius: 50%; border: 1px solid #2A5E52; background: transparent; color: #6F9389; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3M3 3l18 18"/></svg></button>
+<a href="RateSession.dc.html" aria-label="End session" style="width: 72px; height: 72px; border-radius: 50%; background: #C6362B; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14c5-4 13-4 18 0l-2 3-4-1v-2c-2-.6-4-.6-6 0v2l-4 1z"/></svg></a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

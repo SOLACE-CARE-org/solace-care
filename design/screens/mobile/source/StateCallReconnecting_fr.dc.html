@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Reconnexion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #12302A; color: #FFFFFF; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 28px 28px">
+<div aria-hidden="true" style="width: 120px; height: 120px; border-radius: 50%; border: 3px dashed #6F9389; display: flex; align-items: center; justify-content: center; color: #F2C58A"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M12 19h.01M3 3l18 18"/></svg></div>
+<h1 role="status" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.4px; font-size: 26px; color: #FFFFFF">Reconnexion…</h1>
+<p style="margin: 0; font-size: 15.5px; line-height: 1.5; color: #A9C2BA">La séance reste ouverte 2 minutes pendant la reconnexion. Dr. Ngo Ebode voit que vous avez été coupé.</p>
+<button type="button" style="width: 100%; height: 52px; border-radius: 16px; border: 0; background: #F2C58A; color: #3D2A0C; font: 700 16px Figtree, sans-serif">Passer en audio seul</button>
+<a href="RateSession_fr.dc.html" style="width: 100%; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 16px; border: 1px solid #2A5E52; color: #FFFFFF; font-weight: 600; font-size: 15.5px; text-decoration: none">Quitter la séance</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

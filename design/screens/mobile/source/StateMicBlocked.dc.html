@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Microphone blocked</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 18px; padding: 48px 24px 32px; flex: 1">
+<div aria-hidden="true" style="width: 88px; height: 88px; border-radius: 50%; background: #FBE9E7; color: #8C1D18; display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/></svg></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.4px; font-size: 28px; line-height: 1.15">Solace can't use your microphone</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4F5D57">Your specialist won't hear you until you allow it.</p></div>
+<ol style="margin: 0; padding: 16px 16px 16px 36px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.4">
+<li>Open your phone's Settings</li><li>Find Solace, then Microphone</li><li>Turn it on and come back here</li></ol>
+<p style="margin: 0; font-size: 14px; color: #4F5D57">You can still join while the session is running.</p>
+<div style="flex: 1"></div>
+<button type="button" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none; border: 0; font-family: Figtree, sans-serif">Open Settings</button>
+<a href="WaitingRoom.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 16px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 15.5px; text-decoration: none; font-family: Figtree, sans-serif">I've allowed it, try again</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

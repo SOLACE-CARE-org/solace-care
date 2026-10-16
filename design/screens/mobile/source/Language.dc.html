@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choose your language</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; padding: 56px 24px 32px; gap: 28px">
+<img src="/_blob/23e86ba86b5a12f166b6c714645b0d69" alt="" width="54" height="44" style="display: block; width: 54px; height: 44px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.1; letter-spacing: -0.5px">Choose your language</h1>
+<p lang="fr" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px; line-height: 1.2; color: #4F5D57">Choisissez votre langue</p>
+</div>
+<div role="group" aria-label="App language" style="display: flex; flex-direction: column; gap: 12px">
+<button type="button" aria-pressed="{{enPressed}}" onClick="{{setEn}}" style="{{enStyle}}">
+<span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 21px; color: #14201C">English</span><span style="font: 400 14.5px Figtree, sans-serif; color: #4F5D57">Use the app in English</span></span>
+<span aria-hidden="true" style="{{enDot}}"></span>
+</button>
+<button type="button" lang="fr" aria-pressed="{{frPressed}}" onClick="{{setFr}}" style="{{frStyle}}">
+<span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 21px; color: #14201C">Français</span><span style="font: 400 14.5px Figtree, sans-serif; color: #4F5D57">Utiliser l'application en français</span></span>
+<span aria-hidden="true" style="{{frDot}}"></span>
+</button>
+</div>
+<p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #4F5D57">{{t.note}}</p>
+<div style="flex: 1"></div>
+<a href="Onboard1.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">{{t.cta}}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lang: 'en' }; }
+  renderVals() {
+    var copy = {
+      en: { note: 'You can change this later in Settings. You choose the language of each session when you book it.', cta: 'Continue' },
+      fr: { note: 'Vous pourrez la changer plus tard dans les Paramètres. Vous choisissez la langue de chaque séance au moment de la réserver.', cta: 'Continuer' }
+    };
+    var card = 'display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; padding: 14px 18px; border-radius: 20px; background: #FFFFFF; cursor: pointer; ';
+    var on = card + 'border: 2px solid #1E5A4E';
+    var off = card + 'border: 1px solid #7F8B84';
+    var dotOn = 'flex-shrink: 0; width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; border: 7px solid #1E5A4E; background: #FFFFFF';
+    var dotOff = 'flex-shrink: 0; width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; border: 2px solid #66726C; background: #FFFFFF';
+    var en = this.state.lang === 'en';
+    return {
+      t: copy[this.state.lang],
+      enStyle: en ? on : off,
+      frStyle: en ? off : on,
+      enDot: en ? dotOn : dotOff,
+      frDot: en ? dotOff : dotOn,
+      enPressed: en ? 'true' : 'false',
+      frPressed: en ? 'false' : 'true',
+      setEn: () => this.setState({ lang: 'en' }),
+      setFr: () => this.setState({ lang: 'fr' })
+    };
+  }
+}
+</script>
+</body>
+</html>

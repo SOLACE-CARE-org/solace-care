@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Vérifier et payer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 20px; padding: 20px 20px 0; flex: 1; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Book_fr.dc.html" aria-label="Retour" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; color: #14201C"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 13px; color: #4F5D57">Étape 2 sur 2</span>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.3px">Confirmer et payer</h1>
+</div>
+</div>
+<div style="display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<div aria-hidden="true" style="width: 44px; height: 44px; border-radius: 50%; background: #F2C58A; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 16px; color: #4A2F0B">NE</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
+<span style="font-weight: 600; font-size: 15px">Dr. Ngo Ebode Clarisse</span>
+<span style="font-size: 13px; color: #4F5D57">Aujourd'hui, 18:00 · Audio · anglais · 50 min</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 700">Où pouvons-nous vous joindre ?</h2>
+<p style="margin: 0; font-size: 13px; line-height: 1.45; color: #4F5D57">Pas besoin de compte. Le lien de séance et les rappels arrivent sur ce numéro.</p>
+<label for="phone" style="font-size: 13px; font-weight: 600; color: #4F5D57">Numéro de téléphone</label>
+<div style="display: flex; gap: 8px">
+<div style="display: flex; align-items: center; flex: 1; height: 50px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; overflow: hidden">
+<span style="padding: 0 12px; height: 100%; display: flex; align-items: center; background: #EEF1EC; font-weight: 600; font-size: 15px">+237</span>
+<input id="phone" type="tel" value="6 77 00 00 00" style="flex: 1; min-width: 0; border: 0; padding: 0 12px; font: 500 16px Figtree, sans-serif; color: #14201C; background: transparent; outline: none">
+</div>
+<button type="button" style="height: 50px; padding: 0 16px; border-radius: 14px; border: 1px solid #1E5A4E; background: #FFFFFF; color: #1E5A4E; font: 600 15px Figtree, sans-serif">Renvoyer</button>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #4F5D57">Saisissez le code à 6 chiffres envoyé</legend>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+<input aria-label="Chiffre 1" inputmode="numeric" maxlength="1" value="4" style="height: 50px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+<input aria-label="Chiffre 2" inputmode="numeric" maxlength="1" value="8" style="height: 50px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+<input aria-label="Chiffre 3" inputmode="numeric" maxlength="1" value="2" style="height: 50px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+<input aria-label="Chiffre 4" inputmode="numeric" maxlength="1" value="0" style="height: 50px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+<input aria-label="Chiffre 5" inputmode="numeric" maxlength="1" value="" style="height: 50px; border-radius: 12px; border: 2px solid #1E5A4E; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+<input aria-label="Chiffre 6" inputmode="numeric" maxlength="1" value="" style="height: 50px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; text-align: center; font: 700 20px Figtree, sans-serif; color: #14201C; box-sizing: border-box; width: 100%">
+</div>
+</fieldset>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0; margin-bottom: 10px; font-size: 15px; font-weight: 700">Payer avec</legend>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border-radius: 14px; background: #E3EEEA; border: 2px solid #1E5A4E; font-weight: 600; font-size: 15px"><input type="radio" name="pay" checked style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="flex: 1">MTN Mobile Money</span><span style="font-size: 13px; font-weight: 500; color: #4F5D57">Même numéro</span></label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; font-weight: 600; font-size: 15px"><input type="radio" name="pay" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="flex: 1">Orange Money</span></label>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #7F8B84; font-weight: 600; font-size: 15px"><input type="radio" name="pay" style="accent-color: #1E5A4E; width: 18px; height: 18px; margin: 0"><span style="flex: 1">Carte bancaire</span></label>
+</fieldset>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 28px; background: #FFFFFF; border-top: 1px solid #DDE3DC">
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: #4F5D57">Vous validerez le paiement sur votre téléphone. Les remboursements suivent la <a href="#">politique d'annulation</a>.</p>
+<a href="PaymentPending_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">Payer [Prix] FCFA</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

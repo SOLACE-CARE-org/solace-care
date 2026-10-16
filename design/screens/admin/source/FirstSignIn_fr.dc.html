@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Première connexion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<div aria-hidden="true" style="flex: 1 1 420px; min-height: 420px; position: relative; overflow: hidden; background: #2D6A4F">
+<div style="position: absolute; width: 520px; height: 520px; border-radius: 50%; background: #34744F; right: -180px; top: -160px"></div>
+<div style="position: absolute; width: 360px; height: 360px; border-radius: 50%; background: #34744F; left: -140px; bottom: -120px"></div>
+<div style="position: absolute; width: 72px; height: 72px; border-radius: 50%; background: #F2C58A; right: 22%; bottom: 26%"></div>
+<div style="position: absolute; left: 56px; top: 56px; display: flex; align-items: flex-end; gap: 14px">
+<img src="/_blob/22f2273c415dcf10cb1fcf4fcc5660f7" alt="" width="104" height="107" style="display: block; width: 104px; height: 107px">
+<span style="margin-bottom: 6px; padding: 4px 10px; border-radius: 999px; background: #34744F; color: #FFFFFF; font-size: 13px; font-weight: 600">Admin</span>
+</div>
+<p style="position: absolute; left: 56px; bottom: 56px; right: 56px; margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 34px; line-height: 1.15; color: #FFFFFF; max-width: 460px">Gérer la plateforme qui mène les gens vers le soin.</p>
+</div>
+<main style="flex: 999 1 560px; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 48px 24px">
+<div style="width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.5px">Configurer votre compte</h1><span style="font-size: 15px; color: #4F5D57">Votre mot de passe temporaire a fonctionné. Il ne pourra plus servir.</span></div>
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 16px; font-weight: 700">1. Choisissez votre mot de passe</h2>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14.5px">Nouveau mot de passe<input id="npw" type="password" autocomplete="new-password" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14.5px">Confirmez le mot de passe<input id="cpw" type="password" autocomplete="new-password" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C"></label>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: #2C3833"><li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Au moins 12 caractères</li><li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Différent du mot de passe temporaire et des anciens</li><li style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E5A4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Vérifié contre les mots de passe divulgués connus</li></ul>
+</section>
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DDE3DC">
+<h2 style="margin: 0; font-size: 16px; font-weight: 700">2. Ajoutez une application d'authentification</h2>
+<span style="font-size: 14px; line-height: 1.45; color: #2C3833">Scannez ce code avec Google Authenticator, Microsoft Authenticator ou une application similaire.</span>
+<div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
+<div role="img" aria-label="Code QR à scanner" style="width: 128px; height: 128px; flex-shrink: 0; border-radius: 12px; border: 1px dashed #7F8B84; background: #F4F6F2; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #4F5D57">Code QR</div>
+<div style="flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; color: #4F5D57">Impossible de scanner ? Saisissez cette clé :<code style="font: 600 14px ui-monospace, monospace; color: #14201C; letter-spacing: 1px">JBSW Y3DP EHPK 3PXP</code></div>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14.5px">Code à 6 chiffres de l'application<input id="totp" inputmode="numeric" autocomplete="one-time-code" placeholder="000 000" style="height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #7F8B84; background: #FFFFFF; font: 500 16px Figtree, sans-serif; color: #14201C; font: 600 20px Figtree, sans-serif; letter-spacing: 6px"></label>
+</section>
+<a href="Overview_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none">Terminer et se connecter</a>
+<p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #4F5D57">Un mot de passe temporaire ne sert qu’une fois et expire 72 heures après la création du compte.</p>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

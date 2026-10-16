@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Approve payment</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; align-items: stretch; padding: 56px 24px 32px; gap: 24px">
+<div aria-hidden="true" style="align-self: center; position: relative; width: 140px; height: 140px">
+<div style="position: absolute; inset: 0; border-radius: 50%; border: 8px solid #DDE3DC"></div>
+<div style="position: absolute; inset: 0; border-radius: 50%; border: 8px solid transparent; border-top-color: #1E5A4E; border-right-color: #1E5A4E"></div>
+<div style="position: absolute; inset: 30px; border-radius: 24px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1E5A4E"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg></div>
+</div>
+<div role="status" style="display: flex; flex-direction: column; gap: 10px; text-align: center">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 28px; line-height: 1.15; letter-spacing: -0.4px">Approve the payment on your phone</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4F5D57">We sent a request for <strong style="color: #14201C">[Price] FCFA</strong> to MTN Mobile Money on +237 6 77 00 00 00. Enter your PIN to approve it.</p>
+</div>
+<div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 12px; border-radius: 14px; background: #FDF3E4; font-size: 14.5px; color: #4A3714">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+<span>Your slot is held for <strong style="font-variant-numeric: tabular-nums">08:42</strong></span>
+</div>
+<div style="flex: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<a href="BookingConfirmed.dc.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none">I've approved it</a>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button type="button" style="height: 48px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font: 600 15px Figtree, sans-serif">Resend request</button>
+<a href="Checkout.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 14px; border: 1px solid #7F8B84; background: #FFFFFF; color: #14201C; font-weight: 600; font-size: 15px; text-decoration: none">Pay another way</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

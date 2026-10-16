@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Paiement non abouti</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Figtree:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1E5A4E}a:hover{color:#143F37}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F6F2; color: #14201C; font-family: 'Figtree', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 18px; padding: 48px 24px 32px; flex: 1">
+<div aria-hidden="true" style="width: 88px; height: 88px; border-radius: 50%; background: #FDF3E4; color: #A36710; display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M15 15l4-4M19 15l-4-4"/></svg></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.4px; font-size: 28px; line-height: 1.15">Le paiement n'a pas abouti</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4F5D57">La demande MTN Mobile Money n'a pas été validée à temps. Vous n'avez pas été débité.</p></div>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; border: 1px solid #DDE3DC; font-size: 14.5px"><span>Votre créneau reste réservé pendant</span><span style="font-weight: 700; font-variant-numeric: tabular-nums">06:12</span></div>
+<div style="flex: 1"></div>
+<a href="PaymentPending_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 16px; background: #1E5A4E; color: #FFFFFF; font-weight: 600; font-size: 16px; text-decoration: none; border: 0; font-family: Figtree, sans-serif">Renvoyer la demande</a>
+<a href="Checkout_fr.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 16px; background: #FFFFFF; border: 1px solid #7F8B84; color: #14201C; font-weight: 600; font-size: 15.5px; text-decoration: none; font-family: Figtree, sans-serif">Payer autrement</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
