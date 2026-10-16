@@ -273,6 +273,27 @@
       ]
     },
     {
+      "name": "service_account",
+      "description": "Marks client-credentials tokens with the calling client's id",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "client id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "config": {
+            "user.session.note": "client_id",
+            "claim.name": "client_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
       "name": "tracking:summary.read",
       "description": "AI reads a consented trend summary from Tracking",
       "protocol": "openid-connect",
@@ -403,7 +424,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "roles"]
+      "defaultClientScopes": ["basic", "roles", "service_account"]
     },
     {
       "clientId": "core-service",
@@ -417,7 +438,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "ai:moderation.invoke", "tracking:ping", "ai:ping"]
+      "defaultClientScopes": ["basic", "service_account", "ai:moderation.invoke", "tracking:ping", "ai:ping"]
     },
     {
       "clientId": "tracking-service",
@@ -431,7 +452,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "core:booking-access.read", "core:taxonomy.read", "core:profile-age.read"]
+      "defaultClientScopes": ["basic", "service_account", "core:booking-access.read", "core:taxonomy.read", "core:profile-age.read"]
     },
     {
       "clientId": "ai-service",
@@ -445,7 +466,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "tracking:summary.read"]
+      "defaultClientScopes": ["basic", "service_account", "tracking:summary.read"]
     }
   ],
   "users": [

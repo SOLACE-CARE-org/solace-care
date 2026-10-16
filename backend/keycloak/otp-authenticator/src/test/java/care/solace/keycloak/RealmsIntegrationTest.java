@@ -219,6 +219,8 @@ class RealmsIntegrationTest {
         .contains("core:booking-access.read", "core:taxonomy.read", "core:profile-age.read")
         .doesNotContain("tracking:summary.read", "ai:moderation.invoke");
     assertThat(claims.path("aud").toString()).contains("core");
+    // Audit and access checks tell services apart from staff by this claim.
+    assertThat(claims.path("client_id").asText()).isEqualTo("tracking-service");
   }
 
   @Test
