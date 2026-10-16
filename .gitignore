@@ -1,0 +1,35 @@
+# Gradle / Java
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+out/
+
+# Node
+node_modules/
+dist/
+.pnpm-store/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+apps/mobile/android/
+apps/mobile/ios/
+
+# Angular
+.angular/
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key

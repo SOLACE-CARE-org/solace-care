@@ -18,7 +18,7 @@ These decisions were made during design, up to 16 Oct 2026. Each one is already 
 
 **D3. Separate databases.** Each service has its own PostgreSQL 16 database with its own Flyway migrations. No service reads another's tables, and there are no cross-service foreign keys.
 
-**D4. One monorepo** (recommended in the plan; the owner still has to confirm it). It holds the services, contracts, mobile, admin and shared packages, so a contract change and its callers land in one PR.
+**D4. One monorepo** (confirmed by the owner on 16 Oct 2026; layout in D22). It holds the services, contracts, mobile, admin and shared packages, so a contract change and its callers land in one PR.
 
 ## Identity
 
@@ -121,6 +121,12 @@ Every pair now meets WCAG 2.1 AA.
 - This answers the Tracking spec's "icon set" question, unless the owner says otherwise.
 
 **D21. Light theme only at launch.**
+
+**D22. Repository layout: backend, mobile and admin as separate top-level folders.** Decided 16 Oct 2026 by the owner.
+- `backend/` holds the Gradle build (services, libs, build-logic). `mobile/` and `admin/` are top-level apps.
+- Only shared things stay at the root: `contracts/`, `packages/` (i18n, tokens, api-clients) and `infra/`.
+- **Why:** the backend, the mobile app and the admin portal should be clearly separated, while one repo still lets a contract change and its callers land in one PR (D4 confirmed).
+- The specs' `services/...`, `apps/mobile` and `apps/admin` paths map to `backend/services/...`, `mobile/` and `admin/`.
 
 ## Still open
 
