@@ -19,7 +19,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "solace"
 
-val libraries = listOf("event-envelope", "grpc-client", "error-model", "audit", "locale", "log-scrub")
+val libraries = listOf(
+    "event-envelope", "grpc-client", "error-model", "audit", "locale", "log-scrub", "service-security",
+)
 val services = listOf("core", "tracking", "ai", "gateway")
 
 libraries.forEach { include(":libs:$it") }
