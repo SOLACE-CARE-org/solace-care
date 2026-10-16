@@ -128,6 +128,12 @@ Every pair now meets WCAG 2.1 AA.
 - **Why:** the backend, the mobile app and the admin portal should be clearly separated, while one repo still lets a contract change and its callers land in one PR (D4 confirmed).
 - The specs' `services/...`, `apps/mobile` and `apps/admin` paths map to `backend/services/...`, `mobile/` and `admin/`.
 
+**D23. Two Keycloak realms: `solace-members` and `solace-staff`.** Decided 16 Oct 2026 by the owner.
+- `solace-members`: seekers and specialists. One-time code sign-in through the custom authenticator; roles SEEKER and SPECIALIST pick the app shell after sign-in.
+- `solace-staff`: admin portal users. Password plus TOTP, 72-hour single-use temporary password, `[15]`-minute idle sign-out, no self-registration. Roles ADMIN, SUPER_ADMIN, SUPPORT, CLINICAL_REVIEWER and the admin portal's other roles.
+- **Why:** the System Design's infrastructure table says seekers, specialists and admins sit in separate realms, but the Sign-in screen has one phone/email field with no role choice, and the app "switches shell by role after login". Seekers and specialists therefore share a realm; staff stay fully isolated.
+- This replaces "separate realms" in the System Design's infrastructure table.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

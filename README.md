@@ -6,7 +6,7 @@ The project is in **Phase 0: Foundations**, building the walking skeleton. There
 
 ## Layout
 
-```
+```text
 backend/     Java: Gradle build with services/ (core, tracking, ai, gateway), libs/, build-logic/
 mobile/      Expo app for seekers, guests and specialists
 admin/       Angular admin portal
@@ -27,6 +27,10 @@ infra/       docker-compose, Keycloak config, Kubernetes, Argo CD
 ## Commands
 
 ```sh
+# Local infrastructure (details and addresses in infra/README.md)
+docker compose -f infra/docker-compose.yml up -d
+bash infra/scripts/smoke-check.sh
+
 # Java: build and test every service and library
 cd backend
 ./gradlew build

@@ -1,0 +1,15 @@
+# Metrics arrive over OTLP from the collector (--web.enable-otlp-receiver).
+# Prometheus also scrapes itself.
+global:
+  scrape_interval: 15s
+
+otlp:
+  promote_resource_attributes:
+    - service.name
+    - service.instance.id
+    - deployment.environment
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

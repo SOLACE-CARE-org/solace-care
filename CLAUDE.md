@@ -47,7 +47,7 @@ Backend, mobile and admin are kept apart at the top level (D22). Only `contracts
 - **Data:** PostgreSQL 16, one database per service, and no service reads another's tables. pgvector goes in the AI database. Redis is for slot holds, OTP, rate limits and cached taxonomy. S3-compatible object storage (MinIO locally).
 - **Messaging:** Kafka with a schema registry. Events are written through the transactional outbox (Spring Modulith event publication). Consumers are idempotent on `eventId` and failures go to a dead-letter topic.
 - **Between services:** gRPC with 2-second deadlines, a circuit breaker and a defined fallback for every call. Clients talk REST/JSON at the gateway.
-- **Identity:** Keycloak is the only identity provider (see Sign-in below).
+- **Identity:** Keycloak is the only identity provider (see Sign-in below), with two realms: `solace-members` for seekers and specialists, `solace-staff` for staff (D23).
 - **Calls:** LiveKit, with react-native-callkeep for CallKit and ConnectionService.
 - **Mobile:** Expo dev builds, Hermes, New Architecture, TanStack Query, Zustand, i18next, op-sqlite for offline tracking, Lucide icons at stroke width 1.8.
 - **Admin:** Angular, Transloco, Lucide icons.

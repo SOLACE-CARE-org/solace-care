@@ -1,0 +1,11 @@
+# LiveKit for local development only. Real keys come from Vault.
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: false
+keys:
+  # key: secret (local dev only; the secret must be at least 32 characters)
+  devkey: solace-local-livekit-secret-0123456789
+logging:
+  level: info
