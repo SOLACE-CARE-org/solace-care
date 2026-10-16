@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared logging base for every Solace service. Include it from logback-spring.xml:
+
+    <configuration>
+      <include resource="care/solace/logscrub/logback-base.xml"/>
+      <root level="INFO">
+        <appender-ref ref="SCRUBBED"/>
+      </root>
+    </configuration>
+
+  Attach every real appender (console, OpenTelemetry) under SCRUBBED, never to a logger
+  directly, so nothing is written before it has been scrubbed.
+-->
+<included>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+  <appender name="SCRUBBED" class="care.solace.logscrub.ScrubbingAppender">
+    <appender-ref ref="CONSOLE"/>
+  </appender>
+</included>
