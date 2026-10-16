@@ -4,12 +4,27 @@ junit = "5.12.2"
 assertj = "3.27.3"
 spotless = "7.2.1"
 google-java-format = "1.28.0"
+keycloak = "26.3.1"
+testcontainers-keycloak = "3.7.0"
+# 1.21.4+ speaks the Docker API version that Docker Engine 29 requires
+testcontainers = "1.21.4"
+jackson = "2.19.1"
+slf4j = "2.0.17"
 
 [libraries]
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+keycloak-core = { module = "org.keycloak:keycloak-core", version.ref = "keycloak" }
+keycloak-server-spi = { module = "org.keycloak:keycloak-server-spi", version.ref = "keycloak" }
+keycloak-server-spi-private = { module = "org.keycloak:keycloak-server-spi-private", version.ref = "keycloak" }
+keycloak-services = { module = "org.keycloak:keycloak-services", version.ref = "keycloak" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-keycloak = { module = "com.github.dasniko:testcontainers-keycloak", version.ref = "testcontainers-keycloak" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # Used by build-logic to apply plugins from convention scripts
 spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }

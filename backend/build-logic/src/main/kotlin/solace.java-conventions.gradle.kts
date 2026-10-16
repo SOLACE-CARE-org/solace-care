@@ -16,6 +16,7 @@ java {
 
 dependencies {
     testImplementation(platform(catalog.findLibrary("junit-bom").get()))
+    testImplementation(platform(catalog.findLibrary("testcontainers-bom").get()))
     testImplementation(catalog.findLibrary("junit-jupiter").get())
     testImplementation(catalog.findLibrary("assertj-core").get())
     testRuntimeOnly(catalog.findLibrary("junit-platform-launcher").get())

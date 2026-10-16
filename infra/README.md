@@ -20,7 +20,7 @@ Defaults work out of the box. To change a password, copy `.env.example` to `.env
 | Schema registry | <http://localhost:8081> | JSON Schemas from `contracts/events/` |
 | Redis | `localhost:6379` | Slot holds, OTP, rate limits, cached taxonomy |
 | MinIO | API <http://localhost:9000>, console <http://localhost:9001> | Buckets `solace-credentials`, `solace-content`. Login `solace` / `solace-dev-only` |
-| Keycloak | <http://localhost:8180> | Admin `admin` / `admin`. Realms arrive in step 4 |
+| Keycloak | <http://localhost:8180> | Admin `admin` / `admin`. Realms `solace-members` and `solace-staff`; see [keycloak/README.md](keycloak/README.md) |
 | LiveKit | `ws://localhost:7880` | Key `devkey`, secret in `livekit/livekit.yaml` |
 | OTel collector | OTLP gRPC `localhost:4317`, HTTP `localhost:4318` | Traces to Tempo, metrics to Prometheus, logs to Loki |
 | Grafana | <http://localhost:3000> | Prometheus, Loki and Tempo provisioned, trace-to-logs linked. Login `admin` / `admin` |
@@ -28,5 +28,4 @@ Defaults work out of the box. To change a password, copy `.env.example` to `.env
 
 ## Still to come
 
-- `keycloak/`: realms, roles, clients and the code authenticator extension (Phase 0, step 4)
 - `k8s/`, `argocd/`: manifests for dev, staging and prod, written but not applied until hosting is decided (step 12)

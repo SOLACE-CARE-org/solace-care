@@ -58,6 +58,10 @@ check "redis" "${compose[@]}" exec -T redis redis-cli ping
 check "minio: buckets created" "${compose[@]}" run --rm --no-deps -T --entrypoint /bin/sh minio-init -c \
   'mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" && mc ls local/solace-credentials'
 check "keycloak: master realm" curl -fs http://localhost:8180/realms/master/.well-known/openid-configuration
+check "keycloak: solace-members realm" curl -fs http://localhost:8180/realms/solace-members/.well-known/openid-configuration
+check "keycloak: solace-staff realm" curl -fs http://localhost:8180/realms/solace-staff/.well-known/openid-configuration
+check "keycloak: service token with narrow scope" bash -c \
+  'curl -fs -d grant_type=client_credentials -d client_id=tracking-service -d client_secret=tracking-service-dev-secret http://localhost:8180/realms/solace-staff/protocol/openid-connect/token | grep -q "core:booking-access.read"'
 check "livekit" curl -fs http://localhost:7880
 check "prometheus" curl -fs http://localhost:9090/-/ready
 check "loki" curl -fs http://localhost:3100/ready

@@ -1,0 +1,111 @@
+{
+  "realm": "solace-members",
+  "enabled": true,
+  "displayName": "Solace Care",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "editUsernameAllowed": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "fr"],
+  "defaultLocale": "en",
+  "accessTokenLifespan": 300,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": "${SOLACE_MEMBERS_LOCKOUT_FAILURES:10}",
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
+  "directGrantFlow": "solace members code sign-in",
+  "roles": {
+    "realm": [
+      { "name": "SEEKER", "description": "Registered seeker" },
+      { "name": "SPECIALIST", "description": "Specialist; the app opens the specialist shell" }
+    ]
+  },
+  "authenticationFlows": [
+    {
+      "alias": "solace members code sign-in",
+      "description": "One-time code by SMS or email, on the app's own screens (D6)",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "solace-otp-direct-grant",
+          "authenticatorConfig": "solace-otp",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "solace-otp",
+      "config": {
+        "codeLength": "${SOLACE_OTP_CODE_LENGTH:6}",
+        "codeTtlSeconds": "${SOLACE_OTP_CODE_TTL_SECONDS:600}",
+        "maxAttempts": "${SOLACE_OTP_MAX_ATTEMPTS:5}",
+        "resendAfterSeconds": "${SOLACE_OTP_RESEND_AFTER_SECONDS:60}",
+        "sender": "${SOLACE_OTP_SENDER:logging}"
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "solace-mobile",
+      "name": "Solace Care mobile app",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false
+    },
+    {
+      "clientId": "core-admin",
+      "name": "Core: creates and manages member accounts",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_CORE_ADMIN_SECRET:core-admin-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-core-admin",
+      "enabled": true,
+      "serviceAccountClientId": "core-admin",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "query-users"]
+      }
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\":[{\"name\":\"username\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"email\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false},{\"name\":\"phone_number\",\"displayName\":\"Phone number\",\"validations\":{\"pattern\":{\"pattern\":\"^[+][1-9][0-9]{7,14}$\",\"error-message\":\"invalidPhoneNumber\"}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\"]},\"multivalued\":false}],\"groups\":[]}"
+          ]
+        }
+      }
+    ]
+  }
+}

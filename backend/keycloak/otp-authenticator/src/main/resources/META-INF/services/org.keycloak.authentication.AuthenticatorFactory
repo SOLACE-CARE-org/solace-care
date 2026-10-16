@@ -1,0 +1,2 @@
+care.solace.keycloak.otp.OtpDirectGrantAuthenticatorFactory
+care.solace.keycloak.staff.TemporaryPasswordExpiryAuthenticatorFactory

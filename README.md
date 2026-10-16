@@ -28,6 +28,7 @@ infra/       docker-compose, Keycloak config, Kubernetes, Argo CD
 
 ```sh
 # Local infrastructure (details and addresses in infra/README.md)
+(cd backend && ./gradlew :keycloak:otp-authenticator:jar)   # Keycloak extension, needed before the first start
 docker compose -f infra/docker-compose.yml up -d
 bash infra/scripts/smoke-check.sh
 

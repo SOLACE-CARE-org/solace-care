@@ -121,14 +121,22 @@ services:
         mc anonymous set none local/solace-credentials &&
         echo buckets ready
 
-  # Identity provider. Admin console on http://localhost:8180 (realm config arrives in step 4).
+  # Identity provider. Admin console on http://localhost:8180.
+  # Realms solace-members and solace-staff are imported from keycloak/realms on first start (D23).
+  # The Solace extension is loaded from its Gradle build output, so build it first:
+  #   cd backend && ./gradlew :keycloak:otp-authenticator:jar
   keycloak:
     <<: *restart
     image: quay.io/keycloak/keycloak:26.3.1
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"]
     depends_on:
       postgres: { condition: service_healthy }
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import:ro
+      - ../backend/keycloak/otp-authenticator/build/libs:/opt/keycloak/providers:ro
     environment:
+      # Lets the logging code sender write sign-in codes to the Keycloak log. Local only.
+      SOLACE_DEV_CODE_SENDER: enabled
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: keycloak

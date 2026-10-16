@@ -1,0 +1,464 @@
+{
+  "realm": "solace-staff",
+  "enabled": true,
+  "displayName": "Solace Admin",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "editUsernameAllowed": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "fr"],
+  "defaultLocale": "en",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": "${SOLACE_STAFF_IDLE_TIMEOUT_SECONDS:900}",
+  "ssoSessionMaxLifespan": 36000,
+  "passwordPolicy": "length(12) and notUsername and notEmail and passwordHistory(${SOLACE_STAFF_PASSWORD_HISTORY:5})",
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "otpPolicyLookAheadWindow": 1,
+  "otpSupportedApplications": [
+    "totpAppGoogleName",
+    "totpAppMicrosoftAuthenticatorName",
+    "totpAppFreeOTPName"
+  ],
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": "${SOLACE_STAFF_LOCKOUT_FAILURES:5}",
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
+  "eventsEnabled": true,
+  "eventsExpiration": 7776000,
+  "enabledEventTypes": [
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "UPDATE_PASSWORD",
+    "UPDATE_TOTP",
+    "REMOVE_TOTP",
+    "UPDATE_CREDENTIAL",
+    "CODE_TO_TOKEN",
+    "CODE_TO_TOKEN_ERROR",
+    "CLIENT_LOGIN",
+    "CLIENT_LOGIN_ERROR"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false,
+  "browserFlow": "solace staff browser",
+  "requiredActions": [
+    { "alias": "UPDATE_PASSWORD", "name": "Update Password", "providerId": "UPDATE_PASSWORD", "enabled": true, "defaultAction": false, "priority": 10, "config": {} },
+    { "alias": "CONFIGURE_TOTP", "name": "Configure OTP", "providerId": "CONFIGURE_TOTP", "enabled": true, "defaultAction": false, "priority": 20, "config": {} },
+    { "alias": "VERIFY_EMAIL", "name": "Verify Email", "providerId": "VERIFY_EMAIL", "enabled": true, "defaultAction": false, "priority": 30, "config": {} },
+    { "alias": "UPDATE_PROFILE", "name": "Update Profile", "providerId": "UPDATE_PROFILE", "enabled": true, "defaultAction": false, "priority": 40, "config": {} },
+    { "alias": "update_user_locale", "name": "Update User Locale", "providerId": "update_user_locale", "enabled": true, "defaultAction": false, "priority": 50, "config": {} },
+    { "alias": "delete_credential", "name": "Delete Credential", "providerId": "delete_credential", "enabled": true, "defaultAction": false, "priority": 60, "config": {} }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "SUPER_ADMIN", "description": "Everything, including team and roles" },
+      { "name": "OPERATIONS", "description": "Specialists, bookings, catalogue, settings" },
+      { "name": "SUPPORT", "description": "Help seekers and specialists with bookings, accounts and reviews" },
+      { "name": "FINANCE", "description": "Payments, refunds, payouts, commission" },
+      { "name": "CLINICAL_REVIEWER", "description": "Health check and tracking module review, clinical content" },
+      { "name": "CRISIS_RESPONDER", "description": "Acknowledge and act on crisis alerts" },
+      { "name": "CONTENT_EDITOR", "description": "Articles, crisis resources, legal text, translations" }
+    ]
+  },
+  "authenticationFlows": [
+    {
+      "alias": "solace staff browser",
+      "description": "Password, temporary password expiry, then authenticator code (D7)",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "flowAlias": "solace staff forms",
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "authenticatorFlow": true,
+          "autheticatorFlow": true,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "solace staff forms",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "solace-temporary-password-expiry",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "requirement": "REQUIRED",
+          "priority": 30,
+          "userSetupAllowed": false
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": ["basic", "profile", "email", "roles", "web-origins", "acr"],
+  "defaultOptionalClientScopes": [],
+  "clientScopes": [
+    {
+      "name": "basic",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+        },
+        {
+          "name": "auth_time",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "config": {
+            "user.session.note": "AUTH_TIME",
+            "claim.name": "auth_time",
+            "jsonType.label": "long",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "locale",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "locale",
+            "claim.name": "locale",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "email",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "email verified",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "config": {
+            "user.attribute": "emailVerified",
+            "claim.name": "email_verified",
+            "jsonType.label": "boolean",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "audience resolve",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-resolve-mapper",
+          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "web-origins",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "allowed web origins",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-allowed-origins-mapper",
+          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "acr",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "acr loa level",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-acr-mapper",
+          "config": { "id.token.claim": "true", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "tracking:summary.read",
+      "description": "AI reads a consented trend summary from Tracking",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience tracking",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "tracking", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "core:booking-access.read",
+      "description": "Tracking checks for a live booking in Core",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "core:taxonomy.read",
+      "description": "Tracking reads the specialty taxonomy from Core",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "core:profile-age.read",
+      "description": "Tracking reads a seeker's age from Core at enrolment",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "ai:moderation.invoke",
+      "description": "Core asks AI to moderate a review",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience ai",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "ai", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "tracking:ping",
+      "description": "Phase 0 end-to-end slice: Core pings Tracking",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience tracking",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "tracking", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    },
+    {
+      "name": "ai:ping",
+      "description": "Phase 0 end-to-end slice: Core pings AI",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience ai",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": { "included.custom.audience": "ai", "access.token.claim": "true", "introspection.token.claim": "true" }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "solace-admin",
+      "name": "Solace admin portal",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "${SOLACE_ADMIN_URL:http://localhost:4200}",
+      "redirectUris": ["${SOLACE_ADMIN_URL:http://localhost:4200}/*"],
+      "webOrigins": ["${SOLACE_ADMIN_URL:http://localhost:4200}"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${SOLACE_ADMIN_URL:http://localhost:4200}/*"
+      },
+      "defaultClientScopes": ["basic", "profile", "email", "roles", "web-origins", "acr"]
+    },
+    {
+      "clientId": "core-admin",
+      "name": "Core: creates staff accounts and ends sessions on role change",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_CORE_ADMIN_SECRET:core-admin-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["basic", "roles"]
+    },
+    {
+      "clientId": "core-service",
+      "name": "Core calling Tracking and AI",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_CORE_SERVICE_SECRET:core-service-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["basic", "ai:moderation.invoke", "tracking:ping", "ai:ping"]
+    },
+    {
+      "clientId": "tracking-service",
+      "name": "Tracking calling Core",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_TRACKING_SERVICE_SECRET:tracking-service-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["basic", "core:booking-access.read", "core:taxonomy.read", "core:profile-age.read"]
+    },
+    {
+      "clientId": "ai-service",
+      "name": "AI calling Tracking",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_AI_SERVICE_SECRET:ai-service-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["basic", "tracking:summary.read"]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-core-admin",
+      "enabled": true,
+      "serviceAccountClientId": "core-admin",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "query-users", "view-realm"]
+      }
+    },
+    { "username": "service-account-core-service", "enabled": true, "serviceAccountClientId": "core-service" },
+    { "username": "service-account-tracking-service", "enabled": true, "serviceAccountClientId": "tracking-service" },
+    { "username": "service-account-ai-service", "enabled": true, "serviceAccountClientId": "ai-service" }
+  ]
+}
