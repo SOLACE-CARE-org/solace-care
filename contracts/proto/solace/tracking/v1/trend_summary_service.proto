@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package solace.tracking.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.tracking.v1";
+
+// AI -> Tracking. Consented trend summary for a pre-session brief (Phase 3).
+// 2-second deadline. Fallback: the brief is generated without tracking data.
+// Notes are never included: they are storage only.
+service TrendSummaryService {
+  rpc GetTrendSummary(GetTrendSummaryRequest) returns (GetTrendSummaryResponse);
+}
+
+message GetTrendSummaryRequest {
+  string seeker_subject_id = 1;
+  // The booking the brief is for; Tracking checks consent against it.
+  string booking_id = 2;
+}
+
+message GetTrendSummaryResponse {
+  // False when the seeker has not shared tracking data for this booking.
+  bool shared = 1;
+  // Phase 0 stub: the summary fields are defined with the pre-session brief
+  // epic in Phase 3.
+}

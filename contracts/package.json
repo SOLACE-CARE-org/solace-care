@@ -1,0 +1,20 @@
+{
+  "name": "@solace/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "gRPC, edge OpenAPI and event schemas shared by backend, mobile and admin",
+  "type": "module",
+  "scripts": {
+    "lint": "pnpm run lint:proto && pnpm run lint:openapi && pnpm run lint:events",
+    "lint:proto": "buf lint && buf build",
+    "lint:openapi": "redocly lint openapi/core.yaml openapi/tracking.yaml openapi/ai.yaml",
+    "lint:events": "node scripts/validate-events.mjs",
+    "breaking:proto": "buf breaking --against \"../.git#branch=main,subdir=contracts\""
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.74.0",
+    "@redocly/cli": "^2.64.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

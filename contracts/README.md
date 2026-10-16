@@ -2,7 +2,7 @@
 
 Shared by the backend, mobile and admin. Change the contract first, then the code.
 
-**Status:** placeholder. Built in Phase 0, step 2:
+Built in Phase 0, step 2. Run `pnpm --filter @solace/contracts lint` from the repo root.
 
 - `proto/`: gRPC services between backend services (Buf lint and breaking-change checks)
 - `openapi/`: edge REST APIs per service, used to generate `packages/api-clients`

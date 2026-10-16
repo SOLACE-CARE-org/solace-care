@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/envelope.schema.json",
+  "title": "Event envelope",
+  "description": "Wraps every Kafka event. Never contains names, phone numbers, emails, free text or health data (System Design, Inter-service communication).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "type", "version", "occurredAt", "subjectId", "locale", "traceId", "payload"],
+  "properties": {
+    "eventId": {
+      "description": "Unique id. Consumers are idempotent on it.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "description": "Event type, e.g. core.booking.confirmed. Matches the topic's domain prefix.",
+      "type": "string",
+      "pattern": "^(core|tracking|ai)(\\.[a-z]+)+$"
+    },
+    "version": {
+      "description": "Major version of the payload schema.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurredAt": {
+      "description": "When the event happened, in UTC.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "subjectId": {
+      "description": "Pseudonymous id of the user the event is about. Also the Kafka partition key. Null only for platform events with no user.",
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "locale": {
+      "description": "The subject's app language, so consumers can word follow-ups. Null when there is no subject.",
+      "enum": ["en", "fr", null]
+    },
+    "traceId": {
+      "description": "W3C trace id (32 lowercase hex characters).",
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "payload": {
+      "description": "Type-specific payload, validated by the schema for type and version.",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package solace.ai.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.ai.v1";
+
+// Core -> AI. Moderates a review before it is published. 2-second deadline.
+// Fallback: the review is held for human moderation.
+service ModerationService {
+  rpc ModerateReview(ModerateReviewRequest) returns (ModerateReviewResponse);
+}
+
+message ModerateReviewRequest {
+  string review_id = 1;
+  // Review text. Free text travels only over this scoped gRPC call, never in
+  // events or logs.
+  string text = 2;
+  // BCP 47 tag of the review's language, e.g. "fr".
+  string locale = 3;
+}
+
+message ModerateReviewResponse {
+  Decision decision = 1;
+}
+
+enum Decision {
+  DECISION_UNSPECIFIED = 0;
+  // Safe to publish.
+  DECISION_PUBLISH = 1;
+  // Hold for a human moderator.
+  DECISION_HOLD = 2;
+}

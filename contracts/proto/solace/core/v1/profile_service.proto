@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// Tracking -> Core. Reads a seeker's age when they enrol in a module with a
+// minimum age (Tracking Service Spec, "Eligibility"). 2-second deadline.
+// Fallback: enrolment in an age-limited module is refused and the seeker can
+// retry; modules without a minimum age are unaffected.
+service ProfileService {
+  rpc GetAge(GetAgeRequest) returns (GetAgeResponse);
+}
+
+message GetAgeRequest {
+  string seeker_subject_id = 1;
+}
+
+message GetAgeResponse {
+  // Age in whole years. Only the age is shared, never the date of birth.
+  int32 age_years = 1;
+}

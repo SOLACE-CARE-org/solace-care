@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// Tracking -> Core. Called on every specialist read of a seeker's tracking
+// data, never cached. 2-second deadline. Fallback: any error or timeout
+// denies access (Tracking Service Spec, "Specialist reads").
+service BookingAccessService {
+  rpc CheckLiveBooking(CheckLiveBookingRequest) returns (CheckLiveBookingResponse);
+}
+
+message CheckLiveBookingRequest {
+  // Pseudonymous id of the seeker whose data is being read.
+  string seeker_subject_id = 1;
+  // Pseudonymous id of the specialist asking to read it.
+  string specialist_subject_id = 2;
+}
+
+message CheckLiveBookingResponse {
+  // True only while a booking relationship between the two is live.
+  bool live = 1;
+  // The live booking, set when live is true.
+  string booking_id = 2;
+}

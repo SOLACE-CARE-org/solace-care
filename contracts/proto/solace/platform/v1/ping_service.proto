@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package solace.platform.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.platform.v1";
+
+// Liveness call each service exposes over gRPC. Used by the Phase 0
+// end-to-end slice (gateway -> Core -> Tracking and AI) to prove one
+// trace covers every hop. Carries no user data.
+service PingService {
+  rpc Ping(PingRequest) returns (PingResponse);
+}
+
+message PingRequest {}
+
+message PingResponse {
+  // Name of the answering service, e.g. "tracking".
+  string service = 1;
+  // Build version of the answering service.
+  string version = 2;
+}

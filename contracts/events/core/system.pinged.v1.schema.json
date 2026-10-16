@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/system.pinged.v1.schema.json",
+  "title": "core.system.pinged v1",
+  "description": "Phase 0 end-to-end slice: Core publishes this after pinging Tracking and AI. Carries no user data.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "core.system.pinged" },
+    "version": { "const": 1 },
+    "subjectId": { "const": null },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trackingReachable", "aiReachable"],
+      "properties": {
+        "trackingReachable": { "type": "boolean" },
+        "aiReachable": { "type": "boolean" }
+      }
+    }
+  }
+}

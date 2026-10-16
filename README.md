@@ -39,6 +39,11 @@ cd ..
 pnpm install
 pnpm build
 pnpm test
+
+# Contracts: Buf lint, OpenAPI lint, event schema validation
+pnpm --filter @solace/contracts lint
+# Fail on a breaking proto change compared with main
+pnpm --filter @solace/contracts breaking:proto
 ```
 
 More commands (local infrastructure, running each service and app) are added here as each Phase 0 step lands.

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// Tracking -> Core. Specialty taxonomy, used by rules whose outcome invites
+// the seeker to a specialty. 2-second deadline. Callers cache the result for
+// 1 hour; fallback: serve the cached taxonomy.
+service TaxonomyService {
+  rpc ListSpecialties(ListSpecialtiesRequest) returns (ListSpecialtiesResponse);
+}
+
+message ListSpecialtiesRequest {}
+
+message ListSpecialtiesResponse {
+  repeated Specialty specialties = 1;
+}
+
+message Specialty {
+  // Stable key, e.g. "psychiatry". Labels are resolved by the caller's locale
+  // through Core's translation tables, so none are carried here.
+  string key = 1;
+  bool active = 2;
+}

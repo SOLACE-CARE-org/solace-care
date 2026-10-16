@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: Solace Tracking API
+  version: 0.1.0
+  description: |
+    Tracking: elements, modules, rules, observations.
+    Reached through the gateway at /api/tracking. Phase 0 stub; endpoints are added with each epic.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: /api/tracking
+    description: Through the gateway (http://localhost:8080 locally)
+security:
+  - bearerAuth: []
+tags:
+  - name: system
+    description: Platform plumbing, no user data
+paths:
+  /v1/system/info:
+    get:
+      operationId: info
+      summary: Service name and version
+      tags: [system]
+      responses:
+        "200":
+          description: Service info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Keycloak access token
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    Problem:
+      description: RFC 9457 problem details. title and detail are localised to the caller's language.
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        code:
+          type: string
+          description: Stable machine-readable error code, e.g. booking.slot-taken
+        traceId:
+          type: string
+    ServiceInfo:
+      type: object
+      additionalProperties: false
+      required: [service, version]
+      properties:
+        service:
+          type: string
+        version:
+          type: string

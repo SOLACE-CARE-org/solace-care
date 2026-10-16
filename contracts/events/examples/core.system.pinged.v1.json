@@ -1,0 +1,10 @@
+{
+  "eventId": "0b8f5e3a-6c1d-4f0e-9a7b-2d4c6e8f1a3b",
+  "type": "core.system.pinged",
+  "version": 1,
+  "occurredAt": "2026-10-16T12:00:00Z",
+  "subjectId": null,
+  "locale": null,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "payload": { "trackingReachable": true, "aiReachable": true }
+}
