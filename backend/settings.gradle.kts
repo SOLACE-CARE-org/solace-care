@@ -25,5 +25,8 @@ val services = listOf("core", "tracking", "ai", "gateway")
 libraries.forEach { include(":libs:$it") }
 services.forEach { include(":services:$it") }
 
+// Java stubs generated from ../contracts/proto
+include(":contracts")
+
 // Keycloak extensions, loaded into Keycloak as provider jars
 include(":keycloak:otp-authenticator")

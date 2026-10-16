@@ -28,7 +28,9 @@ backend/                      Java side: one Gradle multi-project build (run ./g
   services/tracking           Spring Boot 3 (tracking elements, modules, rules, observations)
   services/ai                 Spring Boot 3, Spring AI + LangGraph4j (safety monitor first)
   services/gateway            Spring Cloud Gateway
-  libs/                       shared Java libraries: event envelope + outbox, gRPC client defaults, error model, audit writer, locale
+  libs/                       shared Java libraries: event envelope + outbox, gRPC client defaults, error model, audit writer, locale, log scrubbing
+  contracts/                  Java stubs generated from ../contracts/proto (never edited by hand)
+  keycloak/                   Keycloak extensions (one-time code sign-in, temporary password expiry)
   build-logic/                Gradle convention plugins
 mobile/                       Expo (React Native, TypeScript): seekers, guests, specialists in one app
 admin/                        Angular 17+ (standalone components, Angular Material, NgRx Signal Store)
