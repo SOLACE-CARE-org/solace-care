@@ -22,8 +22,6 @@ dependencies {
 // Local runs write SMS and email to the log: no provider is chosen yet (application.yml).
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     environment("SOLACE_NOTIFICATIONS_SENDER", "logging")
-    // Placeholder: the fee is not decided (decisions.md: the commission rate is open).
-    environment("SOLACE_SPECIALISTS_PRICING_FEE_PERCENT", "20")
 }
 
 dependencies {

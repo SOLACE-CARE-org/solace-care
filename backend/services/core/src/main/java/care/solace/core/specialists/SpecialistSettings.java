@@ -34,9 +34,8 @@ record SpecialistSettings(
     @DefaultValue("false") boolean bankTransferEnabled) {
 
   /**
-   * SpecServices: "Allowed range: [Min] to [Max] FCFA per session" and "Solace's [n]% fee". The
-   * range is decided (D27) and set in application.yml. The fee is not (decisions.md: the commission
-   * rate is open), so every environment sets it, and Core refuses to start without it.
+   * SpecServices: "Allowed range: [Min] to [Max] FCFA per session" (D27) and "Solace's [n]% fee"
+   * (20%, D28). Defaults in application.yml; admin settings will own them.
    *
    * @param minPrice lowest price per session, whole FCFA
    * @param maxPrice highest price per session, whole FCFA

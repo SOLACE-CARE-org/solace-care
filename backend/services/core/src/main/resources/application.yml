@@ -89,10 +89,8 @@ solace:
       # SpecServices' [Min] and [Max]: 5,000 to 20,000 FCFA per session (D27). Settings, not constants.
       min-price: ${SOLACE_SPECIALISTS_PRICING_MIN_PRICE:5000}
       max-price: ${SOLACE_SPECIALISTS_PRICING_MAX_PRICE:20000}
-      # SpecServices' [n]%: not decided (decisions.md: the commission rate is open), so nothing is
-      # set here and Core will not start without it. Local runs, tests and the dev cluster set a
-      # placeholder; staging and prod must set the real one.
-      fee-percent: ${SOLACE_SPECIALISTS_PRICING_FEE_PERCENT:}
+      # SpecServices' [n]%: Solace's fee, 20% for now (D28). A setting, not a constant.
+      fee-percent: ${SOLACE_SPECIALISTS_PRICING_FEE_PERCENT:20}
   storage:
     endpoint: ${SOLACE_STORAGE_ENDPOINT:http://localhost:9000}
   grpc:

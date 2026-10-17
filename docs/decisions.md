@@ -153,6 +153,18 @@ Every pair now meets WCAG 2.1 AA.
 - SpecServices' "Allowed range: [Min] to [Max] FCFA per session" is 5,000 to 20,000 FCFA. It stays a setting (`solace.specialists.pricing.min-price` and `max-price`) with these defaults, for admin settings to take over.
 - Solace's fee ("[n]%") is still open with the commission rate below.
 
+**D28. Solace's fee: 20% for now, as a setting.** Decided 18 Oct 2026 by the owner.
+- `solace.specialists.pricing.fee-percent` defaults to 20. It is configuration, for admin settings to take over, and can change without a release.
+
+**D29. Approving a specialist takes two people.** Decided 18 Oct 2026 by the owner.
+- Like refunds (D14): the reviewer who verified the six items proposes the approval; a second staff member with change access to Specialists, who did not propose it, confirms it. Either can withdraw the proposal, which sends the application back to review.
+- Any change to the verified items after a proposal withdraws it.
+- Rejection, change requests and suspension stay with one person: they stop or protect, and should not wait.
+
+**D30. The second-language bio until the AI draft arrives.** Taken 18 Oct 2026 on the owner's request for a recommendation.
+- Until Phase 3 drafts it, the reviewer writes the missing language during review. It is marked as a Solace draft.
+- The specialist checks the draft before their profile goes live, as SpecProfessional promises ("We'll draft the ... version for you to check before it goes live"). The check is built with the specialist's Profile tab; until it is done, search does not list the profile (epic 3).
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
@@ -160,7 +172,7 @@ None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
 | Question | Blocks |
 | --- | --- |
 | Hosting: an in-country data centre, or a regional cloud with transfer authorisation? Needs a Cameroonian data-protection lawyer | Phase 0 gate (clusters) |
-| Mobile-money aggregator, payout cadence and commission rate | Phase 1, payments epic |
+| Mobile-money aggregator and payout cadence (the commission is 20% for now, D28) | Phase 1, payments epic |
 | AI vendors that are acceptable under the transfer rules | Phase 3 |
 | Do physical-health specialists (gynaecology, endocrinology) join before Phase 2? | Phase 2 PCOS invites |
 | Crisis on-call staffing and hours | Public launch |

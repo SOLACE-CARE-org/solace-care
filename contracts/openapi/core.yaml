@@ -709,12 +709,46 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/approval-proposal:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: proposeApproval
+      summary: Propose approval once every item is verified (D29, first of two people)
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: withdrawApprovalProposal
+      summary: Withdraw or decline a proposed approval; the application goes back to review
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/specialist-applications/{id}/approval:
     parameters:
       - $ref: "#/components/parameters/SpecialistId"
     post:
       operationId: approveApplication
-      summary: Approve; every item must be verified
+      summary: Confirm a proposed approval (D29, second of two people)
+      description: Only someone other than the proposer may confirm. Every item must still be verified.
       tags: [admin-specialists]
       responses:
         "200":
@@ -1573,6 +1607,9 @@ components:
         reviewNote:
           description: The last reason sent to the applicant.
           type: string
+        approvalProposal:
+          description: Set while an approval waits for a second staff member (D29).
+          $ref: "#/components/schemas/Verification"
         verifiedItems:
           description: How many of the six items are verified; approval needs all six.
           type: integer
@@ -1635,6 +1672,9 @@ components:
               type: string
             bioFr:
               type: string
+            draftedLanguage:
+              description: The bio language Solace drafted (D30); the specialist checks it before the profile goes live.
+              $ref: "#/components/schemas/AppLanguage"
             verification:
               $ref: "#/components/schemas/Verification"
         payout:
@@ -1686,9 +1726,9 @@ components:
                 type: string
                 format: date-time
               kind:
-                description: The portal words each kind in the viewer's language.
+                description: The portal words each kind in the viewer's language. The list grows as review steps are added, so clients show unknown kinds plainly.
                 type: string
-                enum: [SUBMITTED, OPENED, ITEM_VERIFIED, ITEM_UNVERIFIED, LANGUAGE_VERIFIED, BIO_ADDED, INTERVIEW_BOOKED, CHANGES_REQUESTED, APPROVED, REJECTED, SUSPENDED, REINSTATED]
+                x-extensible-enum: [SUBMITTED, OPENED, ITEM_VERIFIED, ITEM_UNVERIFIED, LANGUAGE_VERIFIED, BIO_ADDED, INTERVIEW_BOOKED, CHANGES_REQUESTED, APPROVAL_PROPOSED, APPROVAL_WITHDRAWN, APPROVED, REJECTED, SUSPENDED, REINSTATED]
               subject:
                 description: The item or language code the entry is about, if any.
                 type: string
