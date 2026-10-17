@@ -48,6 +48,8 @@ class RealmsIntegrationTest {
             .withRealmImportFiles("/solace-members-realm.json", "/solace-staff-realm.json")
             .withProviderLibsFrom(List.of(new File(System.getProperty("solace.providerJar"))))
             .withEnv("SOLACE_DEV_CODE_SENDER", "enabled")
+            // Keycloak builds its providers on start; slow CI machines need more than 2 minutes.
+            .withStartupTimeout(java.time.Duration.ofMinutes(5))
             .withCopyFileToContainer(
                 MountableFile.forHostPath(System.getProperty("solace.staffTheme")),
                 "/opt/keycloak/themes/solace-staff");
@@ -80,6 +82,9 @@ class RealmsIntegrationTest {
     assertThat(second.statusCode()).isEqualTo(200);
     JsonNode claims = claims(json(second).path("access_token").asText());
     assertThat(claims.path("realm_access").path("roles").toString()).contains("SEEKER");
+    // Core claims guest bookings only through the contact the code went to.
+    assertThat(claims.path("verified_contact").asText()).isEqualTo("phone");
+    assertThat(claims.has("phone_number")).isFalse();
 
     HttpResponse<String> replay = memberToken(Map.of("username", "+237670000101", "code", code));
     assertThat(replay.statusCode()).isEqualTo(401);
@@ -96,8 +101,9 @@ class RealmsIntegrationTest {
     HttpResponse<String> tokens =
         memberToken(Map.of("username", "dr.mbarga@example.cm", "code", code));
     assertThat(tokens.statusCode()).isEqualTo(200);
-    assertThat(claims(json(tokens).path("access_token").asText()).toString())
-        .contains("SPECIALIST");
+    JsonNode claims = claims(json(tokens).path("access_token").asText());
+    assertThat(claims.toString()).contains("SPECIALIST");
+    assertThat(claims.path("verified_contact").asText()).isEqualTo("email");
   }
 
   @Test
@@ -283,6 +289,17 @@ class RealmsIntegrationTest {
         .contains("tracking:summary.read")
         .doesNotContain("core:booking-access.read");
     assertThat(claims.path("aud").toString()).contains("tracking");
+  }
+
+  @Test
+  void keycloakCanOnlyHandCodesToCore() throws Exception {
+    JsonNode claims =
+        claims(serviceToken("keycloak-code-sender", "keycloak-code-sender-dev-secret"));
+
+    assertThat(claims.path("scope").asText().split(" "))
+        .contains("core:sign-in-codes.send")
+        .doesNotContain("core:booking-access.read", "ai:moderation.invoke");
+    assertThat(claims.path("aud").toString()).contains("core");
   }
 
   // --- Helpers ----------------------------------------------------------------------------------

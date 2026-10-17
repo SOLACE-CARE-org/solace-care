@@ -1,5 +1,6 @@
 package care.solace.keycloak.otp;
 
+import java.time.Duration;
 import org.jboss.logging.Logger;
 
 /**
@@ -18,7 +19,7 @@ public final class LoggingCodeSender implements CodeSender {
   private static final Logger LOG = Logger.getLogger(LoggingCodeSender.class);
 
   @Override
-  public void send(Contact contact, String code, String locale) {
+  public void send(Contact contact, String code, String locale, Duration lifetime) {
     if (!"enabled".equals(System.getenv(GUARD_VARIABLE))) {
       throw new IllegalStateException(
           "The logging code sender is for local development only; set "

@@ -12,7 +12,10 @@
   "verifyEmail": false,
   "editUsernameAllowed": false,
   "internationalizationEnabled": true,
-  "supportedLocales": ["en", "fr"],
+  "supportedLocales": [
+    "en",
+    "fr"
+  ],
   "defaultLocale": "en",
   "accessTokenLifespan": 300,
   "bruteForceProtected": true,
@@ -36,8 +39,14 @@
   "directGrantFlow": "solace members code sign-in",
   "roles": {
     "realm": [
-      { "name": "SEEKER", "description": "Registered seeker" },
-      { "name": "SPECIALIST", "description": "Specialist; the app opens the specialist shell" }
+      {
+        "name": "SEEKER",
+        "description": "Registered seeker"
+      },
+      {
+        "name": "SPECIALIST",
+        "description": "Specialist; the app opens the specialist shell"
+      }
     ]
   },
   "authenticationFlows": [
@@ -81,7 +90,23 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "frontchannelLogout": false
+      "frontchannelLogout": false,
+      "protocolMappers": [
+        {
+          "name": "verified contact",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "config": {
+            "user.session.note": "solace.verified_contact",
+            "claim.name": "verified_contact",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     },
     {
       "clientId": "core-admin",
@@ -103,7 +128,11 @@
       "enabled": true,
       "serviceAccountClientId": "core-admin",
       "clientRoles": {
-        "realm-management": ["manage-users", "view-users", "query-users"]
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users"
+        ]
       }
     }
   ],

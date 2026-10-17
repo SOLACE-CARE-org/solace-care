@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import java.time.Clock;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -35,6 +36,7 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
   static final String CODE_PARAM = "code";
   static final String PHONE_ATTRIBUTE = "phone_number";
   static final String LOCALE_ATTRIBUTE = "locale";
+  static final String VERIFIED_CONTACT_NOTE = "solace.verified_contact";
 
   private final Clock clock;
 
@@ -67,7 +69,11 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
         Optional<String> issued = codes.issue(user.getId());
         if (issued.isPresent()) {
           CodeSender.forId(settings.sender())
-              .send(contact, issued.get(), user.getFirstAttribute(LOCALE_ATTRIBUTE));
+              .send(
+                  contact,
+                  issued.get(),
+                  user.getFirstAttribute(LOCALE_ATTRIBUTE),
+                  settings.codeTtl());
         }
       }
       context.challenge(
@@ -82,7 +88,15 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
     }
     context.setUser(user);
     switch (codes.verify(user.getId(), code.trim())) {
-      case ACCEPTED -> context.success();
+      case ACCEPTED -> {
+        // Tells Core which contact this sign-in proved (token claim verified_contact), so guest
+        // bookings are only ever claimed through a contact the person controls.
+        context
+            .getAuthenticationSession()
+            .setUserSessionNote(
+                VERIFIED_CONTACT_NOTE, contact.kind().name().toLowerCase(Locale.ROOT));
+        context.success();
+      }
       case WRONG, NO_LIVE_CODE -> {
         context.getEvent().user(user).error(Errors.INVALID_USER_CREDENTIALS);
         context.failure(AuthenticationFlowError.INVALID_CREDENTIALS, invalidCode());

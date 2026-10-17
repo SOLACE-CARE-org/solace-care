@@ -12,7 +12,10 @@
   "verifyEmail": false,
   "editUsernameAllowed": false,
   "internationalizationEnabled": true,
-  "supportedLocales": ["en", "fr"],
+  "supportedLocales": [
+    "en",
+    "fr"
+  ],
   "defaultLocale": "en",
   "loginTheme": "solace-staff",
   "accessTokenLifespan": 300,
@@ -54,22 +57,91 @@
   "adminEventsDetailsEnabled": false,
   "browserFlow": "solace staff browser",
   "requiredActions": [
-    { "alias": "UPDATE_PASSWORD", "name": "Update Password", "providerId": "UPDATE_PASSWORD", "enabled": true, "defaultAction": false, "priority": 10, "config": {} },
-    { "alias": "CONFIGURE_TOTP", "name": "Configure OTP", "providerId": "CONFIGURE_TOTP", "enabled": true, "defaultAction": false, "priority": 20, "config": {} },
-    { "alias": "VERIFY_EMAIL", "name": "Verify Email", "providerId": "VERIFY_EMAIL", "enabled": true, "defaultAction": false, "priority": 30, "config": {} },
-    { "alias": "UPDATE_PROFILE", "name": "Update Profile", "providerId": "UPDATE_PROFILE", "enabled": true, "defaultAction": false, "priority": 40, "config": {} },
-    { "alias": "update_user_locale", "name": "Update User Locale", "providerId": "update_user_locale", "enabled": true, "defaultAction": false, "priority": 50, "config": {} },
-    { "alias": "delete_credential", "name": "Delete Credential", "providerId": "delete_credential", "enabled": true, "defaultAction": false, "priority": 60, "config": {} }
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10,
+      "config": {}
+    },
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 20,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "providerId": "UPDATE_PROFILE",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 40,
+      "config": {}
+    },
+    {
+      "alias": "update_user_locale",
+      "name": "Update User Locale",
+      "providerId": "update_user_locale",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    },
+    {
+      "alias": "delete_credential",
+      "name": "Delete Credential",
+      "providerId": "delete_credential",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 60,
+      "config": {}
+    }
   ],
   "roles": {
     "realm": [
-      { "name": "SUPER_ADMIN", "description": "Everything, including team and roles" },
-      { "name": "OPERATIONS", "description": "Specialists, bookings, catalogue, settings" },
-      { "name": "SUPPORT", "description": "Help seekers and specialists with bookings, accounts and reviews" },
-      { "name": "FINANCE", "description": "Payments, refunds, payouts, commission" },
-      { "name": "CLINICAL_REVIEWER", "description": "Health check and tracking module review, clinical content" },
-      { "name": "CRISIS_RESPONDER", "description": "Acknowledge and act on crisis alerts" },
-      { "name": "CONTENT_EDITOR", "description": "Articles, crisis resources, legal text, translations" }
+      {
+        "name": "SUPER_ADMIN",
+        "description": "Everything, including team and roles"
+      },
+      {
+        "name": "OPERATIONS",
+        "description": "Specialists, bookings, catalogue, settings"
+      },
+      {
+        "name": "SUPPORT",
+        "description": "Help seekers and specialists with bookings, accounts and reviews"
+      },
+      {
+        "name": "FINANCE",
+        "description": "Payments, refunds, payouts, commission"
+      },
+      {
+        "name": "CLINICAL_REVIEWER",
+        "description": "Health check and tracking module review, clinical content"
+      },
+      {
+        "name": "CRISIS_RESPONDER",
+        "description": "Acknowledge and act on crisis alerts"
+      },
+      {
+        "name": "CONTENT_EDITOR",
+        "description": "Articles, crisis resources, legal text, translations"
+      }
     ]
   },
   "authenticationFlows": [
@@ -123,19 +195,32 @@
       ]
     }
   ],
-  "defaultDefaultClientScopes": ["basic", "profile", "email", "roles", "web-origins", "acr"],
+  "defaultDefaultClientScopes": [
+    "basic",
+    "profile",
+    "email",
+    "roles",
+    "web-origins",
+    "acr"
+  ],
   "defaultOptionalClientScopes": [],
   "clientScopes": [
     {
       "name": "basic",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "sub",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-sub-mapper",
-          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         },
         {
           "name": "auth_time",
@@ -155,7 +240,10 @@
     {
       "name": "profile",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "username",
@@ -175,19 +263,40 @@
           "name": "full name",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-full-name-mapper",
-          "config": { "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         },
         {
           "name": "given name",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "config": { "user.attribute": "firstName", "claim.name": "given_name", "jsonType.label": "String", "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "user.attribute": "firstName",
+            "claim.name": "given_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         },
         {
           "name": "family name",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "config": { "user.attribute": "lastName", "claim.name": "family_name", "jsonType.label": "String", "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "user.attribute": "lastName",
+            "claim.name": "family_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         },
         {
           "name": "locale",
@@ -208,7 +317,10 @@
     {
       "name": "email",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "email",
@@ -243,7 +355,10 @@
     {
       "name": "roles",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "realm roles",
@@ -261,33 +376,49 @@
           "name": "audience resolve",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-resolve-mapper",
-          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
     {
       "name": "web-origins",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "allowed web origins",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-allowed-origins-mapper",
-          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
     {
       "name": "acr",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "acr loa level",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-acr-mapper",
-          "config": { "id.token.claim": "true", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -295,7 +426,10 @@
       "name": "service_account",
       "description": "Marks client-credentials tokens with the calling client's id",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "client id",
@@ -316,13 +450,20 @@
       "name": "tracking:summary.read",
       "description": "AI reads a consented trend summary from Tracking",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience tracking",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "tracking", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "tracking",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -330,13 +471,20 @@
       "name": "core:booking-access.read",
       "description": "Tracking checks for a live booking in Core",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience core",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -344,13 +492,20 @@
       "name": "core:taxonomy.read",
       "description": "Tracking reads the specialty taxonomy from Core",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience core",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -358,13 +513,20 @@
       "name": "core:profile-age.read",
       "description": "Tracking reads a seeker's age from Core at enrolment",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience core",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "core", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -372,13 +534,20 @@
       "name": "ai:moderation.invoke",
       "description": "Core asks AI to moderate a review",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience ai",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "ai", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "ai",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -386,13 +555,20 @@
       "name": "tracking:ping",
       "description": "Phase 0 end-to-end slice: Core pings Tracking",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience tracking",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "tracking", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "tracking",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     },
@@ -400,13 +576,41 @@
       "name": "ai:ping",
       "description": "Phase 0 end-to-end slice: Core pings AI",
       "protocol": "openid-connect",
-      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
       "protocolMappers": [
         {
           "name": "audience ai",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
-          "config": { "included.custom.audience": "ai", "access.token.claim": "true", "introspection.token.claim": "true" }
+          "config": {
+            "included.custom.audience": "ai",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "core:sign-in-codes.send",
+      "description": "Keycloak hands sign-in codes to Core for sending",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     }
@@ -423,13 +627,24 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "rootUrl": "${SOLACE_ADMIN_URL:http://localhost:4200}",
-      "redirectUris": ["${SOLACE_ADMIN_URL:http://localhost:4200}/*"],
-      "webOrigins": ["${SOLACE_ADMIN_URL:http://localhost:4200}"],
+      "redirectUris": [
+        "${SOLACE_ADMIN_URL:http://localhost:4200}/*"
+      ],
+      "webOrigins": [
+        "${SOLACE_ADMIN_URL:http://localhost:4200}"
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "${SOLACE_ADMIN_URL:http://localhost:4200}/*"
       },
-      "defaultClientScopes": ["basic", "profile", "email", "roles", "web-origins", "acr"]
+      "defaultClientScopes": [
+        "basic",
+        "profile",
+        "email",
+        "roles",
+        "web-origins",
+        "acr"
+      ]
     },
     {
       "clientId": "core-admin",
@@ -443,7 +658,11 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "roles", "service_account"]
+      "defaultClientScopes": [
+        "basic",
+        "roles",
+        "service_account"
+      ]
     },
     {
       "clientId": "core-service",
@@ -457,7 +676,13 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "service_account", "ai:moderation.invoke", "tracking:ping", "ai:ping"]
+      "defaultClientScopes": [
+        "basic",
+        "service_account",
+        "ai:moderation.invoke",
+        "tracking:ping",
+        "ai:ping"
+      ]
     },
     {
       "clientId": "tracking-service",
@@ -471,7 +696,13 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "service_account", "core:booking-access.read", "core:taxonomy.read", "core:profile-age.read"]
+      "defaultClientScopes": [
+        "basic",
+        "service_account",
+        "core:booking-access.read",
+        "core:taxonomy.read",
+        "core:profile-age.read"
+      ]
     },
     {
       "clientId": "ai-service",
@@ -485,7 +716,30 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "defaultClientScopes": ["basic", "service_account", "tracking:summary.read"]
+      "defaultClientScopes": [
+        "basic",
+        "service_account",
+        "tracking:summary.read"
+      ]
+    },
+    {
+      "clientId": "keycloak-code-sender",
+      "name": "Keycloak: hands sign-in codes to Core",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SOLACE_CODE_SENDER_SECRET:keycloak-code-sender-dev-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": [
+        "basic",
+        "service_account",
+        "core:sign-in-codes.send"
+      ],
+      "optionalClientScopes": []
     }
   ],
   "users": [
@@ -494,11 +748,28 @@
       "enabled": true,
       "serviceAccountClientId": "core-admin",
       "clientRoles": {
-        "realm-management": ["manage-users", "view-users", "query-users", "view-realm"]
+        "realm-management": [
+          "manage-users",
+          "view-users",
+          "query-users",
+          "view-realm"
+        ]
       }
     },
-    { "username": "service-account-core-service", "enabled": true, "serviceAccountClientId": "core-service" },
-    { "username": "service-account-tracking-service", "enabled": true, "serviceAccountClientId": "tracking-service" },
-    { "username": "service-account-ai-service", "enabled": true, "serviceAccountClientId": "ai-service" }
+    {
+      "username": "service-account-core-service",
+      "enabled": true,
+      "serviceAccountClientId": "core-service"
+    },
+    {
+      "username": "service-account-tracking-service",
+      "enabled": true,
+      "serviceAccountClientId": "tracking-service"
+    },
+    {
+      "username": "service-account-ai-service",
+      "enabled": true,
+      "serviceAccountClientId": "ai-service"
+    }
   ]
 }
