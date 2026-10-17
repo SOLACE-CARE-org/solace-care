@@ -20,6 +20,10 @@ tags:
     description: Seeker sign-up and the signed-in person's own account (Phase 1, epic 1)
   - name: privacy
     description: Consent choices (Phase 1, epic 11)
+  - name: specialists
+    description: Specialist sign-up and application (Phase 1, epic 2)
+  - name: scheduling
+    description: A specialist's weekly hours (Phase 1, epics 2 and 4)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -173,6 +177,276 @@ paths:
                   $ref: "#/components/schemas/HelpTopic"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /v1/specialist-signups:
+    post:
+      operationId: startSpecialistSignup
+      summary: Start a specialist application (SpecSignup, step 1 of 7)
+      description: |
+        Creates an unverified specialist account and a DRAFT application, then the app asks Keycloak
+        for a code to the phone number, exactly as for seekers (D24: no password). Core answers 202
+        whether or not the number already has an account, so this cannot be used to find out who
+        uses Solace.
+      tags: [specialists]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecialistSignupRequest"
+      responses:
+        "202":
+          description: Ask Keycloak for a code next
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/me/specialist-application:
+    get:
+      operationId: getSpecialistApplication
+      summary: The signed-in specialist's application, to resume or to follow the review
+      tags: [specialists]
+      responses:
+        "200":
+          description: The application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/me/specialist-application/practice:
+    put:
+      operationId: savePractice
+      summary: Your practice (SpecProfessional, step 2 of 7)
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Practice"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialist-application/languages:
+    put:
+      operationId: saveSpecialistLanguages
+      summary: Languages you counsel in (SpecLanguages, step 3 of 7)
+      description: Declared levels; reviewers confirm each one in the onboarding interview. Only PROFESSIONAL and above become bookable.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecialistLanguages"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialist-application/documents/{kind}:
+    parameters:
+      - name: kind
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/DocumentKind"
+    put:
+      operationId: uploadSpecialistDocument
+      summary: Add or replace a document (SpecDocuments, step 4 of 7)
+      description: |
+        Replaces every file of this kind. One file per kind, except IDENTITY, which takes up to two
+        (front and back). PDF, JPEG or PNG; PHOTO must be an image. Files are encrypted in object
+        storage and only the verification team can open them; each opening is audited.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: array
+                  minItems: 1
+                  maxItems: 2
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /v1/me/specialist-application/services:
+    put:
+      operationId: saveSpecialistServices
+      summary: Sessions you offer (SpecServices, step 5 of 7)
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecialistServices"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialist-application/payout:
+    put:
+      operationId: saveSpecialistPayout
+      summary: How should we pay you? (SpecPayout, step 7 of 7)
+      description: BANK_TRANSFER is refused while the payout-bank-transfer flag is off (D26).
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayoutDetails"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialist-application/submission:
+    post:
+      operationId: submitSpecialistApplication
+      summary: Submit the application for review
+      description: Every step must be complete. The application moves from DRAFT to SUBMITTED and can no longer be edited unless a reviewer asks for changes.
+      tags: [specialists]
+      responses:
+        "200":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/weekly-hours:
+    get:
+      operationId: getWeeklyHours
+      summary: The specialist's weekly hours
+      tags: [scheduling]
+      responses:
+        "200":
+          description: The weekly hours; empty days when none are set yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyHours"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: saveWeeklyHours
+      summary: Your weekly hours (SpecAvailability, step 6 of 7; later Calendar & availability)
+      description: Times are local to timeZone. Ranges on a day must not overlap.
+      tags: [scheduling]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeeklyHours"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyHours"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/catalogue/professions:
+    get:
+      operationId: listProfessions
+      summary: Professions a specialist can apply as
+      description: Data, not a fixed list (D26). Labels are in the caller's language (Accept-Language).
+      tags: [catalogue]
+      security: []
+      responses:
+        "200":
+          description: Enabled professions in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profession"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /v1/system/ping:
     get:
       operationId: ping
@@ -212,6 +486,18 @@ components:
             $ref: "#/components/schemas/Problem"
     Unauthorized:
       description: Missing or invalid token
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: Not possible in the current state; code says why (e.g. specialist.application-locked)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooLarge:
+      description: The file is larger than allowed
       content:
         application/problem+json:
           schema:
@@ -322,6 +608,10 @@ components:
               type: boolean
             privacy:
               type: boolean
+        applicationStatus:
+          description: Specialists only. Where their application stands, so the app opens the right screen.
+          allOf:
+            - $ref: "#/components/schemas/ApplicationStatus"
     Preferences:
       type: object
       additionalProperties: false
@@ -410,3 +700,302 @@ components:
           type: string
         label:
           type: string
+    Profession:
+      type: object
+      additionalProperties: false
+      required: [code, label]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+    SpecialistSignupRequest:
+      type: object
+      additionalProperties: false
+      required: [fullName, phone, email, termsVersion, codeOfConductVersion, appLanguage]
+      properties:
+        fullName:
+          description: Full name, as on the licence.
+          type: string
+          minLength: 1
+          maxLength: 120
+        phone:
+          $ref: "#/components/schemas/Phone"
+        email:
+          description: Professional email.
+          type: string
+          format: email
+          maxLength: 254
+        termsVersion:
+          description: Version of the Specialist terms agreed to.
+          type: string
+          maxLength: 40
+        codeOfConductVersion:
+          description: Version of the Code of conduct agreed to.
+          type: string
+          maxLength: 40
+        appLanguage:
+          $ref: "#/components/schemas/AppLanguage"
+    ApplicationStatus:
+      description: |
+        DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED or REJECTED; APPROVED → SUSPENDED (System
+        Design, Specialists). A change request returns the application to DRAFT with a reason.
+      type: string
+      enum: [DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, SUSPENDED]
+    Proficiency:
+      type: string
+      enum: [NATIVE, FLUENT, PROFESSIONAL]
+    DocumentKind:
+      type: string
+      enum: [LICENCE, IDENTITY, PHOTO, CV]
+    Modality:
+      type: string
+      enum: [AUDIO, VIDEO]
+    PayoutMethod:
+      type: string
+      enum: [MTN_MOMO, ORANGE_MONEY, BANK_TRANSFER]
+    Practice:
+      type: object
+      additionalProperties: false
+      required: [profession, licenceNumber, yearsInPractice, licensingBody, focusAreas, bio]
+      properties:
+        profession:
+          description: A code from /v1/catalogue/professions.
+          type: string
+        licenceNumber:
+          type: string
+          minLength: 1
+          maxLength: 60
+        yearsInPractice:
+          type: integer
+          minimum: 0
+          maximum: 70
+        licensingBody:
+          description: Issuing professional body.
+          type: string
+          minLength: 1
+          maxLength: 160
+        focusAreas:
+          description: Help topic codes (/v1/catalogue/help-topics), up to 5 (D26).
+          type: array
+          minItems: 1
+          maxItems: 5
+          uniqueItems: true
+          items:
+            type: string
+        bio:
+          description: Short bio, in the app language it was written in. The other language is drafted later and checked by the specialist before it goes live.
+          type: string
+          minLength: 1
+          maxLength: 600
+    SpecialistLanguages:
+      type: object
+      additionalProperties: false
+      required: [languages]
+      properties:
+        languages:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/SpecialistLanguage"
+    SpecialistLanguage:
+      type: object
+      additionalProperties: false
+      required: [code, proficiency]
+      properties:
+        code:
+          description: A code from /v1/catalogue/session-languages.
+          type: string
+        proficiency:
+          $ref: "#/components/schemas/Proficiency"
+        verified:
+          description: Read-only. True once a reviewer confirmed the level in the onboarding interview.
+          type: boolean
+          readOnly: true
+    SpecialistServices:
+      type: object
+      additionalProperties: false
+      required: [offerings]
+      properties:
+        offerings:
+          description: One per modality; at least one enabled.
+          type: array
+          minItems: 1
+          maxItems: 2
+          items:
+            $ref: "#/components/schemas/Offering"
+    Offering:
+      type: object
+      additionalProperties: false
+      required: [modality, enabled, durationMinutes, price]
+      properties:
+        modality:
+          $ref: "#/components/schemas/Modality"
+        enabled:
+          type: boolean
+        durationMinutes:
+          description: One of pricing.durations.
+          type: integer
+        price:
+          description: Whole FCFA (XAF), within pricing.minPrice and pricing.maxPrice.
+          type: integer
+          minimum: 0
+    PayoutDetails:
+      type: object
+      additionalProperties: false
+      required: [method, holderName]
+      properties:
+        method:
+          $ref: "#/components/schemas/PayoutMethod"
+        phone:
+          description: The mobile money number; required for MTN_MOMO and ORANGE_MONEY. Returned masked.
+          type: string
+          maxLength: 20
+        holderName:
+          description: Account holder name; must match the name on the ID.
+          type: string
+          minLength: 1
+          maxLength: 120
+    SpecialistDocument:
+      type: object
+      additionalProperties: false
+      required: [kind, files]
+      properties:
+        kind:
+          $ref: "#/components/schemas/DocumentKind"
+        files:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [fileName, contentType, size, uploadedAt]
+            properties:
+              fileName:
+                type: string
+              contentType:
+                type: string
+              size:
+                description: Bytes.
+                type: integer
+              uploadedAt:
+                type: string
+                format: date-time
+    SpecialistPricing:
+      description: The rules for SpecServices, from admin settings.
+      type: object
+      additionalProperties: false
+      required: [minPrice, maxPrice, feePercent, durations]
+      properties:
+        minPrice:
+          type: integer
+        maxPrice:
+          type: integer
+        feePercent:
+          description: Solace's fee, taken from each completed session.
+          type: number
+        durations:
+          description: Session lengths in minutes a specialist can choose.
+          type: array
+          items:
+            type: integer
+    SpecialistApplication:
+      type: object
+      additionalProperties: false
+      required: [status, fullName, steps, languages, documents, offerings, pricing]
+      properties:
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        fullName:
+          type: string
+        steps:
+          description: Which steps are complete, so the app can resume.
+          type: object
+          additionalProperties: false
+          required: [practice, languages, documents, services, hours, payout]
+          properties:
+            practice:
+              type: boolean
+            languages:
+              type: boolean
+            documents:
+              description: LICENCE, IDENTITY and PHOTO present; CV is optional.
+              type: boolean
+            services:
+              type: boolean
+            hours:
+              type: boolean
+            payout:
+              type: boolean
+        practice:
+          $ref: "#/components/schemas/Practice"
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialistLanguage"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialistDocument"
+        offerings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Offering"
+        payout:
+          $ref: "#/components/schemas/PayoutDetails"
+        pricing:
+          $ref: "#/components/schemas/SpecialistPricing"
+        submittedAt:
+          type: string
+          format: date-time
+        interviewAt:
+          description: When staff booked the onboarding interview (D25).
+          type: string
+          format: date-time
+        reviewNote:
+          description: The reviewer's reason, shown when changes are requested or the application is rejected. In the reviewer's words, not translated.
+          type: string
+    WeeklyHours:
+      type: object
+      additionalProperties: false
+      required: [timeZone, days, breakMinutes, minimumNoticeHours]
+      properties:
+        timeZone:
+          description: IANA time zone the times are in, e.g. Africa/Douala.
+          type: string
+          maxLength: 64
+        days:
+          type: array
+          maxItems: 7
+          items:
+            type: object
+            additionalProperties: false
+            required: [weekday, ranges]
+            properties:
+              weekday:
+                type: string
+                enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+              ranges:
+                type: array
+                maxItems: 6
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [start, end]
+                  properties:
+                    start:
+                      description: Local time, HH:mm.
+                      type: string
+                      pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+                    end:
+                      description: Local time, HH:mm, after start.
+                      type: string
+                      pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+        breakMinutes:
+          description: Break between sessions.
+          type: integer
+          enum: [0, 10, 15]
+        minimumNoticeHours:
+          description: How long before a session it can still be booked.
+          type: integer
+          enum: [2, 12, 24]
