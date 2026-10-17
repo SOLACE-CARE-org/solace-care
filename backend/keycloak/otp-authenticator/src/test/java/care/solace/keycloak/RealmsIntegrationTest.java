@@ -101,6 +101,23 @@ class RealmsIntegrationTest {
   }
 
   @Test
+  void everyMemberSignInIsLogged() throws Exception {
+    createMember("seeker-logged", null, "+237670000131", "SEEKER");
+    memberToken(Map.of("username", "+237670000131"));
+    String code = lastCodeFor("+237*******31");
+    assertThat(memberToken(Map.of("username", "+237670000131", "code", code)).statusCode())
+        .isEqualTo(200);
+
+    String userId =
+        admin.realm(MEMBERS).users().searchByUsername("seeker-logged", true).get(0).getId();
+    assertThat(
+            admin
+                .realm(MEMBERS)
+                .getEvents(List.of("LOGIN"), null, userId, null, null, null, null, null))
+        .hasSize(1);
+  }
+
+  @Test
   void unknownContactGetsTheSameAnswerAndNoCode() throws Exception {
     String logsBefore = keycloak.getLogs();
 
