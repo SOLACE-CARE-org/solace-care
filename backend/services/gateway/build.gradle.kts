@@ -11,8 +11,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation(project(":libs:log-scrub"))
+    implementation(project(":libs:observability"))
     implementation(project(":libs:locale"))
     implementation(project(":libs:error-model"))
 

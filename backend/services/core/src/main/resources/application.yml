@@ -12,6 +12,31 @@ spring:
     password: core
   kafka:
     bootstrap-servers: localhost:9092
+  grpc:
+    client:
+      channels:
+        # Plain text locally; mTLS between services in the cluster (System Design).
+        tracking:
+          address: static://localhost:9102
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+        ai:
+          address: static://localhost:9103
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+  security:
+    oauth2:
+      client:
+        # Core's own client-credentials token for its gRPC calls (infra/keycloak: core-service).
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: core-service
+            client-secret: ${SOLACE_CORE_SERVICE_SECRET:core-service-dev-secret}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/solace-staff/protocol/openid-connect/token
 
 server:
   port: 8101
@@ -29,3 +54,5 @@ management:
 solace:
   security:
     audience: core
+  grpc:
+    client-registration: keycloak

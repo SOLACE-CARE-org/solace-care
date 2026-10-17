@@ -2,11 +2,14 @@ package care.solace.gateway;
 
 import care.solace.errors.CommonError;
 import care.solace.errors.Problems;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,9 +39,14 @@ import reactor.core.publisher.Mono;
 class SecurityConfiguration {
 
   @Bean
-  Problems problems(MessageSource messages) {
-    // No tracing yet: trace ids are added with the end-to-end slice.
-    return new Problems(messages, () -> null);
+  Problems problems(MessageSource messages, ObjectProvider<Tracer> tracer) {
+    return new Problems(
+        messages,
+        () -> {
+          Tracer current = tracer.getIfAvailable();
+          Span span = current == null ? null : current.currentSpan();
+          return span == null ? null : span.context().traceId();
+        });
   }
 
   /** Builds the token decoder for a trusted realm, fetching its keys on first use. */

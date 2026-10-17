@@ -21,6 +21,7 @@ rootProject.name = "solace"
 
 val libraries = listOf(
     "event-envelope", "grpc-client", "error-model", "audit", "locale", "log-scrub", "service-security",
+    "observability",
 )
 val services = listOf("core", "tracking", "ai", "gateway")
 

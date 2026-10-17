@@ -50,7 +50,10 @@ import org.springframework.web.servlet.LocaleResolver;
  * Realm keys are fetched on first use, so a service starts even while Keycloak is still starting.
  */
 @AutoConfiguration(
-    before = {SecurityAutoConfiguration.class, OAuth2ResourceServerAutoConfiguration.class})
+    before = {SecurityAutoConfiguration.class, OAuth2ResourceServerAutoConfiguration.class},
+    beforeName =
+        "org.springframework.boot.autoconfigure.security.oauth2.client.servlet"
+            + ".OAuth2ClientWebSecurityAutoConfiguration")
 @EnableConfigurationProperties(SecuritySettings.class)
 public class ServiceSecurityAutoConfiguration {
 

@@ -21,6 +21,8 @@ testcontainers = "1.21.4"
 jackson = "2.19.1"
 slf4j = "2.0.17"
 json-schema-validator = "1.5.9"
+# Matches the OpenTelemetry SDK 1.49 that Spring Boot 3.5 manages.
+otel-instrumentation = "2.15.0-alpha"
 
 [libraries]
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -42,6 +44,7 @@ testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version
 testcontainers-keycloak = { module = "com.github.dasniko:testcontainers-keycloak", version.ref = "testcontainers-keycloak" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
+otel-logback-appender = { module = "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0", version.ref = "otel-instrumentation" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # Used by build-logic to apply plugins from convention scripts

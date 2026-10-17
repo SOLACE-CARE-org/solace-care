@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging for every Solace process: console and OpenTelemetry (to Loki), both behind the
+  scrubber, so nothing leaves the process unscrubbed. Include it from logback-spring.xml:
+
+    <configuration>
+      <include resource="care/solace/observability/logback.xml"/>
+      <root level="INFO">
+        <appender-ref ref="SCRUBBED"/>
+      </root>
+    </configuration>
+-->
+<included>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+  <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+    <captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>
+    <captureMdcAttributes>*</captureMdcAttributes>
+  </appender>
+
+  <appender name="SCRUBBED" class="care.solace.logscrub.ScrubbingAppender">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="OTEL"/>
+  </appender>
+</included>

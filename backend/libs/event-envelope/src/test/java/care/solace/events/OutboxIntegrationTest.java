@@ -71,6 +71,8 @@ class OutboxIntegrationTest {
             Events.envelope("core.test.happened", 1, "seeker-1", "fr", Map.of("n", 1)), false);
 
     ConsumerRecord<String, EventEnvelope> record = received.awaitRecord(sent.eventId());
+    // Services declare listeners with an EventEnvelope parameter; it must arrive as one too.
+    await().atMost(WAIT).until(() -> received.envelopeParameters.contains(sent.eventId()));
     assertThat(record.topic()).isEqualTo("core.test");
     assertThat(record.key()).isEqualTo("seeker-1");
     assertThat(record.value()).isEqualTo(sent);
@@ -260,6 +262,13 @@ class OutboxIntegrationTest {
             records.put(id, record);
             handled.merge(id, 1, Integer::sum);
           });
+    }
+
+    final java.util.Set<UUID> envelopeParameters = ConcurrentHashMap.newKeySet();
+
+    @KafkaListener(topics = "core.test", groupId = "as-parameter")
+    void asParameter(EventEnvelope event) {
+      envelopeParameters.add(event.eventId());
     }
 
     @KafkaListener(topics = "core.poison", groupId = "poison")

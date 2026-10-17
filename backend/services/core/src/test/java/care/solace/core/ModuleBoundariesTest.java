@@ -32,6 +32,7 @@ class ModuleBoundariesTest {
             "notifications",
             "content",
             "admin",
-            "auditlog");
+            "auditlog",
+            "system");
   }
 }

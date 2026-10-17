@@ -10,4 +10,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
+    testImplementation("io.grpc:grpc-inprocess")
+    testImplementation("org.testcontainers:kafka")
+    testImplementation("org.awaitility:awaitility")
 }

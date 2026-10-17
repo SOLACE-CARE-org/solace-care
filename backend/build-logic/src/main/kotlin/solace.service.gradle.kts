@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":libs:log-scrub"))
+    implementation(project(":libs:observability"))
     implementation(project(":libs:locale"))
     implementation(project(":libs:error-model"))
     implementation(project(":libs:service-security"))
@@ -14,7 +14,6 @@ dependencies {
     implementation(project(":contracts"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.flywaydb:flyway-core")

@@ -7,4 +7,6 @@ dependencies {
     implementation("org.springframework.grpc:spring-grpc-server-spring-boot-starter")
 
     testImplementation("io.grpc:grpc-inprocess")
+    testImplementation("org.testcontainers:kafka")
+    testImplementation("org.awaitility:awaitility")
 }

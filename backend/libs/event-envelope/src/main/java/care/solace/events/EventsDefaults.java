@@ -54,6 +54,9 @@ public class EventsDefaults implements EnvironmentPostProcessor {
     defaults.put("spring.kafka.template.observation-enabled", "true");
     defaults.put("spring.kafka.listener.observation-enabled", "true");
 
+    // Spring Modulith would otherwise register a byte-array JSON message converter that every
+    // listener picks up; our serializer and deserializer handle JSON end to end instead.
+    defaults.put("spring.modulith.events.kafka.enable-json", "false");
     defaults.put("spring.modulith.events.republish-outstanding-events-on-restart", "true");
     defaults.put("spring.modulith.events.completion-mode", "delete");
     defaults.put("spring.modulith.events.jdbc.schema-initialization.enabled", "false");
