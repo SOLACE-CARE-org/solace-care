@@ -65,8 +65,16 @@ pnpm --filter @solace/mobile start        # Metro for an installed dev build
 
 # Contracts: Buf lint, OpenAPI lint, event schema validation
 pnpm --filter @solace/contracts lint
-# Fail on a breaking proto change compared with main
-pnpm --filter @solace/contracts breaking:proto
+# Fail on a breaking change compared with main: proto (buf), edge OpenAPI (oasdiff, in Docker)
+# and event schemas
+pnpm --filter @solace/contracts breaking
+
+# Container images, from the repo root, after the Gradle build and pnpm build above
+docker build --build-arg SERVICE=core -t solace/core backend      # also tracking, ai, gateway
+docker build -t solace/admin admin                                 # settings from env at start
+docker build -f infra/keycloak/Dockerfile -t solace/keycloak .     # authenticators and theme built in
 ```
+
+The admin image reads `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `API_URL`, `IDLE_SIGN_OUT_MINUTES` and the `FLAG_*` variables when it starts, so one image serves every environment; its Content-Security-Policy is built from the same values.
 
 Apps talk only to the gateway on :8080, which checks the token, rate-limits per person and routes `/api/core/**`, `/api/tracking/**` and `/api/ai/**` with the prefix removed. Health checks are open at `/actuator/health/readiness` and `/actuator/health/liveness` on each process; everything else needs a Keycloak token. App commands are added here as each Phase 0 step lands.

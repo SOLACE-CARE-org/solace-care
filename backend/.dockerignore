@@ -1,0 +1,3 @@
+# The image takes only the jar Gradle built; nothing else in backend/ goes to the Docker daemon.
+*
+!services/*/build/libs/*.jar

@@ -1,0 +1,37 @@
+# nginx's entrypoint fills ${...} from the container's environment (see the Dockerfile) and writes
+# the result to /etc/nginx/conf.d. nginx's own $variables are left alone.
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  server_tokens off;
+
+  include /etc/nginx/conf.d/security-headers.conf;
+
+  # Runtime settings for src/environments/runtime-config.ts.
+  location = /config.json {
+    include /etc/nginx/conf.d/security-headers.conf;
+    add_header Cache-Control "no-store" always;
+    default_type application/json;
+    return 200 '{"keycloak":{"url":"${KEYCLOAK_URL}","realm":"${KEYCLOAK_REALM}","clientId":"${KEYCLOAK_CLIENT_ID}"},"apiUrl":"${API_URL}","idleSignOutMinutes":${IDLE_SIGN_OUT_MINUTES},"flags":{"trackingModules":${FLAG_TRACKING_MODULES},"healthCheck":${FLAG_HEALTH_CHECK},"aiControls":${FLAG_AI_CONTROLS},"copilot":${FLAG_COPILOT}}}';
+  }
+
+  # Angular's file names carry a content hash, so they can be cached for good.
+  location ~* "-[A-Z0-9]{8}\.(js|css)$" {
+    include /etc/nginx/conf.d/security-headers.conf;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+  }
+
+  # Client-side routes all load index.html, which is never cached.
+  location / {
+    include /etc/nginx/conf.d/security-headers.conf;
+    add_header Cache-Control "no-cache" always;
+    try_files $uri $uri/ /index.html;
+  }
+
+  location = /healthz {
+    access_log off;
+    default_type text/plain;
+    return 200 'ok';
+  }
+}

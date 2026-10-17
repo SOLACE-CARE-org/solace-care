@@ -1,0 +1,4 @@
+# Build context is the repository root; send only what the Keycloak image needs.
+*
+!backend/keycloak/otp-authenticator/build/libs/solace-otp-authenticator.jar
+!infra/keycloak/themes/solace-staff/
