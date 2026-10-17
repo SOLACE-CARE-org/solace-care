@@ -34,9 +34,17 @@ spring:
             client-id: core-service
             client-secret: ${SOLACE_CORE_SERVICE_SECRET:core-service-dev-secret}
             authorization-grant-type: client_credentials
+          # Creates and updates member sign-in identities (manage-users only).
+          keycloak-members-admin:
+            provider: keycloak-members
+            client-id: core-admin
+            client-secret: ${SOLACE_CORE_ADMIN_SECRET:core-admin-dev-secret}
+            authorization-grant-type: client_credentials
         provider:
           keycloak:
             token-uri: http://localhost:8180/realms/solace-staff/protocol/openid-connect/token
+          keycloak-members:
+            token-uri: http://localhost:8180/realms/solace-members/protocol/openid-connect/token
 
 server:
   port: 8101
@@ -54,5 +62,21 @@ management:
 solace:
   security:
     audience: core
+    # Open without a token: health checks, seeker sign-up and the catalogue.
+    public-paths:
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
+      - /v1/signups
+      - /v1/catalogue/**
+  identity:
+    members-issuer: http://localhost:8180/realms/solace-members
+    keycloak:
+      admin-url: http://localhost:8180
+  notifications:
+    # Which SMS and email provider sends messages. No provider is chosen yet (decisions.md), so
+    # nothing is set here and Core will not start without one: local runs and the dev cluster set
+    # "logging", which writes messages to the log. Never set "logging" anywhere real people are.
+    sender: ${SOLACE_NOTIFICATIONS_SENDER:}
   grpc:
     client-registration: keycloak

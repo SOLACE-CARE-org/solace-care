@@ -33,6 +33,8 @@ class ModuleBoundariesTest {
             "content",
             "admin",
             "auditlog",
+            // Implementation plan, Phase 1 epic 11: consent records, export, erasure, retention.
+            "privacy",
             "system");
   }
 }

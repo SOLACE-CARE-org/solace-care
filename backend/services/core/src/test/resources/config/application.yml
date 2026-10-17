@@ -1,0 +1,5 @@
+# Added to src/main/resources/application.yml for every Core test (Spring Boot reads both).
+solace:
+  notifications:
+    # No SMS or email provider exists yet; tests read messages from the log.
+    sender: logging

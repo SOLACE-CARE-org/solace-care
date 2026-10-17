@@ -36,3 +36,6 @@ Thumbs.db
 
 # CI scratch
 rendered/
+
+# Kotlin compiler caches (build-logic)
+.kotlin/

@@ -14,3 +14,27 @@ dependencies {
     testImplementation("org.testcontainers:kafka")
     testImplementation("org.awaitility:awaitility")
 }
+
+// Local runs write SMS and email to the log: no provider is chosen yet (application.yml).
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    environment("SOLACE_NOTIFICATIONS_SENDER", "logging")
+}
+
+dependencies {
+    // The sign-up flow test runs real Keycloak with the real realms and the code authenticator.
+    testImplementation(libs.testcontainers.keycloak)
+}
+
+sourceSets.test {
+    resources.srcDir(rootProject.file("../infra/keycloak/realms"))
+}
+
+tasks.test {
+    val authenticator = project(":keycloak:otp-authenticator")
+    dependsOn(authenticator.tasks.named("jar"))
+    val providerJar = authenticator.tasks.named<Jar>("jar").flatMap { it.archiveFile }
+    inputs.file(providerJar)
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        listOf("-Dsolace.providerJar=${providerJar.get().asFile.absolutePath}")
+    })
+}
