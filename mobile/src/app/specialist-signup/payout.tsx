@@ -8,7 +8,7 @@ import { ApiProblem } from '@/api/core';
 import {
   type PayoutDetails,
   SPECIALIST_STEPS,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useSavePayout,
   useSubmitApplication,
@@ -61,9 +61,9 @@ export default function SpecialistPayout() {
       { method, phone: mobileMoney ? (e164 ?? undefined) : undefined, holderName: holderName.trim() },
       {
         onSuccess: (next) => {
-          if (next.status === 'DRAFT' && resumeRoute(next) !== '/specialist-signup/payout') {
+          if (next.status === 'DRAFT' && stepRoute(next) !== '/specialist-signup/payout') {
             // An earlier step is unfinished: finish it first.
-            router.push(resumeRoute(next));
+            router.push(stepRoute(next));
             return;
           }
           submitApplication.mutate(undefined, {

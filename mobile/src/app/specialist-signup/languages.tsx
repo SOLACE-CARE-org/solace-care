@@ -11,7 +11,7 @@ import { ApiProblem } from '@/api/core';
 import {
   SPECIALIST_STEPS,
   type SpecialistLanguage,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useSaveLanguages,
 } from '@/api/specialist';
@@ -55,7 +55,7 @@ export default function SpecialistLanguages() {
     if (languages.length === 0) return;
     setProblem(null);
     save.mutate(languages, {
-      onSuccess: (next) => router.push(resumeRoute(next)),
+      onSuccess: (next) => router.push(stepRoute(next)),
       onError: (e) =>
         setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),
     });

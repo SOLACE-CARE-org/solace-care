@@ -10,7 +10,7 @@ import { ApiProblem } from '@/api/core';
 import {
   SPECIALIST_STEPS,
   type WeeklyHours,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useSaveWeeklyHours,
   useWeeklyHours,
@@ -64,7 +64,7 @@ export default function SpecialistHours() {
     save.mutate(current, {
       onSuccess: () => {
         // The application's hours step follows from the saved hours.
-        application.refetch().then((r) => r.data && router.push(resumeRoute(r.data)));
+        application.refetch().then((r) => r.data && router.push(stepRoute(r.data)));
       },
       onError: (e) =>
         setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),

@@ -153,9 +153,17 @@ const STEP_ROUTES = [
 
 export type SpecialistRoute = (typeof STEP_ROUTES)[number][1] | '/specialist-signup/review';
 
-/** Where an applicant resumes: the first unfinished step, or the review screen once submitted. */
-export function resumeRoute(application: SpecialistApplication): SpecialistRoute {
-  if (application.status !== 'DRAFT') return '/specialist-signup/review';
+/** The next step to fill in: the first unfinished one, else the last (payouts and submit). */
+export function stepRoute(application: SpecialistApplication): SpecialistRoute {
   const next = STEP_ROUTES.find(([step]) => !application.steps[step]);
   return next ? next[1] : '/specialist-signup/payout';
+}
+
+/**
+ * Where an applicant lands on opening the app: the review screen once submitted, or when changes
+ * were requested (to read the reviewer's reason first); otherwise the next step to fill in.
+ */
+export function resumeRoute(application: SpecialistApplication): SpecialistRoute {
+  if (application.status !== 'DRAFT' || application.reviewNote) return '/specialist-signup/review';
+  return stepRoute(application);
 }

@@ -10,7 +10,7 @@ import { ApiProblem } from '@/api/core';
 import {
   type DocumentKind,
   SPECIALIST_STEPS,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useUploadDocument,
 } from '@/api/specialist';
@@ -79,7 +79,7 @@ export default function SpecialistDocuments() {
           label={t('common.continue')}
           disabled={!done || busyKind !== null}
           accessibilityState={{ disabled: !done || busyKind !== null }}
-          onPress={() => application.data && router.push(resumeRoute(application.data))}
+          onPress={() => application.data && router.push(stepRoute(application.data))}
         />
       }
     >

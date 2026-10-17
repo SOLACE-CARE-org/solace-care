@@ -11,7 +11,7 @@ import { ApiProblem } from '@/api/core';
 import {
   type Practice,
   SPECIALIST_STEPS,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useProfessions,
   useSavePractice,
@@ -81,7 +81,7 @@ export default function SpecialistPractice() {
         bio: bio.trim(),
       },
       {
-        onSuccess: (next) => router.push(resumeRoute(next)),
+        onSuccess: (next) => router.push(stepRoute(next)),
         onError: (e) =>
           setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),
       },

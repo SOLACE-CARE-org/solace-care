@@ -9,7 +9,7 @@ import { ApiProblem } from '@/api/core';
 import {
   type Offering,
   SPECIALIST_STEPS,
-  resumeRoute,
+  stepRoute,
   useApplication,
   useSaveServices,
 } from '@/api/specialist';
@@ -72,7 +72,7 @@ export default function SpecialistServices() {
         price: d.enabled ? Number(d.price) : 0,
       })),
       {
-        onSuccess: (next) => router.push(resumeRoute(next)),
+        onSuccess: (next) => router.push(stepRoute(next)),
         onError: (e) =>
           setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),
       },

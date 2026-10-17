@@ -4,7 +4,7 @@ import { Slot } from 'expo-router';
 import { renderRouter } from 'expo-router/testing-library';
 
 import { queryClient } from '@/api/query-client';
-import { resumeRoute, type SpecialistApplication } from '@/api/specialist';
+import { resumeRoute, type SpecialistApplication, stepRoute } from '@/api/specialist';
 import Account from '@/app/specialist-signup';
 import Documents from '@/app/specialist-signup/documents';
 import Payout from '@/app/specialist-signup/payout';
@@ -105,6 +105,14 @@ describe('where an applicant resumes', () => {
       resumeRoute(application({ steps: { ...noSteps, practice: true, languages: true } })),
     ).toBe('/specialist-signup/documents');
     expect(resumeRoute(application({ status: 'SUBMITTED' }))).toBe('/specialist-signup/review');
+    // Moving between steps ignores the reason: the next unfinished step, else payouts.
+    expect(stepRoute(application({ reviewNote: 'Upload a clearer licence.' }))).toBe(
+      '/specialist-signup/practice',
+    );
+    // Sent back with changes requested: the reason first.
+    expect(resumeRoute(application({ reviewNote: 'Upload a clearer licence.' }))).toBe(
+      '/specialist-signup/review',
+    );
   });
 
   it('types hours as HH:MM', () => {

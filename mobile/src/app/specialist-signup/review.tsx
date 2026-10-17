@@ -41,7 +41,12 @@ export default function SpecialistReview() {
         </View>
 
         {data?.reviewNote ? (
-          <Text variant="body" color={colors.ink} style={styles.note}>
+          <Text
+            variant="body"
+            color={colors.ink}
+            style={styles.note}
+            accessibilityLiveRegion="polite"
+          >
             {data.reviewNote}
           </Text>
         ) : null}
@@ -85,6 +90,13 @@ export default function SpecialistReview() {
       </ScrollView>
 
       <View style={styles.footer}>
+        {data?.status === 'DRAFT' ? (
+          // Changes were requested: back to the steps, which keep what was saved.
+          <Button
+            label={t('common.continue')}
+            onPress={() => router.push('/specialist-signup/practice')}
+          />
+        ) : null}
         {flags.specialistInterviewPicker ? (
           <Button label={t('specialistSignup.review.pickInterview')} onPress={() => undefined} />
         ) : null}
