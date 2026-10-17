@@ -73,7 +73,7 @@
       "config": {
         "codeLength": "${SOLACE_OTP_CODE_LENGTH:6}",
         "codeTtlSeconds": "${SOLACE_OTP_CODE_TTL_SECONDS:600}",
-        "maxAttempts": "${SOLACE_OTP_MAX_ATTEMPTS:5}",
+        "maxAttempts": "${SOLACE_OTP_MAX_ATTEMPTS:3}",
         "resendAfterSeconds": "${SOLACE_OTP_RESEND_AFTER_SECONDS:60}",
         "sender": "${SOLACE_OTP_SENDER:logging}"
       }

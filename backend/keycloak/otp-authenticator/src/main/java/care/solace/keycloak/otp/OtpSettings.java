@@ -7,11 +7,12 @@ import java.util.Map;
  * Settings for one-time sign-in codes, read from the authenticator's config in the realm.
  *
  * <p>The defaults are placeholders, not decisions: the code lifetime is the {@code [10]} minutes in
- * the notification copy; code length, attempts and resend delay are not in the specs yet.
+ * the notification copy, and {@code [3]} wrong tries before a new code is sent come from the
+ * StateCodeWrong screen; code length and resend delay are not in the specs.
  *
  * @param codeLength digits in a code
  * @param codeTtl how long a code stays valid
- * @param maxAttempts wrong entries allowed before the code is discarded
+ * @param maxAttempts wrong entries allowed before the code is replaced by a new one
  * @param resendAfter minimum gap before another code is sent to the same account
  * @param sender which {@link CodeSender} delivers the code
  */
@@ -25,7 +26,7 @@ public record OtpSettings(
   public static final String SENDER = "sender";
 
   public static final OtpSettings DEFAULTS =
-      new OtpSettings(6, Duration.ofMinutes(10), 5, Duration.ofSeconds(60), LoggingCodeSender.ID);
+      new OtpSettings(6, Duration.ofMinutes(10), 3, Duration.ofSeconds(60), LoggingCodeSender.ID);
 
   public OtpSettings {
     if (codeLength < 4 || codeLength > 10) {

@@ -24,8 +24,8 @@ class CodeBookTest {
     String code = codes.issue("user-1").orElseThrow();
 
     assertThat(code).hasSize(6).containsOnlyDigits();
-    assertThat(codes.verify("user-1", code)).isEqualTo(CodeBook.Result.ACCEPTED);
-    assertThat(codes.verify("user-1", code)).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
+    assertThat(codes.verify("user-1", code).result()).isEqualTo(CodeBook.Result.ACCEPTED);
+    assertThat(codes.verify("user-1", code).result()).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
   }
 
   @Test
@@ -42,17 +42,20 @@ class CodeBookTest {
     String code = codes.issue("user-1").orElseThrow();
     clock.advance(Duration.ofMinutes(10));
 
-    assertThat(codes.verify("user-1", code)).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
+    assertThat(codes.verify("user-1", code).result()).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
   }
 
   @Test
   void tooManyWrongAttemptsDiscardTheCode() {
     String code = codes.issue("user-1").orElseThrow();
 
-    assertThat(codes.verify("user-1", wrong(code))).isEqualTo(CodeBook.Result.WRONG);
-    assertThat(codes.verify("user-1", wrong(code))).isEqualTo(CodeBook.Result.WRONG);
-    assertThat(codes.verify("user-1", wrong(code))).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
-    assertThat(codes.verify("user-1", code)).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
+    assertThat(codes.verify("user-1", wrong(code)))
+        .isEqualTo(new CodeBook.Check(CodeBook.Result.WRONG, 2));
+    assertThat(codes.verify("user-1", wrong(code)))
+        .isEqualTo(new CodeBook.Check(CodeBook.Result.WRONG, 1));
+    assertThat(codes.verify("user-1", wrong(code)))
+        .isEqualTo(new CodeBook.Check(CodeBook.Result.EXHAUSTED, 0));
+    assertThat(codes.verify("user-1", code).result()).isEqualTo(CodeBook.Result.NO_LIVE_CODE);
   }
 
   @Test
@@ -60,7 +63,7 @@ class CodeBookTest {
     String code = codes.issue("user-1").orElseThrow();
     codes.issue("user-2").orElseThrow();
 
-    assertThat(codes.verify("user-2", code)).isNotEqualTo(CodeBook.Result.ACCEPTED);
+    assertThat(codes.verify("user-2", code).result()).isNotEqualTo(CodeBook.Result.ACCEPTED);
   }
 
   @Test
@@ -80,9 +83,9 @@ class CodeBookTest {
     String second = codes.issue("user-1").orElseThrow();
 
     if (!first.equals(second)) {
-      assertThat(codes.verify("user-1", first)).isEqualTo(CodeBook.Result.WRONG);
+      assertThat(codes.verify("user-1", first).result()).isEqualTo(CodeBook.Result.WRONG);
     }
-    assertThat(codes.verify("user-1", second)).isEqualTo(CodeBook.Result.ACCEPTED);
+    assertThat(codes.verify("user-1", second).result()).isEqualTo(CodeBook.Result.ACCEPTED);
   }
 
   private static String wrong(String code) {

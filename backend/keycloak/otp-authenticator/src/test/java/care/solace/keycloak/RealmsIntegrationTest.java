@@ -132,21 +132,37 @@ class RealmsIntegrationTest {
     assertThat(response.statusCode()).isEqualTo(401);
     assertThat(json(response).path("error").asText()).isEqualTo("code_required");
     assertThat(keycloak.getLogs().substring(logsBefore.length())).doesNotContain("sign-in code");
+
+    // Wrong codes for a contact with no account read exactly like wrong codes for a real one.
+    JsonNode wrong = json(memberToken(Map.of("username", "+237699999999", "code", "123456")));
+    assertThat(wrong.path("error").asText()).isEqualTo("invalid_grant");
+    assertThat(wrong.path("attempts_left").asInt()).isEqualTo(2);
   }
 
   @Test
-  void tooManyWrongCodesDiscardTheCode() throws Exception {
+  void threeWrongCodesBringANewCode() throws Exception {
     createMember("seeker-wrong", null, "+237670000202", "SEEKER");
     memberToken(Map.of("username", "+237670000202"));
     String code = lastCodeFor("+237*******02");
     String wrong = code.equals("000000") ? "111111" : "000000";
 
-    for (int i = 0; i < 5; i++) {
-      assertThat(memberToken(Map.of("username", "+237670000202", "code", wrong)).statusCode())
-          .isEqualTo(401);
-    }
+    // StateCodeWrong: "That code isn't right. [2] tries left." then a new code after [3].
+    JsonNode first = json(memberToken(Map.of("username", "+237670000202", "code", wrong)));
+    assertThat(first.path("error").asText()).isEqualTo("invalid_grant");
+    assertThat(first.path("attempts_left").asInt()).isEqualTo(2);
+    assertThat(
+            json(memberToken(Map.of("username", "+237670000202", "code", wrong)))
+                .path("attempts_left")
+                .asInt())
+        .isEqualTo(1);
+    JsonNode last = json(memberToken(Map.of("username", "+237670000202", "code", wrong)));
+    assertThat(last.path("new_code_sent").asBoolean()).isTrue();
+
+    String fresh = lastCodeFor("+237*******02");
     assertThat(memberToken(Map.of("username", "+237670000202", "code", code)).statusCode())
         .isEqualTo(401);
+    assertThat(memberToken(Map.of("username", "+237670000202", "code", fresh)).statusCode())
+        .isEqualTo(200);
   }
 
   @Test

@@ -32,9 +32,18 @@ public final class CodeBook {
     ACCEPTED,
     /** The code is wrong; more attempts are allowed. */
     WRONG,
-    /** No live code: never issued, expired, already used, or too many wrong attempts. */
+    /** The code is wrong and that was the last attempt: the code has been discarded. */
+    EXHAUSTED,
+    /** No live code: never issued, expired or already used. */
     NO_LIVE_CODE
   }
+
+  /**
+   * A checked code.
+   *
+   * @param attemptsLeft wrong entries still allowed on this code (StateCodeWrong: "[2] tries left")
+   */
+  public record Check(Result result, int attemptsLeft) {}
 
   static final String HASH = "hash";
   static final String ATTEMPTS = "attempts";
@@ -75,25 +84,25 @@ public final class CodeBook {
   }
 
   /** Checks a submitted code. A right code is used up; too many wrong ones discard the code. */
-  public Result verify(String userId, String code) {
+  public Check verify(String userId, String code) {
     Instant now = clock.instant();
     Map<String, String> current = live(userId, now);
     if (current == null) {
-      return Result.NO_LIVE_CODE;
+      return new Check(Result.NO_LIVE_CODE, 0);
     }
     if (Codes.matches(userId, code, current.get(HASH))) {
       store.remove(key(userId));
-      return Result.ACCEPTED;
+      return new Check(Result.ACCEPTED, 0);
     }
     int attempts = Integer.parseInt(current.get(ATTEMPTS)) + 1;
     if (attempts >= settings.maxAttempts()) {
       store.remove(key(userId));
-      return Result.NO_LIVE_CODE;
+      return new Check(Result.EXHAUSTED, 0);
     }
     Map<String, String> updated = new HashMap<>(current);
     updated.put(ATTEMPTS, Integer.toString(attempts));
     store.replace(key(userId), updated);
-    return Result.WRONG;
+    return new Check(Result.WRONG, settings.maxAttempts() - attempts);
   }
 
   private Map<String, String> live(String userId, Instant now) {

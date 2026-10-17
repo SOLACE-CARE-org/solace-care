@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import java.time.Clock;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +28,12 @@ import org.keycloak.models.UserModel;
  *       contact belongs to an enabled account. The answer is the same either way, {@code 401
  *       code_required}, so nobody can find out which contacts have accounts.
  *   <li>With {@code username} and {@code code}: tokens if the code is right, otherwise {@code 401
- *       invalid_grant}.
+ *       invalid_grant} with {@code attempts_left}; after the last wrong try a new code is sent and
+ *       the answer says {@code new_code_sent}; an expired or used code says {@code code_expired}.
  * </ol>
+ *
+ * Contacts without an account get exactly the same answers (a decoy code is tracked for them and
+ * never sent), and every wrong code counts towards the realm's brute-force lockout.
  */
 public final class OtpDirectGrantAuthenticator implements Authenticator {
 
@@ -37,6 +42,7 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
   static final String PHONE_ATTRIBUTE = "phone_number";
   static final String LOCALE_ATTRIBUTE = "locale";
   static final String VERIFIED_CONTACT_NOTE = "solace.verified_contact";
+  static final String DECOY_PREFIX = "no-account:";
 
   private final Clock clock;
 
@@ -61,46 +67,63 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
     CodeBook codes =
         new CodeBook(
             new SingleUseStore(context.getSession()), settings, clock, context.getRealm().getId());
-    UserModel user = findUser(context.getSession(), context.getRealm(), contact);
+    UserModel found = findUser(context.getSession(), context.getRealm(), contact);
+    UserModel user = found != null && found.isEnabled() ? found : null;
+    // A contact with no account gets a decoy code that is tracked the same way but never sent, so
+    // every answer below is the same whether or not the contact has an account.
+    String holder = user != null ? user.getId() : DECOY_PREFIX + contact.value();
     String code = form.getFirst(CODE_PARAM);
 
     if (code == null || code.isBlank()) {
-      if (user != null && user.isEnabled()) {
-        Optional<String> issued = codes.issue(user.getId());
-        if (issued.isPresent()) {
-          CodeSender.forId(settings.sender())
-              .send(
-                  contact,
-                  issued.get(),
-                  user.getFirstAttribute(LOCALE_ATTRIBUTE),
-                  settings.codeTtl());
-        }
-      }
+      issueAndSend(codes, holder, user, contact, settings);
       context.challenge(
           error(401, "code_required", "A code was sent if this contact belongs to an account"));
       return;
     }
 
-    if (user == null || !user.isEnabled()) {
-      context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
-      context.failure(AuthenticationFlowError.INVALID_CREDENTIALS, invalidCode());
+    CodeBook.Check check = codes.verify(holder, code.trim());
+    if (check.result() == CodeBook.Result.ACCEPTED && user != null) {
+      context.setUser(user);
+      // Tells Core which contact this sign-in proved (token claim verified_contact), so guest
+      // bookings are only ever claimed through a contact the person controls.
+      context
+          .getAuthenticationSession()
+          .setUserSessionNote(
+              VERIFIED_CONTACT_NOTE, contact.kind().name().toLowerCase(Locale.ROOT));
+      context.success();
       return;
     }
-    context.setUser(user);
-    switch (codes.verify(user.getId(), code.trim())) {
-      case ACCEPTED -> {
-        // Tells Core which contact this sign-in proved (token claim verified_contact), so guest
-        // bookings are only ever claimed through a contact the person controls.
-        context
-            .getAuthenticationSession()
-            .setUserSessionNote(
-                VERIFIED_CONTACT_NOTE, contact.kind().name().toLowerCase(Locale.ROOT));
-        context.success();
+    if (user != null) {
+      context.setUser(user);
+      context.getEvent().user(user);
+    }
+    context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("error", "invalid_grant");
+    body.put("error_description", "Invalid or expired code");
+    switch (check.result()) {
+      case WRONG -> body.put("attempts_left", check.attemptsLeft());
+      // After the last wrong try a new code goes out (StateCodeWrong: "After [3] wrong tries we'll
+      // send a new code").
+      case EXHAUSTED -> {
+        issueAndSend(codes, holder, user, contact, settings);
+        body.put("attempts_left", 0);
+        body.put("new_code_sent", true);
       }
-      case WRONG, NO_LIVE_CODE -> {
-        context.getEvent().user(user).error(Errors.INVALID_USER_CREDENTIALS);
-        context.failure(AuthenticationFlowError.INVALID_CREDENTIALS, invalidCode());
-      }
+      default -> body.put("code_expired", true);
+    }
+    context.failure(
+        AuthenticationFlowError.INVALID_CREDENTIALS,
+        Response.status(401).type(MediaType.APPLICATION_JSON_TYPE).entity(body).build());
+  }
+
+  private static void issueAndSend(
+      CodeBook codes, String holder, UserModel user, Contact contact, OtpSettings settings) {
+    Optional<String> issued = codes.issue(holder);
+    if (issued.isPresent() && user != null) {
+      CodeSender.forId(settings.sender())
+          .send(
+              contact, issued.get(), user.getFirstAttribute(LOCALE_ATTRIBUTE), settings.codeTtl());
     }
   }
 
@@ -139,10 +162,6 @@ public final class OtpDirectGrantAuthenticator implements Authenticator {
 
   private static Map<String, String> config(AuthenticatorConfigModel model) {
     return model == null ? null : model.getConfig();
-  }
-
-  private static Response invalidCode() {
-    return error(401, "invalid_grant", "Invalid or expired code");
   }
 
   private static Response error(int status, String error, String description) {
