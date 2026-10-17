@@ -1,101 +1,34 @@
 package care.solace.core.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import care.solace.core.MemberStackTest;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dasniko.testcontainers.keycloak.KeycloakContainer;
-import java.io.File;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.KafkaContainer;
 
 /**
  * Seeker sign-up end to end, the way the app does it: Core creates the account, Keycloak (real
  * realms, real code authenticator) sends and checks the code, and the first call to {@code /v1/me}
  * activates the account and publishes {@code core.user.registered}.
  */
-@SpringBootTest(properties = "solace.grpc.client-registration=")
-@AutoConfigureMockMvc
-@Testcontainers
-class SignupFlowIntegrationTest {
+class SignupFlowIntegrationTest extends MemberStackTest {
 
-  @Container @ServiceConnection
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
-
-  @Container @ServiceConnection
-  static final KafkaContainer KAFKA = new KafkaContainer("apache/kafka:3.9.1");
-
-  static final KeycloakContainer KEYCLOAK =
-      new KeycloakContainer("quay.io/keycloak/keycloak:26.3.1")
-          .withRealmImportFiles("/solace-members-realm.json", "/solace-staff-realm.json")
-          .withProviderLibsFrom(List.of(new File(System.getProperty("solace.providerJar"))))
-          // Codes go to Keycloak's log here; CoreCodeSender has its own test.
-          .withEnv("SOLACE_DEV_CODE_SENDER", "enabled")
-          // Keycloak builds its providers on start; slow CI machines need more than 2 minutes.
-          .withStartupTimeout(java.time.Duration.ofMinutes(5));
-
-  static {
-    KEYCLOAK.start();
-  }
-
-  private static final ObjectMapper JSON = new ObjectMapper();
-  private static final HttpClient HTTP = HttpClient.newHttpClient();
   private static final String ADULT = LocalDate.now().minusYears(30).toString();
-
-  @DynamicPropertySource
-  static void keycloak(DynamicPropertyRegistry properties) {
-    String base = KEYCLOAK.getAuthServerUrl().replaceAll("/$", "");
-    String members = base + "/realms/solace-members";
-    String staff = base + "/realms/solace-staff";
-    properties.add("solace.security.issuers", () -> members + "," + staff);
-    properties.add("solace.security.service-issuer", () -> staff);
-    properties.add("solace.identity.members-issuer", () -> members);
-    properties.add("solace.identity.keycloak.admin-url", () -> base);
-    properties.add(
-        "spring.security.oauth2.client.provider.keycloak-members.token-uri",
-        () -> members + "/protocol/openid-connect/token");
-    properties.add(
-        "spring.security.oauth2.client.provider.keycloak.token-uri",
-        () -> staff + "/protocol/openid-connect/token");
-  }
 
   @Autowired MockMvc mvc;
   @Autowired JdbcTemplate jdbc;
@@ -377,15 +310,6 @@ class SignupFlowIntegrationTest {
     return JSON.writeValueAsString(body);
   }
 
-  /** Asks Keycloak for a code, reads it from the log, and exchanges it for an access token. */
-  private static String signIn(String contact) throws Exception {
-    assertThat(tokenRequest(Map.of("username", contact)).statusCode()).isEqualTo(401);
-    String code = lastCodeFor(mask(contact));
-    HttpResponse<String> tokens = tokenRequest(Map.of("username", contact, "code", code));
-    assertThat(tokens.statusCode()).as(tokens.body()).isEqualTo(200);
-    return JSON.readTree(tokens.body()).path("access_token").asText();
-  }
-
   private JsonNode me(String token) throws Exception {
     String body =
         mvc.perform(get("/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
@@ -394,104 +318,5 @@ class SignupFlowIntegrationTest {
             .getResponse()
             .getContentAsString(StandardCharsets.UTF_8);
     return JSON.readTree(body);
-  }
-
-  private static HttpResponse<String> tokenRequest(Map<String, String> form) throws Exception {
-    var all = new java.util.LinkedHashMap<String, String>(form);
-    all.put("grant_type", "password");
-    all.put("client_id", "solace-mobile");
-    return formPost(
-        KEYCLOAK.getAuthServerUrl() + "/realms/solace-members/protocol/openid-connect/token", all);
-  }
-
-  private static String serviceToken(String clientId, String secret) throws Exception {
-    HttpResponse<String> response =
-        formPost(
-            KEYCLOAK.getAuthServerUrl() + "/realms/solace-staff/protocol/openid-connect/token",
-            Map.of(
-                "grant_type",
-                "client_credentials",
-                "client_id",
-                clientId,
-                "client_secret",
-                secret));
-    assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
-    return JSON.readTree(response.body()).path("access_token").asText();
-  }
-
-  private static HttpResponse<String> formPost(String url, Map<String, String> form)
-      throws Exception {
-    String encoded =
-        form.entrySet().stream()
-            .map(
-                e ->
-                    URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8)
-                        + "="
-                        + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-            .collect(Collectors.joining("&"));
-    return HTTP.send(
-        HttpRequest.newBuilder(URI.create(url.replace("//realms", "/realms")))
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .POST(HttpRequest.BodyPublishers.ofString(encoded))
-            .build(),
-        HttpResponse.BodyHandlers.ofString());
-  }
-
-  /** As the authenticator masks contacts in its log line. */
-  private static String mask(String contact) {
-    if (contact.startsWith("+")) {
-      return contact.substring(0, 4)
-          + "*".repeat(contact.length() - 6)
-          + contact.substring(contact.length() - 2);
-    }
-    return contact.charAt(0) + "***" + contact.substring(contact.indexOf('@'));
-  }
-
-  private static String lastCodeFor(String masked) {
-    Pattern line = Pattern.compile("sign-in code (\\d+) for " + Pattern.quote(masked) + "(?!\\S)");
-    return await()
-        .atMost(Duration.ofSeconds(10))
-        .until(
-            () -> {
-              Matcher m = line.matcher(KEYCLOAK.getLogs());
-              String last = null;
-              while (m.find()) {
-                last = m.group(1);
-              }
-              return last;
-            },
-            code -> code != null);
-  }
-
-  /** The first event on {@code topic} about {@code subjectId} that contains {@code marker}. */
-  private static String firstEventOn(String topic, String subjectId, String marker) {
-    Map<String, Object> config =
-        Map.of(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-            KAFKA.getBootstrapServers(),
-            ConsumerConfig.GROUP_ID_CONFIG,
-            "test-" + UUID.randomUUID(),
-            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
-            "earliest",
-            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-            StringDeserializer.class,
-            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-            StringDeserializer.class);
-    try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(config)) {
-      consumer.subscribe(List.of(topic));
-      return await()
-          .atMost(Duration.ofSeconds(30))
-          .until(
-              () -> {
-                for (ConsumerRecord<String, String> record :
-                    consumer.poll(Duration.ofMillis(500))) {
-                  if (subjectId.equals(record.key()) && record.value().contains(marker)) {
-                    return record.value();
-                  }
-                }
-                return null;
-              },
-              value -> value != null);
-    }
   }
 }

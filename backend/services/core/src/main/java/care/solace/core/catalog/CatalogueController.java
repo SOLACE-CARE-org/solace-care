@@ -29,7 +29,16 @@ class CatalogueController {
         .toList();
   }
 
+  @GetMapping("/v1/catalogue/professions")
+  List<Profession> professions(Locale locale) {
+    return catalogue.professions(locale).stream()
+        .map(e -> new Profession(e.code(), e.label()))
+        .toList();
+  }
+
   record SessionLanguage(String code, String name) {}
 
   record HelpTopic(String code, String label) {}
+
+  record Profession(String code, String label) {}
 }

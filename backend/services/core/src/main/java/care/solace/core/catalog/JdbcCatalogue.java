@@ -38,6 +38,15 @@ class JdbcCatalogue implements Catalogue {
   }
 
   @Override
+  public List<Entry> professions(Locale viewer) {
+    String column = french(viewer) ? "label_fr" : "label_en";
+    return db.sql(
+            "SELECT code, " + column + " AS label FROM profession WHERE enabled ORDER BY position")
+        .query((rs, n) -> new Entry(rs.getString("code"), rs.getString("label")))
+        .list();
+  }
+
+  @Override
   public boolean areSessionLanguages(Collection<String> codes) {
     return allEnabled("session_language", codes);
   }
@@ -45,6 +54,11 @@ class JdbcCatalogue implements Catalogue {
   @Override
   public boolean areHelpTopics(Collection<String> codes) {
     return allEnabled("help_topic", codes);
+  }
+
+  @Override
+  public boolean isProfession(String code) {
+    return allEnabled("profession", List.of(code));
   }
 
   private boolean allEnabled(String table, Collection<String> codes) {

@@ -134,6 +134,12 @@ class GatewayTest {
         .expectBody()
         .jsonPath("$.path")
         .isEqualTo("/v1/signups");
+    web.post()
+        .uri("/api/core/v1/specialist-signups")
+        .exchange()
+        .expectBody()
+        .jsonPath("$.path")
+        .isEqualTo("/v1/specialist-signups");
     web.get()
         .uri("/api/core/v1/catalogue/help-topics")
         .exchange()

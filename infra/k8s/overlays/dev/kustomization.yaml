@@ -18,6 +18,9 @@ configMapGenerator:
       # No SMS or email provider yet: Core writes messages, sign-in codes included, to its log.
       # Dev only. Staging and prod set no sender, so Core refuses to start until one exists.
       - SOLACE_NOTIFICATIONS_SENDER=logging
+      # Placeholder fee for SpecServices: the commission rate is not decided (decisions.md).
+      # Staging and prod set none, so Core refuses to start until it is.
+      - SOLACE_SPECIALISTS_PRICING_FEE_PERCENT=20
       - SOLACE_ADMIN_ORIGIN=https://admin.dev.solace.example
   - name: admin-settings
     behavior: merge

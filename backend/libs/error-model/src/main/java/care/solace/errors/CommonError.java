@@ -9,6 +9,7 @@ public enum CommonError implements ErrorCode {
   ACCESS_DENIED("access.denied", 403, "AUTH"),
   NOT_FOUND("resource.not-found", 404, "REQ"),
   CONFLICT("resource.conflict", 409, "REQ"),
+  TOO_LARGE("request.too-large", 413, "REQ"),
   RATE_LIMITED("rate-limited", 429, "REQ"),
   INTERNAL("internal", 500, "SYS"),
   DEPENDENCY_UNAVAILABLE("dependency.unavailable", 503, "SYS");

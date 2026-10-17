@@ -72,6 +72,50 @@ class AccountStore {
         .optional();
   }
 
+  /** A new unverified account; the privacy notice version is null for specialists. */
+  void insertAccount(
+      UUID id,
+      String keycloakId,
+      Account.Type type,
+      String phone,
+      String email,
+      Locale locale,
+      String termsVersion,
+      String privacyNoticeVersion) {
+    db.sql(
+            """
+            INSERT INTO user_account (id, keycloak_id, type, status, phone, email, preferred_locale,
+                                      terms_version, privacy_notice_version)
+            VALUES (:id, :k, :type, 'PENDING', :p, :e, :l, :t, :pn)
+            """)
+        .param("id", id)
+        .param("k", keycloakId)
+        .param("type", type.name())
+        .param("p", phone)
+        .param("e", email)
+        .param("l", locale.getLanguage())
+        .param("t", termsVersion)
+        .param("pn", privacyNoticeVersion)
+        .update();
+  }
+
+  /** Replaces the details of a still-unverified account whose owner signs up again. */
+  void replacePendingAccount(
+      UUID id, String email, Locale locale, String termsVersion, String privacyNoticeVersion) {
+    db.sql(
+            """
+            UPDATE user_account SET email = :e, preferred_locale = :l, terms_version = :t,
+                   privacy_notice_version = :pn
+             WHERE id = :id AND status = 'PENDING'
+            """)
+        .param("id", id)
+        .param("e", email)
+        .param("l", locale.getLanguage())
+        .param("t", termsVersion)
+        .param("pn", privacyNoticeVersion)
+        .update();
+  }
+
   void insertSeeker(
       UUID id,
       String keycloakId,
@@ -82,20 +126,15 @@ class AccountStore {
       String privacyNoticeVersion,
       String displayName,
       LocalDate dateOfBirth) {
-    db.sql(
-            """
-            INSERT INTO user_account (id, keycloak_id, type, status, phone, email, preferred_locale,
-                                      terms_version, privacy_notice_version)
-            VALUES (:id, :k, 'SEEKER', 'PENDING', :p, :e, :l, :t, :pn)
-            """)
-        .param("id", id)
-        .param("k", keycloakId)
-        .param("p", phone)
-        .param("e", email)
-        .param("l", locale.getLanguage())
-        .param("t", termsVersion)
-        .param("pn", privacyNoticeVersion)
-        .update();
+    insertAccount(
+        id,
+        keycloakId,
+        Account.Type.SEEKER,
+        phone,
+        email,
+        locale,
+        termsVersion,
+        privacyNoticeVersion);
     db.sql(
             """
             INSERT INTO seeker_profile (account_id, display_name, date_of_birth)
@@ -121,18 +160,7 @@ class AccountStore {
       String privacyNoticeVersion,
       String displayName,
       LocalDate dateOfBirth) {
-    db.sql(
-            """
-            UPDATE user_account SET email = :e, preferred_locale = :l, terms_version = :t,
-                   privacy_notice_version = :pn
-             WHERE id = :id AND status = 'PENDING'
-            """)
-        .param("id", id)
-        .param("e", email)
-        .param("l", locale.getLanguage())
-        .param("t", termsVersion)
-        .param("pn", privacyNoticeVersion)
-        .update();
+    replacePendingAccount(id, email, locale, termsVersion, privacyNoticeVersion);
     db.sql("UPDATE seeker_profile SET display_name = :n, date_of_birth = :d WHERE account_id = :id")
         .param("id", id)
         .param("n", displayName)

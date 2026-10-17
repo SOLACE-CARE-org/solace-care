@@ -8,16 +8,22 @@ dependencies {
     implementation(project(":libs:grpc-client"))
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    // Object storage for specialist documents (MinIO locally, any S3-compatible store in the cluster).
+    implementation(platform(libs.aws.sdk.bom))
+    implementation(libs.aws.sdk.s3)
 
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     testImplementation("io.grpc:grpc-inprocess")
     testImplementation("org.testcontainers:kafka")
     testImplementation("org.awaitility:awaitility")
+    testImplementation("org.testcontainers:minio")
 }
 
 // Local runs write SMS and email to the log: no provider is chosen yet (application.yml).
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     environment("SOLACE_NOTIFICATIONS_SENDER", "logging")
+    // Placeholder: the fee is not decided (decisions.md: the commission rate is open).
+    environment("SOLACE_SPECIALISTS_PRICING_FEE_PERCENT", "20")
 }
 
 dependencies {

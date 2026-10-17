@@ -13,11 +13,17 @@ public interface Catalogue {
   /** Enabled help topics in display order, labelled in {@code viewer}'s language. */
   List<Entry> helpTopics(Locale viewer);
 
+  /** Enabled professions a specialist can apply as, labelled in {@code viewer}'s language. */
+  List<Entry> professions(Locale viewer);
+
   /** True when every code names an enabled session language. */
   boolean areSessionLanguages(Collection<String> codes);
 
   /** True when every code names an enabled help topic. */
   boolean areHelpTopics(Collection<String> codes);
+
+  /** True when the code names an enabled profession. */
+  boolean isProfession(String code);
 
   /** A code and its label in one language. */
   record Entry(String code, String label) {}

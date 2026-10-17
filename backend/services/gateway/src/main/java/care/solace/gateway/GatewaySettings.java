@@ -28,6 +28,7 @@ public record GatewaySettings(
           "/actuator/health",
           "/actuator/health/**",
           "/api/core/v1/signups",
+          "/api/core/v1/specialist-signups",
           "/api/core/v1/catalogue/**"
         })
         List<String> publicPaths,

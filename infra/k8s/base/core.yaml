@@ -48,7 +48,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: solace-platform
-            # SPRING_DATASOURCE_URL/USERNAME/PASSWORD, SOLACE_CORE_SERVICE_SECRET (secrets.yaml)
+            # SPRING_DATASOURCE_URL/USERNAME/PASSWORD, SOLACE_CORE_SERVICE_SECRET, SOLACE_STORAGE_*
+            # (secrets.yaml)
             - secretRef:
                 name: core
           env:
@@ -65,6 +66,9 @@ spec:
               value: http://keycloak:8080/realms/solace-members/protocol/openid-connect/token
             - name: SOLACE_IDENTITY_KEYCLOAK_ADMIN_URL
               value: http://keycloak:8080
+            # Credential documents are encrypted at rest by the object store (System Design).
+            - name: SOLACE_STORAGE_SERVER_SIDE_ENCRYPTION
+              value: AES256
           resources:
             requests:
               cpu: 250m

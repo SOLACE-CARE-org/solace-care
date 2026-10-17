@@ -12,6 +12,11 @@ spring:
     password: core
   kafka:
     bootstrap-servers: localhost:9092
+  servlet:
+    multipart:
+      # Credential documents: IDENTITY takes two files of up to solace.specialists.documents.max-file-size.
+      max-file-size: ${solace.specialists.documents.max-file-size:10MB}
+      max-request-size: 25MB
   grpc:
     client:
       channels:
@@ -62,12 +67,13 @@ management:
 solace:
   security:
     audience: core
-    # Open without a token: health checks, seeker sign-up and the catalogue.
+    # Open without a token: health checks, seeker and specialist sign-up, and the catalogue.
     public-paths:
       - /actuator/health
       - /actuator/health/**
       - /actuator/info
       - /v1/signups
+      - /v1/specialist-signups
       - /v1/catalogue/**
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
@@ -78,5 +84,16 @@ solace:
     # nothing is set here and Core will not start without one: local runs and the dev cluster set
     # "logging", which writes messages to the log. Never set "logging" anywhere real people are.
     sender: ${SOLACE_NOTIFICATIONS_SENDER:}
+  specialists:
+    pricing:
+      # SpecServices' [Min] and [Max]: 5,000 to 20,000 FCFA per session (D27). Settings, not constants.
+      min-price: ${SOLACE_SPECIALISTS_PRICING_MIN_PRICE:5000}
+      max-price: ${SOLACE_SPECIALISTS_PRICING_MAX_PRICE:20000}
+      # SpecServices' [n]%: not decided (decisions.md: the commission rate is open), so nothing is
+      # set here and Core will not start without it. Local runs, tests and the dev cluster set a
+      # placeholder; staging and prod must set the real one.
+      fee-percent: ${SOLACE_SPECIALISTS_PRICING_FEE_PERCENT:}
+  storage:
+    endpoint: ${SOLACE_STORAGE_ENDPOINT:http://localhost:9000}
   grpc:
     client-registration: keycloak

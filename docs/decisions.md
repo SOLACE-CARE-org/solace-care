@@ -149,6 +149,10 @@ Every pair now meets WCAG 2.1 AA.
 - **Application states** are the six in the System Design (DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, SUSPENDED). A change request sends the application back to DRAFT with a reason; a Super admin can reinstate a suspended specialist.
 - **Guest access** (epic 1's booking-scoped token and claiming) is built with Bookings (epic 5), because the token is scoped to a booking and claiming moves bookings. Core already publishes `ContactVerified` for it.
 
+**D27. Session prices: 5,000 to 20,000 FCFA.** Decided 17 Oct 2026 by the owner.
+- SpecServices' "Allowed range: [Min] to [Max] FCFA per session" is 5,000 to 20,000 FCFA. It stays a setting (`solace.specialists.pricing.min-price` and `max-price`) with these defaults, for admin settings to take over.
+- Solace's fee ("[n]%") is still open with the commission rate below.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

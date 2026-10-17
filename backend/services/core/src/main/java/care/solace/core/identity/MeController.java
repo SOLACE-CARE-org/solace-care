@@ -2,6 +2,7 @@ package care.solace.core.identity;
 
 import care.solace.core.catalog.Catalogue;
 import care.solace.errors.SolaceException;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -10,6 +11,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -26,6 +28,7 @@ class MeController {
   private final AccountStore store;
   private final Catalogue catalogue;
   private final ConsentProgress consents;
+  private final ObjectProvider<SpecialistSummaries> specialists;
   private final TransactionTemplate transactions;
   private final Clock clock;
 
@@ -34,17 +37,26 @@ class MeController {
       AccountStore store,
       Catalogue catalogue,
       ConsentProgress consents,
+      ObjectProvider<SpecialistSummaries> specialists,
       TransactionTemplate transactions,
       Clock clock) {
     this.members = members;
     this.store = store;
     this.catalogue = catalogue;
     this.consents = consents;
+    this.specialists = specialists;
     this.transactions = transactions;
     this.clock = clock;
   }
 
-  record Me(UUID id, String role, String displayName, String appLanguage, Onboarding onboarding) {}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record Me(
+      UUID id,
+      String role,
+      String displayName,
+      String appLanguage,
+      Onboarding onboarding,
+      String applicationStatus) {}
 
   record Onboarding(boolean preferences, boolean privacy) {}
 
@@ -57,6 +69,17 @@ class MeController {
   @GetMapping("/v1/me")
   Me me(@AuthenticationPrincipal Jwt token) {
     Account account = members.signedIn(token);
+    if (account.type() == Account.Type.SPECIALIST) {
+      // Seeker sign-up steps do not apply; the application says where a specialist resumes.
+      var summary = specialists.getObject().of(account.id());
+      return new Me(
+          account.id(),
+          account.type().name(),
+          summary.map(SpecialistSummaries.Summary::fullName).orElse(""),
+          account.appLanguage().getLanguage(),
+          new Onboarding(true, true),
+          summary.map(SpecialistSummaries.Summary::applicationStatus).orElse(null));
+    }
     var profile = store.seekerProfile(account.id());
     return new Me(
         account.id(),
@@ -65,7 +88,8 @@ class MeController {
         account.appLanguage().getLanguage(),
         new Onboarding(
             profile.map(p -> p.preferencesSavedAt() != null).orElse(true),
-            consents.recordedAny(account.id())));
+            consents.recordedAny(account.id())),
+        null);
   }
 
   @GetMapping("/v1/me/preferences")

@@ -90,8 +90,8 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Check that specialists are licensed and who they say they are before they can be booked |
 | People | Specialist applicants and specialists |
-| Data | Profile (title, bios in EN and FR, experience, languages and levels, time zone), licence number, credential and identity documents, reference checks, verification status and history, payout details |
-| Where | Core database; documents in object storage |
+| Data | From sign-up (Phase 1, epic 2): full name as on the licence, professional email, phone number, Specialist terms and Code of conduct versions accepted; profession, licence number, issuing body, years in practice, areas worked with (help topics), a short bio in the language written (the other language drafted later); declared session languages and levels, and when a reviewer confirmed each; licence, identity document (front and back), profile photo and optional CV; session types, lengths and prices; weekly hours and time zone; payout method, mobile money number and account holder name; application status, submission time, interview time and reviewer notes. Later: reference checks and verification history |
+| Where | Core database; documents in the private `solace-credentials` bucket, encrypted at rest by the object store, one object per file under a random key |
 | Recipients | Staff with the right role; the public sees the published profile only |
 | Retention | **Open**: documents of rejected applicants; documents after a specialist leaves |
 | Security | CO-17 |
