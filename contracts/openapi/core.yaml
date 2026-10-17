@@ -24,6 +24,8 @@ tags:
     description: Specialist sign-up and application (Phase 1, epic 2)
   - name: scheduling
     description: A specialist's weekly hours (Phase 1, epics 2 and 4)
+  - name: admin-specialists
+    description: Staff review of specialist applications and specialist records (Phase 1, epic 2). Staff realm only; the permission matrix (contracts/permissions) decides who may view or change.
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -447,6 +449,421 @@ paths:
                   $ref: "#/components/schemas/Profession"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /admin/v1/specialist-applications:
+    get:
+      operationId: listSpecialistApplications
+      summary: Specialist applications, oldest first (admin screen 4)
+      description: Staff with view access to Specialists. Counts are per tab.
+      tags: [admin-specialists]
+      parameters:
+        - name: tab
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [SUBMITTED, UNDER_REVIEW, CHANGES_REQUESTED, DECIDED]
+        - name: profession
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The tab's applications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationQueue"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/specialist-applications/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    get:
+      operationId: getApplicationReview
+      summary: One application with its six review items (admin screen 5)
+      tags: [admin-specialists]
+      responses:
+        "200":
+          description: The application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationReview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/specialist-applications/{id}/review:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: openApplicationForReview
+      summary: Open a submitted application for review and take it
+      description: SUBMITTED to UNDER_REVIEW, assigned to the caller. On an application already under review, assigns it to the caller.
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/items/{item}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - name: item
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [IDENTITY, LICENCE, PROFILE, PAYOUT]
+    put:
+      operationId: verifyApplicationItem
+      summary: Mark an item verified, or not
+      description: |
+        Languages are verified one by one, and services follow from the price bands, so neither is
+        set here. PROFILE needs the bio in both EN and FR. LICENCE takes the licence's expiry date.
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemVerification"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/languages/{code}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: verifyApplicationLanguage
+      summary: Record the level confirmed in the onboarding interview
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [verifiedLevel]
+              properties:
+                verifiedLevel:
+                  $ref: "#/components/schemas/VerifiedLevel"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/bio:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    put:
+      operationId: saveApplicationBio
+      summary: Add or correct the bio in one language
+      description: Nothing seekers see is published without both EN and FR. Until the AI draft arrives (Phase 3), the reviewer writes the missing language.
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [language, text]
+              properties:
+                language:
+                  $ref: "#/components/schemas/AppLanguage"
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 600
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/notes:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    put:
+      operationId: saveReviewerNotes
+      summary: Reviewer notes, visible to staff only
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [notes]
+              properties:
+                notes:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/specialist-applications/{id}/interview:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    put:
+      operationId: bookInterview
+      summary: Book the onboarding interview (D25)
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [at]
+              properties:
+                at:
+                  type: string
+                  format: date-time
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/change-request:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: requestApplicationChanges
+      summary: Send the application back to the applicant with a reason they see in the app
+      tags: [admin-specialists]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/approval:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: approveApplication
+      summary: Approve; every item must be verified
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/rejection:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: rejectApplication
+      summary: Reject, with a reason the applicant sees in the app
+      tags: [admin-specialists]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-applications/{id}/documents/{fileId}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: openSpecialistDocument
+      summary: Open one credential document
+      description: Only staff with view access to Specialists. Every opening is written to the audit log first.
+      tags: [admin-specialists]
+      responses:
+        "200":
+          description: The file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/specialists:
+    get:
+      operationId: findSpecialists
+      summary: Find an approved or suspended specialist by name or licence number (admin screen 6)
+      tags: [admin-specialists]
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 120
+      responses:
+        "200":
+          description: Up to 20 matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialistSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/specialists/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    get:
+      operationId: getSpecialistRecord
+      summary: An approved or suspended specialist's record
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/specialists/{id}/suspension:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    post:
+      operationId: suspendSpecialist
+      summary: Suspend an approved specialist; they stop taking bookings
+      tags: [admin-specialists]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: reinstateSpecialist
+      summary: Reinstate a suspended specialist (Super admin only, D26)
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -471,7 +888,43 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Keycloak access token
+  parameters:
+    SpecialistId:
+      name: id
+      in: path
+      required: true
+      description: The specialist's account id.
+      schema:
+        type: string
+        format: uuid
+  requestBodies:
+    Reason:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [reason]
+            properties:
+              reason:
+                description: Shown to the applicant or specialist as written, in the reviewer's words.
+                type: string
+                minLength: 1
+                maxLength: 1000
   responses:
+    ApplicationReviewResponse:
+      description: The application or record after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApplicationReview"
+    NotFound:
+      description: No such application or specialist
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     BadRequest:
       description: The request is not valid; code says why (e.g. account.too-young)
       content:
@@ -999,3 +1452,264 @@ components:
           description: How long before a session it can still be booked.
           type: integer
           enum: [2, 12, 24]
+    VerifiedLevel:
+      description: The level a reviewer confirmed in the interview. BELOW_PROFESSIONAL is never bookable.
+      type: string
+      enum: [NATIVE, FLUENT, PROFESSIONAL, BELOW_PROFESSIONAL]
+    StaffRef:
+      description: A staff member as activity logs name them.
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Verification:
+      description: Who verified an item, and when.
+      type: object
+      additionalProperties: false
+      required: [by, at]
+      properties:
+        by:
+          $ref: "#/components/schemas/StaffRef"
+        at:
+          type: string
+          format: date-time
+    ItemVerification:
+      type: object
+      additionalProperties: false
+      required: [verified]
+      properties:
+        verified:
+          type: boolean
+        licenceValidUntil:
+          description: LICENCE only, required when verifying it.
+          type: string
+          format: date
+    ApplicationQueue:
+      type: object
+      additionalProperties: false
+      required: [counts, items]
+      properties:
+        counts:
+          type: object
+          additionalProperties: false
+          required: [submitted, underReview, changesRequested]
+          properties:
+            submitted:
+              type: integer
+            underReview:
+              type: integer
+            changesRequested:
+              type: integer
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, fullName, languages, status]
+            properties:
+              id:
+                type: string
+                format: uuid
+              fullName:
+                type: string
+              profession:
+                type: string
+                description: Profession label in the caller's language.
+              languages:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [code, proficiency]
+                  properties:
+                    code:
+                      type: string
+                    proficiency:
+                      $ref: "#/components/schemas/Proficiency"
+              status:
+                $ref: "#/components/schemas/ApplicationStatus"
+              submittedAt:
+                type: string
+                format: date-time
+              assignedTo:
+                $ref: "#/components/schemas/StaffRef"
+    ApplicationReview:
+      description: One application, or one specialist's record, as staff see it.
+      type: object
+      additionalProperties: false
+      required: [id, status, fullName, verifiedItems, identity, licence, languages, services, profile, payout, documents, notes, activity]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        changesRequested:
+          description: True while the application is back with the applicant after a change request.
+          type: boolean
+        fullName:
+          type: string
+        profession:
+          type: string
+        professionLabel:
+          type: string
+        timeZone:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type: string
+          format: date-time
+        assignedTo:
+          $ref: "#/components/schemas/StaffRef"
+        interviewAt:
+          type: string
+          format: date-time
+        reviewNote:
+          description: The last reason sent to the applicant.
+          type: string
+        verifiedItems:
+          description: How many of the six items are verified; approval needs all six.
+          type: integer
+        identity:
+          type: object
+          additionalProperties: false
+          properties:
+            verification:
+              $ref: "#/components/schemas/Verification"
+        licence:
+          type: object
+          additionalProperties: false
+          properties:
+            licenceNumber:
+              type: string
+            licensingBody:
+              type: string
+            yearsInPractice:
+              type: integer
+            validUntil:
+              type: string
+              format: date
+            verification:
+              $ref: "#/components/schemas/Verification"
+        languages:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, declared]
+            properties:
+              code:
+                type: string
+              declared:
+                $ref: "#/components/schemas/Proficiency"
+              verifiedLevel:
+                $ref: "#/components/schemas/VerifiedLevel"
+              verification:
+                $ref: "#/components/schemas/Verification"
+        services:
+          type: object
+          additionalProperties: false
+          required: [offerings, withinBands]
+          properties:
+            offerings:
+              type: array
+              items:
+                $ref: "#/components/schemas/Offering"
+            withinBands:
+              type: boolean
+        profile:
+          type: object
+          additionalProperties: false
+          properties:
+            focusAreas:
+              type: array
+              items:
+                type: string
+            bioEn:
+              type: string
+            bioFr:
+              type: string
+            verification:
+              $ref: "#/components/schemas/Verification"
+        payout:
+          type: object
+          additionalProperties: false
+          properties:
+            method:
+              $ref: "#/components/schemas/PayoutMethod"
+            phone:
+              description: Masked.
+              type: string
+            holderName:
+              type: string
+            verification:
+              $ref: "#/components/schemas/Verification"
+        documents:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, kind, fileName, contentType, size, uploadedAt]
+            properties:
+              id:
+                type: string
+                format: uuid
+              kind:
+                $ref: "#/components/schemas/DocumentKind"
+              fileName:
+                type: string
+              contentType:
+                type: string
+              size:
+                type: integer
+              uploadedAt:
+                type: string
+                format: date-time
+        notes:
+          description: Reviewer notes, staff only.
+          type: string
+        activity:
+          description: Newest first.
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [at, kind]
+            properties:
+              at:
+                type: string
+                format: date-time
+              kind:
+                description: The portal words each kind in the viewer's language.
+                type: string
+                enum: [SUBMITTED, OPENED, ITEM_VERIFIED, ITEM_UNVERIFIED, LANGUAGE_VERIFIED, BIO_ADDED, INTERVIEW_BOOKED, CHANGES_REQUESTED, APPROVED, REJECTED, SUSPENDED, REINSTATED]
+              subject:
+                description: The item or language code the entry is about, if any.
+                type: string
+              value:
+                description: The level verified, if any.
+                type: string
+              by:
+                $ref: "#/components/schemas/StaffRef"
+    SpecialistSummary:
+      type: object
+      additionalProperties: false
+      required: [id, fullName, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        professionLabel:
+          type: string
+        licenceNumber:
+          type: string
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"

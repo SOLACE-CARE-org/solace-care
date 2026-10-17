@@ -22,6 +22,10 @@ sourceSets {
         proto {
             srcDir(rootProject.file("../contracts/proto"))
         }
+        // The admin permission matrix, read by Core on every admin endpoint (CO-3).
+        resources {
+            srcDir(rootProject.file("../contracts/permissions"))
+        }
     }
 }
 

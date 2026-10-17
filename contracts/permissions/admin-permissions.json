@@ -1,0 +1,30 @@
+{
+  "$comment": "The admin permission matrix (docs/specs/admin-portal-spec.md, Roles and permissions). F = view and change, V = view only; a role missing from an area cannot see it. Core enforces it on every admin endpoint; the portal only hides what Core refuses anyway (threat-model-core.md, CO-3).",
+  "roles": [
+    "SUPER_ADMIN",
+    "OPERATIONS",
+    "SUPPORT",
+    "FINANCE",
+    "CLINICAL_REVIEWER",
+    "CRISIS_RESPONDER",
+    "CONTENT_EDITOR"
+  ],
+  "areas": {
+    "overview": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "V", "FINANCE": "V", "CLINICAL_REVIEWER": "V", "CRISIS_RESPONDER": "V", "CONTENT_EDITOR": "V" },
+    "crisis": { "SUPER_ADMIN": "F", "OPERATIONS": "V", "SUPPORT": "V", "CLINICAL_REVIEWER": "V", "CRISIS_RESPONDER": "F" },
+    "specialists": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "V", "FINANCE": "V", "CLINICAL_REVIEWER": "V" },
+    "bookings": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "F", "FINANCE": "V", "CRISIS_RESPONDER": "V" },
+    "people": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "V", "CRISIS_RESPONDER": "V" },
+    "payments": { "SUPER_ADMIN": "F", "OPERATIONS": "V", "SUPPORT": "V", "FINANCE": "F" },
+    "reviews": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "F" },
+    "trackingModules": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "CLINICAL_REVIEWER": "F", "CONTENT_EDITOR": "V" },
+    "healthCheck": { "SUPER_ADMIN": "F", "OPERATIONS": "V", "CLINICAL_REVIEWER": "F", "CONTENT_EDITOR": "V" },
+    "aiControls": { "SUPER_ADMIN": "F", "OPERATIONS": "V", "CLINICAL_REVIEWER": "V" },
+    "catalogue": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "V", "FINANCE": "V", "CONTENT_EDITOR": "V" },
+    "content": { "SUPER_ADMIN": "F", "OPERATIONS": "V", "SUPPORT": "V", "CLINICAL_REVIEWER": "V", "CRISIS_RESPONDER": "V", "CONTENT_EDITOR": "F" },
+    "analytics": { "SUPER_ADMIN": "F", "OPERATIONS": "F", "SUPPORT": "V", "FINANCE": "F", "CLINICAL_REVIEWER": "V" },
+    "audit": { "SUPER_ADMIN": "F", "OPERATIONS": "V" },
+    "team": { "SUPER_ADMIN": "F" },
+    "settings": { "SUPER_ADMIN": "F", "OPERATIONS": "V" }
+  }
+}

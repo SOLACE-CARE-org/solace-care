@@ -4,6 +4,9 @@
   "private": true,
   "description": "gRPC, edge OpenAPI and event schemas shared by backend, mobile and admin",
   "type": "module",
+  "exports": {
+    "./permissions/admin-permissions.json": "./permissions/admin-permissions.json"
+  },
   "scripts": {
     "lint": "pnpm run lint:proto && pnpm run lint:openapi && pnpm run lint:events",
     "lint:proto": "buf lint && buf build",
