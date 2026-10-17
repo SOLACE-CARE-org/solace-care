@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Every log line passes through the scrubber first (libs/log-scrub). -->
+<configuration>
+  <include resource="care/solace/logscrub/logback-base.xml"/>
+  <root level="INFO">
+    <appender-ref ref="SCRUBBED"/>
+  </root>
+</configuration>

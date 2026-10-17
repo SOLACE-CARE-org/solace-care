@@ -1,9 +1,7 @@
 // A deployable Spring Boot service in services/: web API, health checks, its own PostgreSQL
 // database with Flyway, Kafka through the outbox, and every shared library.
 plugins {
-    id("solace.java-conventions")
-    id("solace.spring-platform")
-    id("org.springframework.boot")
+    id("solace.boot-app")
 }
 
 dependencies {
@@ -28,13 +26,4 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
-}
-
-tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    archiveFileName = "${project.name}.jar"
-}
-
-// Libraries only; the service is shipped as the boot jar.
-tasks.named<Jar>("jar") {
-    enabled = false
 }

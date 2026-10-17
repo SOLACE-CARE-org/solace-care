@@ -39,7 +39,8 @@ cd backend
 # Format Java sources
 ./gradlew spotlessApply
 
-# Run a service against the local stack (one terminal each)
+# Run the services against the local stack (one terminal each)
+./gradlew :services:gateway:bootRun    # the API for apps: http://localhost:8080/api/{core,tracking,ai}/...
 ./gradlew :services:core:bootRun       # REST :8101
 ./gradlew :services:tracking:bootRun   # REST :8102, gRPC :9102
 ./gradlew :services:ai:bootRun         # REST :8103, gRPC :9103
@@ -56,4 +57,4 @@ pnpm --filter @solace/contracts lint
 pnpm --filter @solace/contracts breaking:proto
 ```
 
-Health checks are open at `/actuator/health/readiness` and `/actuator/health/liveness` on each service; everything else needs a Keycloak token. More commands (gateway, apps) are added here as each Phase 0 step lands.
+Apps talk only to the gateway on :8080, which checks the token, rate-limits per person and routes `/api/core/**`, `/api/tracking/**` and `/api/ai/**` with the prefix removed. Health checks are open at `/actuator/health/readiness` and `/actuator/health/liveness` on each process; everything else needs a Keycloak token. App commands are added here as each Phase 0 step lands.

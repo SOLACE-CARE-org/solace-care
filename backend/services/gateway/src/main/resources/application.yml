@@ -1,0 +1,38 @@
+# Gateway. Defaults point at the services and the local stack; override with environment
+# variables, e.g. SOLACE_GATEWAY_SERVICES_CORE=http://core:8080 in Kubernetes.
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            # Placeholders, not in the specs: give up on a service that does not connect in 2 s
+            # or answer in 15 s, and return 503 dependency.unavailable.
+            connect-timeout: 2000
+            response-timeout: 15s
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+solace:
+  gateway:
+    services:
+      core: http://localhost:8101
+      tracking: http://localhost:8102
+      ai: http://localhost:8103
