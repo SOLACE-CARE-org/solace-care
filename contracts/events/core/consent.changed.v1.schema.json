@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/consent.changed.v1.schema.json",
+  "title": "core.consent.changed v1",
+  "description": "A member granted or withdrew consent for one purpose. Tracking and AI turn data sharing, the scribe or AI features on or off (System Design, Event catalog).",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "core.consent.changed" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "granted", "version"],
+      "properties": {
+        "purpose": { "enum": ["TRACKING", "AI_ASSIST", "SPECIALIST_SHARING", "AI_SCRIBE", "HEALTH_CHECK"] },
+        "granted": { "type": "boolean" },
+        "version": { "description": "Version of the wording the choice was made on.", "type": "string", "maxLength": 40 }
+      }
+    }
+  }
+}
