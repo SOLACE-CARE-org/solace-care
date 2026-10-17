@@ -24,7 +24,7 @@ Every processor needs a contract that forbids other use and, for AI vendors, tra
 
 | ID | Activity | Phase | Health data | Consent purpose |
 | --- | --- | --- | --- | --- |
-| P1 | Member accounts and sign-in | 1 | No | |
+| P1 | Member accounts and sign-in | 1 | **Help topics** | |
 | P2 | Guest booking and contact verification | 1 | By inference | |
 | P3 | Staff accounts and sign-in | 0–1 | No | |
 | P4 | Specialist onboarding and verification | 1 | No | |
@@ -52,11 +52,12 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Let seekers and specialists sign in with a one-time code and keep an account |
 | People | Seekers, specialists |
-| Data | Phone number and/or email, preferred app language, role, account status; sign-in events (time, client, IP address, outcome) |
+| Data | Phone number and/or email (and when each was proven by a code), preferred app language, role, account status, the Terms and privacy-notice versions accepted; for seekers: the name they want to be called (only their specialist sees it), date of birth (18 and over only), session languages, help topics and specialist-gender preference; sign-in events (time, client, IP address, outcome) |
+| Health data | **Help topics** (anxiety, low mood, grief...) reveal health concerns: treat as health data (**Open**: encryption and audit, Core threat model Findings 6) |
 | Where | Core database; Keycloak database (`solace-members`) |
 | Recipients | SMS and email providers (the code and the contact) |
 | Transfers abroad | Depends on the SMS and email providers (**Counsel**) |
-| Retention | While the account exists; erased within 30 days of a request (System Design). Sign-in events 90 days, a setting (`SOLACE_MEMBERS_EVENTS_EXPIRATION_SECONDS`), not set by any spec (**Open**) |
+| Retention | While the account exists; erased within 30 days of a request (System Design). An account whose first sign-in never comes is removed after 24 hours (`solace.identity.unverified-signup-ttl`, a setting, not in the specs). Sign-in events 90 days, a setting (`SOLACE_MEMBERS_EVENTS_EXPIRATION_SECONDS`), not set by any spec (**Open**) |
 | Security | Threat model EI-1 to EI-5, EI-19 |
 
 ### P2. Guest booking and contact verification

@@ -34,6 +34,7 @@ configMapGenerator:
       - SPRING_DATA_REDIS_HOST=redis.redis
       - SOLACE_SECURITY_ISSUERS=https://id.solace.example/realms/solace-members,https://id.solace.example/realms/solace-staff
       - SOLACE_SECURITY_SERVICE_ISSUER=https://id.solace.example/realms/solace-staff
+      - SOLACE_IDENTITY_MEMBERS_ISSUER=https://id.solace.example/realms/solace-members
       - SOLACE_ADMIN_ORIGIN=https://admin.solace.example
   # The admin portal's runtime settings (admin/Dockerfile).
   - name: admin-settings
@@ -51,3 +52,6 @@ configMapGenerator:
       - KC_HTTP_ENABLED=true
       - KC_PROXY_HEADERS=xforwarded
       - KC_LOG_CONSOLE_OUTPUT=json
+      # Sign-in codes go to Core, which words and sends them (CoreCodeSender).
+      - SOLACE_OTP_SENDER=core
+      - SOLACE_CORE_URL=http://core:8080

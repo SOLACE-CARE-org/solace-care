@@ -60,6 +60,11 @@ spec:
             # Tokens are fetched inside the cluster; Keycloak still names its public address as issuer.
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI
               value: http://keycloak:8080/realms/solace-staff/protocol/openid-connect/token
+            # Member sign-in identities are created through Keycloak's admin API, inside the cluster.
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_MEMBERS_TOKEN_URI
+              value: http://keycloak:8080/realms/solace-members/protocol/openid-connect/token
+            - name: SOLACE_IDENTITY_KEYCLOAK_ADMIN_URL
+              value: http://keycloak:8080
           resources:
             requests:
               cpu: 250m

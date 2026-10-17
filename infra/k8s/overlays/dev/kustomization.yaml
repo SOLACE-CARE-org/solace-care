@@ -14,6 +14,10 @@ configMapGenerator:
       - SOLACE_ENVIRONMENT=dev
       - SOLACE_SECURITY_ISSUERS=https://id.dev.solace.example/realms/solace-members,https://id.dev.solace.example/realms/solace-staff
       - SOLACE_SECURITY_SERVICE_ISSUER=https://id.dev.solace.example/realms/solace-staff
+      - SOLACE_IDENTITY_MEMBERS_ISSUER=https://id.dev.solace.example/realms/solace-members
+      # No SMS or email provider yet: Core writes messages, sign-in codes included, to its log.
+      # Dev only. Staging and prod set no sender, so Core refuses to start until one exists.
+      - SOLACE_NOTIFICATIONS_SENDER=logging
       - SOLACE_ADMIN_ORIGIN=https://admin.dev.solace.example
   - name: admin-settings
     behavior: merge
@@ -24,9 +28,6 @@ configMapGenerator:
     behavior: merge
     literals:
       - KC_HOSTNAME=https://id.dev.solace.example
-      # No SMS provider yet: sign-in codes go to Keycloak's log (masked contact). Dev only; the
-      # authenticator refuses to send this way unless the variable is set.
-      - SOLACE_DEV_CODE_SENDER=enabled
 
 # CI publishes ghcr.io/<owner>/solace-<name>:<first 12 characters of the commit>
 # (.github/workflows/ci.yml); the owner is a placeholder until the GitHub organisation exists.

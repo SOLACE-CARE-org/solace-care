@@ -15,6 +15,7 @@ configMapGenerator:
       - SOLACE_ENVIRONMENT=prod
       - SOLACE_SECURITY_ISSUERS=https://id.solace.example/realms/solace-members,https://id.solace.example/realms/solace-staff
       - SOLACE_SECURITY_SERVICE_ISSUER=https://id.solace.example/realms/solace-staff
+      - SOLACE_IDENTITY_MEMBERS_ISSUER=https://id.solace.example/realms/solace-members
       - SOLACE_ADMIN_ORIGIN=https://admin.solace.example
   - name: admin-settings
     behavior: merge

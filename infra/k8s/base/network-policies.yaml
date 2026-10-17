@@ -50,6 +50,24 @@ spec:
       ports:
         - port: 8080
 ---
+# Keycloak hands sign-in codes to Core's internal endpoint.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: core-from-keycloak
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: core
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - port: 8080
+---
 # gRPC: only Core calls Tracking and AI.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
