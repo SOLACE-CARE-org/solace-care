@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/user.registered.v1.schema.json",
+  "title": "core.user.registered v1",
+  "description": "A seeker or specialist verified their contact and their account became active. Tracking and AI create shadow profiles keyed by subjectId (System Design, Event catalog).",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "core.user.registered" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accountType"],
+      "properties": {
+        "accountType": { "enum": ["SEEKER", "SPECIALIST"] }
+      }
+    }
+  }
+}

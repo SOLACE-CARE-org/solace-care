@@ -1,0 +1,10 @@
+{
+  "eventId": "6f1c2a9e-3b7d-4e05-8c2a-91d4b7e6f0a2",
+  "type": "core.user.registered",
+  "version": 1,
+  "occurredAt": "2026-10-17T09:30:00Z",
+  "subjectId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+  "locale": "fr",
+  "traceId": "0af7651916cd43dd8448eb211c80319c",
+  "payload": { "accountType": "SEEKER" }
+}

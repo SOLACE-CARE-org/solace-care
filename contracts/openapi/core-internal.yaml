@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Solace Core internal API
+  version: 0.1.0
+  description: |
+    Endpoints other platform components call inside the cluster. Never routed by the gateway:
+    the gateway refuses every /api/*/internal/** path. Each endpoint needs a client-credentials
+    token from the solace-staff realm with the scope named on it.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: http://core:8080
+    description: Inside the cluster (http://localhost:8101 locally)
+security:
+  - serviceToken: []
+tags:
+  - name: sign-in
+    description: Keycloak hands sign-in codes to Core, which sends them (CLAUDE.md, Sign-in)
+paths:
+  /internal/v1/sign-in-codes:
+    post:
+      operationId: sendSignInCode
+      summary: Send a sign-in code by SMS or email
+      description: |
+        Called by Keycloak's code authenticator. Core words the message from notification-copy.md
+        ("Sign-in or sign-up code") in the person's app language and sends it. Needs the scope
+        core:sign-in-codes.send.
+      tags: [sign-in]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInCode"
+      responses:
+        "202":
+          description: Handed to the SMS or email provider
+        "400":
+          $ref: "#/components/responses/Problem"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Problem"
+components:
+  securitySchemes:
+    serviceToken:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: http://keycloak:8080/realms/solace-staff/protocol/openid-connect/token
+          scopes:
+            core:sign-in-codes.send: Hand a sign-in code to Core for sending
+  responses:
+    Problem:
+      description: RFC 9457 problem details
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required: [type, title, status]
+            properties:
+              type:
+                type: string
+              title:
+                type: string
+              status:
+                type: integer
+              code:
+                type: string
+  schemas:
+    SignInCode:
+      type: object
+      additionalProperties: false
+      required: [channel, to, code, expiresInMinutes]
+      properties:
+        channel:
+          type: string
+          enum: [SMS, EMAIL]
+        to:
+          description: E.164 phone number for SMS, an email address for EMAIL.
+          type: string
+          maxLength: 254
+        code:
+          type: string
+          pattern: "^[0-9]{4,10}$"
+        expiresInMinutes:
+          description: Fills the code lifetime in the message (the [10] minutes in notification-copy.md).
+          type: integer
+          minimum: 1
+        locale:
+          description: The person's app language when Keycloak knows it; Core falls back to the account's, then English.
+          type: string
+          enum: [en, fr]

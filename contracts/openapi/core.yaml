@@ -16,7 +16,163 @@ security:
 tags:
   - name: system
     description: Platform plumbing, no user data
+  - name: accounts
+    description: Seeker sign-up and the signed-in person's own account (Phase 1, epic 1)
+  - name: privacy
+    description: Consent choices (Phase 1, epic 11)
+  - name: catalogue
+    description: Reference data shown before sign-in, in the caller's language
 paths:
+  /v1/signups:
+    post:
+      operationId: startSignup
+      summary: Start a seeker account
+      description: |
+        Creates the account, unverified, and lets the app ask Keycloak for a sign-in code to the
+        phone number. The account becomes active at the first sign-in with that code.
+        The answer is the same whether or not the phone number already has an account, so nobody
+        can find out which numbers do; an active account is never changed by this call. An
+        unverified account with the same number is replaced.
+      tags: [accounts]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "202":
+          description: Ask Keycloak for a code next
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/me:
+    get:
+      operationId: getMe
+      summary: The signed-in person's account
+      description: The first call after a sign-in also activates an unverified account and moves any guest bookings made with the same verified contact into it.
+      tags: [accounts]
+      responses:
+        "200":
+          description: The account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/me/preferences:
+    get:
+      operationId: getPreferences
+      summary: App language, session languages, help topics and specialist preference
+      tags: [accounts]
+      responses:
+        "200":
+          description: Current preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preferences"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      operationId: savePreferences
+      summary: Save preferences (sign-up step 2, and later from Settings)
+      tags: [accounts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Preferences"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preferences"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/consents:
+    get:
+      operationId: getConsents
+      summary: Current consent choice per purpose
+      description: Only the purposes offered in this release are listed; each carries the version of the wording.
+      tags: [privacy]
+      responses:
+        "200":
+          description: Current choices
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consents"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      operationId: saveConsents
+      summary: Record consent choices (sign-up step 3, and later from Privacy & data)
+      description: Every change is appended to the person's consent history; nothing is overwritten.
+      tags: [privacy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentChoices"
+      responses:
+        "200":
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consents"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/catalogue/session-languages:
+    get:
+      operationId: listSessionLanguages
+      summary: Languages a session can be held in
+      description: Data, not a fixed list (D16). Names are in the caller's language (Accept-Language).
+      tags: [catalogue]
+      security: []
+      responses:
+        "200":
+          description: Enabled languages in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionLanguage"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/catalogue/help-topics:
+    get:
+      operationId: listHelpTopics
+      summary: Topics a seeker can ask for help with
+      description: Labels are in the caller's language (Accept-Language).
+      tags: [catalogue]
+      security: []
+      responses:
+        "200":
+          description: Enabled topics in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HelpTopic"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /v1/system/ping:
     get:
       operationId: ping
@@ -42,6 +198,18 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   responses:
+    BadRequest:
+      description: The request is not valid; code says why (e.g. account.too-young)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: Not allowed for this account
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     Unauthorized:
       description: Missing or invalid token
       content:
@@ -90,3 +258,155 @@ components:
         ai:
           type: boolean
           description: True when AI answered within the 2-second deadline.
+    AppLanguage:
+      description: The interface language. Not the session language.
+      type: string
+      enum: [en, fr]
+    Phone:
+      description: E.164, e.g. +237677000000
+      type: string
+      pattern: "^[+][1-9][0-9]{7,14}$"
+    SignupRequest:
+      type: object
+      additionalProperties: false
+      required: [displayName, phone, dateOfBirth, termsVersion, privacyNoticeVersion, appLanguage]
+      properties:
+        displayName:
+          description: What the seeker wants to be called; only their specialist sees it.
+          type: string
+          minLength: 1
+          maxLength: 60
+        phone:
+          $ref: "#/components/schemas/Phone"
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        dateOfBirth:
+          description: The seeker must be 18 or over.
+          type: string
+          format: date
+        termsVersion:
+          description: Version of the Terms the seeker agreed to.
+          type: string
+          maxLength: 40
+        privacyNoticeVersion:
+          description: Version of the privacy notice the seeker read.
+          type: string
+          maxLength: 40
+        appLanguage:
+          $ref: "#/components/schemas/AppLanguage"
+    Me:
+      type: object
+      additionalProperties: false
+      required: [id, role, displayName, appLanguage, onboarding]
+      properties:
+        id:
+          description: Pseudonymous account id, also the subjectId of this person's events.
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [SEEKER, SPECIALIST]
+        displayName:
+          type: string
+        appLanguage:
+          $ref: "#/components/schemas/AppLanguage"
+        onboarding:
+          description: Which sign-up steps are done, so the app can resume.
+          type: object
+          additionalProperties: false
+          required: [preferences, privacy]
+          properties:
+            preferences:
+              type: boolean
+            privacy:
+              type: boolean
+    Preferences:
+      type: object
+      additionalProperties: false
+      required: [appLanguage, sessionLanguages, helpTopics, specialistGender]
+      properties:
+        appLanguage:
+          $ref: "#/components/schemas/AppLanguage"
+        sessionLanguages:
+          description: Codes from /v1/catalogue/session-languages; at least one.
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+        helpTopics:
+          description: Codes from /v1/catalogue/help-topics; may be empty.
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        specialistGender:
+          type: string
+          enum: [ANY, WOMAN, MAN]
+    ConsentPurpose:
+      description: |
+        What a consent covers. Only purposes whose feature is offered in this release are accepted;
+        in Phase 1 that is AI_ASSIST and AI_SCRIBE.
+      type: string
+      enum: [TRACKING, AI_ASSIST, SPECIALIST_SHARING, AI_SCRIBE, HEALTH_CHECK]
+    ConsentChoices:
+      type: object
+      additionalProperties: false
+      required: [choices]
+      properties:
+        choices:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [purpose, granted]
+            properties:
+              purpose:
+                $ref: "#/components/schemas/ConsentPurpose"
+              granted:
+                type: boolean
+    Consents:
+      type: object
+      additionalProperties: false
+      required: [consents]
+      properties:
+        consents:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [purpose, granted, version]
+            properties:
+              purpose:
+                $ref: "#/components/schemas/ConsentPurpose"
+              granted:
+                description: False when never asked.
+                type: boolean
+              version:
+                description: Version of the wording this choice was made on (or would be).
+                type: string
+              recordedAt:
+                type: string
+                format: date-time
+    SessionLanguage:
+      type: object
+      additionalProperties: false
+      required: [code, name]
+      properties:
+        code:
+          description: ISO 639 code, e.g. en, fr
+          type: string
+        name:
+          type: string
+    HelpTopic:
+      type: object
+      additionalProperties: false
+      required: [code, label]
+      properties:
+        code:
+          type: string
+        label:
+          type: string

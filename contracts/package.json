@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "pnpm run lint:proto && pnpm run lint:openapi && pnpm run lint:events",
     "lint:proto": "buf lint && buf build",
-    "lint:openapi": "redocly lint openapi/core.yaml openapi/tracking.yaml openapi/ai.yaml",
+    "lint:openapi": "redocly lint openapi/core.yaml openapi/core-internal.yaml openapi/tracking.yaml openapi/ai.yaml",
     "lint:events": "node scripts/validate-events.mjs",
     "breaking": "pnpm run breaking:proto && pnpm run breaking:openapi && pnpm run breaking:events",
     "breaking:proto": "buf breaking --against \"../.git#branch=main,subdir=contracts\"",
