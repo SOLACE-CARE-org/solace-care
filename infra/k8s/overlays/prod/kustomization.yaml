@@ -1,0 +1,55 @@
+# Production. Argo CD shows the difference but syncs only when a person presses Sync
+# (infra/argocd/solace-prod.yaml). Host names are placeholders until the domain is chosen.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: solace-prod
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+configMapGenerator:
+  - name: solace-platform
+    behavior: merge
+    literals:
+      - SOLACE_ENVIRONMENT=prod
+      - SOLACE_SECURITY_ISSUERS=https://id.solace.example/realms/solace-members,https://id.solace.example/realms/solace-staff
+      - SOLACE_SECURITY_SERVICE_ISSUER=https://id.solace.example/realms/solace-staff
+      - SOLACE_ADMIN_ORIGIN=https://admin.solace.example
+  - name: admin-settings
+    behavior: merge
+    literals:
+      - KEYCLOAK_URL=https://id.solace.example
+      - API_URL=https://api.solace.example/api
+  - name: keycloak-settings
+    behavior: merge
+    literals:
+      - KC_HOSTNAME=https://id.solace.example
+
+# CI publishes ghcr.io/<owner>/solace-<name>:<first 12 characters of the commit>
+# (.github/workflows/ci.yml); the owner is a placeholder until the GitHub organisation exists.
+images:
+  - name: solace-core
+    newName: ghcr.io/solace-care/solace-core
+    newTag: unreleased
+  - name: solace-tracking
+    newName: ghcr.io/solace-care/solace-tracking
+    newTag: unreleased
+  - name: solace-ai
+    newName: ghcr.io/solace-care/solace-ai
+    newTag: unreleased
+  - name: solace-gateway
+    newName: ghcr.io/solace-care/solace-gateway
+    newTag: unreleased
+  - name: solace-admin
+    newName: ghcr.io/solace-care/solace-admin
+    newTag: unreleased
+  - name: solace-keycloak
+    newName: ghcr.io/solace-care/solace-keycloak
+    newTag: unreleased
+
+patches:
+  - path: hosts.yaml
+    target:
+      kind: Ingress
+      name: solace

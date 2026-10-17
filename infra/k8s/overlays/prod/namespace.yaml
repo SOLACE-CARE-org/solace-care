@@ -1,0 +1,9 @@
+# Pods must meet Kubernetes' "restricted" security profile: non-root, no privilege escalation,
+# all capabilities dropped, default seccomp.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: solace-prod
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest

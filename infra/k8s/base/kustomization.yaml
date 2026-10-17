@@ -1,0 +1,53 @@
+# Everything Solace runs in one environment's namespace. The overlays (dev, staging, prod) set the
+# namespace, host names, image tags and sizes. Postgres, Kafka, Redis, object storage, Vault and
+# the OpenTelemetry collector are provided by the platform (hosting is still open, System Design),
+# so they are not here; their addresses come from solace-platform and the secrets.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: solace
+    includeSelectors: false
+
+resources:
+  - core.yaml
+  - tracking.yaml
+  - ai.yaml
+  - gateway.yaml
+  - admin.yaml
+  - keycloak.yaml
+  - secrets.yaml
+  - network-policies.yaml
+  - ingress.yaml
+
+# Settings every Java service reads (Spring maps SOLACE_SECURITY_ISSUERS to solace.security.issuers
+# and so on). Overlays replace the environment-specific values.
+configMapGenerator:
+  - name: solace-platform
+    literals:
+      - SOLACE_ENVIRONMENT=base
+      - SERVER_PORT=8080
+      - SPRING_GRPC_SERVER_PORT=9090
+      - SOLACE_OTLP_ENDPOINT=http://otel-collector.observability:4318
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-bootstrap.kafka:9092
+      - SPRING_DATA_REDIS_HOST=redis.redis
+      - SOLACE_SECURITY_ISSUERS=https://id.solace.example/realms/solace-members,https://id.solace.example/realms/solace-staff
+      - SOLACE_SECURITY_SERVICE_ISSUER=https://id.solace.example/realms/solace-staff
+      - SOLACE_ADMIN_ORIGIN=https://admin.solace.example
+  # The admin portal's runtime settings (admin/Dockerfile).
+  - name: admin-settings
+    literals:
+      - KEYCLOAK_URL=https://id.solace.example
+      - API_URL=https://api.solace.example/api
+      - IDLE_SIGN_OUT_MINUTES=15
+      - FLAG_TRACKING_MODULES=false
+      - FLAG_HEALTH_CHECK=false
+      - FLAG_AI_CONTROLS=false
+      - FLAG_COPILOT=false
+  - name: keycloak-settings
+    literals:
+      - KC_HOSTNAME=https://id.solace.example
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_LOG_CONSOLE_OUTPUT=json

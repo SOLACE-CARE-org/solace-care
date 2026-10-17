@@ -1,0 +1,67 @@
+# One Application per environment, each pointing at its overlay on main. Dev and staging follow
+# main automatically; prod shows the difference and waits for someone to press Sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: solace-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: solace
+  source:
+    repoURL: https://github.com/solace-care/solace.git
+    targetRevision: main
+    path: infra/k8s/overlays/dev
+  destination:
+    name: solace-dev
+    namespace: solace-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: solace-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: solace
+  source:
+    repoURL: https://github.com/solace-care/solace.git
+    targetRevision: main
+    path: infra/k8s/overlays/staging
+  destination:
+    name: solace-staging
+    namespace: solace-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+---
+# No automated sync, and no finalizer: deleting this Application never deletes production.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: solace-prod
+  namespace: argocd
+spec:
+  project: solace
+  source:
+    repoURL: https://github.com/solace-care/solace.git
+    targetRevision: main
+    path: infra/k8s/overlays/prod
+  destination:
+    name: solace-prod
+    namespace: solace-prod
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - PruneLast=true

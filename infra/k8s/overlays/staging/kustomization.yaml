@@ -1,0 +1,55 @@
+# Staging: production sizes and settings, test data. Synced automatically by Argo CD; the image
+# tags here are the ones that move to prod next.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: solace-staging
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+configMapGenerator:
+  - name: solace-platform
+    behavior: merge
+    literals:
+      - SOLACE_ENVIRONMENT=staging
+      - SOLACE_SECURITY_ISSUERS=https://id.staging.solace.example/realms/solace-members,https://id.staging.solace.example/realms/solace-staff
+      - SOLACE_SECURITY_SERVICE_ISSUER=https://id.staging.solace.example/realms/solace-staff
+      - SOLACE_ADMIN_ORIGIN=https://admin.staging.solace.example
+  - name: admin-settings
+    behavior: merge
+    literals:
+      - KEYCLOAK_URL=https://id.staging.solace.example
+      - API_URL=https://api.staging.solace.example/api
+  - name: keycloak-settings
+    behavior: merge
+    literals:
+      - KC_HOSTNAME=https://id.staging.solace.example
+
+# CI publishes ghcr.io/<owner>/solace-<name>:<first 12 characters of the commit>
+# (.github/workflows/ci.yml); the owner is a placeholder until the GitHub organisation exists.
+images:
+  - name: solace-core
+    newName: ghcr.io/solace-care/solace-core
+    newTag: unreleased
+  - name: solace-tracking
+    newName: ghcr.io/solace-care/solace-tracking
+    newTag: unreleased
+  - name: solace-ai
+    newName: ghcr.io/solace-care/solace-ai
+    newTag: unreleased
+  - name: solace-gateway
+    newName: ghcr.io/solace-care/solace-gateway
+    newTag: unreleased
+  - name: solace-admin
+    newName: ghcr.io/solace-care/solace-admin
+    newTag: unreleased
+  - name: solace-keycloak
+    newName: ghcr.io/solace-care/solace-keycloak
+    newTag: unreleased
+
+patches:
+  - path: hosts.yaml
+    target:
+      kind: Ingress
+      name: solace

@@ -1,0 +1,138 @@
+# Core: identity, marketplace, money, admin, health check (Spring Modulith). Calls Tracking and AI
+# over gRPC with client-credentials tokens.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: core
+automountServiceAccountToken: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core
+  labels:
+    app.kubernetes.io/name: core
+    app.kubernetes.io/component: service
+spec:
+  # No replicas field: the HorizontalPodAutoscaler owns the count.
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: core
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: core
+        app.kubernetes.io/component: service
+        solace.care/calls-keycloak: "true"
+    spec:
+      serviceAccountName: core
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: core
+          image: solace-core
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: solace-platform
+            # SPRING_DATASOURCE_URL/USERNAME/PASSWORD, SOLACE_CORE_SERVICE_SECRET (secrets.yaml)
+            - secretRef:
+                name: core
+          env:
+            # dns:/// with the headless services lets gRPC balance across every pod (round_robin).
+            - name: SPRING_GRPC_CLIENT_CHANNELS_TRACKING_ADDRESS
+              value: dns:///tracking-grpc:9090
+            - name: SPRING_GRPC_CLIENT_CHANNELS_AI_ADDRESS
+              value: dns:///ai-grpc:9090
+            # Tokens are fetched inside the cluster; Keycloak still names its public address as issuer.
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI
+              value: http://keycloak:8080/realms/solace-staff/protocol/openid-connect/token
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              memory: 1Gi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: core
+  labels:
+    app.kubernetes.io/name: core
+spec:
+  selector:
+    app.kubernetes.io/name: core
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: core
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: core
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: core
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: core

@@ -1,0 +1,13 @@
+# Host names are placeholders until the domain is chosen.
+- op: replace
+  path: /spec/tls/0/hosts
+  value: [api.dev.solace.example, admin.dev.solace.example, id.dev.solace.example]
+- op: replace
+  path: /spec/rules/0/host
+  value: api.dev.solace.example
+- op: replace
+  path: /spec/rules/1/host
+  value: admin.dev.solace.example
+- op: replace
+  path: /spec/rules/2/host
+  value: id.dev.solace.example

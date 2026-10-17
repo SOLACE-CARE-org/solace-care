@@ -1,0 +1,6 @@
+# Trivy findings reviewed and accepted. Each line names why.
+
+# ConfigMaps hold URLs and port numbers, not secrets; secrets come from Vault (infra/k8s/base/secrets.yaml).
+KSV-01010
+# Images come from our own GHCR organisation, which is not on Trivy's built-in list.
+KSV-0125

@@ -1,0 +1,32 @@
+# The Argo CD project for Solace: only this repository, only the three environment namespaces, and
+# only the kinds the overlays contain. Cluster names are the ones registered in Argo CD
+# (`argocd cluster add`), one cluster per environment (System Design: Infrastructure).
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: solace
+  namespace: argocd
+spec:
+  description: Solace Care services, admin portal and Keycloak
+  sourceRepos:
+    - https://github.com/solace-care/solace.git
+  destinations:
+    - name: solace-dev
+      namespace: solace-dev
+    - name: solace-staging
+      namespace: solace-staging
+    - name: solace-prod
+      namespace: solace-prod
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - { group: "", kind: ConfigMap }
+    - { group: "", kind: Service }
+    - { group: "", kind: ServiceAccount }
+    - { group: apps, kind: Deployment }
+    - { group: autoscaling, kind: HorizontalPodAutoscaler }
+    - { group: policy, kind: PodDisruptionBudget }
+    - { group: networking.k8s.io, kind: Ingress }
+    - { group: networking.k8s.io, kind: NetworkPolicy }
+    - { group: external-secrets.io, kind: ExternalSecret }

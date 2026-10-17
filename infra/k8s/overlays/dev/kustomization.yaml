@@ -1,0 +1,74 @@
+# Dev: one pod of each, synced automatically from main by Argo CD (infra/argocd).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: solace-dev
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+configMapGenerator:
+  - name: solace-platform
+    behavior: merge
+    literals:
+      - SOLACE_ENVIRONMENT=dev
+      - SOLACE_SECURITY_ISSUERS=https://id.dev.solace.example/realms/solace-members,https://id.dev.solace.example/realms/solace-staff
+      - SOLACE_SECURITY_SERVICE_ISSUER=https://id.dev.solace.example/realms/solace-staff
+      - SOLACE_ADMIN_ORIGIN=https://admin.dev.solace.example
+  - name: admin-settings
+    behavior: merge
+    literals:
+      - KEYCLOAK_URL=https://id.dev.solace.example
+      - API_URL=https://api.dev.solace.example/api
+  - name: keycloak-settings
+    behavior: merge
+    literals:
+      - KC_HOSTNAME=https://id.dev.solace.example
+      # No SMS provider yet: sign-in codes go to Keycloak's log (masked contact). Dev only; the
+      # authenticator refuses to send this way unless the variable is set.
+      - SOLACE_DEV_CODE_SENDER=enabled
+
+# CI publishes ghcr.io/<owner>/solace-<name>:<first 12 characters of the commit>
+# (.github/workflows/ci.yml); the owner is a placeholder until the GitHub organisation exists.
+# Promote a release by changing these tags.
+images:
+  - name: solace-core
+    newName: ghcr.io/solace-care/solace-core
+    newTag: unreleased
+  - name: solace-tracking
+    newName: ghcr.io/solace-care/solace-tracking
+    newTag: unreleased
+  - name: solace-ai
+    newName: ghcr.io/solace-care/solace-ai
+    newTag: unreleased
+  - name: solace-gateway
+    newName: ghcr.io/solace-care/solace-gateway
+    newTag: unreleased
+  - name: solace-admin
+    newName: ghcr.io/solace-care/solace-admin
+    newTag: unreleased
+  - name: solace-keycloak
+    newName: ghcr.io/solace-care/solace-keycloak
+    newTag: unreleased
+
+patches:
+  - path: hosts.yaml
+    target:
+      kind: Ingress
+      name: solace
+  - patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+    target:
+      kind: HorizontalPodAutoscaler
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: admin|keycloak
