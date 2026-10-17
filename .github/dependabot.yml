@@ -1,0 +1,40 @@
+# Weekly update pull requests. Minor and patch updates come grouped, one PR per ecosystem; majors
+# come one at a time. Expo SDK and React Native versions move together with `expo install --fix`,
+# so Dependabot leaves their majors alone.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /backend
+    schedule: { interval: weekly, day: monday }
+    groups:
+      backend-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      js-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "expo*"
+        update-types: [version-update:semver-major]
+      - dependency-name: "react-native*"
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: react
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directories: [/backend, /admin, /infra/keycloak]
+    schedule: { interval: weekly, day: monday }
+
+  - package-ecosystem: docker-compose
+    directory: /infra
+    schedule: { interval: weekly, day: monday }

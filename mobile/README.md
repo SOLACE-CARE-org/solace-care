@@ -31,6 +31,10 @@ React Native compiles C++ with CMake and ninja, which fail on paths over 260 cha
 
 CI and EAS build on Linux and are not affected.
 
+### EAS builds
+
+`eas.json` has three profiles: `development` (dev client, internal APK), `preview` (internal APK for testers) and `production` (store build, version numbers kept by EAS). The **Mobile build** workflow in GitHub Actions starts one by hand. Before the first build, someone with the Expo account runs `eas init` in `mobile/` once (it adds the project id to `app.json`) and adds an `EXPO_TOKEN` secret to the repository.
+
 Quick visual check without a device: `npx expo start --web` renders the screens in a browser (react-native-web). It is a preview for layout, copy and colour, not a product target.
 
 ## Open items

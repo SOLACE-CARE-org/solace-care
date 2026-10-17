@@ -33,3 +33,6 @@ Thumbs.db
 !.env.example
 *.pem
 *.key
+
+# CI scratch
+rendered/

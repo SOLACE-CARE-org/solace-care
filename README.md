@@ -13,7 +13,18 @@ admin/       Angular admin portal
 contracts/   Protobuf, edge OpenAPI, event JSON Schemas (shared)
 packages/    i18n, tokens, api-clients (shared by mobile and admin)
 infra/       docker-compose, Keycloak config, Kubernetes, Argo CD
+.github/     CI workflows and Dependabot
 ```
+
+## CI
+
+| Workflow | When | What |
+| --- | --- | --- |
+| `ci.yml` | every pull request and push to main | Gradle build with all tests; i18n check, admin and mobile tests; contract lint; on pull requests, Buf, OpenAPI and event-schema breaking-change checks against main. On main it also builds, scans (Trivy) and publishes the six images to GHCR, tagged with the commit |
+| `security.yml` | pull requests, main, weekly | Dependency review, Trivy for vulnerabilities and committed secrets, Trivy IaC scan, CodeQL |
+| `mobile-build.yml` | by hand | EAS build of the mobile app (mobile/README.md) |
+
+Actions are pinned to commit SHAs; Dependabot keeps them, the dependencies and the base images current. Lint the workflows locally with `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12`.
 
 ## Prerequisites
 
