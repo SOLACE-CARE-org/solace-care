@@ -134,6 +134,21 @@ Every pair now meets WCAG 2.1 AA.
 - **Why:** the System Design's infrastructure table says seekers, specialists and admins sit in separate realms, but the Sign-in screen has one phone/email field with no role choice, and the app "switches shell by role after login". Seekers and specialists therefore share a realm; staff stay fully isolated.
 - This replaces "separate realms" in the System Design's infrastructure table.
 
+**D24. Specialists sign in with one-time codes, like seekers.** Decided 17 Oct 2026 by the owner.
+- The specialist account screen (SpecSignup) loses its "Create a password" field and its help line. Specialists get a code by phone or email at each sign-in, as D6 says.
+- **Why:** D6 and D23 already settle member sign-in as codes only. A password plus a code would need a second Keycloak flow in the members realm for one group of members.
+
+**D25. Staff book the onboarding interview.** Decided 17 Oct 2026 by the owner.
+- A reviewer sets the interview time in the admin portal. The specialist gets the "Interview booked" push (notification-copy.md).
+- The "Pick an interview time" button on SpecReview ships behind the `specialist-interview-picker` flag, off, until someone specifies where interview times come from.
+
+**D26. Working defaults for specialist onboarding.** Taken 17 Oct 2026, with the owner's go-ahead on recommendations; any of them can be changed.
+- **Professions** are catalogue rows, not an enum, seeded with the five on SpecProfessional. Gynaecologist and Endocrinologist are seeded but disabled until the open question on physical-health specialists is answered.
+- **Areas you work with** are the help topics seekers choose, so matching can compare the two (System Design, Matching). The chips on SpecProfessional show whatever topics the catalogue holds.
+- **Bank transfer** on SpecPayout is behind the `payout-bank-transfer` flag, off: no screen or spec says which bank details to collect. Mobile money (MTN, Orange) works now.
+- **Application states** are the six in the System Design (DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, SUSPENDED). A change request sends the application back to DRAFT with a reason; a Super admin can reinstate a suspended specialist.
+- **Guest access** (epic 1's booking-scoped token and claiming) is built with Bookings (epic 5), because the token is scoped to a booking and claiming moves bookings. Core already publishes `ContactVerified` for it.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
