@@ -1,0 +1,20 @@
+{
+  "name": "@solace/api-clients",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript clients generated from contracts/openapi. Types in dist/ are generated on install; never edit them by hand.",
+  "type": "module",
+  "exports": {
+    "./core": "./src/core.ts"
+  },
+  "scripts": {
+    "build": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts",
+    "prepare": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0"
+  }
+}

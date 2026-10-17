@@ -9,5 +9,9 @@
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint"
-  }
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.7"
+  },
+  "//babel": "React Native and jest-expo need Babel 7 at the root; Angular gets its Babel 8 nested. Without this, a hoisted install can put Babel 8 at the root and break the mobile tests."
 }
