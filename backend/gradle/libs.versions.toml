@@ -42,6 +42,7 @@ json-schema-validator = { module = "com.networknt:json-schema-validator", versio
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # Used by build-logic to apply plugins from convention scripts
+spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }
 spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 
 [plugins]

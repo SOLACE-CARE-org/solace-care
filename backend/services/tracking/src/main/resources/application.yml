@@ -1,0 +1,34 @@
+# Tracking service. Defaults point at the local stack in infra/docker-compose.yml; every value can
+# be overridden with an environment variable (SPRING_DATASOURCE_URL and so on).
+spring:
+  application:
+    name: tracking
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tracking
+    username: tracking
+    password: tracking
+  kafka:
+    bootstrap-servers: localhost:9092
+  grpc:
+    server:
+      port: 9102
+
+server:
+  port: 8102
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+solace:
+  security:
+    audience: tracking

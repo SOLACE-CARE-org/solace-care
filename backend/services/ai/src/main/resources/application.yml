@@ -1,0 +1,34 @@
+# AI service. Defaults point at the local stack in infra/docker-compose.yml; every value can
+# be overridden with an environment variable (SPRING_DATASOURCE_URL and so on).
+spring:
+  application:
+    name: ai
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ai
+    username: ai
+    password: ai
+  kafka:
+    bootstrap-servers: localhost:9092
+  grpc:
+    server:
+      port: 9103
+
+server:
+  port: 8103
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+solace:
+  security:
+    audience: ai

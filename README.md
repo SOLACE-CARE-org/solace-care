@@ -39,6 +39,11 @@ cd backend
 # Format Java sources
 ./gradlew spotlessApply
 
+# Run a service against the local stack (one terminal each)
+./gradlew :services:core:bootRun       # REST :8101
+./gradlew :services:tracking:bootRun   # REST :8102, gRPC :9102
+./gradlew :services:ai:bootRun         # REST :8103, gRPC :9103
+
 # JavaScript / TypeScript workspace (from the repo root)
 cd ..
 pnpm install
@@ -51,4 +56,4 @@ pnpm --filter @solace/contracts lint
 pnpm --filter @solace/contracts breaking:proto
 ```
 
-More commands (local infrastructure, running each service and app) are added here as each Phase 0 step lands.
+Health checks are open at `/actuator/health/readiness` and `/actuator/health/liveness` on each service; everything else needs a Keycloak token. More commands (gateway, apps) are added here as each Phase 0 step lands.
