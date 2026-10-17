@@ -7,6 +7,7 @@
     "back": "Back",
     "continue": "Continue",
     "tryAgain": "Try again",
+    "loading": "Loading",
     "checkConnection": "Check your connection and try again."
   },
   "splash": {
@@ -185,5 +186,124 @@
   "signupDone": {
     "title": "You're all set, {{name}}",
     "home": "Go to my home"
+  },
+  "specialistSignup": {
+    "eyebrow": "Specialist application",
+    "account": {
+      "title": "Create your account",
+      "subtitle": "Have your licence and ID ready. Your progress is saved after each step.",
+      "nameLabel": "Full name, as on your licence",
+      "emailLabel": "Professional email",
+      "phoneLabel": "Phone number",
+      "agreeBefore": "I agree to the ",
+      "terms": "Specialist terms",
+      "agreeMiddle": " and ",
+      "conduct": "Code of conduct",
+      "agreeAfter": ".",
+      "submit": "Verify and continue"
+    },
+    "practice": {
+      "title": "Your practice",
+      "professionLabel": "Profession",
+      "licenceLabel": "Licence number",
+      "yearsLabel": "Years in practice",
+      "bodyLabel": "Issuing professional body",
+      "areasLabel": "Areas you work with (up to 5)",
+      "bioLabel": "Short bio for your profile",
+      "bioHelp": "We'll draft the French version for you to check before it goes live."
+    },
+    "languages": {
+      "title": "Languages you counsel in",
+      "subtitle": "Seekers choose a session language first, so only languages you can hold a full session in will be bookable.",
+      "NATIVE": "Native",
+      "FLUENT": "Fluent",
+      "PROFESSIONAL": "Professional",
+      "levelLabel": "Level in {{language}}",
+      "remove": "Remove {{language}}",
+      "add": "Add another language",
+      "note": "Our team confirms each language during your onboarding interview."
+    },
+    "documents": {
+      "title": "Verify your identity",
+      "subtitle": "Clear photos or PDFs. Only the Solace verification team can see these.",
+      "LICENCE": "Professional licence",
+      "IDENTITY": "National ID or passport",
+      "PHOTO": "Profile photo",
+      "CV": "CV",
+      "uploaded": "{{name}} · uploaded",
+      "identityUploaded": "Front and back · uploaded",
+      "photoMeta": "Shown to seekers · required",
+      "required": "Required",
+      "optional": "Optional",
+      "replace": "Replace",
+      "add": "Add",
+      "uploading": "Uploading",
+      "note": "Documents are encrypted and kept only as long as the law requires."
+    },
+    "services": {
+      "title": "Sessions you offer",
+      "subtitle": "Set a price for each kind of session, within the range Solace allows.",
+      "AUDIO": "Audio sessions",
+      "VIDEO": "Video sessions",
+      "lengthLabel": "Length",
+      "minutes": "{{count}} min",
+      "priceLabel": "Price (FCFA)",
+      "rangeLabel": "Allowed range:",
+      "range": "{{min}} to {{max}} FCFA per session",
+      "receiveLabel": "You receive:",
+      "receive": "the price minus Solace's {{fee}}% fee, paid out after each completed session"
+    },
+    "hours": {
+      "title": "Your weekly hours",
+      "subtitle": "Seekers can book inside these hours. Block single days later from your calendar.",
+      "MONDAY": "Mon",
+      "TUESDAY": "Tue",
+      "WEDNESDAY": "Wed",
+      "THURSDAY": "Thu",
+      "FRIDAY": "Fri",
+      "SATURDAY": "Sat",
+      "SUNDAY": "Sun",
+      "unavailable": "Unavailable",
+      "addHours": "Add hours",
+      "start": "Start",
+      "end": "End",
+      "remove": "Remove",
+      "save": "Save",
+      "breakLabel": "Break between sessions",
+      "break_0": "None",
+      "break_10": "10 min",
+      "break_15": "15 min",
+      "noticeLabel": "Minimum notice",
+      "notice_2": "2 hours",
+      "notice_12": "12 hours",
+      "notice_24": "24 hours",
+      "timeZone": "Times in {{zone}}"
+    },
+    "payout": {
+      "title": "How should we pay you?",
+      "subtitle": "Earnings from completed sessions are paid here.",
+      "methodLabel": "Payout method",
+      "MTN_MOMO": "MTN Mobile Money",
+      "ORANGE_MONEY": "Orange Money",
+      "BANK_TRANSFER": "Bank transfer",
+      "numberLabel": "Mobile Money number",
+      "holderLabel": "Account holder name",
+      "holderHelp": "Must match the name on your ID.",
+      "submit": "Submit application"
+    },
+    "review": {
+      "title": "Application received",
+      "subtitle": "We check every specialist before seekers can book them. We'll notify you at each step.",
+      "submitted": "Application submitted",
+      "today": "Today, {{time}}",
+      "check": "Licence and ID check",
+      "inProgress": "In progress",
+      "interview": "Onboarding interview",
+      "interviewMeta": "A short video call that also confirms your languages",
+      "live": "Profile goes live",
+      "liveMeta": "Seekers can find and book you",
+      "pickInterview": "Pick an interview time",
+      "preview": "Preview your dashboard"
+    }
   }
 }

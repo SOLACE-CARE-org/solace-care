@@ -56,7 +56,7 @@ export const TextField = forwardRef<ComponentRef<typeof TextInput>, Props>(funct
             setFocused(false);
             onBlur?.(e);
           }}
-          style={styles.input}
+          style={[styles.input, input.multiline && styles.multiline]}
         />
       </View>
       {error !== undefined ? (
@@ -121,6 +121,12 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.body[500],
     fontSize: 16,
     color: colors.ink,
+  },
+  /** A few lines of text, such as a bio: grows with its content. */
+  multiline: {
+    minHeight: 96,
+    paddingVertical: space.space12,
+    textAlignVertical: 'top',
   },
   error: {
     fontFamily: fontFamily.body[600],

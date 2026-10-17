@@ -15,5 +15,6 @@ export default function Index() {
   if (language === null) return <Redirect href="/splash" />;
   if (signedIn && role === 'seeker') return <Redirect href="/(seeker)/home" />;
   if (signedIn && role === 'specialist') return <Redirect href="/(specialist)/today" />;
+  if (signedIn && role === 'applicant') return <Redirect href="/specialist-signup/resume" />;
   return <Redirect href="/welcome" />;
 }

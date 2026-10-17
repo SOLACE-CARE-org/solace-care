@@ -4,7 +4,7 @@ import { fetchMe, type Me } from '@/api/account';
 import { queryClient } from '@/api/query-client';
 import { accountKeys } from '@/api/account';
 import i18n from '@/i18n';
-import { useSession } from '@/state/session';
+import { type Role, useSession } from '@/state/session';
 
 import { useAuth } from './auth';
 import type { Tokens } from './keycloak';
@@ -17,8 +17,7 @@ export async function afterSignIn(tokens: Tokens): Promise<Href> {
   await useAuth.getState().signedIn(tokens);
   const me = await fetchMe();
   queryClient.setQueryData(accountKeys.me, me);
-  const role = me.role === 'SPECIALIST' ? 'specialist' : 'seeker';
-  useSession.getState().signedInAs(role);
+  useSession.getState().signedInAs(roleOf(me));
   if (me.appLanguage !== i18n.language) {
     useSession.getState().chooseLanguage(me.appLanguage);
     await i18n.changeLanguage(me.appLanguage);
@@ -26,9 +25,23 @@ export async function afterSignIn(tokens: Tokens): Promise<Href> {
   return nextStep(me);
 }
 
+/** The shell a member gets: specialists only once their application is approved. */
+export function roleOf(me: Me): Role {
+  if (me.role !== 'SPECIALIST') return 'seeker';
+  return me.applicationStatus === 'APPROVED' || me.applicationStatus === 'SUSPENDED'
+    ? 'specialist'
+    : 'applicant';
+}
+
 /** The screen a signed-in person belongs on. */
 export function nextStep(me: Me): Href {
-  if (me.role === 'SPECIALIST') return '/(specialist)/today';
+  const role = roleOf(me);
+  if (role === 'specialist') return '/(specialist)/today';
+  if (role === 'applicant') {
+    return me.applicationStatus === 'DRAFT'
+      ? '/specialist-signup/resume'
+      : '/specialist-signup/review';
+  }
   if (!me.onboarding.preferences) return '/signup/preferences';
   if (!me.onboarding.privacy) return '/signup/privacy';
   return '/(seeker)/home';

@@ -3,7 +3,11 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export type AppLanguage = 'en' | 'fr';
-export type Role = 'seeker' | 'specialist';
+/**
+ * Picks the navigation shell. An applicant is a specialist whose application is not approved yet:
+ * they see their application, not the specialist app.
+ */
+export type Role = 'seeker' | 'applicant' | 'specialist';
 
 type SessionState = {
   /** The app language chosen on first launch; null until chosen. Not the session language. */

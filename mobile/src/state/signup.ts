@@ -30,3 +30,9 @@ export function age(iso: string, today = new Date()): number {
   if (today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) years--;
   return years;
 }
+
+/** Keeps digits and lays them out as HH:MM while typing (weekly hours). */
+export function maskTime(text: string): string {
+  const d = text.replace(/\D/g, '').slice(0, 4);
+  return d.length > 2 ? `${d.slice(0, 2)}:${d.slice(2)}` : d;
+}

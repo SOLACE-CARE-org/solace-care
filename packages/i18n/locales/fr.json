@@ -7,6 +7,7 @@
     "back": "Retour",
     "continue": "Continuer",
     "tryAgain": "Réessayer",
+    "loading": "Chargement",
     "checkConnection": "Vérifiez votre connexion et réessayez."
   },
   "splash": {
@@ -185,5 +186,124 @@
   "signupDone": {
     "title": "Tout est prêt, {{name}}",
     "home": "Aller à mon accueil"
+  },
+  "specialistSignup": {
+    "eyebrow": "Candidature spécialiste",
+    "account": {
+      "title": "Créer votre compte",
+      "subtitle": "Préparez votre autorisation et votre pièce d'identité. Votre progression est enregistrée à chaque étape.",
+      "nameLabel": "Nom complet, comme sur votre autorisation",
+      "emailLabel": "E-mail professionnel",
+      "phoneLabel": "Numéro de téléphone",
+      "agreeBefore": "J'accepte les ",
+      "terms": "Conditions spécialistes",
+      "agreeMiddle": " et le ",
+      "conduct": "Code de conduite",
+      "agreeAfter": ".",
+      "submit": "Vérifier et continuer"
+    },
+    "practice": {
+      "title": "Votre pratique",
+      "professionLabel": "Profession",
+      "licenceLabel": "Numéro d'autorisation",
+      "yearsLabel": "Années d'exercice",
+      "bodyLabel": "Ordre professionnel",
+      "areasLabel": "Domaines d'intervention (5 au maximum)",
+      "bioLabel": "Courte bio pour votre profil",
+      "bioHelp": "Nous préparerons la version anglaise pour que vous la vérifiiez avant la mise en ligne."
+    },
+    "languages": {
+      "title": "Langues de consultation",
+      "subtitle": "Les usagers choisissent d'abord la langue de séance : seules les langues dans lesquelles vous pouvez mener une séance complète seront réservables.",
+      "NATIVE": "Langue maternelle",
+      "FLUENT": "Courant",
+      "PROFESSIONAL": "Professionnel",
+      "levelLabel": "Niveau en {{language}}",
+      "remove": "Retirer {{language}}",
+      "add": "Ajouter une langue",
+      "note": "Notre équipe confirme chaque langue lors de votre entretien d'intégration."
+    },
+    "documents": {
+      "title": "Vérifiez votre identité",
+      "subtitle": "Photos nettes ou PDF. Seule l'équipe de vérification Solace peut les voir.",
+      "LICENCE": "Autorisation d'exercer",
+      "IDENTITY": "CNI ou passeport",
+      "PHOTO": "Photo de profil",
+      "CV": "CV",
+      "uploaded": "{{name}} · envoyé",
+      "identityUploaded": "Recto et verso · envoyés",
+      "photoMeta": "Visible par les usagers · obligatoire",
+      "required": "Obligatoire",
+      "optional": "Facultatif",
+      "replace": "Remplacer",
+      "add": "Ajouter",
+      "uploading": "Envoi en cours",
+      "note": "Les documents sont chiffrés et conservés seulement le temps exigé par la loi."
+    },
+    "services": {
+      "title": "Séances proposées",
+      "subtitle": "Fixez un prix pour chaque type de séance, dans la fourchette autorisée par Solace.",
+      "AUDIO": "Séances audio",
+      "VIDEO": "Séances vidéo",
+      "lengthLabel": "Durée",
+      "minutes": "{{count}} min",
+      "priceLabel": "Prix (FCFA)",
+      "rangeLabel": "Fourchette autorisée :",
+      "range": "{{min}} à {{max}} FCFA par séance",
+      "receiveLabel": "Vous recevez :",
+      "receive": "le prix moins les frais Solace de {{fee}} %, versé après chaque séance terminée"
+    },
+    "hours": {
+      "title": "Vos horaires de la semaine",
+      "subtitle": "Les usagers peuvent réserver dans ces plages. Bloquez des jours précis plus tard depuis votre agenda.",
+      "MONDAY": "lun.",
+      "TUESDAY": "mar.",
+      "WEDNESDAY": "mer.",
+      "THURSDAY": "jeu.",
+      "FRIDAY": "ven.",
+      "SATURDAY": "sam.",
+      "SUNDAY": "dim.",
+      "unavailable": "Indisponible",
+      "addHours": "Ajouter une plage",
+      "start": "Début",
+      "end": "Fin",
+      "remove": "Retirer",
+      "save": "Enregistrer",
+      "breakLabel": "Pause entre les séances",
+      "break_0": "Aucune",
+      "break_10": "10 min",
+      "break_15": "15 min",
+      "noticeLabel": "Délai minimum",
+      "notice_2": "2 heures",
+      "notice_12": "12 heures",
+      "notice_24": "24 heures",
+      "timeZone": "Heures de {{zone}}"
+    },
+    "payout": {
+      "title": "Comment voulez-vous être payé ?",
+      "subtitle": "Les revenus des séances terminées sont versés ici.",
+      "methodLabel": "Mode de versement",
+      "MTN_MOMO": "MTN Mobile Money",
+      "ORANGE_MONEY": "Orange Money",
+      "BANK_TRANSFER": "Virement bancaire",
+      "numberLabel": "Numéro Mobile Money",
+      "holderLabel": "Nom du titulaire",
+      "holderHelp": "Doit correspondre au nom sur votre pièce d'identité.",
+      "submit": "Envoyer ma candidature"
+    },
+    "review": {
+      "title": "Candidature reçue",
+      "subtitle": "Nous vérifions chaque spécialiste avant que les usagers puissent le réserver. Nous vous informons à chaque étape.",
+      "submitted": "Candidature envoyée",
+      "today": "Aujourd'hui, {{time}}",
+      "check": "Vérification de l'autorisation et de l'identité",
+      "inProgress": "En cours",
+      "interview": "Entretien d'intégration",
+      "interviewMeta": "Un court appel vidéo qui confirme aussi vos langues",
+      "live": "Mise en ligne du profil",
+      "liveMeta": "Les usagers peuvent vous trouver et vous réserver",
+      "pickInterview": "Choisir un horaire d'entretien",
+      "preview": "Aperçu de votre tableau de bord"
+    }
   }
 }

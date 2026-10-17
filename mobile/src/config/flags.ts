@@ -5,4 +5,8 @@
 export const flags = {
   /** The Track tab, Phase 2 (implementation-plan.md: "the Track tab appears only when this phase ships"). */
   trackTab: false,
+  /** "Pick an interview time" on SpecReview: off until interview times are specified (D25). */
+  specialistInterviewPicker: false,
+  /** Bank transfer on SpecPayout: off until the bank details to collect are specified (D26). */
+  payoutBankTransfer: false,
 } as const;

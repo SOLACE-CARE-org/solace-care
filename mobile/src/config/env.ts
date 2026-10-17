@@ -16,6 +16,9 @@ export const env = {
    */
   termsVersion: 'v1',
   privacyNoticeVersion: 'v1',
+  /** Versions of the Specialist terms and Code of conduct this build shows (SpecSignup). */
+  specialistTermsVersion: 'v1',
+  codeOfConductVersion: 'v1',
   /**
    * Seconds before "Resend" is offered. Matches Keycloak's resendAfterSeconds (a setting, not in
    * the specs); Keycloak enforces it, this only shows the countdown.
