@@ -2,6 +2,7 @@ packages:
   - "mobile"
   - "admin"
   - "contracts"
+  - "infra/keycloak/themes"
   - "packages/*"
 
 # React Native's native (CMake) builds fail on Windows behind pnpm's symlinked .pnpm paths

@@ -14,6 +14,7 @@
   "internationalizationEnabled": true,
   "supportedLocales": ["en", "fr"],
   "defaultLocale": "en",
+  "loginTheme": "solace-staff",
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": "${SOLACE_STAFF_IDLE_TIMEOUT_SECONDS:900}",
   "ssoSessionMaxLifespan": 36000,
@@ -169,6 +170,24 @@
             "userinfo.token.claim": "true",
             "introspection.token.claim": "true"
           }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "config": { "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
+        },
+        {
+          "name": "given name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": { "user.attribute": "firstName", "claim.name": "given_name", "jsonType.label": "String", "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
+        },
+        {
+          "name": "family name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": { "user.attribute": "lastName", "claim.name": "family_name", "jsonType.label": "String", "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true", "introspection.token.claim": "true" }
         },
         {
           "name": "locale",

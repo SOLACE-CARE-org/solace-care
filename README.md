@@ -56,6 +56,9 @@ pnpm install                              # also generates design tokens (packag
 pnpm build
 pnpm test                                 # i18n EN/FR parity, mobile tests
 
+# Admin portal (details in admin/README.md): http://localhost:4200, staff sign in through Keycloak
+pnpm --filter @solace/admin start
+
 # Mobile app (details in mobile/README.md)
 pnpm --filter @solace/mobile android      # dev build on an Android device or emulator
 pnpm --filter @solace/mobile start        # Metro for an installed dev build

@@ -34,7 +34,13 @@ tasks.test {
     dependsOn(tasks.jar)
     val providerJar = tasks.jar.flatMap { it.archiveFile }
     inputs.file(providerJar)
+    // ...and the staff login theme from infra/keycloak/themes.
+    val theme = rootProject.file("../infra/keycloak/themes/solace-staff")
+    inputs.dir(theme)
     jvmArgumentProviders.add(CommandLineArgumentProvider {
-        listOf("-Dsolace.providerJar=${providerJar.get().asFile.absolutePath}")
+        listOf(
+            "-Dsolace.providerJar=${providerJar.get().asFile.absolutePath}",
+            "-Dsolace.staffTheme=${theme.absolutePath}",
+        )
     })
 }

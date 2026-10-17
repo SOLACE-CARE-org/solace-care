@@ -1,0 +1,40 @@
+/* Design tokens generated from design/design-system/tokens.json (packages/tokens). */
+@import '@solace/tokens/css';
+
+/* Self-hosted fonts: no font CDN at runtime (design-system README, Using this system in code). */
+@import '@fontsource/figtree/400.css';
+@import '@fontsource/figtree/500.css';
+@import '@fontsource/figtree/600.css';
+@import '@fontsource/figtree/700.css';
+@import '@fontsource/bricolage-grotesque/500.css';
+@import '@fontsource/bricolage-grotesque/600.css';
+@import '@fontsource/bricolage-grotesque/700.css';
+
+html,
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--type-body-admin-size);
+  line-height: var(--type-body-admin-line-height);
+}
+
+/* Light theme only at launch (D21). */
+:root {
+  color-scheme: light;
+}
+
+/* Keyboard focus everywhere: the one shadow (design-system README, Focus). */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Reduced motion: no transitions or pulses. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

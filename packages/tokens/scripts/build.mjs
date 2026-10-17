@@ -113,6 +113,15 @@ ${Object.entries(size).map(([k, v]) => `  --${k}: ${v}px;`).join("\n")}
 ${Object.entries(shadows).map(([k, v]) => `  --${k}: ${v};`).join("\n")}
   --font-display: ${cssFamilies.display};
   --font-body: ${cssFamilies.body};
+${Object.entries(typeStyles)
+  .map(
+    ([name, s]) =>
+      `  --type-${name}-size: ${s.fontSize}px;
+  --type-${name}-line-height: ${s.lineHeightRatio};
+  --type-${name}-weight: ${s.fontWeight};
+  --type-${name}-letter-spacing: ${s.letterSpacing}px;`,
+  )
+  .join("\n")}
 }
 ${Object.entries(typeStyles)
   .map(

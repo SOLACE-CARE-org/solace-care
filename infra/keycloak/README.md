@@ -50,6 +50,18 @@ Realm files are only imported when a realm does not exist yet. After changing on
 | `tracking-service` | `core:booking-access.read`, `core:taxonomy.read`, `core:profile-age.read` | `core` |
 | `ai-service` | `tracking:summary.read` | `tracking` |
 
+## Staff sign-in theme
+
+`themes/solace-staff/login` renders the staff realm's pages to the Sign-in and FirstSignIn screens: the brand panel, EN/FR switch, email and password, the authenticator code, then at first sign-in the new password (card 1) and the authenticator app (card 2). Other Keycloak pages use the same layout. Copy is in `messages/messages_{en,fr}.properties`, word for word from the screens (apostrophes doubled for Keycloak's message format).
+
+`pnpm install` generates the theme's assets (design tokens, self-hosted fonts, logo) into `resources/generated/`; docker-compose mounts the theme, and the Keycloak tests load it too.
+
+Differences from the screens, for now:
+
+- FirstSignIn shows the new password and the authenticator on one page; Keycloak runs them as two steps, styled as cards 1 and 2. Combining them needs a custom required action (Team and roles work, Phase 1).
+- The "Checked against known leaked passwords" hint is left out until that check exists.
+- The splash lockup is not in the design bundle; the app icon stands in on the brand panel.
+
 ## Settings
 
 Values in brackets are placeholders from the specs or not in the specs yet. Each one can be overridden with an environment variable on the Keycloak container, read when a realm is imported:
@@ -72,5 +84,4 @@ Values in brackets are placeholders from the specs or not in the specs yet. Each
 
 - **Leaked-password check** (FirstSignIn: "Checked against known leaked passwords"): Keycloak has no built-in check. Needs a password blacklist file or a small policy extension, with the Team and roles work in Phase 1.
 - **Ending sessions when a role changes:** Core does this through `core-admin` when it changes a role (Phase 1).
-- **Login screens in the Solace design:** the admin Sign-in and FirstSignIn screens become a Keycloak theme in step 10.
 - **"Forgot your password?"** is switched on to match the Sign-in screen, but needs an SMTP server before it can send anything.

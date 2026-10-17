@@ -25,6 +25,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Starts Keycloak with the real realm files from infra/keycloak/realms and the built provider jar,
@@ -46,7 +47,10 @@ class RealmsIntegrationTest {
         new KeycloakContainer("quay.io/keycloak/keycloak:26.3.1")
             .withRealmImportFiles("/solace-members-realm.json", "/solace-staff-realm.json")
             .withProviderLibsFrom(List.of(new File(System.getProperty("solace.providerJar"))))
-            .withEnv("SOLACE_DEV_CODE_SENDER", "enabled");
+            .withEnv("SOLACE_DEV_CODE_SENDER", "enabled")
+            .withCopyFileToContainer(
+                MountableFile.forHostPath(System.getProperty("solace.staffTheme")),
+                "/opt/keycloak/themes/solace-staff");
     keycloak.start();
     admin = keycloak.getKeycloakAdminClient();
   }
@@ -195,7 +199,7 @@ class RealmsIntegrationTest {
             browser,
             loginPage,
             Map.of("username", "new.staff@solace.care", "password", "Temporary-Pass-1234"));
-    assertThat(updatePasswordPage).contains("password-new");
+    assertThat(updatePasswordPage).contains("password-new").contains("1. Choose your password");
 
     String totpPage =
         submit(
@@ -206,7 +210,38 @@ class RealmsIntegrationTest {
                 "My-Own-Strong-Pass-5678",
                 "password-confirm",
                 "My-Own-Strong-Pass-5678"));
-    assertThat(totpPage).contains("totp");
+    assertThat(totpPage).contains("totp").contains("2. Add an authenticator app");
+  }
+
+  @Test
+  void staffSignInUsesTheSolaceThemeInEnglishAndFrench() throws Exception {
+    String english = staffLoginPage("en");
+    assertThat(english)
+        .contains("Staff sign in")
+        .contains("Work email")
+        .contains("Sessions end after 15 minutes without activity.")
+        .contains("generated/tokens.css");
+
+    String french = staffLoginPage("fr");
+    assertThat(french).contains("Connexion de l").contains("E-mail professionnel");
+  }
+
+  private static String staffLoginPage(String language) throws Exception {
+    return HTTP.send(
+            HttpRequest.newBuilder(
+                    URI.create(
+                        keycloak.getAuthServerUrl()
+                            + "/realms/"
+                            + STAFF
+                            + "/protocol/openid-connect/auth?client_id=solace-admin"
+                            + "&response_type=code&scope=openid&ui_locales="
+                            + language
+                            + "&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2Fcallback"
+                            + "&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+                            + "&code_challenge_method=S256"))
+                .build(),
+            HttpResponse.BodyHandlers.ofString())
+        .body();
   }
 
   // --- Services: client credentials with narrow scopes ------------------------------------------

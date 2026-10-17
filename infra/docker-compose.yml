@@ -134,6 +134,8 @@ services:
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import:ro
       - ../backend/keycloak/otp-authenticator/build/libs:/opt/keycloak/providers:ro
+      # Staff sign-in theme; its generated assets come from `pnpm install` (infra/keycloak/themes).
+      - ./keycloak/themes/solace-staff:/opt/keycloak/themes/solace-staff:ro
     environment:
       # Lets the logging code sender write sign-in codes to the Keycloak log. Local only.
       SOLACE_DEV_CODE_SENDER: enabled

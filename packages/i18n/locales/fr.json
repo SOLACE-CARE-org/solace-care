@@ -43,5 +43,56 @@
   },
   "dev": {
     "notBuilt": "Cet écran n'est pas encore construit."
+  },
+  "admin": {
+    "badge": "Admin",
+    "nav": {
+      "label": "Admin",
+      "groups": {
+        "now": "En direct",
+        "specialists": "Spécialistes",
+        "seekersBookings": "Usagers et réservations",
+        "money": "Finances",
+        "careSetup": "Offre de soins",
+        "insight": "Analyse",
+        "admin": "Admin"
+      },
+      "items": {
+        "overview": "Vue d'ensemble",
+        "crisis": "File de crise",
+        "applications": "Candidatures",
+        "specialists": "Fiches spécialistes",
+        "people": "Personnes",
+        "bookings": "Réservations",
+        "reviews": "Avis",
+        "payments": "Paiements",
+        "payouts": "Lots de versements",
+        "modules": "Modules de suivi",
+        "healthCheck": "Bilan de santé",
+        "catalogue": "Catalogue",
+        "content": "Contenus",
+        "analytics": "Statistiques",
+        "ai": "Contrôles IA",
+        "copilot": "Copilote",
+        "audit": "Journal d'audit",
+        "team": "Équipe et rôles",
+        "settings": "Paramètres"
+      },
+      "crisisUnacknowledged": "{{count}} non prises en charge"
+    },
+    "roles": {
+      "SUPER_ADMIN": "Super admin",
+      "OPERATIONS": "Opérations",
+      "SUPPORT": "Support",
+      "FINANCE": "Finances",
+      "CLINICAL_REVIEWER": "Réviseur clinique",
+      "CRISIS_RESPONDER": "Répondant de crise",
+      "CONTENT_EDITOR": "Éditeur de contenu"
+    },
+    "signOut": "Se déconnecter",
+    "noAccess": {
+      "title": "Accès refusé",
+      "back": "Retour à la vue d'ensemble"
+    }
   }
 }

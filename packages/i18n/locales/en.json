@@ -43,5 +43,56 @@
   },
   "dev": {
     "notBuilt": "This screen is not built yet."
+  },
+  "admin": {
+    "badge": "Admin",
+    "nav": {
+      "label": "Admin",
+      "groups": {
+        "now": "Now",
+        "specialists": "Specialists",
+        "seekersBookings": "Seekers & bookings",
+        "money": "Money",
+        "careSetup": "Care setup",
+        "insight": "Insight",
+        "admin": "Admin"
+      },
+      "items": {
+        "overview": "Overview",
+        "crisis": "Crisis queue",
+        "applications": "Applications",
+        "specialists": "Specialist records",
+        "people": "People",
+        "bookings": "Bookings",
+        "reviews": "Reviews",
+        "payments": "Payments",
+        "payouts": "Payout runs",
+        "modules": "Tracking modules",
+        "healthCheck": "Health check",
+        "catalogue": "Catalogue",
+        "content": "Content",
+        "analytics": "Analytics",
+        "ai": "AI controls",
+        "copilot": "Copilot",
+        "audit": "Audit log",
+        "team": "Team and roles",
+        "settings": "Settings and flags"
+      },
+      "crisisUnacknowledged": "{{count}} unacknowledged"
+    },
+    "roles": {
+      "SUPER_ADMIN": "Super admin",
+      "OPERATIONS": "Operations",
+      "SUPPORT": "Support",
+      "FINANCE": "Finance",
+      "CLINICAL_REVIEWER": "Clinical reviewer",
+      "CRISIS_RESPONDER": "Crisis responder",
+      "CONTENT_EDITOR": "Content editor"
+    },
+    "signOut": "Sign out",
+    "noAccess": {
+      "title": "No access",
+      "back": "Back to overview"
+    }
   }
 }

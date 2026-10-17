@@ -1,0 +1,171 @@
+/* Sidebar.dc.html, with values from the generated tokens (packages/tokens/dist/tokens.css). */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  width: var(--size-admin-sidebar);
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: var(--space-20) var(--space-14) var(--space-18);
+  background: var(--surface-card);
+  border-right: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  padding: 0 var(--space-8);
+}
+
+.brand img {
+  display: block;
+  width: 96px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.pill {
+  padding: 3px var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+  font-size: var(--type-nav-label-size);
+  font-weight: 700;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* overline, uppercase in English and French alike */
+.group-label {
+  padding: 0 var(--space-10) var(--space-4);
+  font-size: var(--type-overline-size);
+  font-weight: var(--type-overline-weight);
+  letter-spacing: var(--type-overline-letter-spacing);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  min-height: 38px;
+  padding: 0 var(--space-10);
+  border-radius: var(--radius-10);
+  color: var(--ink-soft);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.item:hover {
+  background: var(--surface-sunken);
+}
+
+.item.current {
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+
+.item-label {
+  flex: 1;
+}
+
+/* CountBadge, danger-count */
+.count-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--size-badge);
+  height: var(--size-badge);
+  padding: 0 var(--space-6);
+  box-sizing: border-box;
+  border-radius: calc(var(--size-badge) / 2);
+  background: var(--danger-count);
+  color: var(--on-brand);
+  font-size: var(--type-nav-label-size);
+  font-weight: 700;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.me {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  padding: var(--space-12) var(--space-10);
+  border-top: 1px solid var(--surface-sunken);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--brand-tint-strong);
+  color: var(--brand-deep);
+  font-size: var(--type-meta-size);
+  font-weight: 700;
+}
+
+.who {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--type-body-admin-size);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.role {
+  font-size: var(--type-caption-size);
+  color: var(--ink-muted);
+}
+
+/* 36px on the screen; the hit area reaches the 44px minimum. */
+.sign-out {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-tap);
+  height: var(--size-tap);
+  margin: -4px;
+  border: 0;
+  border-radius: var(--radius-10);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.sign-out:hover {
+  background: var(--surface-sunken);
+}
+
+.item:focus-visible,
+.sign-out:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
