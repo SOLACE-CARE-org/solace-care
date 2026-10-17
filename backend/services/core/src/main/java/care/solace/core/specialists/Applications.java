@@ -8,6 +8,7 @@ import care.solace.core.scheduling.Availability;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +34,7 @@ class Applications implements SpecialistSummaries {
   private static final Set<String> MOBILE_MONEY = Set.of("MTN_MOMO", "ORANGE_MONEY");
 
   private final ApplicationStore store;
+  private final ReviewStore reviews;
   private final DocumentStore documentStore;
   private final Documents documents;
   private final Availability availability;
@@ -44,6 +46,7 @@ class Applications implements SpecialistSummaries {
 
   Applications(
       ApplicationStore store,
+      ReviewStore reviews,
       DocumentStore documentStore,
       Documents documents,
       Availability availability,
@@ -53,6 +56,7 @@ class Applications implements SpecialistSummaries {
       TransactionTemplate transactions,
       Clock clock) {
     this.store = store;
+    this.reviews = reviews;
     this.documentStore = documentStore;
     this.documents = documents;
     this.availability = availability;
@@ -243,8 +247,22 @@ class Applications implements SpecialistSummaries {
     if (!view.steps().all()) {
       throw new SolaceException(SpecialistError.APPLICATION_INCOMPLETE);
     }
+    UUID id = view.profile().accountId();
+    boolean resubmission = reviews.state(id).changesRequestedAt() != null;
     Boolean submitted =
-        transactions.execute(s -> store.submit(view.profile().accountId(), clock.instant()));
+        transactions.execute(
+            s -> {
+              Instant now = clock.instant();
+              if (!store.submit(id, now)) {
+                return false;
+              }
+              if (resubmission) {
+                // The applicant may have changed anything: every item is checked again.
+                reviews.restartReview(id);
+              }
+              reviews.record(id, "SUBMITTED", null, null, null, now);
+              return true;
+            });
     if (!Boolean.TRUE.equals(submitted)) {
       throw new SolaceException(SpecialistError.APPLICATION_LOCKED);
     }

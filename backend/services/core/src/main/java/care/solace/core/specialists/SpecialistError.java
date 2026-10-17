@@ -22,7 +22,17 @@ enum SpecialistError implements ErrorCode {
   /** The application has been submitted: it can change only when a reviewer asks for changes. */
   APPLICATION_LOCKED("specialist.application-locked", 409),
   /** A step is missing; the application says which. */
-  APPLICATION_INCOMPLETE("specialist.application-incomplete", 409);
+  APPLICATION_INCOMPLETE("specialist.application-incomplete", 409),
+  /** A review action on an application that is not submitted or under review. */
+  NOT_UNDER_REVIEW("specialist.not-under-review", 409),
+  /**
+   * An item cannot be verified yet: its document, payout details or second-language bio is missing.
+   */
+  ITEM_NOT_READY("specialist.item-not-ready", 409),
+  /** Approval needs all six items verified. */
+  REVIEW_INCOMPLETE("specialist.review-incomplete", 409),
+  /** Suspending needs an approved specialist; reinstating, a suspended one. */
+  NOT_APPROVED("specialist.not-approved", 409);
 
   private final String code;
   private final int status;

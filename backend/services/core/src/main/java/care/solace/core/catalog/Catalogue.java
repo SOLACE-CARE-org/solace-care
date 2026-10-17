@@ -16,6 +16,9 @@ public interface Catalogue {
   /** Enabled professions a specialist can apply as, labelled in {@code viewer}'s language. */
   List<Entry> professions(Locale viewer);
 
+  /** Every profession, enabled or not, for staff screens showing older applications. */
+  List<Entry> allProfessions(Locale viewer);
+
   /** True when every code names an enabled session language. */
   boolean areSessionLanguages(Collection<String> codes);
 
