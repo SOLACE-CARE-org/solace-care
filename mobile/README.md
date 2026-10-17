@@ -22,11 +22,12 @@ pnpm doctor                      # expo-doctor
 
 ### Building Android on Windows
 
-React Native compiles C++ with CMake and ninja, which fail on paths over 260 characters ("Filename longer than 260 characters", or "build.ninja still dirty"). The repo path appears twice in those paths, so keep it short:
+React Native compiles C++ with CMake and ninja, which fail on paths over 260 characters ("Filename longer than 260 characters", or "build.ninja still dirty"). What we found on Windows:
 
-- The workspace uses pnpm's flat `node_modules` (`nodeLinker: hoisted` in `pnpm-workspace.yaml`) for this reason.
-- Build from a short drive letter: `subst S: C:\path\to\solace`, then run `pnpm android` from `S:\mobile`. Or clone the repo to a short path such as `C:\sc`.
-- Turning on Windows long paths (`LongPathsEnabled`, needs an administrator) helps other tools, but the ninja bundled with the Android SDK's CMake 3.22 ignores it.
+- The workspace uses pnpm's flat `node_modules` (`nodeLinker: hoisted` in `pnpm-workspace.yaml`): behind pnpm's symlinked layout, `react-native-screens` and `react-native-worklets` fail to build at all.
+- Even flat, one generated object path for `react-native-gesture-handler` is 273 characters on its own, so a shorter repo path cannot fix it. A `subst` drive does not help either: React Native's codegen resolves it back to the real path and refuses mixed roots.
+- What should work: turn on Windows long paths (`LongPathsEnabled = 1`, needs an administrator) and build with a newer Android SDK CMake whose ninja honours that setting (install it with the SDK Manager and set `cmake.dir` in `android/local.properties`). Not yet verified on this machine.
+- Otherwise build Android on macOS, Linux or EAS, which have no such limit.
 
 CI and EAS build on Linux and are not affected.
 
