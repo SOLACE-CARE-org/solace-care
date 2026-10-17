@@ -42,3 +42,7 @@ rendered/
 
 # IDE (VS Code Java) build output
 backend/**/bin/
+
+# Crash and debug logs from local tools (Chrome crashpad, JVM)
+debug.log
+hs_err_pid*.log

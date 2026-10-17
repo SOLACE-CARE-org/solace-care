@@ -3,7 +3,11 @@
     "appName": "Solace Care",
     "appLanguage": "Langue de l'application",
     "english": "English",
-    "french": "Français"
+    "french": "Français",
+    "back": "Retour",
+    "continue": "Continuer",
+    "tryAgain": "Réessayer",
+    "checkConnection": "Vérifiez votre connexion et réessayez."
   },
   "splash": {
     "a11yLabel": "Solace Care. Touchez pour continuer",
@@ -94,5 +98,92 @@
       "title": "Accès refusé",
       "back": "Retour à la vue d'ensemble"
     }
+  },
+  "roleChoice": {
+    "title": "Comment utiliserez-vous Solace ?",
+    "subtitle": "Usagers et spécialistes ont chacun leur espace dans Solace. Choisissez celui qui vous correspond.",
+    "seekerTitle": "Je cherche du soutien",
+    "seekerMeta": "Réservez des séances, suivez votre santé et gardez l'historique de vos séances au même endroit.",
+    "specialistTitle": "Je suis un spécialiste agréé",
+    "specialistMeta": "Proposez des séances audio et vidéo. Solace vérifie chaque autorisation d'exercer avant vos premières réservations.",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "signIn": "Se connecter"
+  },
+  "signIn": {
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous avec le numéro ou l'e-mail de votre compte. Nous vous enverrons un code.",
+    "tabsLabel": "Se connecter avec",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "phoneLabel": "Numéro de téléphone",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "sendCode": "Envoyer le code",
+    "guestTitle": "Déjà réservé en tant qu'invité ?",
+    "guestBody": "Créez un compte avec le même numéro et vos réservations passées y seront rattachées.",
+    "createAccount": "Créer un compte"
+  },
+  "verify": {
+    "title": "Saisissez votre code",
+    "sentSms": "Nous avons envoyé un code à 6 chiffres par SMS au {{contact}}.",
+    "sentEmail": "Nous avons envoyé un code à 6 chiffres par e-mail à {{contact}}.",
+    "codeLabel": "Code à 6 chiffres",
+    "resendIn": "Rien reçu ? Renvoyer dans {{time}}",
+    "sendNew": "Envoyer un nouveau code",
+    "differentNumber": "Utiliser un autre numéro",
+    "differentEmail": "Utiliser un autre e-mail",
+    "verify": "Vérifier",
+    "wrong_one": "Ce code n'est pas bon. Encore {{count}} essai.",
+    "wrong_other": "Ce code n'est pas bon. Encore {{count}} essais.",
+    "rules": "Après {{tries}} essais erronés, nous enverrons un nouveau code. Les codes expirent après {{minutes}} minutes."
+  },
+  "signup": {
+    "progress": "{{step}} sur {{total}}",
+    "progressLabel": "Étape {{step}} sur {{total}}"
+  },
+  "signupDetails": {
+    "title": "Créer votre compte",
+    "subtitle": "Seul votre spécialiste voit le nom indiqué ici.",
+    "nameLabel": "Comment devons-nous vous appeler ?",
+    "nameHelp": "Un prénom ou un surnom suffit.",
+    "phoneLabel": "Numéro de téléphone",
+    "emailLabel": "E-mail (facultatif)",
+    "emailPlaceholder": "vous@exemple.com",
+    "dobLabel": "Date de naissance",
+    "dobPlaceholder": "JJ / MM / AAAA",
+    "dobHelp": "Vous devez avoir 18 ans ou plus pour utiliser Solace.",
+    "agreeBefore": "J'accepte les ",
+    "terms": "Conditions",
+    "agreeMiddle": " et j'ai lu ",
+    "privacyNotice": "l'avis de confidentialité",
+    "agreeAfter": ".",
+    "submit": "Envoyer le code et continuer"
+  },
+  "signupPreferences": {
+    "title": "À votre image",
+    "subtitle": "Cela nous aide à vous suggérer des spécialistes. Modifiable à tout moment.",
+    "appLanguage": "Langue de l'application",
+    "sessionLanguages": "Langues dans lesquelles vous voulez parler",
+    "helpTopics": "Pour quoi souhaitez-vous de l'aide ?",
+    "optional": "(facultatif)",
+    "specialistGender": "Préférence de spécialiste",
+    "any": "Indifférent",
+    "woman": "Femme",
+    "man": "Homme"
+  },
+  "signupPrivacy": {
+    "title": "Votre vie privée, votre décision",
+    "subtitle": "Choisissez ce que Solace peut faire de vos informations. Modifiable plus tard dans Confidentialité et données.",
+    "AI_ASSIST_title": "Assistance IA",
+    "AI_ASSIST_meta": "Explications claires et compagnon entre les séances.",
+    "AI_SCRIBE_title": "Notes de séance par IA",
+    "AI_SCRIBE_meta": "Autoriser les spécialistes à utiliser une prise de notes IA. Désactivé, elle n'est jamais utilisée dans vos séances.",
+    "promise": "Vos données sont chiffrées, jamais vendues et jamais utilisées pour entraîner des modèles d'IA.",
+    "readNotice": "Lire l'avis de confidentialité",
+    "save": "Enregistrer mes choix"
+  },
+  "signupDone": {
+    "title": "Tout est prêt, {{name}}",
+    "home": "Aller à mon accueil"
   }
 }

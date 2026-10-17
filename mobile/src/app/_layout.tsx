@@ -15,10 +15,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { queryClient } from '@/api/query-client';
+import { useAuth } from '@/auth/auth';
 import { deviceLanguage, initI18n } from '@/i18n';
 import { useSession } from '@/state/session';
 
@@ -38,15 +39,21 @@ export default function RootLayout() {
     Figtree_700Bold,
   });
   const hydrated = useSessionHydrated();
+  const authKnown = useAuth((s) => s.status !== 'unknown');
   const language = useSession((s) => s.language);
   const [stringsReady, setStringsReady] = useState(false);
+
+  // Read the stored tokens (secure storage) before the first screen decides where to go.
+  useEffect(() => {
+    useAuth.getState().load().catch(() => useAuth.getState().signOut());
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
     initI18n(language ?? deviceLanguage()).then(() => setStringsReady(true));
   }, [hydrated, language]);
 
-  const ready = (fontsLoaded || fontError !== null) && stringsReady;
+  const ready = (fontsLoaded || fontError !== null) && stringsReady && authKnown;
 
   useEffect(() => {
     if (ready) SplashScreen.hide();
@@ -73,11 +80,8 @@ export default function RootLayout() {
 
 /** True once the persisted session (language, role) has been read from storage. */
 function useSessionHydrated() {
-  const [hydrated, setHydrated] = useState(useSession.persist.hasHydrated());
-  useEffect(() => {
-    const unsubscribe = useSession.persist.onFinishHydration(() => setHydrated(true));
-    setHydrated(useSession.persist.hasHydrated());
-    return unsubscribe;
-  }, []);
-  return hydrated;
+  return useSyncExternalStore(
+    (changed) => useSession.persist.onFinishHydration(changed),
+    () => useSession.persist.hasHydrated(),
+  );
 }

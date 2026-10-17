@@ -3,7 +3,11 @@
     "appName": "Solace Care",
     "appLanguage": "App language",
     "english": "English",
-    "french": "Français"
+    "french": "Français",
+    "back": "Back",
+    "continue": "Continue",
+    "tryAgain": "Try again",
+    "checkConnection": "Check your connection and try again."
   },
   "splash": {
     "a11yLabel": "Solace Care. Tap to continue",
@@ -94,5 +98,92 @@
       "title": "No access",
       "back": "Back to overview"
     }
+  },
+  "roleChoice": {
+    "title": "How will you use Solace?",
+    "subtitle": "Seekers and specialists get different apps inside Solace. Pick the one that fits you.",
+    "seekerTitle": "I'm looking for support",
+    "seekerMeta": "Book sessions, track your health, and keep your session history in one place.",
+    "specialistTitle": "I'm a licensed specialist",
+    "specialistMeta": "Apply to offer audio and video sessions. Solace verifies every licence before you can take bookings.",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in"
+  },
+  "signIn": {
+    "title": "Welcome back",
+    "subtitle": "Sign in with the phone number or email on your account. We'll send you a code.",
+    "tabsLabel": "Sign in with",
+    "phone": "Phone",
+    "email": "Email",
+    "phoneLabel": "Phone number",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendCode": "Send code",
+    "guestTitle": "Booked as a guest before?",
+    "guestBody": "Create an account with the same number and your past bookings move into it.",
+    "createAccount": "Create an account"
+  },
+  "verify": {
+    "title": "Enter your code",
+    "sentSms": "We sent a 6-digit code by SMS to {{contact}}.",
+    "sentEmail": "We sent a 6-digit code by email to {{contact}}.",
+    "codeLabel": "6-digit code",
+    "resendIn": "Didn't get it? Resend in {{time}}",
+    "sendNew": "Send a new code",
+    "differentNumber": "Use a different number",
+    "differentEmail": "Use a different email",
+    "verify": "Verify",
+    "wrong_one": "That code isn't right. {{count}} try left.",
+    "wrong_other": "That code isn't right. {{count}} tries left.",
+    "rules": "After {{tries}} wrong tries we'll send a new code. Codes expire after {{minutes}} minutes."
+  },
+  "signup": {
+    "progress": "{{step}} of {{total}}",
+    "progressLabel": "Step {{step}} of {{total}}"
+  },
+  "signupDetails": {
+    "title": "Create your account",
+    "subtitle": "Only your specialist sees the name you give here.",
+    "nameLabel": "What should we call you?",
+    "nameHelp": "A first name or nickname is fine.",
+    "phoneLabel": "Phone number",
+    "emailLabel": "Email (optional)",
+    "emailPlaceholder": "you@example.com",
+    "dobLabel": "Date of birth",
+    "dobPlaceholder": "DD / MM / YYYY",
+    "dobHelp": "You need to be 18 or over to use Solace.",
+    "agreeBefore": "I agree to the ",
+    "terms": "Terms",
+    "agreeMiddle": " and have read the ",
+    "privacyNotice": "Privacy notice",
+    "agreeAfter": ".",
+    "submit": "Send code and continue"
+  },
+  "signupPreferences": {
+    "title": "Make it yours",
+    "subtitle": "We use this to suggest specialists. You can change it any time.",
+    "appLanguage": "App language",
+    "sessionLanguages": "Languages you're happy to talk in",
+    "helpTopics": "What would you like help with?",
+    "optional": "(optional)",
+    "specialistGender": "Specialist preference",
+    "any": "Any",
+    "woman": "Woman",
+    "man": "Man"
+  },
+  "signupPrivacy": {
+    "title": "Your privacy, your call",
+    "subtitle": "Choose what Solace may do with your information. Change any of this later in Privacy & data.",
+    "AI_ASSIST_title": "AI assistance",
+    "AI_ASSIST_meta": "Plain-language insights and the between-session companion.",
+    "AI_SCRIBE_title": "AI session notes",
+    "AI_SCRIBE_meta": "Let specialists use an AI scribe to draft notes. Off means it is never used in your sessions.",
+    "promise": "Your data is encrypted, never sold, and never used to train AI models.",
+    "readNotice": "Read the privacy notice",
+    "save": "Save choices"
+  },
+  "signupDone": {
+    "title": "You're all set, {{name}}",
+    "home": "Go to my home"
   }
 }
