@@ -127,6 +127,39 @@ class GatewayTest {
   }
 
   @Test
+  void signUpAndTheCatalogueNeedNoToken() {
+    web.post()
+        .uri("/api/core/v1/signups")
+        .exchange()
+        .expectBody()
+        .jsonPath("$.path")
+        .isEqualTo("/v1/signups");
+    web.get()
+        .uri("/api/core/v1/catalogue/help-topics")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.path")
+        .isEqualTo("/v1/catalogue/help-topics");
+  }
+
+  @Test
+  void internalEndpointsAreNeverRoutedEvenWithAToken() {
+    web.post()
+        .uri("/api/core/internal/v1/sign-in-codes")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token(STAFF, "staff-internal"))
+        .exchange()
+        .expectStatus()
+        .isForbidden();
+    web.post()
+        .uri("/api/core/internal/v1/sign-in-codes")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized();
+  }
+
+  @Test
   void staffTokenReachesTrackingAndAi() {
     String token = token(STAFF, "staff-route");
 

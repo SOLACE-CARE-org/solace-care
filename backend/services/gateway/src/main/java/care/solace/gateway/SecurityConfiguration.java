@@ -38,6 +38,9 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 class SecurityConfiguration {
 
+  /** Service endpoints for other platform components (contracts/openapi/*-internal.yaml). */
+  static final String INTERNAL_PATHS = "/api/*/internal/**";
+
   @Bean
   Problems problems(MessageSource messages, ObjectProvider<Tracer> tracer) {
     return new Problems(
@@ -76,6 +79,9 @@ class SecurityConfiguration {
         .authorizeExchange(
             exchanges ->
                 exchanges
+                    // Calls between platform components never come through the edge.
+                    .pathMatchers(INTERNAL_PATHS)
+                    .denyAll()
                     .pathMatchers(HttpMethod.OPTIONS)
                     .permitAll()
                     .pathMatchers(settings.publicPaths().toArray(String[]::new))
