@@ -39,3 +39,6 @@ rendered/
 
 # Kotlin compiler caches (build-logic)
 .kotlin/
+
+# IDE (VS Code Java) build output
+backend/**/bin/
