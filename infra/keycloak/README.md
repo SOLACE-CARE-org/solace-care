@@ -23,7 +23,7 @@ Realm files are only imported when a realm does not exist yet. After changing on
 
 **How the app signs in.** Two calls to `POST /realms/solace-members/protocol/openid-connect/token` with `grant_type=password` and `client_id=solace-mobile`:
 
-1. `username=<phone or email>`: answers `401 {"error":"code_required"}` whether or not the contact has an account, and sends a code if it does.
+1. `username=<phone or email>` (form-encoded, so `+` is sent as `%2B`): answers `401 {"error":"code_required"}` whether or not the contact has an account, and sends a code if it does.
 2. `username=<same>&code=<code>`: tokens on success, `401 {"error":"invalid_grant"}` otherwise.
 
 **Codes locally.** The `logging` sender writes each code to the Keycloak log with the contact masked: `docker compose -f infra/docker-compose.yml logs keycloak | grep "sign-in code"`. It refuses to run unless `SOLACE_DEV_CODE_SENDER=enabled`, which only docker-compose and the tests set. The sender that hands codes to Core (Core sends the SMS) comes with the identity epic in Phase 1.

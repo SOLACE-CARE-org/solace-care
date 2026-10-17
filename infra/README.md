@@ -26,6 +26,10 @@ Defaults work out of the box. To change a password, copy `.env.example` to `.env
 | Grafana | <http://localhost:3000> | Prometheus, Loki and Tempo provisioned, trace-to-logs linked. Login `admin` / `admin` |
 | Prometheus, Loki, Tempo | :9090, :3100, :3200 | Usually viewed through Grafana |
 
+## Seeing a request end to end
+
+With the four processes running, `bash infra/scripts/e2e-ping.sh` makes one request and prints its trace. In Grafana (<http://localhost:3000>), open Explore, pick Tempo and paste the trace id: the gateway, Core, the gRPC calls to Tracking and AI, the Kafka send and Tracking's consumer are one tree. Each span links to its log lines in Loki, which are scrubbed before they leave the process.
+
 ## Still to come
 
 - `k8s/`, `argocd/`: manifests for dev, staging and prod, written but not applied until hosting is decided (step 12)

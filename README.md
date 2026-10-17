@@ -45,6 +45,11 @@ cd backend
 ./gradlew :services:tracking:bootRun   # REST :8102, gRPC :9102
 ./gradlew :services:ai:bootRun         # REST :8103, gRPC :9103
 
+# Phase 0 gate, end to end (from the repo root, with the stack and all four processes running):
+# signs a test seeker in with a one-time code, calls the ping through the gateway, and checks
+# that one trace in Tempo covers gateway, Core, gRPC to Tracking and AI, and the Kafka event.
+bash infra/scripts/e2e-ping.sh
+
 # JavaScript / TypeScript workspace (from the repo root)
 cd ..
 pnpm install
