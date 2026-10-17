@@ -52,9 +52,13 @@ bash infra/scripts/e2e-ping.sh
 
 # JavaScript / TypeScript workspace (from the repo root)
 cd ..
-pnpm install
+pnpm install                              # also generates design tokens (packages/tokens)
 pnpm build
-pnpm test
+pnpm test                                 # i18n EN/FR parity, mobile tests
+
+# Mobile app (details in mobile/README.md)
+pnpm --filter @solace/mobile android      # dev build on an Android device or emulator
+pnpm --filter @solace/mobile start        # Metro for an installed dev build
 
 # Contracts: Buf lint, OpenAPI lint, event schema validation
 pnpm --filter @solace/contracts lint

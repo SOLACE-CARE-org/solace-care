@@ -1,0 +1,51 @@
+{
+  "name": "@solace/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "doctor": "expo-doctor"
+  },
+  "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo-google-fonts/figtree": "^0.4.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@solace/i18n": "workspace:*",
+    "@solace/tokens": "workspace:*",
+    "@tanstack/react-query": "^5.104.3",
+    "expo": "~58.0.14",
+    "expo-constants": "~58.0.12",
+    "expo-dev-client": "~58.0.14",
+    "expo-font": "~58.0.8",
+    "expo-linking": "~58.0.13",
+    "expo-localization": "~58.0.4",
+    "expo-router": "~58.0.23",
+    "expo-splash-screen": "~58.0.10",
+    "expo-status-bar": "~58.0.3",
+    "i18next": "^26.4.7",
+    "lucide-react-native": "^1.59.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "^17.0.20",
+    "react-native": "0.88.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "^0.21.4",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.3.0",
+    "jest": "^30.5.2",
+    "jest-expo": "^58.0.11",
+    "typescript": "~6.0.3"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Solace Care",
+    "slug": "solace-care",
+    "scheme": "solacecare",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "../design/design-system/assets/Logos/png/solace-care-app-icon-1024.png",
+    "ios": {
+      "bundleIdentifier": "care.solace.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "care.solace.app",
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2D6A4F",
+          "image": "../design/design-system/assets/Logos/png/solace-care-app-icon-512.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-localization",
+      "expo-status-bar",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

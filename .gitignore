@@ -13,8 +13,8 @@ dist/
 
 # Expo / React Native
 .expo/
-apps/mobile/android/
-apps/mobile/ios/
+mobile/android/
+mobile/ios/
 
 # Angular
 .angular/

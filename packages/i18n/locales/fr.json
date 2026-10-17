@@ -1,5 +1,47 @@
 {
   "common": {
-    "appName": "Solace Care"
+    "appName": "Solace Care",
+    "appLanguage": "Langue de l'application",
+    "english": "English",
+    "french": "Français"
+  },
+  "splash": {
+    "a11yLabel": "Solace Care. Touchez pour continuer",
+    "languages": "English · Français"
+  },
+  "language": {
+    "title": "Choose your language",
+    "titleOther": "Choisissez votre langue",
+    "englishMeta": "Utiliser l'application en anglais",
+    "frenchMeta": "Utiliser l'application en français",
+    "note": "Vous pourrez la changer plus tard dans les Paramètres. Vous choisissez la langue de chaque séance au moment de la réserver.",
+    "continue": "Continuer"
+  },
+  "welcome": {
+    "title": "Quelqu'un à qui parler, dans votre langue.",
+    "subtitle": "Réservez une séance privée, audio ou vidéo, avec un spécialiste agréé. Aucun compte requis.",
+    "findSpecialist": "Trouver un spécialiste",
+    "createAccount": "Créer un compte",
+    "accountNote": "Un compte débloque le suivi de santé et l'historique de vos séances.",
+    "signIn": "J'ai déjà un compte · Se connecter",
+    "crisis": "En crise ? Obtenez de l’aide maintenant"
+  },
+  "nav": {
+    "seeker": {
+      "home": "Accueil",
+      "track": "Suivi",
+      "sessions": "Séances",
+      "you": "Moi"
+    },
+    "specialist": {
+      "today": "Aujourd'hui",
+      "calendar": "Agenda",
+      "notes": "Notes",
+      "earnings": "Revenus",
+      "profile": "Profil"
+    }
+  },
+  "dev": {
+    "notBuilt": "Cet écran n'est pas encore construit."
   }
 }

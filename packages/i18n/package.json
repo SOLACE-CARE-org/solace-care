@@ -2,10 +2,15 @@
   "name": "@solace/i18n",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared EN/FR strings for the mobile app and the admin portal",
+  "description": "Shared EN/FR strings for the mobile app and the admin portal. Copy is final: as written on the screens and in notification-copy.md.",
+  "type": "module",
   "files": ["locales"],
   "exports": {
     "./en.json": "./locales/en.json",
     "./fr.json": "./locales/fr.json"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node scripts/check.mjs"
   }
 }

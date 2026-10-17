@@ -1,5 +1,47 @@
 {
   "common": {
-    "appName": "Solace Care"
+    "appName": "Solace Care",
+    "appLanguage": "App language",
+    "english": "English",
+    "french": "Français"
+  },
+  "splash": {
+    "a11yLabel": "Solace Care. Tap to continue",
+    "languages": "English · Français"
+  },
+  "language": {
+    "title": "Choose your language",
+    "titleOther": "Choisissez votre langue",
+    "englishMeta": "Use the app in English",
+    "frenchMeta": "Utiliser l'application en français",
+    "note": "You can change this later in Settings. You choose the language of each session when you book it.",
+    "continue": "Continue"
+  },
+  "welcome": {
+    "title": "Someone to talk to, in your language.",
+    "subtitle": "Book a private audio or video session with a licensed specialist. No account needed.",
+    "findSpecialist": "Find a specialist",
+    "createAccount": "Create an account",
+    "accountNote": "An account unlocks health tracking and your session history.",
+    "signIn": "I already have an account · Sign in",
+    "crisis": "In crisis? Get help now"
+  },
+  "nav": {
+    "seeker": {
+      "home": "Home",
+      "track": "Track",
+      "sessions": "Sessions",
+      "you": "You"
+    },
+    "specialist": {
+      "today": "Today",
+      "calendar": "Calendar",
+      "notes": "Notes",
+      "earnings": "Earnings",
+      "profile": "Profile"
+    }
+  },
+  "dev": {
+    "notBuilt": "This screen is not built yet."
   }
 }

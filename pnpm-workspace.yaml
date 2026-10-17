@@ -3,3 +3,7 @@ packages:
   - "admin"
   - "contracts"
   - "packages/*"
+
+# React Native's native (CMake) builds fail on Windows behind pnpm's symlinked .pnpm paths
+# ("build.ninja still dirty"). A flat node_modules, as Expo's monorepo guide suggests, fixes it.
+nodeLinker: hoisted

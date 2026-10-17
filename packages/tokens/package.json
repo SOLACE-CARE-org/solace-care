@@ -1,0 +1,16 @@
+{
+  "name": "@solace/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Platform files generated from design/design-system/tokens.json. Never edit dist/ by hand.",
+  "type": "module",
+  "exports": {
+    "./native": "./dist/tokens.ts",
+    "./css": "./dist/tokens.css"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepare": "node scripts/build.mjs"
+  }
+}
