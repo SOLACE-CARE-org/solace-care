@@ -50,6 +50,9 @@ importers:
       '@ngrx/signals':
         specifier: 22.0.1
         version: 22.0.1(@angular/core@22.2.3(@angular/compiler@22.2.3)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@solace/api-clients':
+        specifier: workspace:*
+        version: link:../packages/api-clients
       '@solace/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -65,6 +68,9 @@ importers:
       keycloak-js:
         specifier: 26.2.4
         version: 26.2.4
+      openapi-fetch:
+        specifier: 0.17.0
+        version: 0.17.0
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2

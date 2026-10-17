@@ -22,11 +22,13 @@
     "@jsverse/transloco": "8.4.0",
     "@lucide/angular": "1.59.0",
     "@ngrx/signals": "22.0.1",
+    "@solace/api-clients": "workspace:*",
     "@solace/contracts": "workspace:*",
     "@solace/i18n": "workspace:*",
     "@solace/tokens": "workspace:*",
     "keycloak-angular": "22.0.0",
     "keycloak-js": "26.2.4",
+    "openapi-fetch": "0.17.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

@@ -38,3 +38,165 @@ body {
     transition: none !important;
   }
 }
+
+/* --- Shared admin pieces (design-system components: Button, Card, Pill, Segmented, DataTable). --- */
+/* Borders, not shadows; controls at least 44px high (design-system README). */
+
+.sl-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-title-md-size);
+  line-height: var(--type-title-md-line-height);
+  letter-spacing: var(--type-title-md-letter-spacing);
+  font-weight: var(--type-title-md-weight);
+}
+
+.sl-muted {
+  color: var(--ink-muted);
+}
+
+.sl-meta {
+  font-size: var(--type-meta-size);
+  line-height: var(--type-meta-line-height);
+  color: var(--ink-muted);
+}
+
+.sl-button {
+  min-height: var(--size-control-admin);
+  padding: 0 var(--space-16);
+  border-radius: var(--radius-12);
+  border: 1px solid var(--line-control);
+  background: var(--surface-card);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sl-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.sl-button--primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+.sl-button--danger {
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.sl-button--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--brand);
+}
+
+.sl-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-16);
+  padding: var(--space-18) var(--space-18);
+}
+
+.sl-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-10);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-meta-size);
+  font-weight: 700;
+  background: var(--surface-sunken);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.sl-pill--brand {
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+}
+.sl-pill--warning {
+  background: var(--warning-tint);
+  color: var(--warning-ink);
+}
+.sl-pill--danger {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.sl-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.sl-input,
+.sl-select,
+.sl-textarea {
+  min-height: var(--size-control-admin);
+  padding: 0 var(--space-12);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-12);
+  background: var(--surface-card);
+  color: var(--ink);
+  font: inherit;
+}
+.sl-textarea {
+  min-height: 96px;
+  padding: var(--space-10) var(--space-12);
+  resize: vertical;
+}
+
+.sl-tabs {
+  display: inline-flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-14);
+  background: var(--surface-card);
+}
+.sl-tabs button {
+  min-height: 36px;
+  padding: 0 var(--space-14);
+  border: 0;
+  border-radius: var(--radius-10);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sl-tabs button[aria-selected='true'] {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.sl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sl-table th {
+  text-align: left;
+  font-size: var(--type-meta-size);
+  font-weight: 600;
+  color: var(--ink-muted);
+  padding: var(--space-10) var(--space-14);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.sl-table td {
+  padding: var(--space-12) var(--space-14);
+  border-bottom: 1px solid var(--surface-sunken);
+  vertical-align: middle;
+}
+.sl-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.sl-dialog {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-16);
+  padding: var(--space-24);
+  width: min(520px, 90vw);
+}
+.sl-dialog::backdrop {
+  background: rgb(20 32 28 / 0.35);
+}

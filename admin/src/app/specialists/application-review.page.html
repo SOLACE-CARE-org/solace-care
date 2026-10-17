@@ -1,0 +1,397 @@
+<a class="back" routerLink="/applications">
+  <svg [lucideIcon]="back" [size]="18" [strokeWidth]="1.8" aria-hidden="true"></svg>
+  {{ 'admin.specialists.review.back' | transloco }}
+</a>
+
+@if (review(); as r) {
+<header class="head">
+  <span class="avatar" aria-hidden="true">{{ initialsOf(r.fullName) }}</span>
+  <div class="who">
+    <h1 class="sl-title">{{ r.fullName }}</h1>
+    <p class="sl-muted">
+      {{ 'admin.specialists.review.meta' | transloco: { profession: r.professionLabel ?? '', date:
+      short(r.submittedAt) } }}
+    </p>
+  </div>
+  <span [class]="statusClass(r)">{{ 'admin.specialists.status.' + status(r) | transloco }}</span>
+  @if (canChange()) {
+  <div class="actions">
+    @if (r.status === 'SUBMITTED') {
+    <button class="sl-button sl-button--primary" type="button" [disabled]="busy()" (click)="open()">
+      {{ 'admin.specialists.review.open' | transloco }}
+    </button>
+    } @if (inReview()) {
+    <button
+      class="sl-button sl-button--danger"
+      type="button"
+      [disabled]="busy()"
+      (click)="ask('reject')"
+    >
+      {{ 'admin.specialists.review.reject' | transloco }}
+    </button>
+    <button class="sl-button" type="button" [disabled]="busy()" (click)="ask('changes')">
+      {{ 'admin.specialists.review.requestChanges' | transloco }}
+    </button>
+    } @if (underReview()) {
+    <button
+      class="sl-button sl-button--primary"
+      type="button"
+      [disabled]="busy() || r.verifiedItems < 6"
+      (click)="approve()"
+    >
+      {{ 'admin.specialists.review.approve' | transloco }}
+    </button>
+    }
+  </div>
+  }
+</header>
+
+<p class="sl-card summary" aria-live="polite">
+  {{ 'admin.specialists.review.summary' | transloco: { count: r.verifiedItems } }} @if
+  (r.verifiedItems < 6 && underReview()) { {{ 'admin.specialists.review.summaryLocked' | transloco
+  }} }
+</p>
+@if (error()) {
+<p class="error" role="alert">{{ error() }}</p>
+} @if (r.reviewNote) {
+<p class="sl-meta">
+  {{ 'admin.specialists.review.lastReason' | transloco: { reason: r.reviewNote } }}
+</p>
+}
+
+<div class="columns">
+  <div class="items">
+    <!-- 1. Identity -->
+    <section class="sl-card item" [class.current]="underReview() && !r.identity.verification">
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.identity' | transloco }}</h2>
+        <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.identity.verification }" />
+      </div>
+      <div class="files">
+        @for (d of documents(r, 'IDENTITY'); track d.id) {
+        <button class="file" type="button" (click)="openDocument(d.id)">{{ d.fileName }}</button>
+        } @for (d of documents(r, 'PHOTO'); track d.id) {
+        <button class="file" type="button" (click)="openDocument(d.id)">
+          {{ 'admin.specialists.review.doc_PHOTO' | transloco }} · {{ d.fileName }}
+        </button>
+        } @for (d of documents(r, 'CV'); track d.id) {
+        <button class="file" type="button" (click)="openDocument(d.id)">
+          {{ 'admin.specialists.review.doc_CV' | transloco }} · {{ d.fileName }}
+        </button>
+        }
+      </div>
+      <ng-container
+        *ngTemplateOutlet="verifyTpl; context: { item: 'IDENTITY', v: r.identity.verification }"
+      />
+    </section>
+
+    <!-- 2. Licence -->
+    <section class="sl-card item" [class.current]="underReview() && !r.licence.verification">
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.licence' | transloco }}</h2>
+        <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.licence.verification }" />
+      </div>
+      <dl class="facts">
+        <div>
+          <dt>{{ 'admin.specialists.review.licenceNumber' | transloco }}</dt>
+          <dd>{{ r.licence.licenceNumber }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'admin.specialists.review.issuedBy' | transloco }}</dt>
+          <dd>{{ r.licence.licensingBody }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'admin.specialists.review.validUntil' | transloco }}</dt>
+          <dd>
+            @if (r.licence.validUntil) { {{ day(r.licence.validUntil) }} } @else if (underReview()
+            && canChange()) {
+            <input
+              class="sl-input"
+              type="date"
+              [attr.aria-label]="'admin.specialists.review.validUntil' | transloco"
+              [value]="licenceValidUntil()"
+              (input)="licenceValidUntil.set(value($event))"
+            />
+            }
+          </dd>
+        </div>
+      </dl>
+      <div class="files">
+        @for (d of documents(r, 'LICENCE'); track d.id) {
+        <button class="file" type="button" (click)="openDocument(d.id)">{{ d.fileName }}</button>
+        }
+      </div>
+      <p class="sl-meta">{{ 'admin.specialists.review.licenceHelp' | transloco }}</p>
+      <ng-container
+        *ngTemplateOutlet="verifyTpl; context: { item: 'LICENCE', v: r.licence.verification }"
+      />
+    </section>
+
+    <!-- 3. Languages -->
+    <section
+      class="sl-card item"
+      [class.current]="underReview() && verifiedLanguages(r) < r.languages.length"
+    >
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.languages' | transloco }}</h2>
+        <span
+          class="sl-pill"
+          [class.sl-pill--brand]="verifiedLanguages(r) === r.languages.length"
+          [class.sl-pill--warning]="verifiedLanguages(r) < r.languages.length"
+        >
+          {{ 'admin.specialists.review.languagesVerified' | transloco: { count:
+          verifiedLanguages(r), total: r.languages.length } }}
+        </span>
+      </div>
+      @for (l of r.languages; track l.code) {
+      <div class="language">
+        <span>
+          <strong>{{ languageOf(l.code) }}</strong>
+          · {{ 'admin.specialists.review.declared_' + l.declared | transloco }}
+        </span>
+        @if (l.verification && !(underReview() && canChange())) {
+        <span class="sl-muted">
+          {{ 'admin.specialists.review.verifiedInInterview' | transloco: { level:
+          ('admin.specialists.review.level_' + l.verifiedLevel | transloco), date:
+          short(l.verification.at) } }}
+        </span>
+        } @else if (underReview() && canChange()) {
+        <label class="level">
+          <span class="sl-muted">{{ 'admin.specialists.review.verifiedLevel' | transloco }}</span>
+          <select
+            class="sl-select"
+            [value]="l.verifiedLevel ?? ''"
+            (change)="verifyLanguage(l.code, $event)"
+            [disabled]="busy()"
+          >
+            <option value="" [disabled]="!!l.verifiedLevel">
+              {{ 'admin.specialists.review.notInterviewed' | transloco }}
+            </option>
+            @for (level of levels; track level) {
+            <option [value]="level">
+              {{ 'admin.specialists.review.level_' + level | transloco }}
+            </option>
+            }
+          </select>
+        </label>
+        }
+      </div>
+      }
+      <div class="interview">
+        <span class="sl-muted">{{ 'admin.specialists.review.interview' | transloco }}</span>
+        @if (r.interviewAt) {
+        <span
+          >{{ 'admin.specialists.review.interviewBooked' | transloco: { date: when(r.interviewAt) }
+          }}</span
+        >
+        } @if (inReview() && canChange()) {
+        <input
+          class="sl-input"
+          type="datetime-local"
+          [attr.aria-label]="'admin.specialists.review.interview' | transloco"
+          [value]="interviewAt()"
+          (input)="interviewAt.set(value($event))"
+        />
+        <button
+          class="sl-button"
+          type="button"
+          [disabled]="busy() || !interviewAt()"
+          (click)="bookInterview()"
+        >
+          {{ 'admin.specialists.review.book' | transloco }}
+        </button>
+        }
+      </div>
+    </section>
+
+    <!-- 4. Services and prices -->
+    <section class="sl-card item">
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.services' | transloco }}</h2>
+        <span
+          class="sl-pill"
+          [class.sl-pill--brand]="r.services.withinBands"
+          [class.sl-pill--danger]="!r.services.withinBands"
+        >
+          {{ (r.services.withinBands ? 'admin.specialists.review.withinBands' :
+          'admin.specialists.review.outsideBands') | transloco }}
+        </span>
+      </div>
+      <div class="files">
+        @for (o of r.services.offerings; track o.modality) { @if (o.enabled) {
+        <span class="file static">{{ offering(o) }}</span>
+        } }
+      </div>
+    </section>
+
+    <!-- 5. Profile text -->
+    <section class="sl-card item" [class.current]="underReview() && !r.profile.verification">
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.profile' | transloco }}</h2>
+        @if (missingBio(r); as missing) {
+        <span class="sl-pill sl-pill--warning">
+          {{ 'admin.specialists.review.missingLanguage' | transloco: { language:
+          missing.toUpperCase() } }}
+        </span>
+        } @else if (r.profile.verification) {
+        <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.profile.verification }" />
+        } @else {
+        <span class="sl-pill sl-pill--brand"
+          >{{ 'admin.specialists.review.bothPresent' | transloco }}</span
+        >
+        }
+      </div>
+      @for (language of ['en', 'fr']; track language) {
+      <label class="sl-field bio">
+        <span class="sl-meta">{{ 'admin.specialists.review.bio_' + language | transloco }}</span>
+        @if (underReview() && canChange()) {
+        <textarea
+          class="sl-textarea"
+          maxlength="600"
+          [value]="bioValue(r, $any(language))"
+          (input)="draftBio($any(language), value($event))"
+        ></textarea>
+        @if (hasDraft($any(language))) {
+        <button
+          class="sl-button"
+          type="button"
+          [disabled]="busy()"
+          (click)="saveBio($any(language))"
+        >
+          {{ 'admin.specialists.review.saveBio' | transloco }}
+        </button>
+        } } @else {
+        <p>{{ bioValue(r, $any(language)) }}</p>
+        }
+      </label>
+      }
+      <p class="sl-meta">{{ 'admin.specialists.review.profileHelp' | transloco }}</p>
+      <ng-container
+        *ngTemplateOutlet="verifyTpl; context: { item: 'PROFILE', v: r.profile.verification }"
+      />
+    </section>
+
+    <!-- 6. Payout details -->
+    <section class="sl-card item" [class.current]="underReview() && !r.payout.verification">
+      <div class="item-head">
+        <h2>{{ 'admin.specialists.review.payout' | transloco }}</h2>
+        <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.payout.verification }" />
+      </div>
+      @if (r.payout.method) {
+      <p>
+        {{ 'admin.specialists.review.payoutLine' | transloco : { method:
+        ('admin.specialists.review.method_' + r.payout.method | transloco), phone: r.payout.phone ??
+        '' } }}
+      </p>
+      <p class="sl-meta">
+        {{ 'admin.specialists.review.holder' | transloco: { name: r.payout.holderName } }}
+      </p>
+      }
+      <ng-container
+        *ngTemplateOutlet="verifyTpl; context: { item: 'PAYOUT', v: r.payout.verification }"
+      />
+    </section>
+  </div>
+
+  <aside class="side">
+    <section class="sl-card">
+      <h2>{{ 'admin.specialists.review.notes' | transloco }}</h2>
+      <textarea
+        class="sl-textarea notes"
+        maxlength="4000"
+        [attr.aria-label]="'admin.specialists.review.notes' | transloco"
+        [placeholder]="'admin.specialists.review.notesPlaceholder' | transloco"
+        [value]="notesDraft() ?? r.notes"
+        [disabled]="!canChange()"
+        (input)="notesDraft.set(value($event))"
+      ></textarea>
+      @if (notesDraft() !== null) {
+      <button class="sl-button" type="button" [disabled]="busy()" (click)="saveNotes()">
+        {{ 'admin.specialists.review.saveNotes' | transloco }}
+      </button>
+      }
+      <p class="sl-meta">{{ 'admin.specialists.review.notesHelp' | transloco }}</p>
+    </section>
+    <section class="sl-card">
+      <h2>{{ 'admin.specialists.review.activity' | transloco }}</h2>
+      <ol class="activity">
+        @for (a of r.activity; track $index) {
+        <li>{{ activity(a) }}</li>
+        }
+      </ol>
+    </section>
+  </aside>
+</div>
+
+<ng-template #badgeTpl let-v="v">
+  @if (v) {
+  <span class="sl-pill sl-pill--brand">{{ verifiedBy(v) }}</span>
+  } @else {
+  <span class="sl-pill">{{ 'admin.specialists.review.notChecked' | transloco }}</span>
+  }
+</ng-template>
+
+<ng-template #verifyTpl let-item="item" let-v="v">
+  @if (underReview() && canChange()) {
+  <div class="verify">
+    @if (v) {
+    <button
+      class="sl-button sl-button--quiet"
+      type="button"
+      [disabled]="busy()"
+      (click)="verify(item, false)"
+    >
+      {{ 'admin.specialists.review.undo' | transloco }}
+    </button>
+    } @else {
+    <button
+      class="sl-button"
+      type="button"
+      [disabled]="busy() || (item === 'LICENCE' && !licenceValidUntil() && !r.licence.validUntil)"
+      (click)="verify(item, true)"
+    >
+      {{ 'admin.specialists.review.verify' | transloco }}
+    </button>
+    }
+  </div>
+  }
+</ng-template>
+
+<dialog #decisionDialog class="sl-dialog" (close)="decision.set(null)">
+  <h2>
+    {{ (decision() === 'reject' ? 'admin.specialists.review.rejectTitle' :
+    'admin.specialists.review.changesTitle') | transloco }}
+  </h2>
+  <label class="sl-field">
+    <span>{{ 'admin.specialists.review.reasonLabel' | transloco }}</span>
+    <textarea
+      class="sl-textarea"
+      maxlength="1000"
+      [value]="reason()"
+      (input)="reason.set(value($event))"
+    ></textarea>
+  </label>
+  <div class="dialog-actions">
+    <button class="sl-button" type="button" (click)="closeDialog()">
+      {{ 'admin.specialists.review.cancel' | transloco }}
+    </button>
+    <button
+      class="sl-button"
+      [class.sl-button--danger]="decision() === 'reject'"
+      [class.sl-button--primary]="decision() === 'changes'"
+      type="button"
+      [disabled]="busy() || !reason().trim()"
+      (click)="decide()"
+    >
+      {{ 'admin.specialists.review.send' | transloco }}
+    </button>
+  </div>
+</dialog>
+} @else if (error()) {
+<p role="alert">{{ error() }}</p>
+<button class="sl-button" type="button" (click)="load(id())">
+  {{ 'common.tryAgain' | transloco }}
+</button>
+} @else {
+<p class="sl-muted" aria-live="polite">{{ 'common.loading' | transloco }}</p>
+}
