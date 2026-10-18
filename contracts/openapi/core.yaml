@@ -1029,6 +1029,169 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/catalogue/specialists/{id}/slots:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    get:
+      operationId: listSlots
+      summary: Session starts for Choose a session; open to guests
+      description: |
+        Computed on read from weekly hours, time off, bookings and holds (System Design,
+        Scheduling). Taken starts are listed too, so the app can grey them out. Starts inside the
+        specialist's minimum notice are left out.
+      tags: [scheduling]
+      security: []
+      parameters:
+        - name: modality
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Modality"
+        - name: from
+          in: query
+          description: First day, in the specialist's time zone. Defaults to today.
+          schema:
+            type: string
+            format: date
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 14
+            default: 7
+      responses:
+        "200":
+          description: The starts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Slots"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/slot-holds:
+    post:
+      operationId: holdSlot
+      summary: Hold a start for 10 minutes while the seeker or guest checks out
+      description: The hold id is the holder's proof; booking presents it. Open to guests.
+      tags: [scheduling]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldRequest"
+      responses:
+        "201":
+          description: Held
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlotHold"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/slot-holds/{holdId}:
+    parameters:
+      - name: holdId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: releaseHold
+      summary: Let a held start go before the 10 minutes are up
+      tags: [scheduling]
+      security: []
+      responses:
+        "204":
+          description: Released, or already gone
+  /v1/me/calendar:
+    get:
+      operationId: getCalendar
+      summary: The specialist's days (SpecCalendar), with open starts and time off; bookings join with epic 5
+      tags: [scheduling]
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 14
+            default: 7
+      responses:
+        "200":
+          description: The days
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Calendar"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/me/time-off:
+    post:
+      operationId: blockTimeOff
+      summary: Block time off (SpecCalendar)
+      description: Refused when it overlaps a booking or other time off.
+      tags: [scheduling]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeOffRequest"
+      responses:
+        "201":
+          description: Blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeOff"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/time-off/{timeOffId}:
+    parameters:
+      - name: timeOffId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: removeTimeOff
+      summary: Open blocked time again
+      tags: [scheduling]
+      responses:
+        "204":
+          description: Removed, or already gone
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /v1/system/ping:
     get:
       operationId: ping
@@ -1999,3 +2162,126 @@ components:
         nextAvailable:
           type: string
           format: date-time
+    Slots:
+      type: object
+      additionalProperties: false
+      required: [timeZone, durationMinutes, price, slots]
+      properties:
+        timeZone:
+          description: The specialist's time zone; the app shows times in the viewer's own.
+          type: string
+        durationMinutes:
+          type: integer
+        price:
+          description: Whole FCFA.
+          type: integer
+        slots:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [start, available]
+            properties:
+              start:
+                type: string
+                format: date-time
+              available:
+                description: False when booked, held by someone else, or overlapping time off.
+                type: boolean
+    HoldRequest:
+      type: object
+      additionalProperties: false
+      required: [specialistId, start, modality]
+      properties:
+        specialistId:
+          type: string
+          format: uuid
+        start:
+          type: string
+          format: date-time
+        modality:
+          $ref: "#/components/schemas/Modality"
+    SlotHold:
+      type: object
+      additionalProperties: false
+      required: [holdId, specialistId, start, end, modality, expiresAt]
+      properties:
+        holdId:
+          description: Secret to the holder; booking presents it.
+          type: string
+          format: uuid
+        specialistId:
+          type: string
+          format: uuid
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        modality:
+          $ref: "#/components/schemas/Modality"
+        expiresAt:
+          description: 10 minutes after the hold.
+          type: string
+          format: date-time
+    TimeOffReason:
+      type: string
+      enum: [PERSONAL, HOLIDAY, OTHER]
+    TimeOffRequest:
+      type: object
+      additionalProperties: false
+      required: [start, end]
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        reason:
+          $ref: "#/components/schemas/TimeOffReason"
+    TimeOff:
+      type: object
+      additionalProperties: false
+      required: [id, start, end, reason]
+      properties:
+        id:
+          type: string
+          format: uuid
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        reason:
+          $ref: "#/components/schemas/TimeOffReason"
+    Calendar:
+      type: object
+      additionalProperties: false
+      required: [timeZone, days]
+      properties:
+        timeZone:
+          type: string
+        days:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [date, openStarts, timeOff]
+            properties:
+              date:
+                description: In the specialist's time zone.
+                type: string
+                format: date
+              openStarts:
+                description: Starts seekers can still book, for the shortest session offered.
+                type: array
+                items:
+                  type: string
+                  format: date-time
+              timeOff:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeOff"

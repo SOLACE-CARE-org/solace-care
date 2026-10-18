@@ -74,6 +74,8 @@ solace:
       - /actuator/info
       - /v1/signups
       - /v1/specialist-signups
+      - /v1/slot-holds
+      - /v1/slot-holds/**
       - /v1/catalogue/**
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
