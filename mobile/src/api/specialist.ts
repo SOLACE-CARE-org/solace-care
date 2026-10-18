@@ -80,6 +80,17 @@ export function useSavePayout() {
   );
 }
 
+/** The specialist checks the bio Solace drafted (D30), with corrections if any. */
+export function useConfirmBio() {
+  return useStep(async (text: string | undefined) =>
+    orThrow(
+      await core.POST('/v1/me/specialist-application/bio-confirmation', {
+        body: text ? { text } : {},
+      }),
+    ),
+  );
+}
+
 export function useSubmitApplication() {
   return useStep(async (_: void) =>
     orThrow(await core.POST('/v1/me/specialist-application/submission')),

@@ -2,7 +2,6 @@ import { act, fireEvent } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 
 import Language from '@/app/language';
-import Search from '@/app/search';
 import Splash from '@/app/splash';
 import Welcome from '@/app/welcome';
 import i18n, { initI18n } from '@/i18n';
@@ -12,7 +11,8 @@ const routes = {
   splash: Splash,
   language: Language,
   welcome: Welcome,
-  search: Search,
+  // Find a specialist has its own tests (search.test.tsx); here only the way there matters.
+  search: () => null,
 };
 
 beforeEach(async () => {

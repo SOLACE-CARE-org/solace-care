@@ -7,16 +7,18 @@ type Props = {
   label: string;
   on: boolean;
   onToggle: () => void;
+  /** 'radio' when only one chip of the group can be on (wrap them in a radiogroup). */
+  role?: 'checkbox' | 'radio';
 };
 
 /**
  * Chip (design-system components/Chip): a pill that toggles. The heavier border and weight carry
  * the "on" state, not the colour alone. Wrap chips in a View with a group label.
  */
-export function Chip({ label, on, onToggle }: Props) {
+export function Chip({ label, on, onToggle, role = 'checkbox' }: Props) {
   return (
     <Pressable
-      accessibilityRole="checkbox"
+      accessibilityRole={role}
       accessibilityState={{ checked: on }}
       accessibilityLabel={label}
       onPress={onToggle}
