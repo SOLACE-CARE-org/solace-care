@@ -2,6 +2,7 @@ import type { Type } from '@angular/core';
 import type { Routes } from '@angular/router';
 
 import { areaGuard } from './auth/area.guard';
+import { AuditLogPage } from './audit/audit-log.page';
 import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
@@ -13,9 +14,11 @@ import { PaymentsPage } from './payments/payments.page';
 import { PayoutRunPage } from './payments/payout-run.page';
 import { PayoutRunsPage } from './payments/payout-runs.page';
 import { ReviewsPage } from './reviews/reviews.page';
+import { SettingsPage } from './settings/settings.page';
 import { ApplicationReviewPage } from './specialists/application-review.page';
 import { ApplicationsPage } from './specialists/applications.page';
 import { SpecialistRecordPage } from './specialists/specialist-record.page';
+import { TeamPage } from './team/team.page';
 
 /** Screens built so far; every other entry shows the not-built stand-in. */
 const SCREENS: Record<string, Type<unknown>> = {
@@ -26,6 +29,9 @@ const SCREENS: Record<string, Type<unknown>> = {
   payments: PaymentsPage,
   payouts: PayoutRunsPage,
   specialists: SpecialistRecordPage,
+  audit: AuditLogPage,
+  team: TeamPage,
+  settings: SettingsPage,
 };
 
 /**
