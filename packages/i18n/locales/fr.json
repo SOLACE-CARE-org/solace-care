@@ -326,6 +326,25 @@
       "masked": "Masqué",
       "reveal": "Afficher (journalisé)",
       "noResults": "Aucun résultat pour ces filtres."
+    },
+    "reviews": {
+      "title": "Avis à modérer",
+      "subtitle": "{{count}} en attente. Chaque avis passe d'abord par le moniteur de sécurité ; ceux qu'il signale comme une crise vont dans la file de crise et ne sont jamais publiés.",
+      "stars": "{{stars}} sur 5 · pour {{name}}",
+      "seeker": "Utilisateur {{ref}}",
+      "guest": "Invité {{ref}}",
+      "session": "séance du {{date}}",
+      "flag_CONTACT_DETAILS": "Contient un numéro de téléphone",
+      "hide": "Masquer, avec un motif",
+      "publish": "Publier",
+      "publishMasked": "Publier sans le numéro",
+      "hideTitle": "Masquer cet avis",
+      "hideNote": "Les étoiles comptent toujours dans la note. Le motif est inscrit au journal d'audit.",
+      "reasonLabel": "Motif",
+      "confirmHide": "Masquer l'avis",
+      "empty": "Aucun avis en attente. Les nouveaux avis écrits apparaissent ici après le contrôle de sécurité.",
+      "done_PUBLISHED": "Publié.",
+      "done_HIDDEN": "Masqué."
     }
   },
   "roleChoice": {

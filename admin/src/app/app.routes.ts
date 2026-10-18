@@ -7,6 +7,7 @@ import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
 import { NoAccess } from './pages/no-access';
 import { NotBuilt } from './pages/not-built';
+import { ReviewsPage } from './reviews/reviews.page';
 import { ApplicationReviewPage } from './specialists/application-review.page';
 import { ApplicationsPage } from './specialists/applications.page';
 import { SpecialistRecordPage } from './specialists/specialist-record.page';
@@ -15,6 +16,7 @@ import { SpecialistRecordPage } from './specialists/specialist-record.page';
 const SCREENS: Record<string, Type<unknown>> = {
   crisis: CrisisQueuePage,
   applications: ApplicationsPage,
+  reviews: ReviewsPage,
   specialists: SpecialistRecordPage,
 };
 

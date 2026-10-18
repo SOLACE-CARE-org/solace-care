@@ -326,6 +326,25 @@
       "masked": "Masked",
       "reveal": "Reveal (logged)",
       "noResults": "Nothing matches these filters."
+    },
+    "reviews": {
+      "title": "Reviews to moderate",
+      "subtitle": "{{count}} waiting. Every review is checked by the safety monitor first; reviews it flags as a crisis go to the crisis queue and are never published.",
+      "stars": "{{stars}} of 5 · for {{name}}",
+      "seeker": "Seeker {{ref}}",
+      "guest": "Guest {{ref}}",
+      "session": "session {{date}}",
+      "flag_CONTACT_DETAILS": "Contains a phone number",
+      "hide": "Hide, with reason",
+      "publish": "Publish",
+      "publishMasked": "Publish without the number",
+      "hideTitle": "Hide this review",
+      "hideNote": "The stars still count towards the rating. The reason goes to the audit log.",
+      "reasonLabel": "Reason",
+      "confirmHide": "Hide review",
+      "empty": "No reviews waiting. New written reviews appear here after the safety check.",
+      "done_PUBLISHED": "Published.",
+      "done_HIDDEN": "Hidden."
     }
   },
   "roleChoice": {
