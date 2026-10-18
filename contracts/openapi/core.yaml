@@ -40,6 +40,8 @@ tags:
     description: Ratings and reviews (Phase 1, epic 8)
   - name: admin-reviews
     description: Review moderation for staff (Phase 1, epic 8)
+  - name: notifications
+    description: Push devices, notification settings and the in-app inbox (Phase 1, epic 9)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -2193,6 +2195,114 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/me/devices:
+    put:
+      operationId: registerDevice
+      summary: Register this device's push token and time zone (after sign-in; D38)
+      tags: [notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [token, platform, timeZone]
+              properties:
+                token:
+                  type: string
+                  maxLength: 300
+                platform:
+                  type: string
+                  enum: [IOS, ANDROID]
+                timeZone:
+                  description: IANA zone, e.g. Africa/Douala.
+                  type: string
+                  maxLength: 64
+      responses:
+        "204":
+          description: Registered
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/devices/{token}:
+    delete:
+      operationId: forgetDevice
+      summary: Stop pushes to this device (sign-out)
+      tags: [notifications]
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Forgotten
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/notification-settings:
+    get:
+      operationId: getNotificationSettings
+      summary: Settings, Notifications
+      tags: [notifications]
+      responses:
+        "200":
+          description: The settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      operationId: saveNotificationSettings
+      summary: Change session reminders and discreet mode
+      tags: [notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettings"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/notifications:
+    get:
+      operationId: listMyNotifications
+      summary: The in-app inbox, newest first (Notifications)
+      tags: [notifications]
+      responses:
+        "200":
+          description: Up to 50 messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InboxItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/notifications/read:
+    post:
+      operationId: markNotificationsRead
+      summary: Mark all read
+      tags: [notifications]
+      responses:
+        "204":
+          description: Marked
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /v1/system/ping:
     get:
       operationId: ping
@@ -2465,6 +2575,9 @@ components:
           type: string
           enum: [SEEKER, SPECIALIST]
         displayName:
+          type: string
+        phone:
+          description: The person's own number, shown on their You tab.
           type: string
         appLanguage:
           $ref: "#/components/schemas/AppLanguage"
@@ -3918,3 +4031,36 @@ components:
           x-extensible-enum: [PENDING, PUBLISHED, HIDDEN, FLAGGED]
         hiddenReason:
           type: string
+    NotificationSettings:
+      type: object
+      additionalProperties: false
+      required: [sessionReminders, discreet]
+      properties:
+        sessionReminders:
+          description: The day-before reminder. Joining-opens messages always go (D38).
+          type: boolean
+        discreet:
+          description: Every push then reads only "you have a reminder", with details in the app.
+          type: boolean
+    InboxItem:
+      type: object
+      additionalProperties: false
+      required: [id, kind, text, at, read]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          x-extensible-enum: [BOOKING_CONFIRMED, PAYMENT_RECEIVED, PAYMENT_NOT_COMPLETED, DAY_BEFORE, JOIN_OPENS, SEEKER_CANCELLED, SPECIALIST_CANCELLED, RESCHEDULED, REFUND_SENT, RATE_SESSION, NEW_BOOKING, SESSION_CANCELLED_BY_SEEKER, SPECIALIST_SOON, PAYOUT_SENT, PAYOUT_FAILED, NEW_REVIEW, APPLICATION_RECEIVED, CHANGES_REQUESTED, INTERVIEW_BOOKED, APPROVED, DECISION_MADE]
+        text:
+          description: As it was pushed, in the app language.
+          type: string
+        bookingId:
+          type: string
+          format: uuid
+        at:
+          type: string
+          format: date-time
+        read:
+          type: boolean

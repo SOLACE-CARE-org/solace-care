@@ -198,6 +198,18 @@ class BookingStore {
         .update();
   }
 
+  List<Row> confirmedStartingBetween(Instant from, Instant to) {
+    return db.sql(
+            "SELECT "
+                + COLUMNS
+                + " FROM booking WHERE status = 'CONFIRMED' AND starts_at >= :f AND starts_at < :t"
+                + " ORDER BY starts_at LIMIT 500")
+        .param("f", Timestamp.from(from))
+        .param("t", Timestamp.from(to))
+        .query(BookingStore::row)
+        .list();
+  }
+
   /** Newest first, so old bookings waiting for staff never crowd out new ones. */
   List<Row> inStatusBefore(String status, String column, Instant before, int limit) {
     return db.sql(

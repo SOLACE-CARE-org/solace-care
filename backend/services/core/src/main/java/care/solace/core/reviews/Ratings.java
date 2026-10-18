@@ -227,13 +227,17 @@ class Ratings implements SpecialistRatings, BookingRatings {
     if (r.flags().contains("CONTACT_DETAILS") && !maskContacts) {
       throw new SolaceException(ReviewError.HAS_CONTACTS);
     }
-    moderate(
-        id,
-        "PUBLISHED",
-        maskContacts ? ContactDetails.masked(r.text()) : r.text(),
-        null,
-        by,
-        byName);
+    transactions.executeWithoutResult(
+        s -> {
+          moderate(
+              id,
+              "PUBLISHED",
+              maskContacts ? ContactDetails.masked(r.text()) : r.text(),
+              null,
+              by,
+              byName);
+          events.publishEvent(new ReviewPublished(id, r.specialistId()));
+        });
     return find(id).orElseThrow();
   }
 

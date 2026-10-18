@@ -1,7 +1,7 @@
 /**
- * Notifications: push, SMS, email and in-app templates per locale.
- *
- * <p>Empty in Phase 0; built in Phase 1 and 2 per docs/specs/implementation-plan.md.
+ * Notifications: delivery only. The copy files (notification-copy.md, EN and FR), the SMS rules,
+ * and the SMS, email and push senders, behind {@link care.solace.core.notifications.Delivery} and
+ * {@link care.solace.core.notifications.SignInCodes}. What to send when lives in Messaging.
  */
 @ApplicationModule(displayName = "Notifications")
 package care.solace.core.notifications;

@@ -25,6 +25,12 @@ public interface GuestAccess {
   /** A token for one booking, valid until {@code expiresAt}. Returned once; only a hash is kept. */
   String issueToken(UUID guestContactId, UUID bookingId, Instant expiresAt);
 
+  /**
+   * A shorter token for SMS links (D38): 80 random bits, so a message with its link stays within
+   * one SMS. Scoped and stored like any other.
+   */
+  String issueLinkToken(UUID guestContactId, UUID bookingId, Instant expiresAt);
+
   /** What a token is for, if it is genuine and not expired. */
   Optional<GuestPass> check(String token, Instant now);
 

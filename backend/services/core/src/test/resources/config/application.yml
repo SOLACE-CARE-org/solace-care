@@ -3,6 +3,7 @@ solace:
   notifications:
     # No SMS or email provider exists yet; tests read messages from the log.
     sender: logging
+    push-sender: logging
   payments:
     # No real money in tests: the sandbox aggregator approves at once (D35).
     provider: sandbox

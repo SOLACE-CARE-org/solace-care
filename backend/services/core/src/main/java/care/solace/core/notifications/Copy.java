@@ -17,6 +17,8 @@ class Copy {
     messages.setBasename("care/solace/core/notifications/copy");
     messages.setDefaultEncoding("UTF-8");
     messages.setFallbackToSystemLocale(false);
+    // Every message goes through MessageFormat, so an apostrophe is always written '' in the files.
+    messages.setAlwaysUseMessageFormat(true);
   }
 
   String text(String key, Locale locale, Object... arguments) {

@@ -54,6 +54,7 @@ class MeController {
       UUID id,
       String role,
       String displayName,
+      String phone,
       String appLanguage,
       Onboarding onboarding,
       String applicationStatus) {}
@@ -76,6 +77,7 @@ class MeController {
           account.id(),
           account.type().name(),
           summary.map(SpecialistSummaries.Summary::fullName).orElse(""),
+          members.phone(account.id()).orElse(null),
           account.appLanguage().getLanguage(),
           new Onboarding(true, true),
           summary.map(SpecialistSummaries.Summary::applicationStatus).orElse(null));
@@ -85,6 +87,7 @@ class MeController {
         account.id(),
         account.type().name(),
         profile.map(AccountStore.SeekerProfile::displayName).orElse(""),
+        members.phone(account.id()).orElse(null),
         account.appLanguage().getLanguage(),
         new Onboarding(
             profile.map(p -> p.preferencesSavedAt() != null).orElse(true),

@@ -24,6 +24,7 @@ dependencies {
 // Local runs write SMS and email to the log: no provider is chosen yet (application.yml).
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     environment("SOLACE_NOTIFICATIONS_SENDER", "logging")
+    environment("SOLACE_NOTIFICATIONS_PUSH_SENDER", "logging")
     // No real money locally: the sandbox aggregator (D35).
     environment("SOLACE_PAYMENTS_PROVIDER", "sandbox")
 }

@@ -22,6 +22,9 @@ public interface Accounts {
   /** The name a seeker wants to be called; only their specialist sees it. */
   Optional<String> seekerDisplayName(UUID accountId);
 
+  /** The account's email, if it has one, for receipts and statements. */
+  Optional<String> email(UUID accountId);
+
   /** The account's phone number, for paying by mobile money with the same number. */
   Optional<String> phone(UUID accountId);
 

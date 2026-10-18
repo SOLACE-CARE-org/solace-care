@@ -116,7 +116,16 @@ class Guests implements GuestAccess {
 
   @Override
   public String issueToken(UUID guestContactId, UUID bookingId, Instant expiresAt) {
-    byte[] raw = new byte[32];
+    return issue(guestContactId, bookingId, expiresAt, 32);
+  }
+
+  @Override
+  public String issueLinkToken(UUID guestContactId, UUID bookingId, Instant expiresAt) {
+    return issue(guestContactId, bookingId, expiresAt, 10);
+  }
+
+  private String issue(UUID guestContactId, UUID bookingId, Instant expiresAt, int bytes) {
+    byte[] raw = new byte[bytes];
     RANDOM.nextBytes(raw);
     String token = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
     db.sql(

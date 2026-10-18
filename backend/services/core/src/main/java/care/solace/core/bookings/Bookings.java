@@ -197,7 +197,10 @@ class Bookings implements BookingRecords {
     }
     var moved = availability.move(b.id(), holdId, b.specialistId());
     transactions.executeWithoutResult(
-        s -> store.reschedule(b.id(), moved.start(), moved.end(), now));
+        s -> {
+          store.reschedule(b.id(), moved.start(), moved.end(), now);
+          events.publishEvent(new BookingRescheduled(b.id(), moved.start()));
+        });
     return store.find(b.id()).orElseThrow();
   }
 
@@ -273,6 +276,11 @@ class Bookings implements BookingRecords {
     return store.inStatusBefore("CONFIRMED", "starts_at", before, 100).stream()
         .map(BookingStore.Row::info)
         .toList();
+  }
+
+  @Override
+  public List<Info> confirmedStartingBetween(Instant from, Instant to) {
+    return store.confirmedStartingBetween(from, to).stream().map(BookingStore.Row::info).toList();
   }
 
   @Override

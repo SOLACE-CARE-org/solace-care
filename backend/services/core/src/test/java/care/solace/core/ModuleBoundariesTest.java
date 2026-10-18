@@ -30,6 +30,8 @@ class ModuleBoundariesTest {
             "payments",
             "reviews",
             "notifications",
+            // Notifications split in two (D38): delivery, and messaging, which decides what to send.
+            "messaging",
             "content",
             "admin",
             "auditlog",

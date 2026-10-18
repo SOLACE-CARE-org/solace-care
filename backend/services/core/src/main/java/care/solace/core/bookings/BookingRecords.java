@@ -29,6 +29,9 @@ public interface BookingRecords {
   /** CONFIRMED bookings that started before {@code before}: not begun, maybe a no-show (D36). */
   java.util.List<Info> confirmedStartedBefore(Instant before);
 
+  /** CONFIRMED bookings starting in [from, to), for reminders (D38). */
+  java.util.List<Info> confirmedStartingBetween(Instant from, Instant to);
+
   /** IN_PROGRESS bookings that ended before {@code before}: due to complete (D36). */
   java.util.List<Info> inProgressEndedBefore(Instant before);
 

@@ -20,10 +20,22 @@ import org.springframework.stereotype.Repository;
 @Repository
 class ReviewStore {
 
-  private final JdbcClient db;
+  /** Activity the specialist hears about (notification-copy.md, Specialists). */
+  private static final java.util.Set<String> NOTIFIED =
+      java.util.Set.of(
+          "SUBMITTED",
+          "CHANGES_REQUESTED",
+          "INTERVIEW_BOOKED",
+          "APPROVED",
+          "REJECTED",
+          "SUSPENDED");
 
-  ReviewStore(JdbcClient db) {
+  private final JdbcClient db;
+  private final org.springframework.context.ApplicationEventPublisher events;
+
+  ReviewStore(JdbcClient db, org.springframework.context.ApplicationEventPublisher events) {
     this.db = db;
+    this.events = events;
   }
 
   enum Tab {
@@ -358,6 +370,15 @@ class ReviewStore {
         .update();
   }
 
+  java.util.Optional<Instant> interviewAt(UUID id) {
+    return db.sql("SELECT interview_at FROM specialist_profile WHERE account_id = :id")
+        .param("id", id)
+        .query((rs, n) -> java.util.Optional.ofNullable(rs.getTimestamp("interview_at")))
+        .optional()
+        .flatMap(t -> t)
+        .map(java.sql.Timestamp::toInstant);
+  }
+
   void interview(UUID id, Instant at) {
     db.sql("UPDATE specialist_profile SET interview_at = :at WHERE account_id = :id")
         .param("id", id)
@@ -421,6 +442,11 @@ class ReviewStore {
   }
 
   void record(UUID id, String kind, String subject, String value, StaffRef by, Instant now) {
+    if (NOTIFIED.contains(kind)) {
+      events.publishEvent(
+          new ApplicationUpdated(
+              id, kind, kind.equals("INTERVIEW_BOOKED") ? interviewAt(id).orElse(null) : null));
+    }
     db.sql(
             """
             INSERT INTO specialist_review_activity

@@ -13,7 +13,7 @@ The register of every way Solace processes personal data, for Cameroon's Law No.
 | Hosting | In-country data centre or a regional cloud with transfer authorisation | Open (decisions.md, blocks the Phase 0 gate) |
 | SMS provider | Sends sign-in codes and guest notifications | Open (contract in Phase 0, outside engineering) |
 | Email provider | Codes, notifications, staff account emails | Open |
-| Push notifications | Apple (APNs) and Google (FCM), possibly through a push service | Open |
+| Push notifications | Expo's push service (D38), delivering through Apple (APNs) and Google (FCM). Receives the device token and the message text (neutral copy, or "you have a reminder" in discreet mode) | Chosen; data-processing terms and transfer authorisation open (**Counsel**) |
 | Mobile-money aggregator | Notch Pay (D35): MTN MoMo and Orange Money charges; refunds and payouts as transfers. Receives the payer's or specialist's phone, the amount and Solace's reference | Chosen; contract and data-processing terms open (**Counsel**), and whether it processes in Cameroon |
 | Media server | LiveKit, self-hosted or LiveKit Cloud | Open, follows hosting |
 | AI model vendors | Safety monitor classifier (Phase 1); later AI features (Phase 3, 4) | Open (decisions.md); see AI-1 in the AI threat model |
@@ -139,7 +139,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Send booking, session, payment and account messages |
 | People | All |
-| Data | Contact or push token, locale, template and its placeholders. Copy is neutral: never a condition, a specialty, a mood, "therapy" or "mental health" (`notification-copy.md`); discreet mode |
+| Data | Contact or push token with the device's time zone, locale, template and its placeholders; for members the pushed text (the in-app inbox); for SMS and email only the kind and time, never the text. Copy is neutral: never a condition, a specialty, a mood, "therapy" or "mental health" (`notification-copy.md`); discreet mode |
 | Recipients | SMS, email and push providers |
 | Retention | Delivery records: **Open** |
 | Security | CO-20, CL-6 |

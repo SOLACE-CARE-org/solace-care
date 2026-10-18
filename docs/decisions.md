@@ -206,6 +206,15 @@ Every pair now meets WCAG 2.1 AA.
 - A specialist may reply once to a published review. A reply with contact details is refused rather than moderated, since the specialist can simply write it again.
 - Search shows a rating once a specialist has `solace.reviews.min-ratings-shown` ([3]) ratings, so one opinion is not shown as an average; the rating filter uses the same rule.
 
+**D38. Notifications (epic 9).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Push** goes through Expo's push service (APNs and FCM behind it), behind a sender port; a `logging` sender serves local runs. Devices register their push token and time zone after sign-in and drop it on sign-out; a token Expo reports as unregistered is deleted. Push payloads carry the message and a booking id at most.
+- **Time zone:** a member's latest device's, a specialist's weekly-hours zone, otherwise Africa/Douala.
+- **Quiet hours:** `solace.notifications.quiet-hours` ([21:00]–[07:00]) in the recipient's zone, per person with that default. Only messages that can wait (day-before reminder, rating ask, new review) wait for the end; session, payment and cancellation messages go at once.
+- **Reminders:** the day before at the same time (skipped when the booking is made less than 24 hours ahead), and when joining opens, 10 minutes before (D18). Session reminders can be turned off in Settings; joining-opens messages cannot.
+- **Guest links:** `{link}` is `solace.notifications.link-base` (`https://slc.cm/g/`) plus a fresh 14-character booking-scoped guest token, so every SMS stays within 160 GSM-7 characters. French placeholders lose the accents the copy rules forbid (août becomes aout), as the copy already does for "anxiété aigue".
+- **In-app:** members also find each message in the Notifications inbox, worded as the push.
+- **Staff pushes** (refunds and payout runs waiting, module submitted) arrive with the admin portal's web push (epic 12); crisis SMS with the safety monitor (epic 10).
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

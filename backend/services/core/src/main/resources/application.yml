@@ -90,6 +90,9 @@ solace:
     # nothing is set here and Core will not start without one: local runs and the dev cluster set
     # "logging", which writes messages to the log. Never set "logging" anywhere real people are.
     sender: ${SOLACE_NOTIFICATIONS_SENDER:}
+    # Push through Expo's service (D38); local runs, tests and the dev cluster log pushes instead.
+    push-sender: ${SOLACE_NOTIFICATIONS_PUSH_SENDER:expo}
+    expo-access-token: ${SOLACE_NOTIFICATIONS_EXPO_ACCESS_TOKEN:}
   payments:
     # The aggregator adapter (D35): notchpay, or sandbox where no real money may move. Nothing is
     # set here, so Core will not start without a choice: local runs and the dev cluster set sandbox.

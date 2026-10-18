@@ -36,6 +36,7 @@ class PayoutRuns {
   private final PaymentProvider provider;
   private final SpecialistOffers specialists;
   private final TransactionTemplate transactions;
+  private final org.springframework.context.ApplicationEventPublisher events;
   private final ZoneId zone;
   private final Clock clock;
 
@@ -45,9 +46,11 @@ class PayoutRuns {
       PaymentProvider provider,
       SpecialistOffers specialists,
       TransactionTemplate transactions,
+      org.springframework.context.ApplicationEventPublisher events,
       PaymentSettings settings,
       Clock clock) {
     this.store = store;
+    this.events = events;
     this.ledger = ledger;
     this.provider = provider;
     this.specialists = specialists;
@@ -250,6 +253,15 @@ class PayoutRuns {
               now)) {
             return;
           }
+          var run = store.run(item.runId()).orElseThrow();
+          events.publishEvent(
+              new PayoutSettled(
+                  item.specialistId(),
+                  item.net(),
+                  item.method(),
+                  paid,
+                  run.periodStart(),
+                  run.periodEnd()));
           var refs = new Ledger.Refs(null, null, null, item.id());
           if (paid) {
             ledger.post(

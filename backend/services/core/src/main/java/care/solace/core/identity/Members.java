@@ -58,6 +58,11 @@ class Members implements Accounts {
   }
 
   @Override
+  public Optional<String> email(UUID accountId) {
+    return store.byId(accountId).map(AccountStore.Row::email);
+  }
+
+  @Override
   public Optional<String> phone(UUID accountId) {
     return store.byId(accountId).map(AccountStore.Row::phone);
   }
