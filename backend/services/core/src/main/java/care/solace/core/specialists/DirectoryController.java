@@ -40,7 +40,15 @@ class DirectoryController {
       List<String> focusAreas,
       List<Language> languages,
       Offering offering,
-      Instant nextAvailable) {}
+      Instant nextAvailable,
+      Rating rating) {}
+
+  record Rating(double average, int count) {
+
+    static Rating of(SpecialistRatings.Rating r) {
+      return r == null ? null : new Rating(r.average(), r.count());
+    }
+  }
 
   record Page(List<Card> items, boolean hasMore) {}
 
@@ -54,7 +62,8 @@ class DirectoryController {
       List<Language> languages,
       List<Offering> offerings,
       List<String> focusAreas,
-      Instant nextAvailable) {}
+      Instant nextAvailable,
+      Rating rating) {}
 
   @GetMapping("/v1/catalogue/specialists")
   Page search(
@@ -63,12 +72,14 @@ class DirectoryController {
       @RequestParam(required = false) String q,
       @RequestParam(required = false) String specialty,
       @RequestParam(required = false) Long maxPrice,
+      @RequestParam(required = false) Double minRating,
       @RequestParam(defaultValue = "20") int limit,
       @RequestParam(defaultValue = "0") int offset,
       Locale locale) {
     if ((modality != null && !MODALITIES.contains(modality))
         || (q != null && q.length() > 120)
         || (maxPrice != null && maxPrice < 0)
+        || (minRating != null && (minRating < 1 || minRating > 5))
         || limit < 1
         || limit > 50
         || offset < 0) {
@@ -77,7 +88,7 @@ class DirectoryController {
     var page =
         directory.search(
             new Directory.Query(
-                language, modality, q, blankToNull(specialty), maxPrice, limit, offset),
+                language, modality, q, blankToNull(specialty), maxPrice, minRating, limit, offset),
             locale);
     return new Page(
         page.items().stream()
@@ -90,7 +101,8 @@ class DirectoryController {
                         c.focusAreas(),
                         languages(c.languages()),
                         offering(c.offering()),
-                        c.nextAvailable()))
+                        c.nextAvailable(),
+                        Rating.of(c.rating())))
             .toList(),
         page.hasMore());
   }
@@ -107,7 +119,8 @@ class DirectoryController {
         languages(p.languages()),
         p.offerings().stream().map(DirectoryController::offering).toList(),
         p.focusAreas(),
-        p.nextAvailable());
+        p.nextAvailable(),
+        Rating.of(p.rating()));
   }
 
   private static List<Language> languages(List<DirectoryStore.Language> languages) {

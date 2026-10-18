@@ -36,6 +36,10 @@ tags:
     description: Transactions, refunds and payout runs for staff (Phase 1, epic 6). Two people for every refund and payout run (D14, D35).
   - name: sessions
     description: Joining a session's room and attendance from the media server (Phase 1, epic 7)
+  - name: reviews
+    description: Ratings and reviews (Phase 1, epic 8)
+  - name: admin-reviews
+    description: Review moderation for staff (Phase 1, epic 8)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -962,6 +966,13 @@ paths:
           schema:
             type: integer
             minimum: 0
+        - name: minRating
+          in: query
+          description: Only specialists with at least this average, from enough ratings to show one (D37).
+          schema:
+            type: number
+            minimum: 1
+            maximum: 5
         - name: limit
           in: query
           schema:
@@ -1981,6 +1992,207 @@ paths:
           description: Recorded
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /v1/bookings/{bookingId}/rating:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: rateSession
+      summary: Rate a completed session, once (Rate your session; D37)
+      tags: [reviews]
+      requestBody:
+        $ref: "#/components/requestBodies/Rating"
+      responses:
+        "201":
+          description: Recorded; any written review waits for moderation
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/booking/rating:
+    post:
+      operationId: rateSessionAsGuest
+      summary: Rate the guest's completed session, once
+      tags: [guests, reviews]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      requestBody:
+        $ref: "#/components/requestBodies/Rating"
+      responses:
+        "201":
+          description: Recorded
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/catalogue/specialists/{id}/reviews:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    get:
+      operationId: listSpecialistReviews
+      summary: Published reviews of a listed specialist, newest first; open to guests
+      tags: [catalogue, reviews]
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: The reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicReview"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/me/reviews:
+    get:
+      operationId: listMyReviews
+      summary: The specialist's rating and published reviews (Reviews)
+      tags: [reviews]
+      responses:
+        "200":
+          description: Rating and reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [items]
+                properties:
+                  rating:
+                    $ref: "#/components/schemas/Rating"
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicReview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/me/reviews/{reviewId}/reply:
+    parameters:
+      - $ref: "#/components/parameters/ReviewId"
+    put:
+      operationId: replyToReview
+      summary: Reply publicly to one published review, once (D37)
+      tags: [reviews]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 600
+      responses:
+        "200":
+          description: The review with its reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicReview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/reviews:
+    get:
+      operationId: listReviewsToModerate
+      summary: Written reviews waiting for moderation, oldest first (admin screen 13)
+      tags: [admin-reviews]
+      responses:
+        "200":
+          description: The queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModerationItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/reviews/{reviewId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/ReviewId"
+    post:
+      operationId: publishReview
+      summary: Publish a review, optionally with contact details masked
+      tags: [admin-reviews]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                maskContacts:
+                  type: boolean
+                  default: false
+      responses:
+        "200":
+          description: Published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModerationItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/reviews/{reviewId}/hiding:
+    parameters:
+      - $ref: "#/components/parameters/ReviewId"
+    post:
+      operationId: hideReview
+      summary: Hide a review, with a reason; the stars still count
+      tags: [admin-reviews]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: Hidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModerationItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -2020,6 +2232,13 @@ components:
       schema:
         type: string
         format: uuid
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     RunId:
       name: runId
       in: path
@@ -2043,6 +2262,35 @@ components:
         type: string
         format: uuid
   requestBodies:
+    Rating:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [stars]
+            properties:
+              stars:
+                type: integer
+                minimum: 1
+                maximum: 5
+              tags:
+                description: What stood out.
+                type: array
+                maxItems: 4
+                uniqueItems: true
+                items:
+                  type: string
+                  enum: [LISTENED, PRACTICAL_TOOLS, CALL_QUALITY, ON_TIME]
+              text:
+                description: Shown on the profile, without the seeker's name, once published.
+                type: string
+                maxLength: 1000
+              privateNote:
+                description: For the Solace team only; never published or shown to the specialist.
+                type: string
+                maxLength: 1000
     CancellationReason:
       required: true
       content:
@@ -2956,6 +3204,8 @@ components:
         offering:
           description: The session shown on the card; the requested modality, else the cheaper one.
           $ref: "#/components/schemas/PublicOffering"
+        rating:
+          $ref: "#/components/schemas/Rating"
         nextAvailable:
           description: The soonest start this specialist could take, if any in the next two weeks.
           type: string
@@ -3000,6 +3250,8 @@ components:
           type: array
           items:
             type: string
+        rating:
+          $ref: "#/components/schemas/Rating"
         nextAvailable:
           type: string
           format: date-time
@@ -3236,6 +3488,9 @@ components:
         refundAmount:
           description: When cancelled, the refund the policy gave.
           type: integer
+        rated:
+          description: COMPLETED bookings only; true once the seeker has rated it.
+          type: boolean
         guestPhone:
           description: Guest calls only. The masked phone the booking belongs to (GuestJoin), e.g. "+237 6 •• •• •• 00".
           type: string
@@ -3592,3 +3847,74 @@ components:
         expiresAt:
           type: string
           format: date-time
+    Rating:
+      description: Shown from enough ratings (D37).
+      type: object
+      additionalProperties: false
+      required: [average, count]
+      properties:
+        average:
+          description: One decimal.
+          type: number
+        count:
+          type: integer
+    PublicReview:
+      type: object
+      additionalProperties: false
+      required: [id, stars, text, at, sessionLanguage]
+      properties:
+        id:
+          type: string
+          format: uuid
+        stars:
+          type: integer
+        text:
+          type: string
+        at:
+          description: When the session took place.
+          type: string
+          format: date-time
+        sessionLanguage:
+          type: string
+        reply:
+          type: string
+    ModerationItem:
+      type: object
+      additionalProperties: false
+      required: [id, stars, text, specialist, seekerRef, sessionAt, sessionLanguage, flags, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        stars:
+          type: integer
+        text:
+          type: string
+        specialist:
+          type: object
+          additionalProperties: false
+          required: [id, fullName]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fullName:
+              type: string
+        seekerRef:
+          description: Pseudonymous, e.g. "#3907" or "G-2170" for a guest.
+          type: string
+        sessionAt:
+          type: string
+          format: date-time
+        sessionLanguage:
+          type: string
+        flags:
+          type: array
+          items:
+            type: string
+            x-extensible-enum: [CONTACT_DETAILS]
+        status:
+          type: string
+          x-extensible-enum: [PENDING, PUBLISHED, HIDDEN, FLAGGED]
+        hiddenReason:
+          type: string

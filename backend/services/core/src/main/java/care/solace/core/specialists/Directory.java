@@ -27,12 +27,19 @@ class Directory {
   private final DirectoryStore store;
   private final Catalogue catalogue;
   private final Availability availability;
+  private final SpecialistRatings ratings;
   private final Clock clock;
 
-  Directory(DirectoryStore store, Catalogue catalogue, Availability availability, Clock clock) {
+  Directory(
+      DirectoryStore store,
+      Catalogue catalogue,
+      Availability availability,
+      SpecialistRatings ratings,
+      Clock clock) {
     this.store = store;
     this.catalogue = catalogue;
     this.availability = availability;
+    this.ratings = ratings;
     this.clock = clock;
   }
 
@@ -42,6 +49,7 @@ class Directory {
       String q,
       String specialty,
       Long maxPrice,
+      Double minRating,
       int limit,
       int offset) {}
 
@@ -52,7 +60,8 @@ class Directory {
       List<String> focusAreas,
       List<DirectoryStore.Language> languages,
       DirectoryStore.Offer offering,
-      Instant nextAvailable) {}
+      Instant nextAvailable,
+      SpecialistRatings.Rating rating) {}
 
   record Page(List<Card> items, boolean hasMore) {}
 
@@ -65,7 +74,8 @@ class Directory {
       List<DirectoryStore.Language> languages,
       List<DirectoryStore.Offer> offerings,
       List<String> focusAreas,
-      Instant nextAvailable) {}
+      Instant nextAvailable,
+      SpecialistRatings.Rating rating) {}
 
   Page search(Query query, Locale viewer) {
     if (!catalogue.areSessionLanguages(List.of(query.language()))) {
@@ -78,17 +88,28 @@ class Directory {
     boolean french = french(viewer);
     Map<String, String> professions = labels(catalogue.allProfessions(viewer));
     Instant now = clock.instant();
+    // Topic overlap, then the soonest slot, then rating (D31).
     Comparator<Ranked> order =
         Comparator.<Ranked>comparingDouble(r -> -r.rank())
             .thenComparing(
                 r -> r.card().nextAvailable(), Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparingDouble(r -> r.card().rating() == null ? 0 : -r.card().rating().average())
             .thenComparing(r -> r.card().fullName());
+    var found =
+        store.search(
+            query.language(), query.modality(), query.specialty(), query.maxPrice(), tsQuery);
+    var rated = ratings.shown(found.stream().map(DirectoryStore.Listed::id).toList());
     List<Card> all =
-        store
-            .search(
-                query.language(), query.modality(), query.specialty(), query.maxPrice(), tsQuery)
-            .stream()
-            .map(l -> new Ranked(card(l, query, professions, french, now), l.rank()))
+        found.stream()
+            .filter(
+                l ->
+                    query.minRating() == null
+                        || (rated.containsKey(l.id())
+                            && rated.get(l.id()).average() >= query.minRating()))
+            .map(
+                l ->
+                    new Ranked(
+                        card(l, query, professions, french, now, rated.get(l.id())), l.rank()))
             .sorted(order)
             .map(Ranked::card)
             .toList();
@@ -111,7 +132,8 @@ class Directory {
         store.bookableLanguages(id),
         offers,
         store.focusAreas(id, french),
-        availability.nextAvailable(id, clock.instant(), shortest).orElse(null));
+        availability.nextAvailable(id, clock.instant(), shortest).orElse(null),
+        ratings.shown(List.of(id)).get(id));
   }
 
   private Card card(
@@ -119,7 +141,8 @@ class Directory {
       Query query,
       Map<String, String> professions,
       boolean french,
-      Instant now) {
+      Instant now,
+      SpecialistRatings.Rating rating) {
     var offers = store.offers(l.id());
     // The requested format, else the cheaper session.
     DirectoryStore.Offer offer =
@@ -135,7 +158,8 @@ class Directory {
         store.focusAreas(l.id(), french),
         store.bookableLanguages(l.id()),
         offer,
-        availability.nextAvailable(l.id(), now, offer.durationMinutes()).orElse(null));
+        availability.nextAvailable(l.id(), now, offer.durationMinutes()).orElse(null),
+        rating);
   }
 
   /**

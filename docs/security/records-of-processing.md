@@ -127,7 +127,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Let seekers rate a completed session; moderate before publishing |
 | People | Seekers, guests, specialists (replies) |
-| Data | Rating, comment (free text, may mention health), moderation decision, specialist reply |
+| Data | Stars and what stood out, the written review (free text, may mention health), a private note for Solace staff only, the pseudonymous subject id (never shown: staff see a short reference, the specialist a date and the session language), contact details masked before publishing, moderation decision and moderator, specialist reply (D37) |
 | Where | Core database; text sent to the AI service for moderation and the safety monitor |
 | Recipients | The public (published reviews); AI model vendor (**Open**, AI-1) |
 | Retention | **Open**. Prompts and outputs in the AI service: 30 days (System Design) |

@@ -198,6 +198,14 @@ Every pair now meets WCAG 2.1 AA.
 - **Starting and ending:** the session starts (IN_PROGRESS) when both are in the room, and completes when the room finishes after both attended, or `solace.sessions.complete-after` ([15] minutes) after the scheduled end.
 - **No-shows:** `solace.sessions.no-show-after` ([15] minutes) after the start, a booking where only one person ever joined becomes a no-show by the other (D33 refunds). When neither joined, Core does not guess: the booking is flagged for Support to resolve (Refund or no-show dispute), and the money stays held.
 
+**D37. Ratings and reviews (epic 8).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- One rating per completed booking, from its seeker or guest, within `solace.reviews.window` ([14] days) of the session.
+- Stars count towards the specialist's average at once; they carry no words. The written review waits in the moderation queue (admin screen 13) and appears on the profile only when staff publish it. Seekers stay anonymous everywhere: the specialist sees a date and the session language, staff see a pseudonymous reference.
+- Core flags contact details (phone numbers, emails, links) in review text; staff may publish with them masked. The safety monitor's check (epic 10) comes before the queue: a review it flags never reaches the queue or the profile.
+- "Tell the Solace team privately" is kept with the rating for staff (Support, booking detail) and never published or shown to the specialist.
+- A specialist may reply once to a published review. A reply with contact details is refused rather than moderated, since the specialist can simply write it again.
+- Search shows a rating once a specialist has `solace.reviews.min-ratings-shown` ([3]) ratings, so one opinion is not shown as an average; the rating filter uses the same rule.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

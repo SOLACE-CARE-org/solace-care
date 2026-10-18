@@ -4,6 +4,7 @@ import care.solace.core.identity.Accounts;
 import care.solace.core.specialists.SpecialistOffers;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.springframework.context.MessageSource;
@@ -18,18 +19,21 @@ class BookingViews {
   private final SpecialistOffers offers;
   private final Accounts accounts;
   private final MessageSource messages;
+  private final BookingRatings ratings;
 
   BookingViews(
       Bookings bookings,
       BookingStore store,
       SpecialistOffers offers,
       Accounts accounts,
-      MessageSource messages) {
+      MessageSource messages,
+      BookingRatings ratings) {
     this.bookings = bookings;
     this.store = store;
     this.offers = offers;
     this.accounts = accounts;
     this.messages = messages;
+    this.ratings = ratings;
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -53,6 +57,7 @@ class BookingViews {
       Integer sessionNumber,
       String cancelledBy,
       Long refundAmount,
+      Boolean rated,
       String guestPhone) {
 
     Booking withGuestPhone(String masked) {
@@ -71,6 +76,7 @@ class BookingViews {
           sessionNumber,
           cancelledBy,
           refundAmount,
+          rated,
           masked);
     }
   }
@@ -116,6 +122,7 @@ class BookingViews {
         store.sessionNumber(b),
         b.cancelledBy(),
         b.refundAmount(),
+        b.status().equals("COMPLETED") ? !ratings.rated(List.of(b.id())).isEmpty() : null,
         null);
   }
 
