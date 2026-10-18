@@ -854,6 +854,80 @@
       "approveCheck": "Approve clinical check",
       "publish": "Publish",
       "confirmPublish": "Publish version {{version}}?"
+    },
+    "people": {
+      "title": "People",
+      "subtitle": "Seekers with accounts and guests who booked. Contacts stay masked until you reveal one, and each reveal is logged.",
+      "search": "Search people",
+      "type": "Type",
+      "everyone": "Everyone",
+      "accounts": "Accounts",
+      "guests": "Guests",
+      "person": "Person",
+      "contact": "Contact",
+      "appLanguage": "App language",
+      "bookings": "Bookings",
+      "since": "Since",
+      "openRequests": "Open requests",
+      "kind": {
+        "ACCOUNT": "Account",
+        "GUEST": "Guest"
+      },
+      "none": "None",
+      "request": {
+        "EXPORT": "Data export",
+        "ERASURE": "Erasure"
+      },
+      "accountSummary": "Account since {{date}} · app in {{language}} · {{contact}}",
+      "guestSummary": "Guest since {{date}} · messages in {{language}} · {{contact}}",
+      "reveal": "Reveal contact (logged)",
+      "noClinical": "Tracking entries, notes, intake answers and session transcripts are never shown in the admin portal.",
+      "noBookings": "No bookings yet.",
+      "paid": "Paid",
+      "consents": "Consents",
+      "purpose": "Purpose",
+      "state": "State",
+      "version": "Version",
+      "changed": "Changed",
+      "on": "On",
+      "off": "Off",
+      "purposes": {
+        "TERMS": "Terms and privacy notice",
+        "TRACKING": "Tracking",
+        "AI_ASSIST": "AI features",
+        "SPECIALIST_SHARING": "Sharing with a specialist",
+        "AI_SCRIBE": "Session scribe",
+        "HEALTH_CHECK": "Health check"
+      },
+      "consentsNote": "Consents are changed only by the person, from their privacy centre.",
+      "dataRequests": "Data requests",
+      "requested": {
+        "EXPORT": "Export requested {{date}}",
+        "ERASURE": "Erasure requested {{date}}"
+      },
+      "requestStatus": {
+        "PREPARING": "Being prepared",
+        "READY": "Sent",
+        "EXPIRED": "Expired",
+        "REQUESTED": "Waiting for Operations",
+        "DONE": "Done"
+      },
+      "dueBy": "Due by {{date}}",
+      "exportNote": "The file is prepared automatically and sent to the person, not to staff.",
+      "prepareExport": "Prepare and send export",
+      "erasure": "Erasure",
+      "erasureNote": "Deletes the account and tells Tracking and AI to delete everything for this person. Payment records the law requires are kept. This cannot be undone.",
+      "cannotErase": "Not now: a session is upcoming, in progress or unpaid, or the account is a specialist's (filed as a data request).",
+      "startErasure": "Start erasure",
+      "safety": "Safety",
+      "openAlerts": "{{count}} crisis alerts in progress",
+      "openCrisis": "Open in crisis queue",
+      "confirm": {
+        "REVEAL": "Reveal this person's contact?",
+        "EXPORT": "Prepare and send this person's data?",
+        "ERASE": "Erase this person's data? This cannot be undone."
+      },
+      "openAlert": "1 crisis alert in progress"
     }
   },
   "roleChoice": {

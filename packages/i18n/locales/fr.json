@@ -854,6 +854,80 @@
       "approveCheck": "Approuver le contrôle clinique",
       "publish": "Publier",
       "confirmPublish": "Publier la version {{version}} ?"
+    },
+    "people": {
+      "title": "Personnes",
+      "subtitle": "Usagers avec compte et invités ayant réservé. Les contacts restent masqués tant que vous n'en dévoilez pas un, et chaque dévoilement est journalisé.",
+      "search": "Rechercher des personnes",
+      "type": "Type",
+      "everyone": "Tout le monde",
+      "accounts": "Comptes",
+      "guests": "Invités",
+      "person": "Personne",
+      "contact": "Contact",
+      "appLanguage": "Langue de l'application",
+      "bookings": "Réservations",
+      "since": "Depuis",
+      "openRequests": "Demandes en cours",
+      "kind": {
+        "ACCOUNT": "Compte",
+        "GUEST": "Invité"
+      },
+      "none": "Aucune",
+      "request": {
+        "EXPORT": "Export des données",
+        "ERASURE": "Effacement"
+      },
+      "accountSummary": "Compte depuis le {{date}} · application en {{language}} · {{contact}}",
+      "guestSummary": "Invité depuis le {{date}} · messages en {{language}} · {{contact}}",
+      "reveal": "Dévoiler le contact (journalisé)",
+      "noClinical": "Les données de suivi, notes, réponses d'accueil et transcriptions de séance ne s'affichent jamais dans le portail admin.",
+      "noBookings": "Aucune réservation pour l'instant.",
+      "paid": "Ont payé",
+      "consents": "Consentements",
+      "purpose": "Finalité",
+      "state": "État",
+      "version": "Version",
+      "changed": "Modifié",
+      "on": "Activé",
+      "off": "Désactivé",
+      "purposes": {
+        "TERMS": "Conditions et avis de confidentialité",
+        "TRACKING": "Suivi",
+        "AI_ASSIST": "Fonctions IA",
+        "SPECIALIST_SHARING": "Partage avec un spécialiste",
+        "AI_SCRIBE": "Prise de notes IA",
+        "HEALTH_CHECK": "Bilan de santé"
+      },
+      "consentsNote": "Seule la personne peut modifier ses consentements, depuis son espace confidentialité.",
+      "dataRequests": "Demandes de données",
+      "requested": {
+        "EXPORT": "Export demandé le {{date}}",
+        "ERASURE": "Effacement demandé le {{date}}"
+      },
+      "requestStatus": {
+        "PREPARING": "En préparation",
+        "READY": "Envoyé",
+        "EXPIRED": "Expiré",
+        "REQUESTED": "En attente des Opérations",
+        "DONE": "Fait"
+      },
+      "dueBy": "À traiter avant le {{date}}",
+      "exportNote": "Le fichier est préparé automatiquement et envoyé à la personne, pas à l'équipe.",
+      "prepareExport": "Préparer et envoyer l'export",
+      "erasure": "Effacement",
+      "erasureNote": "Supprime le compte et demande au Suivi et à l'IA de tout effacer pour cette personne. Les données de paiement exigées par la loi sont conservées. Action irréversible.",
+      "cannotErase": "Pas maintenant : une séance est à venir, en cours ou impayée, ou le compte est celui d'un spécialiste (traité comme une demande).",
+      "startErasure": "Lancer l'effacement",
+      "safety": "Sécurité",
+      "openAlerts": "{{count}} alertes de crise en cours",
+      "openCrisis": "Ouvrir dans la file de crise",
+      "confirm": {
+        "REVEAL": "Dévoiler le contact de cette personne ?",
+        "EXPORT": "Préparer et envoyer les données de cette personne ?",
+        "ERASE": "Effacer les données de cette personne ? Action irréversible."
+      },
+      "openAlert": "1 alerte de crise en cours"
     }
   },
   "roleChoice": {

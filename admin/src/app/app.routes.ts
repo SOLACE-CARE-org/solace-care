@@ -6,6 +6,8 @@ import { AuditLogPage } from './audit/audit-log.page';
 import { CataloguePage } from './catalogue/catalogue.page';
 import { ContentEditorPage } from './content/content-editor.page';
 import { ContentPage } from './content/content.page';
+import { PeoplePage } from './people/people.page';
+import { PersonRecordPage } from './people/person-record.page';
 import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
@@ -30,6 +32,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   bookings: BookingsPage,
   catalogue: CataloguePage,
   content: ContentPage,
+  people: PeoplePage,
   reviews: ReviewsPage,
   payments: PaymentsPage,
   payouts: PayoutRunsPage,
@@ -74,6 +77,11 @@ export const routes: Routes = [
         path: 'content/:id',
         component: ContentEditorPage,
         canActivate: [areaGuard('content')],
+      },
+      {
+        path: 'people/:id',
+        component: PersonRecordPage,
+        canActivate: [areaGuard('people')],
       },
       {
         path: 'payouts/:id',
