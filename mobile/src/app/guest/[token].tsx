@@ -124,6 +124,7 @@ export default function GuestJoin() {
               label={t('guestJoin.waitingRoom')}
               disabled={!joinable}
               accessibilityState={{ disabled: !joinable }}
+              onPress={() => router.push({ pathname: '/call/[id]', params: { id: b.id } })}
             />
             {!joinable ? (
               <Text variant="meta" color={colors.inkMuted} style={styles.centerText}>

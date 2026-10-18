@@ -9,6 +9,7 @@ import {
   Figtree_600SemiBold,
   Figtree_700Bold,
 } from '@expo-google-fonts/figtree';
+import { registerGlobals } from '@livekit/react-native';
 import { colors } from '@solace/tokens/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -26,6 +27,9 @@ import { useSession } from '@/state/session';
 // Keep the native splash (brand-splash with the lockup) up until fonts, strings and the saved
 // session are ready, so the first frame is already in the right language and typefaces.
 SplashScreen.preventAutoHideAsync();
+
+// WebRTC for LiveKit's client (sessions, epic 7).
+registerGlobals();
 
 export default function RootLayout() {
   // Bundled with the app from the Expo Google Fonts packages: no font CDN at runtime.

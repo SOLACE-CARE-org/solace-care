@@ -9,11 +9,28 @@
     "icon": "../design/design-system/assets/Logos/png/solace-care-app-icon-1024.png",
     "ios": {
       "bundleIdentifier": "care.solace.app",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Solace Care uses the microphone during your sessions.",
+        "NSCameraUsageDescription": "Solace Care uses the camera during video sessions.",
+        "UIBackgroundModes": [
+          "audio",
+          "voip"
+        ]
+      }
     },
     "android": {
       "package": "care.solace.app",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_PHONE_CALL",
+        "android.permission.MANAGE_OWN_CALLS"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -28,10 +45,17 @@
       ],
       "expo-localization",
       "expo-status-bar",
-      "expo-font"
+      "expo-font",
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc",
+      "@config-plugins/react-native-callkeep"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "locales": {
+      "en": "./native-locales/en.json",
+      "fr": "./native-locales/fr.json"
     }
   }
 }

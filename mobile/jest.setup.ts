@@ -12,3 +12,24 @@ jest.mock('expo-secure-store', () => {
     deleteItemAsync: jest.fn(async (key: string) => void store.delete(key)),
   };
 });
+
+// Calls (epic 7): WebRTC and the system call UI have no native modules under Jest.
+jest.mock('@livekit/react-native', () => ({
+  registerGlobals: jest.fn(),
+  AudioSession: {
+    startAudioSession: jest.fn(async () => undefined),
+    stopAudioSession: jest.fn(async () => undefined),
+    selectAudioOutput: jest.fn(async () => undefined),
+  },
+  VideoTrack: () => null,
+}));
+jest.mock('react-native-callkeep', () => ({
+  __esModule: true,
+  default: {
+    setup: jest.fn(async () => undefined),
+    setAvailable: jest.fn(),
+    startCall: jest.fn(),
+    setCurrentCallActive: jest.fn(),
+    endCall: jest.fn(),
+  },
+}));
