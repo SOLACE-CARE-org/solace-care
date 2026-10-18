@@ -786,6 +786,74 @@
       "hidden": "Masqué",
       "add": "Ajouter",
       "showToSeekers": "Montrer aux usagers"
+    },
+    "content": {
+      "title": "Contenus",
+      "subtitle": "Rien n'est publié tant que l'anglais et le français ne sont pas terminés.",
+      "new": "Nouvel élément",
+      "create": "Créer le brouillon",
+      "types": {
+        "CRISIS_RESOURCE": "Ressource de crise",
+        "ARTICLE": "Article",
+        "FAQ": "FAQ",
+        "LEGAL": "Juridique"
+      },
+      "itemTitle": "Titre",
+      "type": "Type",
+      "english": "Anglais",
+      "french": "Français",
+      "clinicalCheck": "Contrôle clinique",
+      "status": "Statut",
+      "updated": "Mis à jour",
+      "done": "Fait",
+      "missing": "Manquant",
+      "clinical": {
+        "NOT_NEEDED": "Pas nécessaire",
+        "NEEDED": "Nécessaire",
+        "REQUESTED": "Demandé",
+        "APPROVED": "Approuvé"
+      },
+      "state": {
+        "DRAFT": "Brouillon",
+        "EDITED": "Modifié, non publié",
+        "PUBLISHED": "Publié v{{version}}"
+      },
+      "note": "Les ressources de crise sont gardées dans l'application pour fonctionner hors ligne. Un document juridique modifié crée une nouvelle version que les usagers acceptent à leur prochaine visite.",
+      "slug": "Adresse (minuscules, avec des tirets)",
+      "country": "Pays (code ISO)",
+      "where": {
+        "CRISIS_RESOURCE": "affichée sur l'écran d'aide urgente et dans chaque parcours de crise",
+        "ARTICLE": "affiché dans l'application",
+        "FAQ": "affichée dans l'aide de l'application",
+        "LEGAL": "accepté à l'inscription et à la visite suivante après un changement"
+      },
+      "enDone": "Anglais terminé",
+      "frDone": "Français terminé",
+      "clinicalState": {
+        "NEEDED": "Nouveau contrôle clinique requis après modification",
+        "REQUESTED": "En attente d'un réviseur clinique",
+        "APPROVED": "Contrôle clinique approuvé par {{name}}"
+      },
+      "englishCaps": "ANGLAIS",
+      "frenchCaps": "FRANÇAIS",
+      "fieldTitle": "Titre",
+      "fieldBody": "Texte",
+      "numbers": "Numéros composés par l'application",
+      "numbersNote": "Ils deviennent des boutons d'appel sur l'aide urgente et fonctionnent sans données.",
+      "service": "Service",
+      "services": {
+        "police": "Police",
+        "ambulance": "Ambulance et urgences médicales",
+        "fire": "Pompiers et secours",
+        "helpline": "Ligne d'écoute"
+      },
+      "number": "Numéro",
+      "addNumber": "Ajouter un numéro",
+      "clinicalNote": "Les ressources de crise doivent être approuvées par un réviseur clinique après chaque modification. La publication est bloquée d'ici là.",
+      "sendCheck": "Envoyer au contrôle clinique",
+      "approveCheck": "Approuver le contrôle clinique",
+      "publish": "Publier",
+      "confirmPublish": "Publier la version {{version}} ?"
     }
   },
   "roleChoice": {

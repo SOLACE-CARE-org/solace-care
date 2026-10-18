@@ -786,6 +786,74 @@
       "hidden": "Hidden",
       "add": "Add",
       "showToSeekers": "Show to seekers"
+    },
+    "content": {
+      "title": "Content",
+      "subtitle": "Nothing publishes until both English and French are done.",
+      "new": "New item",
+      "create": "Create draft",
+      "types": {
+        "CRISIS_RESOURCE": "Crisis resource",
+        "ARTICLE": "Article",
+        "FAQ": "FAQ",
+        "LEGAL": "Legal"
+      },
+      "itemTitle": "Title",
+      "type": "Type",
+      "english": "English",
+      "french": "French",
+      "clinicalCheck": "Clinical check",
+      "status": "Status",
+      "updated": "Updated",
+      "done": "Done",
+      "missing": "Missing",
+      "clinical": {
+        "NOT_NEEDED": "Not needed",
+        "NEEDED": "Needed",
+        "REQUESTED": "Requested",
+        "APPROVED": "Approved"
+      },
+      "state": {
+        "DRAFT": "Draft",
+        "EDITED": "Edited, not published",
+        "PUBLISHED": "Published v{{version}}"
+      },
+      "note": "Crisis resources are cached in the app so they work offline. A changed legal document creates a new version that seekers accept on their next visit.",
+      "slug": "Address (lower case, with dashes)",
+      "country": "Country (ISO code)",
+      "where": {
+        "CRISIS_RESOURCE": "shown on the urgent-help screen and in every crisis flow",
+        "ARTICLE": "shown in the app",
+        "FAQ": "shown in the app's help",
+        "LEGAL": "accepted at sign-up and on the next visit after a change"
+      },
+      "enDone": "English done",
+      "frDone": "French done",
+      "clinicalState": {
+        "NEEDED": "Clinical check needed again after edits",
+        "REQUESTED": "Waiting for a clinical reviewer",
+        "APPROVED": "Clinical check approved by {{name}}"
+      },
+      "englishCaps": "ENGLISH",
+      "frenchCaps": "FRENCH",
+      "fieldTitle": "Title",
+      "fieldBody": "Body",
+      "numbers": "Numbers the app dials",
+      "numbersNote": "These become call buttons on Urgent help, and work without data.",
+      "service": "Service",
+      "services": {
+        "police": "Police",
+        "ambulance": "Ambulance and emergency medical help",
+        "fire": "Fire and rescue",
+        "helpline": "Helpline"
+      },
+      "number": "Number",
+      "addNumber": "Add number",
+      "clinicalNote": "Crisis resources need a clinical reviewer's approval after every edit. Publishing is blocked until then.",
+      "sendCheck": "Send for clinical check",
+      "approveCheck": "Approve clinical check",
+      "publish": "Publish",
+      "confirmPublish": "Publish version {{version}}?"
     }
   },
   "roleChoice": {
