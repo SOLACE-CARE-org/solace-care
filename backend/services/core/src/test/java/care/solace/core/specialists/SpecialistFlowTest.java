@@ -28,21 +28,21 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  * Specialists made the way the app and the portal make them, for tests of what comes after sign-up:
  * applicants who submitted, applications fully verified, approved specialists.
  */
-abstract class SpecialistFlowTest extends MemberStackTest {
+public abstract class SpecialistFlowTest extends MemberStackTest {
 
-  static final byte[] PDF = "%PDF-1.7 1 0 obj".getBytes(StandardCharsets.US_ASCII);
-  static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0};
-  static final byte[] JPEG = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0};
+  protected static final byte[] PDF = "%PDF-1.7 1 0 obj".getBytes(StandardCharsets.US_ASCII);
+  protected static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0};
+  protected static final byte[] JPEG = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0};
 
-  @Autowired MockMvc mvc;
-  @Autowired JdbcTemplate jdbc;
+  @Autowired protected MockMvc mvc;
+  @Autowired protected JdbcTemplate jdbc;
 
   // --- Helpers ---------------------------------------------------------------------------------
 
-  record Applicant(String id, String token) {}
+  public record Applicant(String id, String token) {}
 
   /** A specialist who went through every step in the app and submitted. */
-  Applicant submittedApplicant(String phone, String name) throws Exception {
+  protected Applicant submittedApplicant(String phone, String name) throws Exception {
     mvc.perform(
             post("/v1/specialist-signups")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +109,7 @@ abstract class SpecialistFlowTest extends MemberStackTest {
     return new Applicant(id, token);
   }
 
-  Applicant approvedSpecialist(String phone, String name, RequestPostProcessor ops)
+  protected Applicant approvedSpecialist(String phone, String name, RequestPostProcessor ops)
       throws Exception {
     Applicant applicant = fullyVerified(phone, name, ops);
     act(post(app(applicant, "/approval-proposal")).with(ops)).andExpect(status().isOk());
@@ -119,7 +119,8 @@ abstract class SpecialistFlowTest extends MemberStackTest {
   }
 
   /** Opened for review by {@code ops}, with all six items verified. */
-  Applicant fullyVerified(String phone, String name, RequestPostProcessor ops) throws Exception {
+  protected Applicant fullyVerified(String phone, String name, RequestPostProcessor ops)
+      throws Exception {
     Applicant applicant = submittedApplicant(phone, name);
     act(post(app(applicant, "/review")).with(ops)).andExpect(status().isOk());
     item(applicant, ops, "IDENTITY", "{\"verified\":true}");
@@ -140,7 +141,7 @@ abstract class SpecialistFlowTest extends MemberStackTest {
     return applicant;
   }
 
-  void step(String token, String step, String body) throws Exception {
+  protected void step(String token, String step, String body) throws Exception {
     mvc.perform(
             put("/v1/me/specialist-application" + step)
                 .headers(bearer(token))
@@ -149,7 +150,8 @@ abstract class SpecialistFlowTest extends MemberStackTest {
         .andExpect(status().isOk());
   }
 
-  ResultActions upload(String token, String kind, MockMultipartFile... files) throws Exception {
+  protected ResultActions upload(String token, String kind, MockMultipartFile... files)
+      throws Exception {
     var request = multipart(HttpMethod.PUT, "/v1/me/specialist-application/documents/" + kind);
     for (MockMultipartFile f : files) {
       request.file(f);
@@ -157,7 +159,7 @@ abstract class SpecialistFlowTest extends MemberStackTest {
     return mvc.perform(request.headers(bearer(token)));
   }
 
-  ResultActions item(Applicant a, RequestPostProcessor staff, String item, String body)
+  protected ResultActions item(Applicant a, RequestPostProcessor staff, String item, String body)
       throws Exception {
     return act(
         put(app(a, "/items/" + item))
@@ -166,8 +168,8 @@ abstract class SpecialistFlowTest extends MemberStackTest {
             .content(body));
   }
 
-  ResultActions language(Applicant a, RequestPostProcessor staff, String code, String level)
-      throws Exception {
+  protected ResultActions language(
+      Applicant a, RequestPostProcessor staff, String code, String level) throws Exception {
     return act(
         put(app(a, "/languages/" + code))
             .with(staff)
@@ -175,16 +177,17 @@ abstract class SpecialistFlowTest extends MemberStackTest {
             .content("{\"verifiedLevel\":\"" + level + "\"}"));
   }
 
-  ResultActions act(org.springframework.test.web.servlet.RequestBuilder request) throws Exception {
+  protected ResultActions act(org.springframework.test.web.servlet.RequestBuilder request)
+      throws Exception {
     return mvc.perform(request);
   }
 
-  static String app(Applicant a, String rest) {
+  protected static String app(Applicant a, String rest) {
     return "/admin/v1/specialist-applications/" + a.id() + rest;
   }
 
   /** A staff member's token from the staff realm, as the admin portal would send it. */
-  static RequestPostProcessor staff(String id, String name, String... roles) {
+  protected static RequestPostProcessor staff(String id, String name, String... roles) {
     String issuer = KEYCLOAK.getAuthServerUrl().replaceAll("/$", "") + "/realms/solace-staff";
     return jwt()
         .jwt(
@@ -196,13 +199,13 @@ abstract class SpecialistFlowTest extends MemberStackTest {
                     .claim("realm_access", Map.of("roles", List.of(roles))));
   }
 
-  static HttpHeaders bearer(String token) {
+  protected static HttpHeaders bearer(String token) {
     var headers = new HttpHeaders();
     headers.setBearerAuth(token);
     return headers;
   }
 
-  static JsonNode json(ResultActions result) throws Exception {
+  protected static JsonNode json(ResultActions result) throws Exception {
     return JSON.readTree(
         result.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
   }

@@ -29,6 +29,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.KafkaContainer;
@@ -41,8 +42,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * Core with everything a member flow touches, started once per test run and shared by every
- * subclass (and so one Spring context): PostgreSQL, Kafka, MinIO, and real Keycloak with the real
- * realms and the code authenticator, whose codes are read from its log.
+ * subclass (and so one Spring context): PostgreSQL, Kafka, MinIO, Redis, and real Keycloak with the
+ * real realms and the code authenticator, whose codes are read from its log.
  */
 @SpringBootTest(properties = "solace.grpc.client-registration=")
 @AutoConfigureMockMvc
@@ -61,6 +62,10 @@ public abstract class MemberStackTest {
                   .asCompatibleSubstituteFor("minio/minio"))
           .withCreateContainerCmdModifier(new RunAsRoot());
 
+  /** Slot holds (System Design: Redis for slot holds). */
+  protected static final GenericContainer<?> REDIS =
+      new GenericContainer<>("redis:7.4.5-alpine").withExposedPorts(6379);
+
   protected static final KeycloakContainer KEYCLOAK =
       new KeycloakContainer("quay.io/keycloak/keycloak:26.3.1")
           .withRealmImportFiles("/solace-members-realm.json", "/solace-staff-realm.json")
@@ -73,7 +78,7 @@ public abstract class MemberStackTest {
   static {
     // Started together on Testcontainers' own threads: a parallel stream here would deadlock on
     // this class's initialisation.
-    Startables.deepStart(POSTGRES, KAFKA, MINIO, KEYCLOAK).join();
+    Startables.deepStart(POSTGRES, KAFKA, MINIO, REDIS, KEYCLOAK).join();
     try (S3Client s3 = s3()) {
       s3.createBucket(b -> b.bucket("solace-credentials"));
     }
@@ -100,6 +105,8 @@ public abstract class MemberStackTest {
     properties.add("spring.datasource.username", POSTGRES::getUsername);
     properties.add("spring.datasource.password", POSTGRES::getPassword);
     properties.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
+    properties.add("spring.data.redis.host", REDIS::getHost);
+    properties.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
     properties.add("solace.storage.endpoint", MINIO::getS3URL);
     properties.add("solace.storage.access-key", MINIO::getUserName);
     properties.add("solace.storage.secret-key", MINIO::getPassword);

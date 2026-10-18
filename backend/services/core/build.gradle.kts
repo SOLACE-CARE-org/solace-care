@@ -11,6 +11,8 @@ dependencies {
     // Object storage for specialist documents (MinIO locally, any S3-compatible store in the cluster).
     implementation(platform(libs.aws.sdk.bom))
     implementation(libs.aws.sdk.s3)
+    // Slot holds (10 minutes), as the System Design puts them in Redis.
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     testImplementation("io.grpc:grpc-inprocess")

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 /** {@code specialist_schedule} and {@code availability_rule}. */
 @Repository
-class WeeklyHoursStore implements Availability {
+class WeeklyHoursStore {
 
   private final JdbcClient db;
 
@@ -24,18 +24,12 @@ class WeeklyHoursStore implements Availability {
 
   record Rule(DayOfWeek weekday, LocalTime start, LocalTime end) {}
 
-  @Override
-  public boolean hasWeeklyHours(UUID specialistId) {
+  boolean hasWeeklyHours(UUID specialistId) {
     return db.sql("SELECT count(*) FROM specialist_schedule WHERE specialist_id = :id")
             .param("id", specialistId)
             .query(Integer.class)
             .single()
         > 0;
-  }
-
-  @Override
-  public Optional<Instant> nextAvailable(UUID specialistId, Instant now, int minutes) {
-    return find(specialistId).flatMap(schedule -> Slots.next(schedule, now, minutes));
   }
 
   Optional<Schedule> find(UUID specialistId) {
