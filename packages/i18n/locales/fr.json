@@ -378,7 +378,10 @@
       "reasons": {
         "POLICY_CANCELLATION": "Annulation, politique v{{version}}",
         "POLICY_NO_SHOW": "Absence du spécialiste, politique v{{version}}",
-        "PAID_AFTER_EXPIRY": "Payé après l'expiration de la réservation"
+        "PAID_AFTER_EXPIRY": "Payé après l'expiration de la réservation",
+        "DISPUTE_SPECIALIST_NO_SHOW": "Litige : absence du spécialiste",
+        "DISPUTE_SEEKER_NO_SHOW": "Litige : absence de l'usager",
+        "DISPUTE_CONNECTION_PROBLEM": "Litige : problème de connexion"
       },
       "methods": {
         "MTN_MOMO": "MTN MoMo",
@@ -461,6 +464,113 @@
       "confirmHold": "Retenir le versement",
       "confirmApprove": "Approuver et envoyer {{count}} versements, {{amount}} au total ?",
       "back": "Tous les versements"
+    },
+    "bookings": {
+      "title": "Réservations",
+      "search": "Rechercher des réservations",
+      "status": "Statut",
+      "dates": "Dates",
+      "from": "Du",
+      "to": "Au",
+      "language": "Langue",
+      "statusFilter": {
+        "ALL": "Tous",
+        "CONFIRMED": "Confirmée",
+        "IN_PROGRESS": "En séance",
+        "COMPLETED": "Terminée",
+        "CANCELLED": "Annulée",
+        "NO_SHOW": "Absence",
+        "DISPUTED": "Contestée"
+      },
+      "range": {
+        "TODAY": "Aujourd'hui",
+        "NEXT_7": "7 prochains jours",
+        "LAST_7": "7 derniers jours",
+        "CUSTOM": "Personnalisée",
+        "ALL": "Toutes les dates"
+      },
+      "booking": "Réservation",
+      "when": "Quand",
+      "specialist": "Spécialiste",
+      "person": "Personne",
+      "type": "Type",
+      "amount": "Montant",
+      "badReference": "Recherchez avec une référence de réservation, par exemple BK-7F9D1C2E.",
+      "seeker": "Usager {{ref}}",
+      "guest": "Invité {{ref}}",
+      "state": {
+        "PENDING_PAYMENT": "En attente de paiement",
+        "CONFIRMED": "Confirmée",
+        "IN_PROGRESS": "En séance",
+        "COMPLETED": "Terminée",
+        "CANCELLED": "Annulée",
+        "NO_SHOW": "Absence",
+        "EXPIRED": "Expirée"
+      },
+      "disputed": "Contestée",
+      "noShowDisputed": "Absence contestée",
+      "waiting_SEEKER": "L'usager attend",
+      "waiting_SPECIALIST": "Le spécialiste attend",
+      "cancelledBy_SEEKER": "Annulée par l'usager",
+      "cancelledBy_SPECIALIST": "Annulée par le spécialiste",
+      "cancelledBy_STAFF": "Annulée par Solace",
+      "cancelledBy_SYSTEM": "Annulée par Solace",
+      "summary": "{{window}} · {{specialist}} avec {{person}} · réservée le {{date}} via {{source}}",
+      "source": {
+        "SEARCH": "la recherche",
+        "HEALTH_CHECK": "le bilan",
+        "TRACKING_RECOMMENDATION": "une invitation du suivi"
+      },
+      "timeline": "Chronologie",
+      "money": "Argent",
+      "captured": "Encaissé",
+      "moneyState": "État",
+      "policy": "Politique",
+      "policyVersion": "Politique d'annulation v{{version}}",
+      "notPaid": "Non payée",
+      "heldUntilResolved": "Bloqué jusqu'à résolution",
+      "heldAmount": "{{amount}} bloqués",
+      "refundedAmount": "{{amount}} remboursés ou en attente d'approbation",
+      "released": "Versé",
+      "role": {
+        "SEEKER": "L'usager",
+        "SPECIALIST": "Le spécialiste",
+        "STAFF": "Solace",
+        "SYSTEM": "Solace"
+      },
+      "event": {
+        "BOOKED": "Réservée · {{amount}}",
+        "PAID": "Payée · {{amount}} encaissés et bloqués",
+        "JOINED": "{{role}} a rejoint",
+        "LEFT": "{{role}} est parti",
+        "ROOM_CLOSED": "Salle fermée",
+        "FLAGGED": "Aucune présence commune · absence possible signalée",
+        "CANCELLED": "Annulée par : {{role}}",
+        "CANCELLED_SYSTEM": "Annulée",
+        "DISPUTE_OPENED": "Le support a enregistré un litige : « {{detail}} »",
+        "DISPUTE_RESOLVED": "Résolu : {{detail}}",
+        "REFUND": "Remboursement de {{amount}} · {{detail}}"
+      },
+      "resolveTitle": "Résoudre le litige",
+      "toldUs": "Noté par {{name}} :",
+      "whoMissed": "Qui a manqué la séance ?",
+      "outcome": {
+        "SPECIALIST_NO_SHOW": "Le spécialiste était en retard ; compter comme absence du spécialiste",
+        "SEEKER_NO_SHOW": "L'usager est parti tôt ; compter comme absence de l'usager",
+        "CONNECTION_PROBLEM": "Problème de connexion ; proposer un report gratuit"
+      },
+      "proposes": "La politique propose : rembourser {{amount}} à l'usager",
+      "changeNote": "Ne modifiez le montant qu'avec un motif. Chaque remboursement attend ensuite une seconde approbation des Finances.",
+      "amountLabel": "Remboursement (XAF)",
+      "reasonRequired": "Motif (obligatoire)",
+      "resolve": "Résoudre et prévenir les deux",
+      "openTitle": "Enregistrer un litige",
+      "noteLabel": "Que vous a-t-on dit ?",
+      "openDispute": "Enregistrer le litige",
+      "cancel": "Annuler cette réservation",
+      "cancelTitle": "Annuler cette réservation ?",
+      "cancelNote": "L'usager récupère le prix complet une fois le remboursement approuvé par les Finances. Les deux sont prévenus de l'annulation.",
+      "confirmCancel": "Annuler la réservation"
     }
   },
   "roleChoice": {

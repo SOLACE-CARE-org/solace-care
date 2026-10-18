@@ -378,7 +378,10 @@
       "reasons": {
         "POLICY_CANCELLATION": "Cancellation, policy v{{version}}",
         "POLICY_NO_SHOW": "Specialist no-show, policy v{{version}}",
-        "PAID_AFTER_EXPIRY": "Paid after the hold expired"
+        "PAID_AFTER_EXPIRY": "Paid after the hold expired",
+        "DISPUTE_SPECIALIST_NO_SHOW": "Dispute: specialist no-show",
+        "DISPUTE_SEEKER_NO_SHOW": "Dispute: seeker no-show",
+        "DISPUTE_CONNECTION_PROBLEM": "Dispute: connection problem"
       },
       "methods": {
         "MTN_MOMO": "MTN MoMo",
@@ -461,6 +464,113 @@
       "confirmHold": "Hold payout",
       "confirmApprove": "Approve and send {{count}} payouts, {{amount}} in all?",
       "back": "All runs"
+    },
+    "bookings": {
+      "title": "Bookings",
+      "search": "Search bookings",
+      "status": "Status",
+      "dates": "Dates",
+      "from": "From",
+      "to": "To",
+      "language": "Language",
+      "statusFilter": {
+        "ALL": "All",
+        "CONFIRMED": "Confirmed",
+        "IN_PROGRESS": "In session",
+        "COMPLETED": "Completed",
+        "CANCELLED": "Cancelled",
+        "NO_SHOW": "No-show",
+        "DISPUTED": "Disputed"
+      },
+      "range": {
+        "TODAY": "Today",
+        "NEXT_7": "Next 7 days",
+        "LAST_7": "Last 7 days",
+        "CUSTOM": "Custom",
+        "ALL": "Any date"
+      },
+      "booking": "Booking",
+      "when": "When",
+      "specialist": "Specialist",
+      "person": "Person",
+      "type": "Type",
+      "amount": "Amount",
+      "badReference": "Search with a booking reference, such as BK-7F9D1C2E.",
+      "seeker": "Seeker {{ref}}",
+      "guest": "Guest {{ref}}",
+      "state": {
+        "PENDING_PAYMENT": "Waiting for payment",
+        "CONFIRMED": "Confirmed",
+        "IN_PROGRESS": "In session",
+        "COMPLETED": "Completed",
+        "CANCELLED": "Cancelled",
+        "NO_SHOW": "No-show",
+        "EXPIRED": "Expired"
+      },
+      "disputed": "Disputed",
+      "noShowDisputed": "No-show disputed",
+      "waiting_SEEKER": "Seeker waiting",
+      "waiting_SPECIALIST": "Specialist waiting",
+      "cancelledBy_SEEKER": "Cancelled by seeker",
+      "cancelledBy_SPECIALIST": "Cancelled by specialist",
+      "cancelledBy_STAFF": "Cancelled by Solace",
+      "cancelledBy_SYSTEM": "Cancelled by Solace",
+      "summary": "{{window}} · {{specialist}} with {{person}} · booked {{date}} from {{source}}",
+      "source": {
+        "SEARCH": "search",
+        "HEALTH_CHECK": "the health check",
+        "TRACKING_RECOMMENDATION": "a tracking invite"
+      },
+      "timeline": "Timeline",
+      "money": "Money",
+      "captured": "Captured",
+      "moneyState": "State",
+      "policy": "Policy",
+      "policyVersion": "Cancellation policy v{{version}}",
+      "notPaid": "Not paid",
+      "heldUntilResolved": "Held until resolved",
+      "heldAmount": "{{amount}} held",
+      "refundedAmount": "{{amount}} refunded or waiting for approval",
+      "released": "Released",
+      "role": {
+        "SEEKER": "Seeker",
+        "SPECIALIST": "Specialist",
+        "STAFF": "Solace",
+        "SYSTEM": "Solace"
+      },
+      "event": {
+        "BOOKED": "Booked · {{amount}}",
+        "PAID": "Paid · {{amount}} captured and held",
+        "JOINED": "{{role}} joined",
+        "LEFT": "{{role}} left",
+        "ROOM_CLOSED": "Room closed",
+        "FLAGGED": "Neither joined at the same time · marked possible no-show",
+        "CANCELLED": "Cancelled by {{role}}",
+        "CANCELLED_SYSTEM": "Cancelled",
+        "DISPUTE_OPENED": "Support recorded a dispute: “{{detail}}”",
+        "DISPUTE_RESOLVED": "Resolved: {{detail}}",
+        "REFUND": "Refund of {{amount}} · {{detail}}"
+      },
+      "resolveTitle": "Resolve the dispute",
+      "toldUs": "{{name}} noted:",
+      "whoMissed": "Who missed the session?",
+      "outcome": {
+        "SPECIALIST_NO_SHOW": "Specialist was late; treat as specialist no-show",
+        "SEEKER_NO_SHOW": "Seeker left early; treat as seeker no-show",
+        "CONNECTION_PROBLEM": "Connection problem; offer a free reschedule"
+      },
+      "proposes": "Policy proposes: refund {{amount}} to the seeker",
+      "changeNote": "Change the amount only with a reason. Every refund then waits for a second approver in Finance.",
+      "amountLabel": "Refund (XAF)",
+      "reasonRequired": "Reason (required)",
+      "resolve": "Resolve and notify both",
+      "openTitle": "Record a dispute",
+      "noteLabel": "What were you told?",
+      "openDispute": "Record dispute",
+      "cancel": "Cancel this booking",
+      "cancelTitle": "Cancel this booking?",
+      "cancelNote": "The seeker gets the full price back once Finance approves the refund. Both are told the session is cancelled.",
+      "confirmCancel": "Cancel booking"
     }
   },
   "roleChoice": {

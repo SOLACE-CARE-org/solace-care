@@ -2,6 +2,8 @@ import type { Type } from '@angular/core';
 import type { Routes } from '@angular/router';
 
 import { areaGuard } from './auth/area.guard';
+import { BookingDetailPage } from './bookings/booking-detail.page';
+import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
 import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
@@ -19,6 +21,7 @@ import { SpecialistRecordPage } from './specialists/specialist-record.page';
 const SCREENS: Record<string, Type<unknown>> = {
   crisis: CrisisQueuePage,
   applications: ApplicationsPage,
+  bookings: BookingsPage,
   reviews: ReviewsPage,
   payments: PaymentsPage,
   payouts: PayoutRunsPage,
@@ -50,6 +53,11 @@ export const routes: Routes = [
         path: 'specialists/:id',
         component: SpecialistRecordPage,
         canActivate: [areaGuard('specialists')],
+      },
+      {
+        path: 'bookings/:id',
+        component: BookingDetailPage,
+        canActivate: [areaGuard('bookings')],
       },
       {
         path: 'payouts/:id',
