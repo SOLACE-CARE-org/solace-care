@@ -171,6 +171,9 @@ services:
       - "7882:7882/udp"
     volumes:
       - ./livekit/livekit.yaml:/etc/livekit.yaml:ro
+    # Webhooks go to the gateway running on the host (D36).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Observability: services send OTLP to the collector, which fans out to Tempo, Prometheus and Loki.
   otel-collector:

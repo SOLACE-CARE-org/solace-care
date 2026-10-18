@@ -198,6 +198,23 @@ class BookingStore {
         .update();
   }
 
+  /** Newest first, so old bookings waiting for staff never crowd out new ones. */
+  List<Row> inStatusBefore(String status, String column, Instant before, int limit) {
+    return db.sql(
+            "SELECT "
+                + COLUMNS
+                + " FROM booking WHERE status = :s AND "
+                + column
+                + " < :before ORDER BY "
+                + column
+                + " DESC LIMIT :n")
+        .param("s", status)
+        .param("before", Timestamp.from(before))
+        .param("n", limit)
+        .query(BookingStore::row)
+        .list();
+  }
+
   List<UUID> unpaidBefore(Instant now, int limit) {
     return db.sql(
             """

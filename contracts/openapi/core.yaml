@@ -34,6 +34,8 @@ tags:
     description: Paying for a booking, the aggregator's webhooks and specialist earnings (Phase 1, epic 6)
   - name: admin-payments
     description: Transactions, refunds and payout runs for staff (Phase 1, epic 6). Two people for every refund and payout run (D14, D35).
+  - name: sessions
+    description: Joining a session's room and attendance from the media server (Phase 1, epic 7)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -1918,6 +1920,67 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/bookings/{bookingId}/join:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: joinSession
+      summary: A media token for the booking's room, from 10 minutes before the start (D18)
+      description: For the booked seeker or the specialist. Valid until 15 minutes after the scheduled end.
+      tags: [sessions]
+      responses:
+        "200":
+          description: The token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinToken"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/booking/join:
+    post:
+      operationId: joinSessionAsGuest
+      summary: A media token for the guest's booking
+      tags: [guests, sessions]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      responses:
+        "200":
+          description: The token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinToken"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/webhooks/livekit:
+    post:
+      operationId: receiveLiveKitWebhook
+      summary: The media server's room and participant events, for attendance (D36)
+      description: Public at the gateway. The Authorization header carries LiveKit's signed token with the body's SHA-256; anything else gets 401.
+      tags: [sessions]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/webhook+json:
+            schema:
+              type: object
+          application/json:
+            schema:
+              type: object
+      responses:
+        "204":
+          description: Recorded
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /v1/system/ping:
     get:
       operationId: ping
@@ -3508,3 +3571,24 @@ components:
           type: string
         failureReason:
           type: string
+    JoinToken:
+      type: object
+      additionalProperties: false
+      required: [url, token, room, role, modality, expiresAt]
+      properties:
+        url:
+          description: The media server to connect to (wss).
+          type: string
+        token:
+          type: string
+        room:
+          type: string
+        role:
+          description: How the caller appears in the room; no names go to the media server (D36).
+          type: string
+          enum: [SEEKER, SPECIALIST]
+        modality:
+          $ref: "#/components/schemas/Modality"
+        expiresAt:
+          type: string
+          format: date-time

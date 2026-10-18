@@ -192,6 +192,12 @@ Every pair now meets WCAG 2.1 AA.
 - **Retained money:** what a policy does not refund goes to the specialist like a completed session, less Solace's fee (D28).
 - **Fee snapshot:** the fee percent in force when the payment is taken is kept with the payment; a later change to the fee does not change it.
 
+**D36. Sessions: rooms, attendance and no-shows (epic 7).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Rooms:** Core creates the LiveKit room on the first join-token request, from 10 minutes before the start, not at confirmation: LiveKit closes a room nobody joins, and a session can be days away. The room keeps a dropped participant for 2 minutes (D18) and admits two people.
+- **No names to the media server:** participants join as `seeker` or `specialist`; each app already knows who the other person is from the booking.
+- **Starting and ending:** the session starts (IN_PROGRESS) when both are in the room, and completes when the room finishes after both attended, or `solace.sessions.complete-after` ([15] minutes) after the scheduled end.
+- **No-shows:** `solace.sessions.no-show-after` ([15] minutes) after the start, a booking where only one person ever joined becomes a no-show by the other (D33 refunds). When neither joined, Core does not guess: the booking is flagged for Support to resolve (Refund or no-show dispute), and the money stays held.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

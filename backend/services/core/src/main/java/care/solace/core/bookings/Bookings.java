@@ -269,6 +269,20 @@ class Bookings implements BookingRecords {
   }
 
   @Override
+  public List<Info> confirmedStartedBefore(Instant before) {
+    return store.inStatusBefore("CONFIRMED", "starts_at", before, 100).stream()
+        .map(BookingStore.Row::info)
+        .toList();
+  }
+
+  @Override
+  public List<Info> inProgressEndedBefore(Instant before) {
+    return store.inStatusBefore("IN_PROGRESS", "ends_at", before, 100).stream()
+        .map(BookingStore.Row::info)
+        .toList();
+  }
+
+  @Override
   public int noShowRefundPercent(UUID bookingId, NoShowBy who) {
     var b = store.find(bookingId).orElseThrow();
     var policy = store.policy(b.policyVersion());

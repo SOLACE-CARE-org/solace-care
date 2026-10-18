@@ -102,7 +102,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Book, hold, confirm, run and complete audio or video sessions |
 | People | Seekers, guests, specialists |
-| Data | Booking (who, with whom, specialty and offering, session language, times, status, source), slot holds, join and leave events. Audio and video pass through the media server and are **not recorded** (System Design, Recording) |
+| Data | Booking (who, with whom, specialty and offering, session language, times, status, source), slot holds, join and leave events (role and time only: the media server never receives a name, D36). Audio and video pass through the media server and are **not recorded** (System Design, Recording) |
 | Where | Core database; Redis (10-minute holds); LiveKit (live media only) |
 | Recipients | The two participants; LiveKit if LiveKit Cloud is chosen |
 | Transfers abroad | Live media, if the media server is outside Cameroon (**Counsel**) |

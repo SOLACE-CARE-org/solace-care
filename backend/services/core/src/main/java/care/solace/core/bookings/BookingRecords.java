@@ -26,6 +26,12 @@ public interface BookingRecords {
   /** CONFIRMED or IN_PROGRESS to NO_SHOW, with who did not come. */
   boolean noShow(UUID bookingId, NoShowBy who, Instant now);
 
+  /** CONFIRMED bookings that started before {@code before}: not begun, maybe a no-show (D36). */
+  java.util.List<Info> confirmedStartedBefore(Instant before);
+
+  /** IN_PROGRESS bookings that ended before {@code before}: due to complete (D36). */
+  java.util.List<Info> inProgressEndedBefore(Instant before);
+
   /** Refund percent for a no-show under the booking's policy (D33). */
   int noShowRefundPercent(UUID bookingId, NoShowBy who);
 

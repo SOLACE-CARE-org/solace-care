@@ -7,5 +7,10 @@ rtc:
 keys:
   # key: secret (local dev only; the secret must be at least 32 characters)
   devkey: solace-local-livekit-secret-0123456789
+# Room and participant events go to Core, signed with the key above, for attendance (D36).
+webhook:
+  api_key: devkey
+  urls:
+    - http://host.docker.internal:8080/api/core/v1/webhooks/livekit
 logging:
   level: info
