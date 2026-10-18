@@ -163,7 +163,8 @@ class DataRights {
                 .param("exp", Timestamp.from(now.plus(settings.exportLifetime())))
                 .param("k", key)
                 .update();
-            events.publishEvent(new DataCopyReady(r.accountId(), settings.exportLifetime().toDays()));
+            events.publishEvent(
+                new DataCopyReady(r.accountId(), settings.exportLifetime().toDays()));
           });
     }
   }
@@ -178,7 +179,8 @@ class DataRights {
     if (!r.status().equals("READY")) {
       throw new SolaceException(PrivacyError.EXPORT_NOT_READY);
     }
-    audit.read("privacy.export.download", "data-request", exportId.toString(), accountId.toString());
+    audit.read(
+        "privacy.export.download", "data-request", exportId.toString(), accountId.toString());
     try (InputStream in = storage.get(settings.exportBucket(), r.fileKey())) {
       return in.readAllBytes();
     } catch (IOException e) {

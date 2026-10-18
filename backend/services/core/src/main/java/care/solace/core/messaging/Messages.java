@@ -254,8 +254,7 @@ class Messages {
     UUID to = ready.accountId();
     String days = Long.toString(ready.days());
     notifier.push(to, "DATA_COPY_READY", null, false, (l, z) -> new Object[] {days});
-    notifier.email(
-        to, "DATA_COPY_READY", "copy-" + Instant.now(), (l, z) -> new Object[] {days});
+    notifier.email(to, "DATA_COPY_READY", "copy-" + Instant.now(), (l, z) -> new Object[] {days});
   }
 
   // --- Reminders (D38) --------------------------------------------------------------------------

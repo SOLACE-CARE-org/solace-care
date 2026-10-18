@@ -57,7 +57,8 @@ class Notifier {
       Availability availability,
       MessagingSettings settings,
       org.springframework.transaction.PlatformTransactionManager transactions,
-      @org.springframework.beans.factory.annotation.Value("${solace.privacy.message-retention:P180D}")
+      @org.springframework.beans.factory.annotation.Value(
+              "${solace.privacy.message-retention:P180D}")
           java.time.Duration messageRetention,
       Clock clock) {
     this.messageRetention = messageRetention;

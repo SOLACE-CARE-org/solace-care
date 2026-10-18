@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * Guest contacts a member claimed (D34): erasure removes their numbers and booking links (D40).
- * The bookings themselves are in the bookings section.
+ * Guest contacts a member claimed (D34): erasure removes their numbers and booking links (D40). The
+ * bookings themselves are in the bookings section.
  */
 @Component
 class GuestData implements PersonalData {

@@ -30,7 +30,8 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
 
   @BeforeAll
   void specialist() throws Exception {
-    specialist = approvedSpecialist("+237696000701", "Data Keeper", staff("ops-p", "R", "OPERATIONS"));
+    specialist =
+        approvedSpecialist("+237696000701", "Data Keeper", staff("ops-p", "R", "OPERATIONS"));
   }
 
   @Test
@@ -42,11 +43,13 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
     payment(booking, phone);
     rating(booking, id, "Kind and clear.");
 
-    JsonNode requested =
-        json(mvc.perform(post("/v1/me/data-exports").headers(bearer(token))));
+    JsonNode requested = json(mvc.perform(post("/v1/me/data-exports").headers(bearer(token))));
     assertThat(requested.path("status").asText()).isEqualTo("PREPARING");
     // Asking again gives the same copy.
-    assertThat(json(mvc.perform(post("/v1/me/data-exports").headers(bearer(token)))).path("id").asText())
+    assertThat(
+            json(mvc.perform(post("/v1/me/data-exports").headers(bearer(token))))
+                .path("id")
+                .asText())
         .isEqualTo(requested.path("id").asText());
 
     rights.prepareNow();
@@ -65,7 +68,8 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
     assertThat(copy.path("account").path("phone").asText()).isEqualTo(phone);
     assertThat(copy.path("account").path("displayName").asText()).isEqualTo("Mireille");
     assertThat(copy.path("bookings").get(0).path("specialist").asText()).isEqualTo("Data Keeper");
-    assertThat(copy.path("payments").path("payments").get(0).path("amount").asLong()).isEqualTo(15000);
+    assertThat(copy.path("payments").path("payments").get(0).path("amount").asLong())
+        .isEqualTo(15000);
     assertThat(copy.path("ratings").get(0).path("text").asText()).isEqualTo("Kind and clear.");
     assertThat(copy.path("consents").isArray()).isTrue();
     assertThat(
@@ -111,17 +115,37 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
     jdbc.update("UPDATE booking SET status = 'CANCELLED' WHERE id = ?", upcoming);
     erase(token).andExpect(status().isAccepted()).andExpect(jsonPath("$.outcome").value("ERASED"));
 
-    var account = jdbc.queryForMap("SELECT status, phone, email, keycloak_id FROM user_account WHERE id = ?::uuid", id);
+    var account =
+        jdbc.queryForMap(
+            "SELECT status, phone, email, keycloak_id FROM user_account WHERE id = ?::uuid", id);
     assertThat(account.get("status")).isEqualTo("ERASED");
     assertThat(account.get("phone")).isNull();
     assertThat(account.get("keycloak_id")).isNull();
-    assertThat(jdbc.queryForObject("SELECT count(*) FROM seeker_profile WHERE account_id = ?::uuid", Integer.class, id)).isZero();
-    assertThat(jdbc.queryForObject("SELECT count(*) FROM push_device WHERE account_id = ?::uuid", Integer.class, id)).isZero();
-    assertThat(jdbc.queryForObject("SELECT phone FROM payment WHERE booking_id = ?", String.class, past)).isNull();
-    assertThat(jdbc.queryForObject("SELECT text FROM rating WHERE booking_id = ?", String.class, past)).isNull();
-    assertThat(jdbc.queryForObject("SELECT stars FROM rating WHERE booking_id = ?", Integer.class, past)).isEqualTo(4);
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM seeker_profile WHERE account_id = ?::uuid",
+                Integer.class,
+                id))
+        .isZero();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM push_device WHERE account_id = ?::uuid", Integer.class, id))
+        .isZero();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT phone FROM payment WHERE booking_id = ?", String.class, past))
+        .isNull();
+    assertThat(
+            jdbc.queryForObject("SELECT text FROM rating WHERE booking_id = ?", String.class, past))
+        .isNull();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT stars FROM rating WHERE booking_id = ?", Integer.class, past))
+        .isEqualTo(4);
     // The booking stays as the accounting record.
-    assertThat(jdbc.queryForObject("SELECT count(*) FROM booking WHERE id = ?", Integer.class, past)).isEqualTo(1);
+    assertThat(
+            jdbc.queryForObject("SELECT count(*) FROM booking WHERE id = ?", Integer.class, past))
+        .isEqualTo(1);
     // Tracking and AI are told, ids only.
     assertThat(firstEventOn("core.user", id, "core.user.erased"))
         .doesNotContain(phone)
@@ -137,7 +161,9 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
 
   @Test
   void aSpecialistsErasureIsFiledForOperations() throws Exception {
-    erase(specialist.token()).andExpect(status().isAccepted()).andExpect(jsonPath("$.outcome").value("REQUESTED"));
+    erase(specialist.token())
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.outcome").value("REQUESTED"));
     erase(specialist.token()).andExpect(status().isAccepted());
     assertThat(
             jdbc.queryForObject(
@@ -145,7 +171,11 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
                 Integer.class,
                 specialist.id()))
         .isEqualTo(1);
-    assertThat(jdbc.queryForObject("SELECT status FROM user_account WHERE id = ?::uuid", String.class, specialist.id()))
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT status FROM user_account WHERE id = ?::uuid",
+                String.class,
+                specialist.id()))
         .isEqualTo("ACTIVE");
   }
 
@@ -171,7 +201,10 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
   }
 
   private String seeker(String phone, String name) throws Exception {
-    mvc.perform(post("/v1/signups").contentType(MediaType.APPLICATION_JSON).content(signup(phone, name)))
+    mvc.perform(
+            post("/v1/signups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(signup(phone, name)))
         .andExpect(status().isAccepted());
     String token = signIn(phone);
     mvc.perform(get("/v1/me").headers(bearer(token))).andExpect(status().isOk());

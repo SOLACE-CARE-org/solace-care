@@ -170,7 +170,9 @@ class Guests implements GuestAccess {
    * months after the last booking; D40). Each guest booking proves the phone again, so the last
    * proof is when the contact was last used.
    */
-  @org.springframework.scheduling.annotation.Scheduled(cron = "0 45 2 * * *", zone = "Africa/Douala")
+  @org.springframework.scheduling.annotation.Scheduled(
+      cron = "0 45 2 * * *",
+      zone = "Africa/Douala")
   void purgeOldContacts() {
     Instant now = clock.instant();
     Instant before = now.minus(retention);
