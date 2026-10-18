@@ -1,0 +1,292 @@
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { TrackingSchemas } from '../api/tracking-api';
+import {
+  button,
+  fn,
+  ok,
+  problem,
+  render,
+  route,
+  sees,
+  setUp,
+  stubDialogs,
+} from '../testing/harness';
+import { ModuleBuilderPage } from './module-builder.page';
+import { ModuleReviewPage } from './module-review.page';
+import { ModulesPage } from './modules.page';
+
+const mood: TrackingSchemas['Element'] = {
+  code: 'mood',
+  version: '1',
+  kind: 'DAY_STATE',
+  valueType: 'INT',
+  constraints: { min: 1, max: 5 },
+  inputView: 'scale_5',
+  icon: 'mood',
+  signals: ['daily_value'],
+  labels: { en: { name: 'Mood' }, fr: { name: 'Humeur' } },
+  minAppVersion: '1.0.0',
+};
+const stress: TrackingSchemas['Element'] = {
+  ...mood,
+  code: 'stress_level',
+  valueType: 'ENUM',
+  constraints: { values: ['low', 'some', 'high'] },
+  inputView: 'choice_chips',
+  labels: {
+    en: { name: 'Stress', values: { low: 'Low', some: 'Some', high: 'High' } },
+    fr: { name: 'Stress', values: { low: 'Faible', some: 'Un peu', high: 'Élevé' } },
+  },
+};
+
+const rows: TrackingSchemas['ModuleRow'][] = [
+  {
+    id: 'm1',
+    code: 'pcos',
+    accentColour: 'track-pink',
+    name: { en: 'PCOS & cycle', fr: 'SOPK et cycle' },
+    enrolled: 1240,
+    versions: [
+      { id: 'v11', number: '1.1', status: 'IN_REVIEW', elements: 6, rules: 4 },
+      { id: 'v1', number: '1', status: 'PUBLISHED', elements: 6, rules: 4 },
+    ],
+  },
+  {
+    id: 'm2',
+    code: 'stress',
+    accentColour: 'brand',
+    name: { en: 'Stress', fr: 'Stress' },
+    versions: [{ id: 's1', number: '1', status: 'DRAFT', elements: 3, rules: 0 }],
+  },
+];
+
+function draft(overrides: Partial<TrackingSchemas['ModuleVersion']> = {}) {
+  return {
+    id: 's1',
+    moduleId: 'm2',
+    moduleCode: 'stress',
+    accentColour: 'brand',
+    number: '1',
+    status: 'DRAFT',
+    name: { en: 'Stress', fr: 'Stress' },
+    description: { en: '', fr: '' },
+    audience: { en: '', fr: '' },
+    imageAlt: { en: '', fr: '' },
+    elements: [{ code: 'stress_level', version: '1', required: true, position: 0 }],
+    rules: [],
+    reviews: [],
+    problems: ['image'],
+    warnings: [],
+    draftedBy: 'Nadine Ebai',
+    canApprove: false,
+    ...overrides,
+  } as TrackingSchemas['ModuleVersion'];
+}
+
+describe('Tracking modules', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('lists modules with what is published and what is being worked on', async () => {
+    setUp(
+      ['CONTENT_EDITOR'],
+      {},
+      {
+        tracking: { GET: fn(route({ '/admin/v1/tracking/modules': () => ok(rows) })) },
+      },
+    );
+    const { root } = await render(ModulesPage);
+    await sees(root, 'PCOS & cycle');
+    expect(root.textContent).toContain('v1.1 in review');
+    expect(root.textContent).toContain('v1 draft');
+    expect(root.textContent).toContain('Never');
+    // Content editors look; only Operations and Super admins create.
+    expect(button(root, 'New module')).toBeUndefined();
+  });
+
+  it('creates a module and opens its first draft', async () => {
+    const tracking = {
+      GET: fn(route({ '/admin/v1/tracking/modules': () => ok([]) })),
+      POST: fn(() => ok(draft(), 201)),
+    };
+    setUp(['OPERATIONS'], {}, { tracking });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const { root, fixture, settle } = await render(ModulesPage);
+    stubDialogs(root);
+    await sees(root, 'No modules yet');
+    button(root, 'New module')!.click();
+    fixture.componentInstance.code.set('stress');
+    fixture.componentInstance.accent.set('track-gold');
+    await settle();
+    await fixture.componentInstance.create();
+    expect(tracking.POST).toHaveBeenCalledWith('/admin/v1/tracking/modules', {
+      body: { code: 'stress', accentColour: 'track-gold' },
+    });
+    expect(navigate).toHaveBeenCalledWith(['/modules/versions', 's1']);
+  });
+
+  it('says when the code is taken', async () => {
+    setUp(
+      ['OPERATIONS'],
+      {},
+      {
+        tracking: {
+          GET: fn(route({ '/admin/v1/tracking/modules': () => ok([]) })),
+          POST: fn(() => problem(409, 'resource.conflict', 'Taken')),
+        },
+      },
+    );
+    const { root, fixture, settle } = await render(ModulesPage);
+    stubDialogs(root);
+    fixture.componentInstance.code.set('stress');
+    await fixture.componentInstance.create();
+    await settle();
+    expect(root.textContent).toContain('A module with this code already exists.');
+  });
+
+  it('builds a draft: elements in order, then rules that cannot be submitted with problems', async () => {
+    const tracking = {
+      GET: fn(
+        route({
+          '/admin/v1/tracking/versions/{versionId}': () => ok(draft()),
+          '/admin/v1/tracking/elements': () => ok([mood, stress]),
+        }),
+      ),
+      PUT: fn(() => ok(draft())),
+      POST: fn(() => ok([])),
+    };
+    setUp(['OPERATIONS'], { GET: fn(() => problem(403, 'access.denied', 'No')) }, { tracking });
+    const { root, settle } = await render(ModuleBuilderPage, { id: 's1' });
+    await sees(root, 'Name and description');
+
+    button(root, '2 Elements')!.click();
+    await settle();
+    await sees(root, 'In this module · 1 of 6');
+    button(root, 'Add')!.click();
+    await settle();
+    expect(root.textContent).toContain('In this module · 2 of 6');
+    button(root, 'Next: rules')!.click();
+    await settle();
+    expect(tracking.PUT).toHaveBeenCalledWith('/admin/v1/tracking/versions/{versionId}/elements', {
+      params: { path: { versionId: 's1' } },
+      body: [
+        { code: 'stress_level', version: '1', required: true },
+        { code: 'mood', version: '1', required: true },
+      ],
+    });
+
+    await sees(root, 'Before it can be submitted');
+    expect(root.textContent).toContain('A card image');
+    expect(button(root, 'Submit for clinical review')!.disabled).toBe(true);
+  });
+
+  it('opens a published version read-only, with a way to start a new draft', async () => {
+    setUp(
+      ['OPERATIONS'],
+      { GET: fn(() => problem(403, 'access.denied', 'No')) },
+      {
+        tracking: {
+          GET: fn(
+            route({
+              '/admin/v1/tracking/versions/{versionId}': () => ok(draft({ status: 'PUBLISHED' })),
+              '/admin/v1/tracking/elements': () => ok([mood, stress]),
+            }),
+          ),
+        },
+      },
+    );
+    const { root } = await render(ModuleBuilderPage, { id: 's1' });
+    await sees(root, 'cannot be changed any more');
+    expect(button(root, 'Start a new draft')).toBeDefined();
+    expect(button(root, 'Save draft')).toBeUndefined();
+  });
+
+  it('approves only with every check ticked, and never your own draft', async () => {
+    const inReview = draft({
+      status: 'IN_REVIEW',
+      problems: [],
+      canApprove: true,
+      rules: [
+        {
+          id: 'r1',
+          code: 'stress.high_days',
+          conditions: [
+            {
+              signal: 'daily_value',
+              element: 'stress_level',
+              operator: 'days_in_window',
+              comparison: 'eq',
+              threshold: 'high',
+              count: 5,
+              window: 14,
+              minData: 7,
+            },
+          ],
+          outcome: 'INVITE',
+          specialtyCodes: ['counselling'],
+          messageEn: 'You logged high stress on {n} of the last {window} days.',
+          messageFr: 'Vous avez noté un stress élevé {n} jours sur les {window} derniers.',
+          cooldownDays: 30,
+        },
+      ],
+    });
+    const tracking = {
+      GET: fn(
+        route({
+          '/admin/v1/tracking/versions/{versionId}': () => ok(inReview),
+          '/admin/v1/tracking/modules': () => ok(rows),
+        }),
+      ),
+      POST: fn((path: string) =>
+        path.endsWith('/test-run')
+          ? ok([
+              { history: 'low_mood_two_weeks', ruleCode: 'stress.high_days', fires: true },
+              { history: 'good_mood', ruleCode: 'stress.high_days', fires: false },
+            ])
+          : ok({ ...inReview, approvedBy: 'Dr. Fomba Grace' }),
+      ),
+    };
+    setUp(['CLINICAL_REVIEWER'], {}, { tracking });
+    const { root, settle } = await render(ModuleReviewPage, { id: 's1' });
+    await sees(root, 'Stress · v1 for review');
+    await sees(root, 'v1 fires on 1 of 2.');
+    expect(root.textContent).toContain('stress.high_days, message');
+
+    const approve = button(root, 'Approve v1')!;
+    expect(approve.disabled).toBe(true);
+    for (const box of root.querySelectorAll<HTMLInputElement>('aside input[type=checkbox]')) {
+      box.click();
+    }
+    await settle();
+    expect(approve.disabled).toBe(false);
+    approve.click();
+    await settle();
+    expect(tracking.POST).toHaveBeenCalledWith('/admin/v1/tracking/versions/{versionId}/review', {
+      params: { path: { versionId: 's1' } },
+      body: { approve: true },
+    });
+
+    TestBed.resetTestingModule();
+    setUp(
+      ['CLINICAL_REVIEWER'],
+      {},
+      {
+        tracking: {
+          ...tracking,
+          GET: fn(
+            route({
+              '/admin/v1/tracking/versions/{versionId}': () =>
+                ok({ ...inReview, canApprove: false }),
+              '/admin/v1/tracking/modules': () => ok(rows),
+            }),
+          ),
+        },
+      },
+    );
+    const own = await render(ModuleReviewPage, { id: 's1' });
+    await sees(own.root, 'The person who drafted a version cannot approve it.');
+    expect(button(own.root, 'Approve v1')!.disabled).toBe(true);
+  });
+});

@@ -7,6 +7,7 @@ import fr from '@solace/i18n/fr.json';
 import { vi } from 'vitest';
 
 import { CoreApi } from '../api/core-api';
+import { TrackingApi } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
 
 /** Shared set-up for the admin screen specs: a stubbed Core client and a signed-in staff member. */
@@ -37,7 +38,7 @@ export function route(answers: Record<string, AnyFn>): AnyFn {
 export function setUp(
   roles: string[],
   client: Client,
-  options: { sub?: string; routes?: Routes; extra?: Partial<CoreApi> } = {},
+  options: { sub?: string; routes?: Routes; extra?: Partial<CoreApi>; tracking?: Client } = {},
 ) {
   TestBed.configureTestingModule({
     imports: [
@@ -50,6 +51,10 @@ export function setUp(
       provideZonelessChangeDetection(),
       provideRouter(options.routes ?? []),
       { provide: CoreApi, useValue: { client, ...options.extra } },
+      {
+        provide: TrackingApi,
+        useValue: { client: options.tracking ?? {}, imageUrl: (id: string) => `/images/${id}` },
+      },
     ],
   });
   TestBed.inject(StaffSession).fromToken({

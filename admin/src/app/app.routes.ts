@@ -13,6 +13,10 @@ import { OverviewPage } from './overview/overview.page';
 import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
+import { environment } from '../environments/environment';
+import { ModuleBuilderPage } from './modules/module-builder.page';
+import { ModuleReviewPage } from './modules/module-review.page';
+import { ModulesPage } from './modules/modules.page';
 import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
 import { NoAccess } from './pages/no-access';
@@ -44,6 +48,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   audit: AuditLogPage,
   team: TeamPage,
   settings: SettingsPage,
+  modules: ModulesPage,
 };
 
 /**
@@ -92,6 +97,21 @@ export const routes: Routes = [
         component: PayoutRunPage,
         canActivate: [areaGuard('payments')],
       },
+      // The module builder ships behind its Phase 2 flag, like its sidebar entry.
+      ...(environment.flags.trackingModules
+        ? [
+            {
+              path: 'modules/versions/:id',
+              component: ModuleBuilderPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            {
+              path: 'modules/versions/:id/review',
+              component: ModuleReviewPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+          ]
+        : []),
       { path: 'no-access', component: NoAccess },
       { path: '**', component: NotBuilt },
     ],
