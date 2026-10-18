@@ -7,10 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSessionLanguages } from '@/api/account';
 import { useSpecialistProfile } from '@/api/catalogue';
+import { useSpecialistReviews } from '@/api/reviews';
 import i18n from '@/i18n';
 import { capitalised, initials, money, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
 import { BackButton } from '@/ui/ProgressSteps';
+import { RatingBadge, Stars } from '@/ui/Stars';
 import { Text } from '@/ui/Text';
 
 /**
@@ -25,6 +27,7 @@ export default function SpecialistProfileScreen() {
   const languages = useSessionLanguages(lang);
   const nameOf = (code: string) => languages.data?.find((l) => l.code === code)?.name ?? code;
   const p = profile.data;
+  const reviews = useSpecialistReviews(id);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -47,6 +50,7 @@ export default function SpecialistProfileScreen() {
                     {p.professionLabel}
                   </Text>
                 ) : null}
+                <RatingBadge rating={p.rating} />
                 <View style={styles.verified}>
                   <ShieldCheck size={16} strokeWidth={1.8} color={colors.brand} aria-hidden />
                   <Text variant="meta" color={colors.brand} style={styles.strong}>
@@ -60,7 +64,12 @@ export default function SpecialistProfileScreen() {
               {p.bio}
             </Text>
 
-            <Text variant="meta" color={colors.inkMuted} style={styles.overline} accessibilityRole="header">
+            <Text
+              variant="meta"
+              color={colors.inkMuted}
+              style={styles.overline}
+              accessibilityRole="header"
+            >
               {t('specialistProfile.languages')}
             </Text>
             <View style={styles.languages}>
@@ -77,7 +86,12 @@ export default function SpecialistProfileScreen() {
               ))}
             </View>
 
-            <Text variant="meta" color={colors.inkMuted} style={styles.overline} accessibilityRole="header">
+            <Text
+              variant="meta"
+              color={colors.inkMuted}
+              style={styles.overline}
+              accessibilityRole="header"
+            >
               {t('specialistProfile.sessions')}
             </Text>
             <View style={styles.sessions}>
@@ -113,6 +127,29 @@ export default function SpecialistProfileScreen() {
                 </Text>
               ))}
             </View>
+            {reviews.data && reviews.data.length > 0 ? (
+              <>
+                <Text
+                  variant="meta"
+                  color={colors.inkMuted}
+                  style={styles.overline}
+                  accessibilityRole="header"
+                >
+                  {t('reviews.title')}
+                </Text>
+                {reviews.data.slice(0, 3).map((r) => (
+                  <View key={r.id} style={styles.review}>
+                    <Stars value={r.stars} />
+                    <Text variant="body">{r.text}</Text>
+                    {r.reply ? (
+                      <Text variant="meta" color={colors.inkMuted}>
+                        {r.reply}
+                      </Text>
+                    ) : null}
+                  </View>
+                ))}
+              </>
+            ) : null}
           </ScrollView>
 
           <View style={styles.footer}>
@@ -128,7 +165,10 @@ export default function SpecialistProfileScreen() {
                 </>
               ) : null}
             </View>
-            <Button label={t('specialistProfile.book')} onPress={() => router.push(`/book/${p.id}`)} />
+            <Button
+              label={t('specialistProfile.book')}
+              onPress={() => router.push(`/book/${p.id}`)}
+            />
           </View>
         </>
       ) : profile.isError ? (
@@ -193,6 +233,14 @@ const styles = StyleSheet.create({
   bio: {
     fontSize: 16,
     lineHeight: 24,
+  },
+  review: {
+    gap: space.space6,
+    padding: space.space14,
+    borderRadius: radius.radius14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surfaceCard,
   },
   overline: {
     fontFamily: fontFamily.body[700],

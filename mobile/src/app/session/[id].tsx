@@ -143,6 +143,13 @@ export default function SessionDetail() {
           </View>
         ) : null}
 
+        {b.status === 'COMPLETED' && b.rated === false ? (
+          <Button
+            label={t('sessionsRate.rate')}
+            onPress={() => router.push({ pathname: '/rate/[id]', params: { id: b.id } })}
+          />
+        ) : null}
+
         {changeable(b) ? (
           <Button
             variant="secondary"

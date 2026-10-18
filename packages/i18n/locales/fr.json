@@ -757,5 +757,47 @@
     "quietNext": "Votre prochaine séance est {{when}}. Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
     "quietNone": "Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
     "openCalendar": "Ouvrir mon agenda"
-  }
+  },
+  "rate": {
+    "skip": "Passer",
+    "title": "Comment s'est passée votre séance avec {{name}} ?",
+    "outOf": "Note sur 5",
+    "star_one": "{{count}} étoile",
+    "star_other": "{{count}} étoiles",
+    "standOut": "Qu'avez-vous apprécié ?",
+    "LISTENED": "Écoute attentive",
+    "PRACTICAL_TOOLS": "Outils pratiques",
+    "CALL_QUALITY": "Bonne qualité d'appel",
+    "ON_TIME": "Ponctuel",
+    "write": "Écrire un avis",
+    "optional": "(facultatif)",
+    "placeholder": "Affiché sur son profil sans votre nom",
+    "privateLink": "Un problème ? Dites-le à l'équipe Solace en privé",
+    "privateLabel": "Pour l'équipe Solace uniquement",
+    "submit": "Envoyer",
+    "followUp": "Réserver une autre séance",
+    "thanks": "Merci. Votre avis apparaîtra après vérification par Solace.",
+    "thanksStars": "Merci d'avoir noté votre séance."
+  },
+  "sessionsRate": {
+    "rate": "Évaluer",
+    "rated": "Évaluée"
+  },
+  "reviews": {
+    "title": "Avis",
+    "back": "Retour au profil",
+    "from_one": "Sur {{count}} séance notée",
+    "from_other": "Sur {{count}} séances notées",
+    "none": "Pas encore de note.",
+    "note": "Les avis sont anonymes et vérifiés par Solace avant d'apparaître sur votre profil.",
+    "meta": "{{date}} · {{language}}",
+    "replyPublicly": "Répondre publiquement",
+    "yourReply": "Votre réponse",
+    "replyLabel": "Votre réponse publique",
+    "send": "Publier la réponse",
+    "cancel": "Annuler",
+    "empty": "Les avis publiés apparaissent ici."
+  },
+  "ratingShort": "{{average}} ({{count}})",
+  "ratingLabel": "Note de {{average}} sur 5 pour {{count}} séances"
 }

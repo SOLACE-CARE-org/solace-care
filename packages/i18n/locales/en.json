@@ -757,5 +757,47 @@
     "quietNext": "Your next session is {{when}}. Seekers can book you while you're accepting new bookings.",
     "quietNone": "Seekers can book you while you're accepting new bookings.",
     "openCalendar": "Open my calendar"
-  }
+  },
+  "rate": {
+    "skip": "Skip",
+    "title": "How was your session with {{name}}?",
+    "outOf": "Rating out of 5",
+    "star_one": "{{count}} star",
+    "star_other": "{{count}} stars",
+    "standOut": "What stood out?",
+    "LISTENED": "Felt listened to",
+    "PRACTICAL_TOOLS": "Practical tools",
+    "CALL_QUALITY": "Good call quality",
+    "ON_TIME": "On time",
+    "write": "Write a review",
+    "optional": "(optional)",
+    "placeholder": "Shown on their profile without your name",
+    "privateLink": "Something went wrong? Tell the Solace team privately",
+    "privateLabel": "For the Solace team only",
+    "submit": "Submit",
+    "followUp": "Book a follow-up",
+    "thanks": "Thank you. Your review will appear once Solace has checked it.",
+    "thanksStars": "Thank you for rating your session."
+  },
+  "sessionsRate": {
+    "rate": "Rate",
+    "rated": "Rated"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "back": "Back to profile",
+    "from_one": "From {{count}} rated session",
+    "from_other": "From {{count}} rated sessions",
+    "none": "No ratings yet.",
+    "note": "Reviews are anonymous and checked by Solace before they appear on your profile.",
+    "meta": "{{date}} · {{language}}",
+    "replyPublicly": "Reply publicly",
+    "yourReply": "Your reply",
+    "replyLabel": "Your public reply",
+    "send": "Post reply",
+    "cancel": "Cancel",
+    "empty": "Published reviews appear here."
+  },
+  "ratingShort": "{{average}} ({{count}})",
+  "ratingLabel": "Rated {{average}} out of 5 from {{count}} sessions"
 }

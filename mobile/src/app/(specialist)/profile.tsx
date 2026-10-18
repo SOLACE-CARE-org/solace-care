@@ -87,7 +87,9 @@ export default function SpecialistProfileTab() {
               {t('specialistProfileTab.draftBody')}
             </Text>
             <TextField
-              label={t('specialistProfileTab.draftLabel', { language: languageName(pending.language) })}
+              label={t('specialistProfileTab.draftLabel', {
+                language: languageName(pending.language),
+              })}
               value={draft ?? pending.text}
               onChangeText={setDraft}
               multiline
@@ -131,6 +133,11 @@ export default function SpecialistProfileTab() {
         <View style={styles.card}>
           <Row label={t('specialistProfileTab.payout')} value={payout} />
         </View>
+        <Button
+          variant="secondary"
+          label={t('reviews.title')}
+          onPress={() => router.push('/reviews')}
+        />
 
         <Pressable
           accessibilityRole="button"
@@ -147,9 +154,21 @@ export default function SpecialistProfileTab() {
   );
 }
 
-function Row({ label, value, divider = false }: { label: string; value: string; divider?: boolean }) {
+function Row({
+  label,
+  value,
+  divider = false,
+}: {
+  label: string;
+  value: string;
+  divider?: boolean;
+}) {
   return (
-    <View style={[styles.row, divider && styles.divider]} accessible accessibilityLabel={`${label}: ${value}`}>
+    <View
+      style={[styles.row, divider && styles.divider]}
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+    >
       <Text variant="label" style={styles.rowLabel}>
         {label}
       </Text>

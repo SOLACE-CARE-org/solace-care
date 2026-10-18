@@ -250,7 +250,20 @@ function PastRow({
           {line}
         </Text>
       </View>
-      <ChevronRight size={20} strokeWidth={2} color={colors.inkMuted} aria-hidden />
+      {b.status === 'COMPLETED' && b.rated === false ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('sessionsRate.rate')}, ${title}`}
+          onPress={() => router.push({ pathname: '/rate/[id]', params: { id: b.id } })}
+          style={styles.rate}
+        >
+          <Text variant="label" color={colors.brand} style={styles.strong}>
+            {t('sessionsRate.rate')}
+          </Text>
+        </Pressable>
+      ) : (
+        <ChevronRight size={20} strokeWidth={2} color={colors.inkMuted} aria-hidden />
+      )}
     </Pressable>
   );
 }
@@ -315,6 +328,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.surfaceCard,
+  },
+  rate: {
+    minHeight: size.sizeTap,
+    justifyContent: 'center',
+    paddingHorizontal: space.space14,
+    borderRadius: radius.radius12,
+    borderWidth: 1,
+    borderColor: colors.brand,
   },
   pastCard: {
     paddingVertical: space.space14,

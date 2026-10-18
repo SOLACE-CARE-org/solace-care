@@ -13,6 +13,7 @@ import { initials, money, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
 import { Chip } from '@/ui/Chip';
 import { BackButton } from '@/ui/ProgressSteps';
+import { RatingBadge } from '@/ui/Stars';
 import { Text } from '@/ui/Text';
 
 const MODALITIES: Modality[] = ['AUDIO', 'VIDEO'];
@@ -73,11 +74,20 @@ export default function Search() {
       </View>
 
       <View style={styles.field}>
-        <Text variant="label" color={colors.inkMuted} style={styles.label} nativeID="language-label">
+        <Text
+          variant="label"
+          color={colors.inkMuted}
+          style={styles.label}
+          nativeID="language-label"
+        >
           {t('search.languageLabel')}
         </Text>
         <View style={styles.chips}>
-          <View accessibilityRole="radiogroup" accessibilityLabelledBy="language-label" style={styles.chipGroup}>
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabelledBy="language-label"
+            style={styles.chipGroup}
+          >
             {(languages.data ?? []).map((l) => (
               <Chip
                 key={l.code}
@@ -191,11 +201,20 @@ function Card({
     price: money(card.offering.price, lang),
     minutes: card.offering.durationMinutes,
   });
-  const next = card.nextAvailable ? t('search.next', { when: whenLabel(card.nextAvailable, t, lang) }) : null;
+  const next = card.nextAvailable
+    ? t('search.next', { when: whenLabel(card.nextAvailable, t, lang) })
+    : null;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={[card.fullName, card.professionLabel, t('search.verified'), languages, next, price]
+      accessibilityLabel={[
+        card.fullName,
+        card.professionLabel,
+        t('search.verified'),
+        languages,
+        next,
+        price,
+      ]
         .filter(Boolean)
         .join('. ')}
       onPress={onPress}
@@ -214,6 +233,7 @@ function Card({
               {card.professionLabel}
             </Text>
           ) : null}
+          <RatingBadge rating={card.rating} />
         </View>
         <View style={styles.verified}>
           <ShieldCheck size={16} strokeWidth={1.8} color={colors.brand} aria-hidden />
