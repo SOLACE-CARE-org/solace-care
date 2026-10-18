@@ -861,5 +861,28 @@
     "again": "Again",
     "offline": "Emergency numbers here work even without internet.",
     "close": "Close"
+  },
+  "privacy": {
+    "title": "Privacy & data",
+    "what": "What Solace may do",
+    "TRACKING": "Health tracking",
+    "HEALTH_CHECK": "Health check answers",
+    "AI_ASSIST": "AI assistance",
+    "SPECIALIST_SHARING": "Share summaries with specialists",
+    "AI_SCRIBE": "AI session notes",
+    "askEachBooking": "Ask me each booking",
+    "yourData": "Your data",
+    "download": "Download a copy of my data",
+    "preparing": "Preparing your copy. We'll tell you when it's ready.",
+    "ready": "Your copy is ready until {{date}}.",
+    "save": "Save the copy",
+    "notice": "Privacy notice",
+    "delete": "Delete my account and data",
+    "deleteNote": "Deleting removes your tracking, health check answers and account. Signed session notes are kept only as long as medical-record law requires.",
+    "confirmTitle": "Delete your account?",
+    "confirmBody": "This can't be undone. You'll be signed out on every device.",
+    "confirmDelete": "Delete",
+    "cancel": "Cancel",
+    "requested": "We've received your request. The Solace team will be in touch about your account."
   }
 }

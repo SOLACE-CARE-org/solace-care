@@ -148,6 +148,11 @@ export default function SpecialistProfileTab() {
           label={t('you.settings')}
           onPress={() => router.push('/settings')}
         />
+        <Button
+          variant="secondary"
+          label={t('you.privacy')}
+          onPress={() => router.push('/privacy')}
+        />
 
         <Pressable
           accessibilityRole="button"

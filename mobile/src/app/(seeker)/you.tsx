@@ -54,6 +54,7 @@ export default function You() {
             to="/settings"
             divider
           />
+          <Row label={t('you.privacy')} to="/privacy" divider />
         </View>
 
         <CrisisButton label={t('crisis.button')} onPress={() => router.push('/crisis')} />

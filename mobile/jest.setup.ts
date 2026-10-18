@@ -51,3 +51,25 @@ jest.mock('expo-notifications', () => ({
   getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
+
+// Privacy (epic 11): files and the share sheet have no native modules under Jest.
+jest.mock('expo-sharing', () => ({ shareAsync: jest.fn(async () => undefined) }));
+jest.mock('expo-file-system', () => {
+  const written: Record<string, string> = {};
+  class File {
+    uri: string;
+    constructor(_dir: unknown, name: string) {
+      this.uri = `file:///cache/${name}`;
+    }
+    get exists() {
+      return this.uri in written;
+    }
+    delete() {
+      delete written[this.uri];
+    }
+    write(text: string) {
+      written[this.uri] = text;
+    }
+  }
+  return { File, Paths: { cache: 'cache' }, __written: written };
+});

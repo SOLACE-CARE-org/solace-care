@@ -861,5 +861,28 @@
     "again": "Recommencer",
     "offline": "Les numéros d'urgence fonctionnent même sans internet.",
     "close": "Fermer"
+  },
+  "privacy": {
+    "title": "Confidentialité et données",
+    "what": "Ce que Solace peut faire",
+    "TRACKING": "Suivi de santé",
+    "HEALTH_CHECK": "Réponses au bilan de santé",
+    "AI_ASSIST": "Assistance IA",
+    "SPECIALIST_SHARING": "Partager des résumés avec les spécialistes",
+    "AI_SCRIBE": "Notes de séance par IA",
+    "askEachBooking": "Me demander à chaque réservation",
+    "yourData": "Vos données",
+    "download": "Télécharger une copie de mes données",
+    "preparing": "Votre copie est en préparation. Nous vous préviendrons quand elle sera prête.",
+    "ready": "Votre copie est disponible jusqu'au {{date}}.",
+    "save": "Enregistrer la copie",
+    "notice": "Avis de confidentialité",
+    "delete": "Supprimer mon compte et mes données",
+    "deleteNote": "La suppression efface votre suivi, les réponses de votre bilan de santé et votre compte. Les notes de séance signées sont gardées seulement le temps exigé par la loi sur les dossiers médicaux.",
+    "confirmTitle": "Supprimer votre compte ?",
+    "confirmBody": "C'est définitif. Vous serez déconnecté·e sur tous vos appareils.",
+    "confirmDelete": "Supprimer",
+    "cancel": "Annuler",
+    "requested": "Nous avons bien reçu votre demande. L'équipe Solace vous contactera au sujet de votre compte."
   }
 }
