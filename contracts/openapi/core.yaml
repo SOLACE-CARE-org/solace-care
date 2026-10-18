@@ -898,6 +898,137 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/catalogue/specialties:
+    get:
+      operationId: listSpecialties
+      summary: Specialties in the caller's language (D31)
+      tags: [catalogue]
+      security: []
+      responses:
+        "200":
+          description: Enabled specialties in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Specialty"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/catalogue/specialists:
+    get:
+      operationId: searchSpecialists
+      summary: Find a specialist (Search screen); open to guests
+      description: |
+        The session language comes first: only specialists verified at Professional level or above
+        in it are returned (System Design, Bilingual design). Ordered by relevance to the text when
+        there is one, then the soonest availability. Labels are in the caller's language.
+      tags: [catalogue]
+      security: []
+      parameters:
+        - name: language
+          in: query
+          required: true
+          description: Session language code from /v1/catalogue/session-languages.
+          schema:
+            type: string
+        - name: modality
+          in: query
+          schema:
+            $ref: "#/components/schemas/Modality"
+        - name: q
+          in: query
+          description: What the seeker would like help with, in their words; matched against focus areas, professions, names and bios in EN and FR.
+          schema:
+            type: string
+            maxLength: 120
+        - name: specialty
+          in: query
+          schema:
+            type: string
+        - name: maxPrice
+          in: query
+          description: Whole FCFA.
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Matching specialists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistSearchResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/catalogue/specialists/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+    get:
+      operationId: getSpecialistProfile
+      summary: A listed specialist's public profile (Specialist screen); open to guests
+      tags: [catalogue]
+      security: []
+      responses:
+        "200":
+          description: The profile, in the caller's language
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistProfile"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/me/specialist-application/bio-confirmation:
+    post:
+      operationId: confirmDraftedBio
+      summary: The specialist checks the bio Solace drafted in their other language (D30)
+      description: Confirms the draft as it is, or with the specialist's corrections. Until then, search does not list the profile.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                text:
+                  description: The corrected text; leave out to confirm the draft unchanged.
+                  type: string
+                  minLength: 1
+                  maxLength: 600
+      responses:
+        "200":
+          description: Confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialistApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -1442,6 +1573,18 @@ components:
         reviewNote:
           description: The reviewer's reason, shown when changes are requested or the application is rejected. In the reviewer's words, not translated.
           type: string
+        draftedBio:
+          description: The bio Solace drafted in the specialist's other language (D30), for them to check before the profile is listed.
+          type: object
+          additionalProperties: false
+          required: [language, text, confirmed]
+          properties:
+            language:
+              $ref: "#/components/schemas/AppLanguage"
+            text:
+              type: string
+            confirmed:
+              type: boolean
     WeeklyHours:
       type: object
       additionalProperties: false
@@ -1753,3 +1896,106 @@ components:
           type: string
         status:
           $ref: "#/components/schemas/ApplicationStatus"
+    Specialty:
+      type: object
+      additionalProperties: false
+      required: [code, label]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+    BookableLanguage:
+      description: A language the specialist was verified in, at a bookable level.
+      type: object
+      additionalProperties: false
+      required: [code, level]
+      properties:
+        code:
+          type: string
+        level:
+          type: string
+          enum: [NATIVE, FLUENT, PROFESSIONAL]
+    PublicOffering:
+      type: object
+      additionalProperties: false
+      required: [modality, durationMinutes, price]
+      properties:
+        modality:
+          $ref: "#/components/schemas/Modality"
+        durationMinutes:
+          type: integer
+        price:
+          description: Whole FCFA.
+          type: integer
+    SpecialistCard:
+      type: object
+      additionalProperties: false
+      required: [id, fullName, focusAreas, languages, offering]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        professionLabel:
+          type: string
+        focusAreas:
+          description: Labels in the caller's language.
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookableLanguage"
+        offering:
+          description: The session shown on the card; the requested modality, else the cheaper one.
+          $ref: "#/components/schemas/PublicOffering"
+        nextAvailable:
+          description: The soonest start this specialist could take, if any in the next two weeks.
+          type: string
+          format: date-time
+    SpecialistSearchResult:
+      type: object
+      additionalProperties: false
+      required: [items, hasMore]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialistCard"
+        hasMore:
+          type: boolean
+    SpecialistProfile:
+      type: object
+      additionalProperties: false
+      required: [id, fullName, bio, languages, offerings, focusAreas]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        professionLabel:
+          type: string
+        specialty:
+          type: string
+        bio:
+          description: In the caller's language.
+          type: string
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookableLanguage"
+        offerings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOffering"
+        focusAreas:
+          type: array
+          items:
+            type: string
+        nextAvailable:
+          type: string
+          format: date-time

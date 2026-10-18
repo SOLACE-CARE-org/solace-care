@@ -165,6 +165,12 @@ Every pair now meets WCAG 2.1 AA.
 - Until Phase 3 drafts it, the reviewer writes the missing language during review. It is marked as a Solace draft.
 - The specialist checks the draft before their profile goes live, as SpecProfessional promises ("We'll draft the ... version for you to check before it goes live"). The check is built with the specialist's Profile tab; until it is done, search does not list the profile (epic 3).
 
+**D31. Specialties for the catalogue and search (epic 3).** Working default, 18 Oct 2026; any of it can change.
+- Specialties are catalogue rows in EN and FR (System Design, data model `specialty`): clinical psychology, counselling, psychiatry, gynaecology, endocrinology. The last two stay disabled with their professions (D26). Admins will manage the list (Catalogue and policies).
+- Each profession belongs to one specialty, and a specialist's sessions carry it. A specialist with several specialties waits for profile editing.
+- Search lists only approved specialists with a verified level of Professional or above in the chosen session language, an enabled session, and a bio in EN and FR whose Solace draft, if any, the specialist has confirmed (D30).
+- "Next available" comes from weekly hours, notice and break until Scheduling (epic 4) subtracts bookings and holds. Ratings appear with Ratings and reviews (epic 8).
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
