@@ -34,6 +34,9 @@ public interface GuestAccess {
   /** The guest's app language, for messages about their booking. */
   Optional<Locale> locale(UUID guestContactId);
 
+  /** The phone the guest proved, for paying with the same number. */
+  Optional<String> phone(UUID guestContactId);
+
   /** The masked phone, as GuestJoin shows it ("+237 6 •• •• •• 00"). */
   Optional<String> maskedPhone(UUID guestContactId);
 

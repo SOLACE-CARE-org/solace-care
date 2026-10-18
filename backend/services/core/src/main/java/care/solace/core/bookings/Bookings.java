@@ -148,7 +148,13 @@ class Bookings implements BookingRecords {
               if (!store.cancel(b.id(), ACTIVE, by.name(), reason, quote.refundAmount(), now)) {
                 return false;
               }
-              events.publishEvent(new BookingCancelled(b.id(), quote.refundAmount(), by.name()));
+              events.publishEvent(
+                  new BookingCancelled(
+                      b.id(),
+                      b.specialistId(),
+                      quote.refundAmount(),
+                      by.name(),
+                      b.policyVersion()));
               events.publishEvent(
                   Events.envelope(
                       "core.booking.cancelled",
@@ -234,14 +240,32 @@ class Bookings implements BookingRecords {
                   bookingId, List.of("CONFIRMED", "IN_PROGRESS"), "COMPLETED", null, now)) {
                 return false;
               }
-              store.find(bookingId).ifPresent(b -> publish("core.booking.completed", b));
+              store
+                  .find(bookingId)
+                  .ifPresent(
+                      b -> {
+                        events.publishEvent(new BookingCompleted(b.id(), b.specialistId(), now));
+                        publish("core.booking.completed", b);
+                      });
               return true;
             }));
   }
 
   @Override
   public boolean noShow(UUID bookingId, NoShowBy who, Instant now) {
-    return store.move(bookingId, List.of("CONFIRMED", "IN_PROGRESS"), "NO_SHOW", null, now);
+    return Boolean.TRUE.equals(
+        transactions.execute(
+            s -> {
+              if (!store.move(
+                  bookingId, List.of("CONFIRMED", "IN_PROGRESS"), "NO_SHOW", null, now)) {
+                return false;
+              }
+              var b = store.find(bookingId).orElseThrow();
+              events.publishEvent(
+                  new BookingNoShow(
+                      bookingId, who, noShowRefundPercent(bookingId, who), b.policyVersion(), now));
+              return true;
+            }));
   }
 
   @Override

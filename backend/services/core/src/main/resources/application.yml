@@ -78,6 +78,8 @@ solace:
       - /v1/slot-holds/**
       # Guests have no Keycloak token; Core checks their booking-scoped token itself (D34).
       - /v1/guest/**
+      # The aggregator has no token either; Core checks each webhook's signature (D35).
+      - /v1/webhooks/payments/**
       - /v1/catalogue/**
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
@@ -88,6 +90,14 @@ solace:
     # nothing is set here and Core will not start without one: local runs and the dev cluster set
     # "logging", which writes messages to the log. Never set "logging" anywhere real people are.
     sender: ${SOLACE_NOTIFICATIONS_SENDER:}
+  payments:
+    # The aggregator adapter (D35): notchpay, or sandbox where no real money may move. Nothing is
+    # set here, so Core will not start without a choice: local runs and the dev cluster set sandbox.
+    provider: ${SOLACE_PAYMENTS_PROVIDER:}
+    notchpay:
+      public-key: ${SOLACE_PAYMENTS_NOTCHPAY_PUBLIC_KEY:}
+      private-key: ${SOLACE_PAYMENTS_NOTCHPAY_PRIVATE_KEY:}
+      webhook-secret: ${SOLACE_PAYMENTS_NOTCHPAY_WEBHOOK_SECRET:}
   specialists:
     pricing:
       # SpecServices' [Min] and [Max]: 5,000 to 20,000 FCFA per session (D27). Settings, not constants.

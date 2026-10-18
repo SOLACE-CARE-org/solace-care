@@ -16,6 +16,17 @@ public interface SpecialistOffers {
   /** Name and profession label as seekers see them, listed or not (for past bookings). */
   Optional<Summary> summary(UUID specialistId, Locale viewer);
 
+  /** Solace's fee on each completed session, in percent (D28). */
+  java.math.BigDecimal feePercent();
+
+  /** Where the specialist is paid; empty until set, or for a method payouts cannot use yet. */
+  Optional<PayoutDetails> payoutDetails(UUID specialistId);
+
+  /**
+   * @param method MTN_MOMO or ORANGE_MONEY
+   */
+  record PayoutDetails(String method, String phone, java.time.Instant savedAt) {}
+
   record Offer(String modality, int durationMinutes, long price) {}
 
   record Summary(String fullName, String professionLabel) {}

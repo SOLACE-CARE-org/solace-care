@@ -18,6 +18,8 @@ configMapGenerator:
       # No SMS or email provider yet: Core writes messages, sign-in codes included, to its log.
       # Dev only. Staging and prod set no sender, so Core refuses to start until one exists.
       - SOLACE_NOTIFICATIONS_SENDER=logging
+      # No real money in dev: the sandbox aggregator (D35). Staging and prod set notchpay and its keys.
+      - SOLACE_PAYMENTS_PROVIDER=sandbox
       - SOLACE_ADMIN_ORIGIN=https://admin.dev.solace.example
   - name: admin-settings
     behavior: merge

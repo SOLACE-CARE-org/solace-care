@@ -14,7 +14,7 @@ The register of every way Solace processes personal data, for Cameroon's Law No.
 | SMS provider | Sends sign-in codes and guest notifications | Open (contract in Phase 0, outside engineering) |
 | Email provider | Codes, notifications, staff account emails | Open |
 | Push notifications | Apple (APNs) and Google (FCM), possibly through a push service | Open |
-| Mobile-money aggregator | MTN MoMo and Orange Money charges, refunds, payouts (D13) | Open (decisions.md) |
+| Mobile-money aggregator | Notch Pay (D35): MTN MoMo and Orange Money charges; refunds and payouts as transfers. Receives the payer's or specialist's phone, the amount and Solace's reference | Chosen; contract and data-processing terms open (**Counsel**), and whether it processes in Cameroon |
 | Media server | LiveKit, self-hosted or LiveKit Cloud | Open, follows hosting |
 | AI model vendors | Safety monitor classifier (Phase 1); later AI features (Phase 3, 4) | Open (decisions.md); see AI-1 in the AI threat model |
 
@@ -115,7 +115,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Charge for sessions, hold funds until completion, refund, pay specialists |
 | People | Seekers, guests, specialists |
-| Data | Amounts, method (MoMo, Orange Money, later card), provider references, status, ledger entries, refund proposals and approvals (two people, D14), payout runs. Card data never touches Solace (System Design) |
+| Data | Amounts, method (MoMo, Orange Money, later card), the payer's wallet number (kept to send a refund back to the same wallet), the specialist's payout number, provider references, status, ledger entries, refund proposals and approvals (two people, D14), payout runs, webhook event ids, daily reconciliation results. Card data never touches Solace (System Design). Staff screens show wallet numbers masked |
 | Where | Core database |
 | Recipients | Mobile-money aggregator; later a card PSP |
 | Retention | Accounting-law period (likely the OHADA 10 years; **Counsel**) |

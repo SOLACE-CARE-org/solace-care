@@ -167,12 +167,16 @@ class Guests implements GuestAccess {
   }
 
   @Override
-  public Optional<String> maskedPhone(UUID guestContactId) {
+  public Optional<String> phone(UUID guestContactId) {
     return db.sql("SELECT phone FROM guest_contact WHERE id = :id")
         .param("id", guestContactId)
         .query(String.class)
-        .optional()
-        .map(Guests::mask);
+        .optional();
+  }
+
+  @Override
+  public Optional<String> maskedPhone(UUID guestContactId) {
+    return phone(guestContactId).map(Guests::mask);
   }
 
   /**

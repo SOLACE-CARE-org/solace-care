@@ -185,6 +185,13 @@ Every pair now meets WCAG 2.1 AA.
 - Guest calls go to `/v1/guest/**`, open at the gateway; Core checks the guest token itself.
 - When a member's first sign-in proves the same phone or email (`ContactVerified`), their guest bookings move into the account.
 
+**D35. Payments: aggregator, cadence and who approves what (epic 6).** Taken 18 Oct 2026 on the owner's instruction to choose the best option where the specs are open.
+- **Aggregator:** Notch Pay is the first adapter behind the provider port. Of the Cameroon-focused aggregators checked, it documents MTN MoMo and Orange Money collection, transfers to both wallets (used for refunds and payouts), signed webhooks (HMAC-SHA256 of the raw body in `X-Notch-Signature`) with retries, and a test mode. Its docs show no refund call, so a refund is a transfer back to the wallet that paid. A `sandbox` adapter serves local development and tests; `solace.payments.provider` picks one. Cards stay a later second adapter, behind the `cardPayments` flag.
+- **Payout cadence:** twice a month, the 1st to the 15th and the 16th to the month's end, as the Payout run screen shows. `solace.payments.payout-period` is a setting. Core drafts each run when its period closes; a Finance member submits it and a different Finance member or a Super admin approves and sends it (D14). Pay out now on Earnings stays off (`payoutOnRequest` flag): an off-cycle payout would bypass the two-person run.
+- **Refunds proposed by policy:** when a paid booking is cancelled or ends in a no-show, Core proposes the refund the booking's policy gives (D33), as the system. One Finance member then approves or declines it; they are the second person, because nobody on staff proposed it. A refund proposed by a staff member (a dispute) still needs a different Finance member to approve it.
+- **Retained money:** what a policy does not refund goes to the specialist like a completed session, less Solace's fee (D28).
+- **Fee snapshot:** the fee percent in force when the payment is taken is kept with the payment; a later change to the fee does not change it.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
@@ -192,7 +199,6 @@ None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
 | Question | Blocks |
 | --- | --- |
 | Hosting: an in-country data centre, or a regional cloud with transfer authorisation? Needs a Cameroonian data-protection lawyer | Phase 0 gate (clusters) |
-| Mobile-money aggregator and payout cadence (the commission is 20% for now, D28) | Phase 1, payments epic |
 | AI vendors that are acceptable under the transfer rules | Phase 3 |
 | Do physical-health specialists (gynaecology, endocrinology) join before Phase 2? | Phase 2 PCOS invites |
 | Crisis on-call staffing and hours | Public launch |

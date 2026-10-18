@@ -13,11 +13,35 @@ class Offers implements SpecialistOffers {
   private final DirectoryStore directory;
   private final ApplicationStore applications;
   private final Catalogue catalogue;
+  private final SpecialistSettings settings;
 
-  Offers(DirectoryStore directory, ApplicationStore applications, Catalogue catalogue) {
+  Offers(
+      DirectoryStore directory,
+      ApplicationStore applications,
+      Catalogue catalogue,
+      SpecialistSettings settings) {
     this.directory = directory;
     this.applications = applications;
     this.catalogue = catalogue;
+    this.settings = settings;
+  }
+
+  @Override
+  public java.math.BigDecimal feePercent() {
+    return settings.pricing().feePercent();
+  }
+
+  @Override
+  public Optional<PayoutDetails> payoutDetails(UUID specialistId) {
+    return applications
+        .payout(specialistId)
+        .filter(p -> p.method().equals("MTN_MOMO") || p.method().equals("ORANGE_MONEY"))
+        .map(
+            p ->
+                new PayoutDetails(
+                    p.method(),
+                    p.phone(),
+                    applications.payoutSavedAt(specialistId).orElse(java.time.Instant.EPOCH)));
   }
 
   @Override

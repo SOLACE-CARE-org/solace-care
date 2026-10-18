@@ -30,6 +30,10 @@ tags:
     description: Bookings, cancellation and rescheduling (Phase 1, epic 5)
   - name: guests
     description: Guest bookings without an account (D34); the guest token goes in X-Guest-Token
+  - name: payments
+    description: Paying for a booking, the aggregator's webhooks and specialist earnings (Phase 1, epic 6)
+  - name: admin-payments
+    description: Transactions, refunds and payout runs for staff (Phase 1, epic 6). Two people for every refund and payout run (D14, D35).
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -1455,6 +1459,465 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/bookings/{bookingId}/payments:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: startPayment
+      summary: Ask the seeker's wallet for the booking's price (Approve payment); replaces an earlier unfinished request
+      tags: [payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "201":
+          description: Requested; the seeker approves it on their phone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/bookings/{bookingId}/payment:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: getPayment
+      summary: The booking's latest payment request
+      tags: [payments]
+      parameters:
+        - name: check
+          in: query
+          description: Ask the provider now instead of waiting for its webhook (I have approved it).
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: The latest payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/guest/booking/payments:
+    post:
+      operationId: startGuestPayment
+      summary: Ask the guest's wallet for the price; the phone defaults to the one the guest proved
+      tags: [guests, payments]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "201":
+          description: Requested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/booking/payment:
+    get:
+      operationId: getGuestPayment
+      summary: The guest booking's latest payment request
+      tags: [guests, payments]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+        - name: check
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: The latest payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/webhooks/payments/{provider}:
+    post:
+      operationId: receivePaymentWebhook
+      summary: The aggregator's notifications (D35), signature-checked and idempotent on the event
+      description: Public at the gateway. A request whose signature does not verify gets 401 and changes nothing.
+      tags: [payments]
+      security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [notchpay, sandbox]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "204":
+          description: Accepted, also for an event already seen
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/earnings:
+    get:
+      operationId: getMyEarnings
+      summary: Earnings and payouts (specialist app)
+      tags: [payments]
+      responses:
+        "200":
+          description: Balances and recent activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Earnings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/payments/summary:
+    get:
+      operationId: getPaymentsSummary
+      summary: Held and released money, refunds waiting, failures and the last reconciliation (admin screen 11)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: The summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentsSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/payments:
+    get:
+      operationId: listPayments
+      summary: Transactions, newest first
+      tags: [admin-payments]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/PaymentStatus"
+      responses:
+        "200":
+          description: Up to 200 transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/refunds:
+    get:
+      operationId: listRefunds
+      summary: Refunds, oldest first
+      tags: [admin-payments]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/RefundStatus"
+      responses:
+        "200":
+          description: Up to 200 refunds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Refund"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/bookings/{bookingId}/refunds:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: proposeRefund
+      summary: Propose a refund for a paid booking, with a reason (Refund or no-show dispute)
+      description: Change access to Bookings. A different Finance member approves it (D14).
+      tags: [admin-payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [amount, reason]
+              properties:
+                amount:
+                  type: integer
+                  minimum: 1
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "201":
+          description: Proposed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Refund"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/refunds/{refundId}/approval:
+    parameters:
+      - $ref: "#/components/parameters/RefundId"
+    post:
+      operationId: approveRefund
+      summary: Approve a proposed refund and send it (Finance, not the proposer)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Approved; the transfer is on its way
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Refund"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/refunds/{refundId}/decline:
+    parameters:
+      - $ref: "#/components/parameters/RefundId"
+    post:
+      operationId: declineRefund
+      summary: Decline a proposed refund (Finance); the money goes to the specialist as for a completed session
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Declined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Refund"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/refunds/{refundId}/retry:
+    parameters:
+      - $ref: "#/components/parameters/RefundId"
+    post:
+      operationId: retryRefund
+      summary: Send a failed refund transfer again (change access to Payments); it was already approved
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Sent again
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Refund"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/reconciliation:
+    get:
+      operationId: getReconciliation
+      summary: The latest daily reconciliation and its mismatches
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: The latest run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reconciliation"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/payout-runs:
+    get:
+      operationId: listPayoutRuns
+      summary: Payout runs, newest first
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Up to 50 runs, without their items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/payout-runs/{runId}:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    get:
+      operationId: getPayoutRun
+      summary: One run with its items (admin screen 12)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: The run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/payout-runs/{runId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    post:
+      operationId: submitPayoutRun
+      summary: Prepare a drafted run for approval (Finance); its amounts are fixed from here
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Waiting for a second approver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/payout-runs/{runId}/approval:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    post:
+      operationId: approvePayoutRun
+      summary: Approve and send the ready payouts (another Finance member or a Super admin)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/payout-runs/{runId}/items/{itemId}/hold:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      operationId: holdPayoutItem
+      summary: Hold one specialist's payout in a drafted run, with a reason; it stays in their balance
+      tags: [admin-payments]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: Held
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: releasePayoutItem
+      summary: Put a held item back in a drafted run
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Ready again
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -1482,6 +1945,20 @@ components:
   parameters:
     BookingId:
       name: bookingId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RefundId:
+      name: refundId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RunId:
+      name: runId
       in: path
       required: true
       schema:
@@ -2710,3 +3187,324 @@ components:
           type: integer
         policyVersion:
           type: integer
+    PayMethod:
+      description: Mobile-money wallets (D35). Cards come with a second adapter.
+      type: string
+      x-extensible-enum: [MTN_MOMO, ORANGE_MONEY]
+    PaymentRequest:
+      type: object
+      additionalProperties: false
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [MTN_MOMO, ORANGE_MONEY]
+        phone:
+          description: The wallet to ask. Defaults to the account's or the guest's proven phone.
+          allOf:
+            - $ref: "#/components/schemas/Phone"
+    PaymentStatus:
+      description: PENDING until the wallet holder approves; FAILED when declined or timed out.
+      type: string
+      x-extensible-enum: [PENDING, COMPLETE, FAILED]
+    Payment:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, method, amount, status, phone, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        method:
+          $ref: "#/components/schemas/PayMethod"
+        amount:
+          description: Whole FCFA.
+          type: integer
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        phone:
+          description: The wallet asked, as the payer typed it (their own number).
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    Earnings:
+      type: object
+      additionalProperties: false
+      required: [available, onHold, onHoldSessions, sessionsThisMonth, noShowsThisMonth, activity]
+      properties:
+        available:
+          description: Released to the specialist and not yet paid out, after Solace's fee (FCFA).
+          type: integer
+        onHold:
+          description: Paid for sessions still to come, after the fee (FCFA).
+          type: integer
+        onHoldSessions:
+          type: integer
+        sessionsThisMonth:
+          type: integer
+        noShowsThisMonth:
+          type: integer
+        payoutTo:
+          type: object
+          additionalProperties: false
+          required: [method, phoneEnd]
+          properties:
+            method:
+              $ref: "#/components/schemas/PayMethod"
+            phoneEnd:
+              description: The last two digits of the payout number.
+              type: string
+        nextPayout:
+          description: The day the next run is drafted (D35).
+          type: string
+          format: date
+        activity:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, at, amount]
+            properties:
+              kind:
+                type: string
+                x-extensible-enum: [SESSION, PAYOUT, ADJUSTMENT]
+              at:
+                type: string
+                format: date-time
+              amount:
+                description: Signed FCFA; a payout is negative.
+                type: integer
+              seekerLabel:
+                description: SESSION only. The seeker's chosen name, or Guest.
+                type: string
+              method:
+                $ref: "#/components/schemas/PayMethod"
+              status:
+                description: PAYOUT only.
+                type: string
+                x-extensible-enum: [SENT, PAID, FAILED]
+    PaymentsSummary:
+      type: object
+      additionalProperties: false
+      required: [held, released, refundsToApprove, failures]
+      properties:
+        held:
+          description: Paid for upcoming and in-progress sessions (FCFA).
+          type: integer
+        released:
+          description: Released to specialists, not yet paid out (FCFA).
+          type: integer
+        refundsToApprove:
+          type: integer
+        failures:
+          description: Failed refunds and payouts waiting for staff.
+          type: integer
+        lastReconciliation:
+          $ref: "#/components/schemas/ReconciliationHead"
+    Transaction:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, method, amount, status, phone, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        method:
+          $ref: "#/components/schemas/PayMethod"
+        amount:
+          type: integer
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        phone:
+          description: Masked.
+          type: string
+        providerRef:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    RefundStatus:
+      description: PROPOSED → APPROVED → SENT → PAID, or DECLINED; FAILED when the transfer fails.
+      type: string
+      x-extensible-enum: [PROPOSED, DECLINED, APPROVED, SENT, PAID, FAILED]
+    Refund:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, amount, method, phone, reason, proposedBy, status, createdAt, canDecide]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+        method:
+          $ref: "#/components/schemas/PayMethod"
+        phone:
+          description: Masked.
+          type: string
+        reason:
+          description: POLICY_CANCELLATION, POLICY_NO_SHOW, PAID_AFTER_EXPIRY, or the staff member's words.
+          type: string
+        policyVersion:
+          type: integer
+        proposedBy:
+          type: object
+          additionalProperties: false
+          required: [system]
+          properties:
+            system:
+              type: boolean
+            name:
+              type: string
+        decidedBy:
+          type: string
+        status:
+          $ref: "#/components/schemas/RefundStatus"
+        failureReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        canDecide:
+          description: False for the person who proposed it (D14).
+          type: boolean
+    ReconciliationHead:
+      type: object
+      additionalProperties: false
+      required: [day, mismatches]
+      properties:
+        day:
+          type: string
+          format: date
+        mismatches:
+          type: integer
+    Reconciliation:
+      type: object
+      additionalProperties: false
+      required: [mismatches]
+      properties:
+        day:
+          type: string
+          format: date
+        checked:
+          type: integer
+        mismatches:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, reference, ours, theirs]
+            properties:
+              kind:
+                type: string
+                x-extensible-enum: [PAYMENT, REFUND, PAYOUT]
+              reference:
+                type: string
+                format: uuid
+              ours:
+                type: string
+              theirs:
+                type: string
+    PayoutRun:
+      type: object
+      additionalProperties: false
+      required: [id, periodStart, periodEnd, status, feePercent, totals, canSubmit, canApprove]
+      properties:
+        id:
+          type: string
+          format: uuid
+        periodStart:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        status:
+          type: string
+          x-extensible-enum: [DRAFT, SUBMITTED, SENT, DONE]
+        preparedBy:
+          type: string
+        preparedAt:
+          type: string
+          format: date-time
+        approvedBy:
+          type: string
+        approvedAt:
+          type: string
+          format: date-time
+        feePercent:
+          type: number
+        totals:
+          type: object
+          additionalProperties: false
+          required: [specialists, ready, held, sessions, gross, commission, net]
+          properties:
+            specialists:
+              type: integer
+            ready:
+              type: integer
+            held:
+              type: integer
+            sessions:
+              type: integer
+            gross:
+              type: integer
+            commission:
+              type: integer
+            net:
+              type: integer
+        canSubmit:
+          type: boolean
+        canApprove:
+          description: False for the person who submitted it (D14).
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayoutItem"
+    PayoutItem:
+      type: object
+      additionalProperties: false
+      required: [id, specialistId, name, sessions, gross, commission, net, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        specialistId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        sessions:
+          type: integer
+        gross:
+          type: integer
+        commission:
+          type: integer
+        net:
+          type: integer
+        method:
+          $ref: "#/components/schemas/PayMethod"
+        status:
+          type: string
+          x-extensible-enum: [READY, HELD, SENT, PAID, FAILED]
+        holdReason:
+          type: string
+        failureReason:
+          type: string

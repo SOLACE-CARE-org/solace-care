@@ -32,6 +32,7 @@ public record GatewaySettings(
           "/api/core/v1/slot-holds",
           "/api/core/v1/slot-holds/**",
           "/api/core/v1/guest/**",
+          "/api/core/v1/webhooks/payments/**",
           "/api/core/v1/catalogue/**"
         })
         List<String> publicPaths,

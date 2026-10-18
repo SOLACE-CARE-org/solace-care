@@ -138,6 +138,14 @@ class ApplicationStore {
         .optional();
   }
 
+  /** When the payout details were last saved: a failed payout stays held until they change. */
+  Optional<java.time.Instant> payoutSavedAt(UUID accountId) {
+    return db.sql("SELECT saved_at FROM specialist_payout_details WHERE account_id = :id")
+        .param("id", accountId)
+        .query((rs, n) -> rs.getTimestamp("saved_at").toInstant())
+        .optional();
+  }
+
   void savePractice(
       UUID accountId,
       String profession,
