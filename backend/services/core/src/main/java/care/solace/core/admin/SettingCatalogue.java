@@ -141,6 +141,9 @@ class SettingCatalogue {
               "solace.privacy.guest-retention", Group.PRIVACY, Type.DAYS, "365", 30, 3650, true),
           new Definition(
               "solace.privacy.message-retention", Group.PRIVACY, Type.DAYS, "180", 30, 3650, true),
+          // A specialist reads shared tracking while a booking is live and this long after (D52).
+          new Definition(
+              "solace.tracking.sharing-after-session", Group.PRIVACY, Type.DAYS, "7", 0, 30, true),
           // Crisis escalation at 5 and then 10 minutes is a decision (D11, D15).
           new Definition(
               "solace.crisis.escalate-after", Group.SAFETY, Type.MINUTES, "5", 5, 5, false),

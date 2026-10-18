@@ -68,6 +68,8 @@ tags:
     description: The live overview and aggregated analytics (admin screens 2 and 17; D46). Counts only, never people.
   - name: admin-push
     description: Browser notifications for staff (D38, D47)
+  - name: invites
+    description: Invitations from tracking with matched specialists (D52)
 paths:
   /v1/signups:
     post:
@@ -3855,6 +3857,46 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/me/invites/{recommendationId}/specialists:
+    parameters:
+      - name: recommendationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getInviteMatches
+      summary: Specialists of the invite's specialties, bookable in my session languages, soonest first
+      tags: [invites]
+      responses:
+        "200":
+          description: Up to 5 matches
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [specialties, specialists]
+                properties:
+                  specialties:
+                    description: The invite's specialties, labelled in the app language.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        label:
+                          type: string
+                  specialists:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/InviteMatch"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     bearerAuth:
@@ -5312,6 +5354,10 @@ components:
           type: string
           enum: [SEARCH, HEALTH_CHECK, TRACKING_RECOMMENDATION]
           default: SEARCH
+        recommendationId:
+          description: With source TRACKING_RECOMMENDATION, the invite the booking answers (D52).
+          type: string
+          format: uuid
     GuestBookingRequest:
       type: object
       additionalProperties: false
@@ -6677,3 +6723,22 @@ components:
         recommendationsToBookingPercent:
           description: From Phase 2; absent until tracking recommendations exist.
           type: integer
+    InviteMatch:
+      type: object
+      additionalProperties: false
+      required: [id, fullName, professionLabel, languages]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        professionLabel:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        nextAvailable:
+          type: string
+          format: date-time

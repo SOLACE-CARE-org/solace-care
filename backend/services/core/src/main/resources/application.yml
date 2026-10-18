@@ -18,6 +18,8 @@ spring:
       max-file-size: ${solace.specialists.documents.max-file-size:10MB}
       max-request-size: 25MB
   grpc:
+    server:
+      port: 9101
     client:
       channels:
         # Plain text locally; mTLS between services in the cluster (System Design).

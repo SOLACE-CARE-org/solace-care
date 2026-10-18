@@ -5,11 +5,12 @@
   "description": "TypeScript clients generated from contracts/openapi. Types in dist/ are generated on install; never edit them by hand.",
   "type": "module",
   "exports": {
-    "./core": "./src/core.ts"
+    "./core": "./src/core.ts",
+    "./tracking": "./src/tracking.ts"
   },
   "scripts": {
-    "build": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts",
-    "prepare": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts"
+    "build": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts",
+    "prepare": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts"
   },
   "dependencies": {
     "openapi-fetch": "0.17.0"

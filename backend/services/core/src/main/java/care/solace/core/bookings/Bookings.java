@@ -74,6 +74,14 @@ class Bookings implements BookingRecords {
   // --- Making a booking ------------------------------------------------------------------------
 
   BookingStore.Row create(Booker booker, UUID holdId, String sessionLanguage, String source) {
+    return create(booker, holdId, sessionLanguage, source, null);
+  }
+
+  /**
+   * @param recommendationId the tracking invite this booking answers, already checked (D52)
+   */
+  BookingStore.Row create(
+      Booker booker, UUID holdId, String sessionLanguage, String source, UUID recommendationId) {
     var hold =
         availability
             .findHold(holdId)
@@ -108,7 +116,13 @@ class Bookings implements BookingRecords {
             null,
             null);
     try {
-      transactions.executeWithoutResult(s -> store.insert(row));
+      transactions.executeWithoutResult(
+          s -> {
+            store.insert(row);
+            if (recommendationId != null) {
+              store.setRecommendation(id, recommendationId);
+            }
+          });
     } catch (RuntimeException e) {
       availability.releaseBooking(id);
       throw e;
@@ -369,7 +383,12 @@ class Bookings implements BookingRecords {
             1,
             subjectOf(b).toString(),
             b.seekerLocale().getLanguage(),
-            new Payload(b.id(), b.specialistId(), b.source(), b.seekerAccountId() == null)));
+            new Payload(
+                b.id(),
+                b.specialistId(),
+                b.source(),
+                store.recommendation(b.id()).orElse(null),
+                b.seekerAccountId() == null)));
   }
 
   private static UUID subjectOf(BookingStore.Row b) {
@@ -377,7 +396,10 @@ class Bookings implements BookingRecords {
   }
 
   /** core.booking.confirmed and completed v1: ids and codes only. */
-  record Payload(UUID bookingId, UUID specialistId, String source, boolean guest) {}
+  @com.fasterxml.jackson.annotation.JsonInclude(
+      com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+  record Payload(
+      UUID bookingId, UUID specialistId, String source, UUID recommendationId, boolean guest) {}
 
   /** core.booking.cancelled v1. */
   record CancelledPayload(

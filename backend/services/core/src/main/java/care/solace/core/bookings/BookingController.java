@@ -33,8 +33,16 @@ class BookingController {
   private final Accounts accounts;
   private final Clock clock;
 
+  private final care.solace.core.invites.TrackingInvites invites;
+
   BookingController(
-      Bookings bookings, BookingStore store, BookingViews views, Accounts accounts, Clock clock) {
+      Bookings bookings,
+      BookingStore store,
+      BookingViews views,
+      Accounts accounts,
+      Clock clock,
+      care.solace.core.invites.TrackingInvites invites) {
+    this.invites = invites;
     this.bookings = bookings;
     this.store = store;
     this.views = views;
@@ -45,7 +53,8 @@ class BookingController {
   record BookingRequest(
       @NotNull UUID holdId,
       @NotBlank String sessionLanguage,
-      @Pattern(regexp = "SEARCH|HEALTH_CHECK|TRACKING_RECOMMENDATION") String source) {}
+      @Pattern(regexp = "SEARCH|HEALTH_CHECK|TRACKING_RECOMMENDATION") String source,
+      UUID recommendationId) {}
 
   record CancellationReason(
       @Pattern(regexp = "TIME_NO_LONGER_WORKS|FEELING_BETTER|DIFFERENT_SPECIALIST|OTHER")
@@ -61,12 +70,22 @@ class BookingController {
     if (account.type() != Account.Type.SEEKER) {
       throw new SolaceException(BookingError.NOT_A_SEEKER);
     }
+    String source = body.source() != null ? body.source() : "SEARCH";
+    UUID recommendation = null;
+    // A booking answers a tracking invite only while the invite is the seeker's and open (D52).
+    if (source.equals("TRACKING_RECOMMENDATION") && body.recommendationId() != null) {
+      if (!invites.openFor(account.id(), body.recommendationId())) {
+        throw new SolaceException(care.solace.errors.CommonError.REQUEST_INVALID);
+      }
+      recommendation = body.recommendationId();
+    }
     var row =
         bookings.create(
             new Bookings.Booker(account.id(), null, account.appLanguage()),
             body.holdId(),
             body.sessionLanguage(),
-            body.source() != null ? body.source() : "SEARCH");
+            source,
+            recommendation);
     return views.of(row, false, LocaleContextHolder.getLocale());
   }
 

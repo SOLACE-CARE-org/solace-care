@@ -42,6 +42,8 @@ class ModuleBoundariesTest {
             "privacy",
             // The live overview and analytics, read-only aggregates (epic 12, D46).
             "insight",
+            // Tracking invites with matched specialists (Phase 2, epic 6, D52).
+            "invites",
             "system");
   }
 }

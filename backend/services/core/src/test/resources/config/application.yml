@@ -1,4 +1,9 @@
 # Added to src/main/resources/application.yml for every Core test (Spring Boot reads both).
+# Every test context gets its own free gRPC port; InviteIntegrationTest adds an in-process name.
+spring:
+  grpc:
+    server:
+      port: 0
 solace:
   notifications:
     # No SMS or email provider exists yet; tests read messages from the log.

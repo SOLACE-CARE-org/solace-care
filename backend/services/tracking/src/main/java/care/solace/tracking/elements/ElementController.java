@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** The element library for the phone's offline cache (tag elements). */
 @RestController
-class ElementController {
+public class ElementController {
 
   private final ElementLibrary library;
 
@@ -18,7 +18,8 @@ class ElementController {
     this.library = library;
   }
 
-  record ElementView(
+  /** An element as the edge API shows it (contracts: Element). */
+  public record ElementView(
       String code,
       String version,
       String kind,
@@ -30,7 +31,7 @@ class ElementController {
       JsonNode labels,
       String minAppVersion) {}
 
-  static ElementView view(ElementLibrary.Element e) {
+  public static ElementView view(ElementLibrary.Element e) {
     return new ElementView(
         e.code(),
         e.version(),

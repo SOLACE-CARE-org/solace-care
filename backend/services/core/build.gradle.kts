@@ -6,6 +6,8 @@ plugins {
 
 dependencies {
     implementation(project(":libs:grpc-client"))
+    // Serves Tracking: the live-booking check, the specialty taxonomy and a seeker's age (D52).
+    implementation("org.springframework.grpc:spring-grpc-server-spring-boot-starter")
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     // Object storage for specialist documents (MinIO locally, any S3-compatible store in the cluster).

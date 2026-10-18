@@ -24,21 +24,22 @@
 
 | ID | STRIDE | Threat | Control | Status |
 | --- | --- | --- | --- | --- |
-| TR-1 | E | A specialist reads a seeker's entries without a live booking | Core's `CheckLiveBooking` on every read, never cached; if Core does not answer in 2 seconds, access is denied | Contract in place (`contracts/proto/solace/core/v1`); check Planned (Phase 2) |
-| TR-2 | E | A specialist keeps reading after the seeker revokes access | Grant checked on every read; forward-only, so revoking stops all further reads | Planned (Phase 2) |
-| TR-3 | I | Notes shown to a specialist without the separate yes | Notes need their own grant, apart from entries | Planned (Phase 2) |
+| TR-1 | E | A specialist reads a seeker's entries without a live booking | Core's `CheckLiveBooking` on every read, never cached; if Core does not answer in 2 seconds, access is denied | In place: `LiveBookings` through `ResilientCalls`, fallback deny (D52; `CareIntegrationTest`) |
+| TR-2 | E | A specialist keeps reading after the seeker revokes access | Grant checked on every read; forward-only, so revoking stops all further reads | In place (D52; `CareIntegrationTest`) |
+| TR-3 | I | Notes shown to a specialist without the separate yes | Notes need their own grant, apart from entries; without it the note column is not even selected | In place (D52; `CareIntegrationTest`) |
 | TR-4 | I | Notes read by rules, AI or anything else | Rules never read `entry_note`; only the AI layer's separate D1 opt-in can send notes anywhere; nothing scans them | Planned (Phase 2); enforce with a test that no rule or query outside the owner's own read touches the table |
 | TR-5 | I | Notes or values in events, logs or traces | Tracking sends no event about individual entries; envelope carries only `subjectId`; log scrubber | Envelope and scrubber in place; Planned use |
 | TR-6 | I | Deleted notes recoverable | Hard delete on delete (not `deleted_at`); erasure deletes every row for the user | Planned (Phase 2); backups keep them until they expire, see Findings 2 |
 | TR-7 | T | A seeker writes entries into someone else's history through sync | Writes accepted only for the token's subject; idempotent on device and client ids | Planned (Phase 2) |
-| TR-8 | R | A specialist's read of entries leaves no trace | Audit entry on every read of tracking entries and notes | Library in place; use Planned |
+| TR-8 | R | A specialist's read of entries leaves no trace | Audit entry on every read of tracking entries and notes, and on every refusal | In place (D52) |
 | TR-9 | S / E | Another service calls Tracking's gRPC methods | Audience `tracking` and a scope per method; network policy allows only Core (and AI for the summary) | Scopes in place (`RealmsIntegrationTest.trackingServiceGetsOnlyItsOwnScopes`, `aiServiceCanOnlyReadTrackingSummaries`); see Findings 1 |
 | TR-10 | I | AI gets more than the consented summary | One method, one scope; consent checked before answering | Scope in place; consent check Planned (Phase 3) |
 | TR-11 | T | A rule shows a harmful pattern or invite | Rules state facts against thresholds only, no scores or diagnoses (D10); clinical review by someone other than the author; test runs on synthetic histories | Planned (Phase 2) |
 | TR-12 | I | Recommendation evidence quotes a note | Evidence comes from observations only, never notes | Planned (Phase 2) |
 | TR-13 | I | Staff browse individual seekers' entries in the admin portal | Not specified: the portal has module and rule tools, not entry views | Open; Findings 3 |
 | TR-14 | D | Core down blocks tracking | Seekers keep logging (offline-first, sync later); specialist reads fail closed; taxonomy from cache | Planned (Phase 2) |
-| TR-15 | I | Erasure misses Tracking | Consumes `core.user.erased`, deletes everything, confirms with `tracking.user.erased` for the audit log | Planned (epic 11) |
+| TR-16 | I | A nudge reveals what someone tracks | `tracking.nudge.requested` carries the kind only; Core sends the neutral copy, push only, and pauses after `ai.risk.flagged` | In place (D52) |
+| TR-15 | I | Erasure misses Tracking | Consumes `core.user.erased`, deletes everything (grants, nudges and pauses too), confirms with `tracking.user.erased`, which Core writes to its audit log | In place (D40, D52) |
 
 ## Findings
 

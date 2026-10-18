@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/tracking/nudge.requested.v1.schema.json",
+  "title": "tracking.nudge.requested v1",
+  "description": "Tracking decided, within its budget of one a day, that the person gets one tracking push now (Tracking Service Spec, Ports; D52). Core sends it as a push only, with the neutral copy in notification-copy.md. The kind only: no module, element, rule or value.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "tracking.nudge.requested" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "description": "REMINDER is the daily logging reminder; INVITE says something new is waiting on the Track tab.",
+          "enum": ["REMINDER", "INVITE"]
+        }
+      }
+    }
+  }
+}

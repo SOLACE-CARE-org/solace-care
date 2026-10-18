@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Solace Tracking API
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Tracking: elements, modules, rules, observations (Tracking Service Spec; D49).
     Reached through the gateway at /api/tracking. Seekers only: Tracking needs a durable account,
@@ -29,6 +29,8 @@ tags:
     description: Patterns and invitations from the pattern check (D51); the person decides
   - name: admin-modules
     description: The module builder for staff (admin screens 21 to 25; D51)
+  - name: sharing
+    description: Sharing with a specialist (D52); forward-only, revocable, notes only with a separate yes
 paths:
   /v1/system/info:
     get:
@@ -384,13 +386,13 @@ paths:
       tags: [admin-modules]
       responses:
         "200":
-          description: Elements
+          description: Elements, as the phone sees them
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: "#/components/schemas/Element"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -732,6 +734,103 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/tracking/shares:
+    get:
+      operationId: listShares
+      summary: My sharing grants, active and revoked
+      tags: [sharing]
+      responses:
+        "200":
+          description: Grants, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShareGrant"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: grantShare
+      summary: Share what I log from now on with a specialist I have a live booking with
+      description: A new grant replaces the active one for that specialist and starts again from now.
+      tags: [sharing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [specialistId, includesNotes]
+              properties:
+                specialistId:
+                  type: string
+                  format: uuid
+                includesNotes:
+                  type: boolean
+      responses:
+        "201":
+          description: Granted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareGrant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/shares/{grantId}:
+    parameters:
+      - $ref: "#/components/parameters/GrantId"
+    delete:
+      operationId: revokeShare
+      summary: Stop sharing; the specialist loses access at once
+      tags: [sharing]
+      responses:
+        "204":
+          description: Revoked
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tracking/patients/{seekerId}/entries:
+    parameters:
+      - name: seekerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: readSharedEntries
+      summary: For a specialist, what a seeker shared with them
+      description: |
+        Only with an active grant and a live booking, checked with Core on every read and never
+        cached; any error denies. Only what was recorded after the grant. Every read and refusal
+        is audited.
+      tags: [sharing]
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Shared entries, oldest day first
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedEntries"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -806,6 +905,13 @@ components:
         format: uuid
     RecommendationId:
       name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GrantId:
+      name: grantId
       in: path
       required: true
       schema:
@@ -1264,6 +1370,12 @@ components:
               publishedAt:
                 type: string
                 format: date-time
+              elements:
+                description: How many elements the version has
+                type: integer
+              rules:
+                description: How many rules the version has
+                type: integer
     ModuleDetails:
       type: object
       required: [nameEn, nameFr, descriptionEn, descriptionFr, imageAltEn, imageAltFr, audienceEn, audienceFr]
@@ -1472,3 +1584,53 @@ components:
         blockedByUnless:
           type: boolean
         evidence: {}
+    ShareGrant:
+      type: object
+      additionalProperties: false
+      required: [id, specialistId, includesNotes, grantedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        specialistId:
+          type: string
+          format: uuid
+        includesNotes:
+          type: boolean
+        grantedAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: [string, "null"]
+          format: date-time
+    SharedEntries:
+      type: object
+      additionalProperties: false
+      required: [since, includesNotes, entries]
+      properties:
+        since:
+          type: string
+          format: date-time
+        includesNotes:
+          type: boolean
+        entries:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [element, observedOn, value, recordedAt]
+            properties:
+              element:
+                type: string
+              observedOn:
+                type: string
+                format: date
+              value:
+                description: An integer, a boolean, a date, a code or a note's text, by the element's type
+                oneOf:
+                  - type: integer
+                  - type: boolean
+                  - type: string
+              recordedAt:
+                type: string
+                format: date-time

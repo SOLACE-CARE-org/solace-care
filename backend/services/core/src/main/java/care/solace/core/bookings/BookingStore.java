@@ -360,6 +360,21 @@ class BookingStore {
     return t == null ? null : t.toInstant();
   }
 
+  void setRecommendation(UUID id, UUID recommendationId) {
+    db.sql("UPDATE booking SET recommendation_id = :r WHERE id = :id")
+        .param("id", id)
+        .param("r", recommendationId)
+        .update();
+  }
+
+  Optional<UUID> recommendation(UUID id) {
+    return db.sql("SELECT recommendation_id FROM booking WHERE id = :id")
+        .param("id", id)
+        .query((rs, n) -> rs.getObject("recommendation_id", UUID.class))
+        .optional()
+        .filter(java.util.Objects::nonNull);
+  }
+
   Policy currentPolicy() {
     return db.sql("SELECT * FROM cancellation_policy ORDER BY version DESC LIMIT 1")
         .query(BookingStore::policy)

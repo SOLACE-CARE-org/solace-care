@@ -46,6 +46,7 @@
             "TRACKING_RECOMMENDATION"
           ]
         },
+        "recommendationId": { "description": "The tracking invite the booking answers, when its source is TRACKING_RECOMMENDATION (D52).", "type": "string", "format": "uuid" },
         "guest": {
           "description": "True when the seeker booked as a guest; subjectId is then the guest contact's id.",
           "type": "boolean"

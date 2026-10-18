@@ -181,6 +181,35 @@ public class Sync implements care.solace.tracking.PersonalData {
         .list();
   }
 
+  /**
+   * Live observations for a specialist's read of shared data (D52). Notes come only when the grant
+   * includes them; otherwise the note column is never read.
+   */
+  public List<Observation> liveWithNotes(
+      UUID user, Set<String> codes, LocalDate from, boolean withNotes) {
+    if (codes.isEmpty()) {
+      return List.of();
+    }
+    String select =
+        withNotes
+            ? "SELECT o.*, n.body FROM observation o"
+                + " LEFT JOIN entry_note n ON n.observation_id = o.id"
+            : "SELECT o.*, NULL AS body FROM observation o";
+    return db.sql(
+            select
+                + """
+
+                 WHERE o.user_id = :u AND o.deleted_at IS NULL AND o.element_code IN (:codes)
+                   AND o.observed_on >= :from
+                 ORDER BY o.observed_on, o.recorded_at
+                """)
+        .param("u", user)
+        .param("codes", codes)
+        .param("from", from)
+        .query(Sync::row)
+        .list();
+  }
+
   /** Erasure: every observation and note of the person, for real (D40). */
   @Override
   public void erase(UUID user) {

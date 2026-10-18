@@ -3,6 +3,7 @@ package care.solace.tracking.modules;
 import care.solace.audit.AuditLog;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import care.solace.tracking.elements.ElementController;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.rules.RuleEngine;
 import care.solace.tracking.rules.RuleRules;
@@ -89,7 +90,9 @@ class AdminModulesController {
       String status,
       String draftedBy,
       String approvedBy,
-      Instant publishedAt) {}
+      Instant publishedAt,
+      int elements,
+      int rules) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record ModuleRow(
@@ -110,7 +113,8 @@ class AdminModulesController {
       JsonNode unless,
       String outcome,
       List<String> specialtyCodes,
-      Text message,
+      String messageEn,
+      String messageFr,
       int cooldownDays,
       Integer repeatWithinDays,
       int position,
@@ -185,9 +189,9 @@ class AdminModulesController {
   // --- Library and modules ----------------------------------------------------------------------
 
   @GetMapping("/admin/v1/tracking/elements")
-  List<ElementLibrary.Element> elements(@AuthenticationPrincipal Jwt token) {
+  List<ElementController.ElementView> elements(@AuthenticationPrincipal Jwt token) {
     gate.require(token, false);
-    return library.all();
+    return library.all().stream().map(ElementController::view).toList();
   }
 
   @GetMapping("/admin/v1/tracking/modules")
@@ -214,7 +218,9 @@ class AdminModulesController {
                                   v.status(),
                                   v.draftedByName(),
                                   v.approvedByName(),
-                                  v.publishedAt()))
+                                  v.publishedAt(),
+                                  store.bindings(v.id()).size(),
+                                  store.rules(v.id()).size()))
                       .toList(),
                   store.enrolled(m.id()));
             })
@@ -479,7 +485,8 @@ class AdminModulesController {
                         r.unless(),
                         r.outcome(),
                         r.specialtyCodes(),
-                        new Text(r.messageEn(), r.messageFr()),
+                        r.messageEn(),
+                        r.messageFr(),
                         r.cooldownDays(),
                         r.repeatWithinDays(),
                         r.position(),

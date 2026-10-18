@@ -301,6 +301,14 @@ Every pair now meets WCAG 2.1 AA.
 - **Snooze** hides a card for `solace.tracking.snooze-days` ([7]); snoozing or dismissing restarts the rule's cooldown.
 - **Profile:** pcos status, trying to conceive and treatments are stored for "unless" and can only switch rules off; their screen waits for a design.
 
+**D52. Tracking to care: invites, sharing and nudges (Phase 2, epics 6 to 8).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Invites in Core:** Core keeps a `tracking_invite` row per `tracking.recommendation.created` (ids and specialty codes only) and closes it on `resolved`. `GET /v1/me/invites/{id}/specialists` lists approved specialists in those specialties, best rated first. A booking may carry `recommendationId` only for an open invite of the same seeker; `core.booking.confirmed` carries it on, and Tracking marks the recommendation BOOKED and publishes `resolved`.
+- **Core's gRPC server** (port 9101) answers Tracking with its client-credentials token, each method behind its own scope: CheckLiveBooking, ListSpecialties, GetAge. A booking is live while CONFIRMED or IN_PROGRESS, and for `solace.tracking.sharing-after-session` ([7] days) after it COMPLETED, so a specialist can follow up.
+- **Sharing grants** are per specialist and need a live booking to be made. They are forward-only on the entry's recorded time; a new grant replaces the old one and starts from then. Notes come only when the grant includes them, and otherwise the note column is never read. Revoking takes effect on the next read.
+- **Specialist reads** ask Core on every read, never cached, with the 2-second deadline; any error or timeout denies. Every read and every refusal writes an audit entry.
+- **Nudges:** one tracking push a day at most, never SMS. The reminder goes at the person's earliest active reminder time, within `solace.tracking.nudges.reminder-window` ([2] hours) after it, unless they already logged that day. The time zone is that of their latest entry, Africa/Douala until they log. An invite takes the day's push if it is still free. After 5 nudges with nothing logged since the first of them, nothing more goes until they log again. `ai.risk.flagged` pauses nudges for `solace.tracking.nudges.risk-pause` ([14] days). Tracking publishes `tracking.nudge.requested` with the kind only; Core sends the push in notification-copy.md and holds an invite push for quiet hours.
+- **Erasure:** Tracking deletes grants, nudges and pauses with everything else; Core deletes invites, and records Tracking's `tracking.user.erased` confirmation in its audit log.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

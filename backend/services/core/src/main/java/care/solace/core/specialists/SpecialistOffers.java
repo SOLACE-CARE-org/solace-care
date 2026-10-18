@@ -27,6 +27,23 @@ public interface SpecialistOffers {
    */
   record PayoutDetails(String method, String phone, java.time.Instant savedAt) {}
 
+  /**
+   * Listed specialists of any of these specialties, bookable in any of these languages, soonest
+   * available first (tracking invites, D52; the health check's matches).
+   */
+  java.util.List<Match> matches(
+      java.util.Collection<String> specialties,
+      java.util.Collection<String> languages,
+      Locale viewer,
+      int limit);
+
+  record Match(
+      UUID id,
+      String fullName,
+      String professionLabel,
+      java.util.List<String> languages,
+      java.time.Instant nextAvailable) {}
+
   record Offer(String modality, int durationMinutes, long price) {}
 
   record Summary(String fullName, String professionLabel) {}

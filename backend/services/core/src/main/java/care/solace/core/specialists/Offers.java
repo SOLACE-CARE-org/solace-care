@@ -15,18 +15,57 @@ class Offers implements SpecialistOffers {
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
   private final LivePricing pricing;
+  private final org.springframework.beans.factory.ObjectProvider<Directory> search;
 
   Offers(
       DirectoryStore directory,
       ApplicationStore applications,
       Catalogue catalogue,
       SpecialistSettings settings,
-      LivePricing pricing) {
+      LivePricing pricing,
+      org.springframework.beans.factory.ObjectProvider<Directory> search) {
     this.directory = directory;
     this.applications = applications;
     this.catalogue = catalogue;
     this.settings = settings;
     this.pricing = pricing;
+    this.search = search;
+  }
+
+  @Override
+  public java.util.List<Match> matches(
+      java.util.Collection<String> specialties,
+      java.util.Collection<String> languages,
+      Locale viewer,
+      int limit) {
+    java.util.Map<UUID, Match> found = new java.util.LinkedHashMap<>();
+    for (String language : languages) {
+      for (String specialty : specialties) {
+        var page =
+            search
+                .getObject()
+                .search(
+                    new Directory.Query(language, null, null, specialty, null, null, limit, 0),
+                    viewer);
+        for (var card : page.items()) {
+          found.putIfAbsent(
+              card.id(),
+              new Match(
+                  card.id(),
+                  card.fullName(),
+                  card.professionLabel(),
+                  card.languages().stream().map(DirectoryStore.Language::code).toList(),
+                  card.nextAvailable()));
+        }
+      }
+    }
+    return found.values().stream()
+        .sorted(
+            java.util.Comparator.comparing(
+                Match::nextAvailable,
+                java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
+        .limit(limit)
+        .toList();
   }
 
   @Override
