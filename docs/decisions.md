@@ -317,6 +317,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Copy the designs do not show,** written to match them and to be checked by the content editor: the consent prompt on the Track tab, leaving a module ("Stop tracking …"), "Not now" to dismiss an invitation, trend notes counts for a month and 3 months, and the catalogue's age and app-update lines.
 - **Sign-up step 4** lists only modules without an enrolment question; the rest are added from the Track tab, where their question is asked.
 
+**D54. Launch modules seeded as drafts (Phase 2, epic 10).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- PCOS & cycle v1.0 and Daily check-in v1.0 arrive by migration as drafts with the spec's bindings, the six launch rules at their bracketed thresholds and EN/FR messages that pass the word list. They still go the usual way: a content editor adds the card image and alt text, a Clinical reviewer sets the thresholds and approves, Operations publishes. Nothing reaches seekers before that.
+- Module codes are `pcos` and `daily_checkin`; both suggest a 20:00 reminder (Trends.dc.html). The low-mood pattern invites to clinical psychology or counselling when it fires again within [60] days.
+- **The spec disagrees with itself on flow:** `pcos.no_period` counts flow day by day, while the element table gives `flow_intensity` only cycle signals. The rule is the clearer intent, so a cycle element can also be read as a daily value, in the validator and in the builder.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

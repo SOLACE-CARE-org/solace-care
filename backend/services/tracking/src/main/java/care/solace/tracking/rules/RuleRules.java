@@ -73,6 +73,15 @@ public final class RuleRules {
    * Problems with a rule's conditions and unless, given the module's bound elements; empty when it
    * is fine.
    */
+  /**
+   * An element read day by day: one that offers daily_value, or a cycle element, whose daily value
+   * the launch rule pcos.no_period counts (Tracking Service Spec, Launch rules; D54).
+   */
+  public static boolean offersDailyValue(Element element) {
+    return element.signals().contains("daily_value")
+        || element.signals().stream().anyMatch(RuleEngine.CYCLE_SIGNALS::contains);
+  }
+
   public static List<String> problems(
       JsonNode conditions, JsonNode unless, Map<String, Element> bound) {
     List<String> problems = new ArrayList<>();
@@ -109,7 +118,7 @@ public final class RuleRules {
         }
       } else if (signal.equals("daily_value")) {
         Element element = bound.get(c.path("element").asText());
-        if (element == null || !element.signals().contains("daily_value")) {
+        if (element == null || !offersDailyValue(element)) {
           problems.add("signal not offered by this module: " + c.path("element").asText());
         }
         if (operator.equals("consecutive_cycles")) {

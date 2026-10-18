@@ -597,7 +597,8 @@ export class RulesStep {
   readonly signalChoices = computed<SignalChoice[]>(() => {
     const choices: SignalChoice[] = [];
     for (const e of this.bound()) {
-      if (e.signals.includes('daily_value')) {
+      // Cycle elements can be read day by day too, as pcos.no_period does (D54).
+      if (e.signals.includes('daily_value') || CYCLE_SIGNALS.some((s) => e.signals.includes(s))) {
         choices.push({
           key: `daily_value:${e.code}`,
           signal: 'daily_value',
