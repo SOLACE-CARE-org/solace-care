@@ -90,6 +90,13 @@ class ProblemAdviceTest {
         .andExpect(jsonPath("$.code").value("resource.not-found"));
   }
 
+  @Test
+  void aMalformedIdIsTheCallersMistake() throws Exception {
+    mvc.perform(get("/bookings/not-a-uuid"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("request.invalid"));
+  }
+
   enum BookingError implements ErrorCode {
     SLOT_TAKEN;
 
@@ -132,6 +139,11 @@ class ProblemAdviceTest {
 
     @PostMapping("/reviews")
     String review(@Valid @RequestBody ReviewRequest request) {
+      return "ok";
+    }
+
+    @GetMapping("/bookings/{id}")
+    String booking(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
       return "ok";
     }
   }

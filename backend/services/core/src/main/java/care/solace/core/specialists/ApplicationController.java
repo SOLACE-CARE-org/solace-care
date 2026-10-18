@@ -91,7 +91,12 @@ class ApplicationController {
       Pricing pricing,
       Instant submittedAt,
       Instant interviewAt,
-      String reviewNote) {}
+      String reviewNote,
+      DraftedBioView draftedBio) {}
+
+  record DraftedBioView(String language, String text, boolean confirmed) {}
+
+  record BioConfirmation(@Size(min = 1, max = 600) String text) {}
 
   record PracticeView(
       String profession,
@@ -197,6 +202,14 @@ class ApplicationController {
     return render(applications.view(account));
   }
 
+  @PostMapping("/v1/me/specialist-application/bio-confirmation")
+  SpecialistApplication confirmBio(
+      @AuthenticationPrincipal Jwt token, @Valid @RequestBody BioConfirmation body) {
+    Account account = accounts.require(token);
+    applications.confirmBio(account, body.text());
+    return render(applications.view(account));
+  }
+
   @PostMapping("/v1/me/specialist-application/submission")
   SpecialistApplication submit(@AuthenticationPrincipal Jwt token) {
     Account account = accounts.require(token);
@@ -244,7 +257,10 @@ class ApplicationController {
             pricing.minPrice(), pricing.maxPrice(), pricing.feePercent(), pricing.durations()),
         p.submittedAt(),
         p.interviewAt(),
-        p.reviewNote());
+        p.reviewNote(),
+        view.draftedBio()
+            .map(d -> new DraftedBioView(d.language(), d.text(), d.confirmedAt() != null))
+            .orElse(null));
   }
 
   /** "+237677000000" becomes "+237•••••••00": enough to recognise, not to reuse. */

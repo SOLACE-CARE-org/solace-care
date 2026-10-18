@@ -177,6 +177,57 @@ class ApplicationStore {
           .param("t", topic)
           .update();
     }
+    syncOfferingSpecialty(accountId);
+  }
+
+  /** Sessions carry the specialty of the specialist's profession (D31). */
+  private void syncOfferingSpecialty(UUID accountId) {
+    db.sql(
+            """
+            UPDATE service_offering o
+               SET specialty_code = pr.specialty_code
+              FROM specialist_profile p JOIN profession pr ON pr.code = p.profession_code
+             WHERE p.account_id = o.specialist_id AND o.specialist_id = :id
+            """)
+        .param("id", accountId)
+        .update();
+  }
+
+  /** The bio Solace drafted in the other language (D30), if any. */
+  record DraftedBio(String language, String text, Instant confirmedAt) {}
+
+  Optional<DraftedBio> draftedBio(UUID accountId) {
+    return db.sql(
+            """
+            SELECT bio_drafted_language,
+                   CASE bio_drafted_language WHEN 'fr' THEN bio_fr ELSE bio_en END AS text,
+                   bio_draft_confirmed_at
+              FROM specialist_profile
+             WHERE account_id = :id AND bio_drafted_language IS NOT NULL
+            """)
+        .param("id", accountId)
+        .query(
+            (rs, n) ->
+                new DraftedBio(
+                    rs.getString("bio_drafted_language"),
+                    rs.getString("text"),
+                    instant(rs, "bio_draft_confirmed_at")))
+        .optional();
+  }
+
+  /** The specialist confirms the draft, with their corrections if any. */
+  void confirmBio(UUID accountId, String language, String text, Instant now) {
+    String column = "fr".equals(language) ? "bio_fr" : "bio_en";
+    db.sql(
+            "UPDATE specialist_profile SET "
+                + column
+                + " = COALESCE(:t, "
+                + column
+                + "), bio_draft_confirmed_at = :now, updated_at = :now WHERE account_id = :id")
+        .param("id", accountId)
+        .param("t", text)
+        .param("now", Timestamp.from(now))
+        .update();
   }
 
   /** Replaces the declared languages; a changed level needs confirming again. */
@@ -216,6 +267,7 @@ class ApplicationStore {
           .param("p", offering.price())
           .update();
     }
+    syncOfferingSpecialty(accountId);
     touch(accountId, "services_saved_at", now);
   }
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,12 @@ public class ProblemAdvice {
         e.getFieldErrors().stream().map(error -> error.getField()).distinct().sorted().toList();
     problem.setProperty("fields", fields);
     return respond(problem);
+  }
+
+  /** A path or query value of the wrong type, such as a malformed id: the caller's mistake. */
+  @ExceptionHandler(TypeMismatchException.class)
+  ResponseEntity<ProblemDetail> mismatch(TypeMismatchException e) {
+    return respond(problems.of(CommonError.REQUEST_INVALID, locale()));
   }
 
   @ExceptionHandler(Exception.class)

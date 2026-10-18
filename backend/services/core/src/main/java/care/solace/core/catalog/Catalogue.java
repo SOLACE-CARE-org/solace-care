@@ -16,6 +16,9 @@ public interface Catalogue {
   /** Enabled professions a specialist can apply as, labelled in {@code viewer}'s language. */
   List<Entry> professions(Locale viewer);
 
+  /** Enabled specialties in display order, labelled in {@code viewer}'s language (D31). */
+  List<Entry> specialties(Locale viewer);
+
   /** Every profession, enabled or not, for staff screens showing older applications. */
   List<Entry> allProfessions(Locale viewer);
 

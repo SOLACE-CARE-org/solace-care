@@ -33,6 +33,11 @@ class WeeklyHoursStore implements Availability {
         > 0;
   }
 
+  @Override
+  public Optional<Instant> nextAvailable(UUID specialistId, Instant now, int minutes) {
+    return find(specialistId).flatMap(schedule -> Slots.next(schedule, now, minutes));
+  }
+
   Optional<Schedule> find(UUID specialistId) {
     return db.sql(
             """

@@ -38,7 +38,9 @@ enum SpecialistError implements ErrorCode {
   /** Confirming or withdrawing an approval nobody proposed. */
   APPROVAL_NOT_PROPOSED("specialist.approval-not-proposed", 409),
   /** The person who proposed an approval cannot also confirm it (D29). */
-  SAME_APPROVER("specialist.same-approver", 409);
+  SAME_APPROVER("specialist.same-approver", 409),
+  /** There is no Solace-drafted bio to confirm (D30). */
+  NO_BIO_DRAFT("specialist.no-bio-draft", 409);
 
   private final String code;
   private final int status;

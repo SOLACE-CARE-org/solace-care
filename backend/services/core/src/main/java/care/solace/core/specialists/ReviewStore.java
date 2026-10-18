@@ -198,7 +198,7 @@ class ReviewStore {
     return db.sql(
             """
             SELECT at, kind, subject, value, staff_id, staff_name FROM specialist_review_activity
-             WHERE account_id = :id ORDER BY at DESC, id
+             WHERE account_id = :id ORDER BY seq DESC
             """)
         .param("id", id)
         .query(

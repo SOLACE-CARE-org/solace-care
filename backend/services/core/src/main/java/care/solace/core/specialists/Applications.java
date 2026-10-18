@@ -105,7 +105,8 @@ class Applications implements SpecialistSummaries {
       List<DocumentStore.StoredFile> documents,
       List<ApplicationStore.Offering> offerings,
       Optional<ApplicationStore.Payout> payout,
-      SpecialistSettings.Pricing pricing) {}
+      SpecialistSettings.Pricing pricing,
+      Optional<ApplicationStore.DraftedBio> draftedBio) {}
 
   void startSignup(SignupRequest request) {
     if (!settings.termsVersion().equals(request.termsVersion())
@@ -148,7 +149,8 @@ class Applications implements SpecialistSummaries {
         files,
         offerings,
         payout,
-        settings.pricing());
+        settings.pricing(),
+        store.draftedBio(id));
   }
 
   void savePractice(Account account, Practice practice) {
@@ -233,6 +235,22 @@ class Applications implements SpecialistSummaries {
     }
     var saved = new ApplicationStore.Payout(payout.method(), phone, holder);
     transactions.executeWithoutResult(s -> store.savePayout(id, saved, clock.instant()));
+  }
+
+  /**
+   * The specialist checks the bio Solace drafted in their other language (D30), as it is or with
+   * corrections. Allowed in any status: the draft is written during review.
+   */
+  void confirmBio(Account account, String correctedText) {
+    UUID id = profile(account).accountId();
+    var draft =
+        store.draftedBio(id).orElseThrow(() -> new SolaceException(SpecialistError.NO_BIO_DRAFT));
+    String text = correctedText == null ? null : correctedText.strip();
+    if (text != null && text.isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    transactions.executeWithoutResult(
+        s -> store.confirmBio(id, draft.language(), text, clock.instant()));
   }
 
   void uploadDocuments(Account account, Documents.Kind kind, List<Documents.Upload> uploads) {

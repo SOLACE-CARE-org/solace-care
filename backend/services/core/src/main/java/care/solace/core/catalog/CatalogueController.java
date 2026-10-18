@@ -36,9 +36,18 @@ class CatalogueController {
         .toList();
   }
 
+  @GetMapping("/v1/catalogue/specialties")
+  List<Specialty> specialties(Locale locale) {
+    return catalogue.specialties(locale).stream()
+        .map(e -> new Specialty(e.code(), e.label()))
+        .toList();
+  }
+
   record SessionLanguage(String code, String name) {}
 
   record HelpTopic(String code, String label) {}
 
   record Profession(String code, String label) {}
+
+  record Specialty(String code, String label) {}
 }
