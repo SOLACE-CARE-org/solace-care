@@ -92,3 +92,24 @@ export function minutesSince(iso: string | undefined, now = new Date()): number 
   if (!iso) return 0;
   return Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / 60_000));
 }
+
+/**
+ * A short reference for a booking ("BK-7F9D1C2E"): the first eight characters of its id, which
+ * staff can read out on the phone. People search accepts it as well as the full id (D41).
+ */
+export function bookingRef(id: string): string {
+  return `BK-${id.replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+}
+
+/** "1–15 October" for a period of calendar dates. */
+export function period(start: string, end: string, lang: string): string {
+  const day = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(Date.UTC(y!, m! - 1, d!));
+  };
+  return new Intl.DateTimeFormat(lang, {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).formatRange(day(start), day(end));
+}

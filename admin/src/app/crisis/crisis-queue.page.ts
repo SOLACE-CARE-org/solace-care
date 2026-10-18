@@ -278,7 +278,7 @@ const OUTCOMES: Outcome[] = [
       font: inherit;
       color: inherit;
       cursor: pointer;
-      min-height: 44px;
+      min-height: var(--size-tap);
     }
     .alert--urgent {
       border-color: var(--danger);
@@ -295,13 +295,13 @@ const OUTCOMES: Outcome[] = [
     }
     .heading {
       margin: 0;
-      font-size: 1.125rem;
+      font-size: var(--type-title-md-size);
     }
     .label {
       margin: var(--space-16) 0 var(--space-4);
-      font-size: 0.75rem;
+      font-size: var(--type-overline-size);
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: var(--type-overline-letter-spacing);
       color: var(--ink-muted);
       text-transform: uppercase;
     }
@@ -310,7 +310,7 @@ const OUTCOMES: Outcome[] = [
       padding: var(--space-12) var(--space-16);
       border-left: 3px solid var(--danger);
       background: var(--surface-page);
-      font-size: 1.0625rem;
+      font-size: var(--type-body-admin-size);
     }
     .facts {
       display: grid;
@@ -328,7 +328,7 @@ const OUTCOMES: Outcome[] = [
       display: flex;
       align-items: center;
       gap: var(--space-8);
-      min-height: 44px;
+      min-height: var(--size-tap);
     }
     .state {
       margin: 0;

@@ -281,6 +281,39 @@ class AdminPaymentsController {
     return view(runOf(runId), staff, locale, true);
   }
 
+  /** Export report (admin screen 12): one line per specialist; amounts in FCFA. */
+  @GetMapping(value = "/admin/v1/payout-runs/{runId}/report", produces = "text/csv")
+  String report(@AuthenticationPrincipal Jwt token, @PathVariable UUID runId, Locale locale) {
+    var staff = access.require(token, AREA, Level.VIEW);
+    var run = view(runOf(runId), staff, locale, true);
+    var csv = new StringBuilder("specialist,sessions,gross,commission,net,method,status,reason\n");
+    for (var i : run.items()) {
+      csv.append(
+              String.join(
+                  ",",
+                  cell(i.name()),
+                  String.valueOf(i.sessions()),
+                  String.valueOf(i.gross()),
+                  String.valueOf(i.commission()),
+                  String.valueOf(i.net()),
+                  cell(i.method()),
+                  cell(i.status()),
+                  cell(i.holdReason() != null ? i.holdReason() : i.failureReason())))
+          .append('\n');
+    }
+    audit.adminAction("payments.payout-run.export", "payout-run", runId.toString(), Map.of());
+    return csv.toString();
+  }
+
+  /** A CSV cell, quoted; a leading = + - @ is defused so spreadsheets do not run it. */
+  static String cell(String value) {
+    if (value == null) {
+      return "";
+    }
+    String safe = value.matches("^[=+\\-@].*") ? "'" + value : value;
+    return '"' + safe.replace("\"", "\"\"") + '"';
+  }
+
   @PostMapping("/admin/v1/payout-runs/{runId}/submission")
   Run submit(@AuthenticationPrincipal Jwt token, @PathVariable UUID runId, Locale locale) {
     var staff = finance(token);

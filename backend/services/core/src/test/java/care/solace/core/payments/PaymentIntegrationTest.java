@@ -256,6 +256,23 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
     JsonNode done = json(mvc.perform(get("/admin/v1/payout-runs/" + runId).with(finance)));
     assertThat(itemOf(done, specialist.id()).path("status").asText()).isEqualTo("PAID");
     assertThat(available()).isZero();
+
+    String report =
+        mvc.perform(get("/admin/v1/payout-runs/" + runId + "/report").with(finance))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+    assertThat(report)
+        .startsWith("specialist,sessions,gross,commission,net,method,status,reason\n");
+    assertThat(report).contains("\"Pay Keeper\",").contains("," + due + ",").contains("\"PAID\"");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM audit_log WHERE action = 'payments.payout-run.export' AND target_id = ?",
+                Integer.class,
+                runId.toString()))
+        .isEqualTo(1);
+    assertThat(AdminPaymentsController.cell("=SUM(A1)")).isEqualTo("\"'=SUM(A1)\"");
     mvc.perform(get("/v1/me/earnings").headers(bearer(specialist.token())))
         .andExpect(jsonPath("$.activity[0].kind").value("PAYOUT"))
         .andExpect(jsonPath("$.activity[0].amount").value(-due));

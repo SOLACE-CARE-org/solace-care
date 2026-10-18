@@ -144,7 +144,7 @@ type Item = CoreSchemas['ModerationItem'];
     }
     .dialog-title {
       margin: 0 0 var(--space-8);
-      font-size: 1.125rem;
+      font-size: var(--type-title-md-size);
     }
     .problem {
       color: var(--danger);

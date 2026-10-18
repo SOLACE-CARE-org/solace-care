@@ -7,6 +7,9 @@ import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
 import { NoAccess } from './pages/no-access';
 import { NotBuilt } from './pages/not-built';
+import { PaymentsPage } from './payments/payments.page';
+import { PayoutRunPage } from './payments/payout-run.page';
+import { PayoutRunsPage } from './payments/payout-runs.page';
 import { ReviewsPage } from './reviews/reviews.page';
 import { ApplicationReviewPage } from './specialists/application-review.page';
 import { ApplicationsPage } from './specialists/applications.page';
@@ -17,6 +20,8 @@ const SCREENS: Record<string, Type<unknown>> = {
   crisis: CrisisQueuePage,
   applications: ApplicationsPage,
   reviews: ReviewsPage,
+  payments: PaymentsPage,
+  payouts: PayoutRunsPage,
   specialists: SpecialistRecordPage,
 };
 
@@ -45,6 +50,11 @@ export const routes: Routes = [
         path: 'specialists/:id',
         component: SpecialistRecordPage,
         canActivate: [areaGuard('specialists')],
+      },
+      {
+        path: 'payouts/:id',
+        component: PayoutRunPage,
+        canActivate: [areaGuard('payments')],
       },
       { path: 'no-access', component: NoAccess },
       { path: '**', component: NotBuilt },

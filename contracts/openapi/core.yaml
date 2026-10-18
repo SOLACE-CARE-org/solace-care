@@ -1842,6 +1842,26 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /admin/v1/payout-runs/{runId}/report:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    get:
+      operationId: exportPayoutRun
+      summary: The run report as CSV (Export report); every export is audited
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: One line per specialist
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /admin/v1/payout-runs/{runId}/submission:
     parameters:
       - $ref: "#/components/parameters/RunId"
