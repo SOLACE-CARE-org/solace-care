@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/tracking/user.erased.v1.schema.json",
+  "title": "tracking.user.erased v1",
+  "description": "Tracking deleted every row and note it held for the person, in answer to core.user.erased. Core records it for the audit log (Tracking Service Spec, Events).",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "tracking.user.erased" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": { "type": "object", "additionalProperties": false, "properties": {} }
+  }
+}

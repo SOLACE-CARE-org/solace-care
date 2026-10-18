@@ -273,6 +273,16 @@ Every pair now meets WCAG 2.1 AA.
 - **Intro:** the three intro screens follow the language choice once; Skip and Get started go to Welcome.
 - **Edit profile:** the name the specialist sees, session languages and specialist preference. The phone (and email) show as verified; changing a contact needs a code sent to the new one, so the Change control waits for that flow.
 
+**D49. Tracking: service, data model and sync (Phase 2, epics 1 and 2).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Who:** Tracking accepts seekers only (a SEEKER token from the members realm) and keys them by `preferred_username`, which Core makes the account id, so it matches every event's subjectId. It stores no names, phones or emails.
+- **Consent:** logging needs the TRACKING consent; Tracking keeps the latest state from `core.consent.changed` and refuses pushes without it (`tracking.consent-needed`). People can always read and delete what they logged.
+- **Sync:** the phone pushes entries with a `client_entry_id` made when the entry is made; a replay returns the same observation. A day state keeps one live value per element and local day: the most recently recorded wins, so an older entry from an offline phone arrives already tombstoned. Every insert and tombstone takes the next number of one sequence, which is the pull cursor; pulls return at most 1,000 changes. Days in the future where they were logged are refused.
+- **Notes:** a note's text lives only in `entry_note`; deleting or superseding the entry deletes the row for real. Notes reach only their owner's pull, and later the specialist when the grant includes notes.
+- **Audit:** every read of tracking entries is audited, the owner's own pulls included.
+- **Erasure:** on `core.user.erased`, every Tracking table that holds the person deletes its rows, and Tracking answers `tracking.user.erased`.
+- **Element labels** are the designs' wording (Tracking.dc.html, Checkin.dc.html) until the clinicians' wording review; `stress_level` has no design yet, so its labels (Low, Some, High) are placeholders for that review.
+- **Not built:** `timeline_view` from the tracking design document has no screen that needs it; recommendation status SEEN covers what has been seen.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

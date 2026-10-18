@@ -33,7 +33,7 @@ for (const file of schemaFiles) {
   }
 }
 
-for (const file of files(join(root, "examples"))) {
+for (const file of files(join(root, "examples")).filter((f) => f.endsWith(".json"))) {
   const event = JSON.parse(readFileSync(file, "utf8"));
   const [producer, ...rest] = event.type.split(".");
   const id = `https://schemas.solace.care/events/${producer}/${rest.join(".")}.v${event.version}.schema.json`;

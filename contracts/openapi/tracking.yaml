@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: Solace Tracking API
-  version: 0.1.0
+  version: 0.2.0
   description: |
-    Tracking: elements, modules, rules, observations.
-    Reached through the gateway at /api/tracking. Phase 0 stub; endpoints are added with each epic.
+    Tracking: elements, modules, rules, observations (Tracking Service Spec; D49).
+    Reached through the gateway at /api/tracking. Seekers only: Tracking needs a durable account,
+    never a guest. Notes are storage: rules never read them and no event carries them.
   license:
     name: Proprietary
     identifier: LicenseRef-Proprietary
@@ -16,6 +17,10 @@ security:
 tags:
   - name: system
     description: Platform plumbing, no user data
+  - name: elements
+    description: The engineer-seeded element library (Tracking Service Spec, Elements)
+  - name: sync
+    description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
 paths:
   /v1/system/info:
     get:
@@ -33,6 +38,89 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /v1/tracking/elements:
+    get:
+      operationId: listElements
+      summary: Every element with its labels in EN and FR, for the phone's offline cache
+      tags: [elements]
+      responses:
+        "200":
+          description: The library
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Element"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/tracking/sync/push:
+    post:
+      operationId: pushEntries
+      summary: Log entries and deletions made on the phone; sending the same client_entry_id again changes nothing
+      tags: [sync]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushRequest"
+      responses:
+        "200":
+          description: What was accepted or refused, entry by entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/sync/pull:
+    get:
+      operationId: pullEntries
+      summary: Everything logged or deleted since a cursor, from any of the person's phones
+      tags: [sync]
+      parameters:
+        - name: since
+          in: query
+          description: The cursor from the last pull; absent for everything.
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        "200":
+          description: Changes since the cursor, at most 1000; more when hasMore
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/observations/{observationId}:
+    parameters:
+      - name: observationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: deleteObservation
+      summary: Delete one of my entries; its note is deleted for real
+      tags: [sync]
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     bearerAuth:
@@ -41,8 +129,32 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   responses:
+    BadRequest:
+      description: The request does not match the contract
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     Unauthorized:
       description: Missing or invalid token
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: Not allowed, for example without tracking consent (tracking.consent-needed)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: No such resource for this person
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: The resource is not in a state that allows this
       content:
         application/problem+json:
           schema:
@@ -53,6 +165,8 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+  parameters: {}
+  requestBodies: {}
   schemas:
     Problem:
       description: RFC 9457 problem details. title and detail are localised to the caller's language.
@@ -73,7 +187,7 @@ components:
           format: uri-reference
         code:
           type: string
-          description: Stable machine-readable error code, e.g. booking.slot-taken
+          description: Stable machine-readable error code, e.g. tracking.consent-needed
         traceId:
           type: string
     ServiceInfo:
@@ -85,3 +199,217 @@ components:
           type: string
         version:
           type: string
+    ElementRef:
+      type: object
+      additionalProperties: false
+      required: [code, version]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+        version:
+          description: "1 or 1.1: major and minor."
+          type: string
+          pattern: "^[0-9]+(\\.[0-9]+)?$"
+    Element:
+      type: object
+      additionalProperties: false
+      required: [code, version, kind, valueType, constraints, inputView, icon, signals, labels, minAppVersion]
+      properties:
+        code:
+          type: string
+        version:
+          type: string
+        kind:
+          type: string
+          enum: [DAY_STATE, EVENT]
+        valueType:
+          type: string
+          enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
+        constraints:
+          description: "min/max for INT and MINUTES, values for ENUM, step for MINUTES."
+          type: object
+          additionalProperties: false
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+            step:
+              type: integer
+            values:
+              type: array
+              items:
+                type: string
+        inputView:
+          type: string
+          x-extensible-enum: [scale_5, duration_stepper, choice_chips, toggle, flow_calendar, event_marker, free_text]
+        icon:
+          type: string
+        signals:
+          type: array
+          items:
+            type: string
+            x-extensible-enum: [daily_value, cycle_length_days, period_days, very_heavy_days, cycle_event]
+        labels:
+          $ref: "#/components/schemas/ElementLabels"
+        minAppVersion:
+          type: string
+    ElementLabels:
+      type: object
+      additionalProperties: false
+      required: [en, fr]
+      properties:
+        en:
+          $ref: "#/components/schemas/ElementLabel"
+        fr:
+          $ref: "#/components/schemas/ElementLabel"
+    ElementLabel:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+        help:
+          type: string
+        values:
+          description: A label per enum value, or per scale point.
+          type: object
+          additionalProperties:
+            type: string
+    EntryValue:
+      description: "One of: an integer (INT, MINUTES), an enum value (ENUM), true/false (BOOL), a date (DATE), or the note's text (TEXT)."
+      oneOf:
+        - type: integer
+        - type: string
+          maxLength: 4000
+        - type: boolean
+    PushEntry:
+      type: object
+      additionalProperties: false
+      required: [clientEntryId, element, observedOn, timeZone, value, recordedAt]
+      properties:
+        clientEntryId:
+          description: Made on the phone when the entry is made; the same id is never accepted twice.
+          type: string
+          format: uuid
+        element:
+          $ref: "#/components/schemas/ElementRef"
+        observedOn:
+          description: The local calendar day the entry is about.
+          type: string
+          format: date
+        timeZone:
+          description: The phone's time zone when logged (IANA).
+          type: string
+          maxLength: 64
+        value:
+          $ref: "#/components/schemas/EntryValue"
+        recordedAt:
+          type: string
+          format: date-time
+    PushRequest:
+      type: object
+      additionalProperties: false
+      required: [deviceId, entries, deletions]
+      properties:
+        deviceId:
+          type: string
+          maxLength: 100
+        entries:
+          type: array
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/PushEntry"
+        deletions:
+          description: Entries to delete, by server id or by the phone's client id.
+          type: array
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              observationId:
+                type: string
+                format: uuid
+              clientEntryId:
+                type: string
+                format: uuid
+    PushResult:
+      type: object
+      additionalProperties: false
+      required: [accepted, rejected, cursor]
+      properties:
+        accepted:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [clientEntryId, observationId]
+            properties:
+              clientEntryId:
+                type: string
+                format: uuid
+              observationId:
+                type: string
+                format: uuid
+        rejected:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [clientEntryId, code]
+            properties:
+              clientEntryId:
+                type: string
+                format: uuid
+              code:
+                type: string
+                x-extensible-enum: [tracking.unknown-element, tracking.invalid-value, tracking.future-day]
+        cursor:
+          type: integer
+          format: int64
+    Observation:
+      type: object
+      additionalProperties: false
+      required: [id, clientEntryId, element, observedOn, timeZone, value, recordedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientEntryId:
+          type: string
+          format: uuid
+        element:
+          $ref: "#/components/schemas/ElementRef"
+        observedOn:
+          type: string
+          format: date
+        timeZone:
+          type: string
+        value:
+          $ref: "#/components/schemas/EntryValue"
+        recordedAt:
+          type: string
+          format: date-time
+    PullResult:
+      type: object
+      additionalProperties: false
+      required: [observations, deleted, cursor, hasMore]
+      properties:
+        observations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Observation"
+        deleted:
+          description: Ids of entries deleted, or superseded by a newer value for the same day.
+          type: array
+          items:
+            type: string
+            format: uuid
+        cursor:
+          type: integer
+          format: int64
+        hasMore:
+          type: boolean
