@@ -20,6 +20,8 @@ public record Account(UUID id, Type type, Status status, Locale appLanguage, Ins
   public enum Status {
     PENDING,
     ACTIVE,
-    SUSPENDED
+    SUSPENDED,
+    /** Erased at the person's request (D40): a tombstone with no contact or sign-in. */
+    ERASED
   }
 }

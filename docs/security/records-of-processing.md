@@ -57,7 +57,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | Where | Core database; Keycloak database (`solace-members`) |
 | Recipients | SMS and email providers (the code and the contact) |
 | Transfers abroad | Depends on the SMS and email providers (**Counsel**) |
-| Retention | While the account exists; erased within 30 days of a request (System Design). An account whose first sign-in never comes is removed after 24 hours (`solace.identity.unverified-signup-ttl`, a setting, not in the specs). Sign-in events 90 days, a setting (`SOLACE_MEMBERS_EVENTS_EXPIRATION_SECONDS`), not set by any spec (**Open**) |
+| Retention | While the account exists. Erasure (D40) runs at once for seekers and within `solace.privacy.request-deadline` ([30] days) for specialists; it leaves a tombstone id with no contact so bookings and the ledger keep their accounting record, and keeps the pseudonymous consent history as proof (**Counsel**). An account whose first sign-in never comes is removed after 24 hours (`solace.identity.unverified-signup-ttl`, a setting, not in the specs). Sign-in events 90 days, a setting (`SOLACE_MEMBERS_EVENTS_EXPIRATION_SECONDS`), not set by any spec (**Open**) |
 | Security | Threat model EI-1 to EI-5, EI-19 |
 
 ### P2. Guest booking and contact verification
@@ -69,7 +69,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | Data | Phone number or email, verification time, bookings and payments made as a guest, claimed-by account |
 | Where | Core database |
 | Recipients | SMS provider; aggregator (payment) |
-| Retention | Purged 12 months after the last booking (System Design, Retention); claimed into an account when the guest registers with the same contact |
+| Retention | Phone and links purged `solace.privacy.guest-retention` ([12] months) after the guest last proved the number, which every booking does (D40); claimed into an account when the guest registers with the same contact |
 | Security | CO-1, CO-22 |
 
 ### P3. Staff accounts and sign-in
@@ -141,7 +141,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | People | All |
 | Data | Contact or push token with the device's time zone, locale, template and its placeholders; for members the pushed text (the in-app inbox); for SMS and email only the kind and time, never the text. Copy is neutral: never a condition, a specialty, a mood, "therapy" or "mental health" (`notification-copy.md`); discreet mode |
 | Recipients | SMS, email and push providers |
-| Retention | Delivery records: **Open** |
+| Retention | Delivered messages (including the inbox) deleted after `solace.privacy.message-retention` ([180] days, D40; **Open** for the owner to confirm). SMS and email text is never stored |
 | Security | CO-20, CL-6 |
 
 ### P9. Crisis alerts and the safety monitor

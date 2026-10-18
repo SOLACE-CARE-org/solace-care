@@ -1,0 +1,12 @@
+{
+  "eventId": "4e1b7d2a-9c3f-4a68-b5e2-0d7f1c9a3e46",
+  "type": "core.user.erased",
+  "version": 1,
+  "occurredAt": "2026-10-18T16:00:00Z",
+  "subjectId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+  "locale": "en",
+  "traceId": "0af7651916cd43dd8448eb211c80319c",
+  "payload": {
+    "accountType": "SEEKER"
+  }
+}

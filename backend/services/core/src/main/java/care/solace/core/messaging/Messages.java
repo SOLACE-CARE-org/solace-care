@@ -249,6 +249,15 @@ class Messages {
     }
   }
 
+  @ApplicationModuleListener
+  void dataCopyReady(care.solace.core.privacy.DataCopyReady ready) {
+    UUID to = ready.accountId();
+    String days = Long.toString(ready.days());
+    notifier.push(to, "DATA_COPY_READY", null, false, (l, z) -> new Object[] {days});
+    notifier.email(
+        to, "DATA_COPY_READY", "copy-" + Instant.now(), (l, z) -> new Object[] {days});
+  }
+
   // --- Reminders (D38) --------------------------------------------------------------------------
 
   /** The day before, and when joining opens 10 minutes before (D18). Each goes once. */

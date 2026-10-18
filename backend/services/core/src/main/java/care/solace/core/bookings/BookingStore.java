@@ -198,6 +198,14 @@ class BookingStore {
         .update();
   }
 
+  List<Row> forAccount(UUID accountId) {
+    return db.sql(
+            "SELECT " + COLUMNS + " FROM booking WHERE seeker_account_id = :a ORDER BY starts_at")
+        .param("a", accountId)
+        .query(BookingStore::row)
+        .list();
+  }
+
   Optional<Row> nextFor(UUID subjectId, Instant now) {
     return db.sql(
             "SELECT "

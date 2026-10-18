@@ -2497,6 +2497,99 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/me/data-exports:
+    post:
+      operationId: requestDataExport
+      summary: Prepare a copy of my data (D40); the person is told when it is ready
+      tags: [privacy]
+      responses:
+        "202":
+          description: Being prepared, or the one already being prepared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataExport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/data-exports/latest:
+    get:
+      operationId: getLatestDataExport
+      summary: The latest copy and whether it can still be downloaded
+      tags: [privacy]
+      responses:
+        "200":
+          description: The latest export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataExport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/me/data-exports/{exportId}/file:
+    parameters:
+      - name: exportId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: downloadDataExport
+      summary: The file itself, for its owner only, until it expires
+      tags: [privacy]
+      responses:
+        "200":
+          description: The copy, as JSON
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/erasure:
+    post:
+      operationId: eraseMyAccount
+      summary: Delete my account and data (D40)
+      description: Seekers are erased at once and signed out everywhere. A specialist's request goes to Operations.
+      tags: [privacy]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [confirm]
+              properties:
+                confirm:
+                  description: Must be true; the app asks first.
+                  type: boolean
+                  const: true
+      responses:
+        "202":
+          description: Done, or filed for a specialist
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [outcome]
+                properties:
+                  outcome:
+                    type: string
+                    enum: [ERASED, REQUESTED]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -4376,5 +4469,25 @@ components:
           type: string
           format: date-time
         endsAt:
+          type: string
+          format: date-time
+    DataExport:
+      type: object
+      additionalProperties: false
+      required: [id, status, requestedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          x-extensible-enum: [PREPARING, READY, EXPIRED]
+        requestedAt:
+          type: string
+          format: date-time
+        readyAt:
+          type: string
+          format: date-time
+        expiresAt:
           type: string
           format: date-time

@@ -279,6 +279,11 @@ class Bookings implements BookingRecords {
   }
 
   @Override
+  public List<UUID> idsFor(UUID accountId) {
+    return store.forAccount(accountId).stream().map(BookingStore.Row::id).toList();
+  }
+
+  @Override
   public Optional<Info> nextFor(UUID subjectId, Instant now) {
     return store.nextFor(subjectId, now).map(BookingStore.Row::info);
   }

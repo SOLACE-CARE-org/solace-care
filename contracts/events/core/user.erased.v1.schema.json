@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/user.erased.v1.schema.json",
+  "title": "core.user.erased v1",
+  "description": "A person's account was erased (System Design, data subject rights; D40). Every service deletes what it holds for subjectId within 30 days.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "core.user.erased"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accountType"],
+      "properties": {
+        "accountType": {
+          "enum": ["SEEKER", "SPECIALIST"]
+        }
+      }
+    }
+  }
+}

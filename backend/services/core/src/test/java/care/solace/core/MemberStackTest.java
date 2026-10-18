@@ -81,6 +81,7 @@ public abstract class MemberStackTest {
     Startables.deepStart(POSTGRES, KAFKA, MINIO, REDIS, KEYCLOAK).join();
     try (S3Client s3 = s3()) {
       s3.createBucket(b -> b.bucket("solace-credentials"));
+      s3.createBucket(b -> b.bucket("solace-exports"));
     }
   }
 

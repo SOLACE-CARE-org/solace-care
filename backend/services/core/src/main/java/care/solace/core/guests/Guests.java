@@ -36,6 +36,7 @@ class Guests implements GuestAccess {
   private static final String CODE = "solace:guest-code:";
   private static final SecureRandom RANDOM = new SecureRandom();
 
+  private final Duration retention;
   private final JdbcClient db;
   private final StringRedisTemplate redis;
   private final SignInCodes codes;
@@ -51,7 +52,10 @@ class Guests implements GuestAccess {
       GuestSettings settings,
       ApplicationEventPublisher events,
       TransactionTemplate transactions,
+      @org.springframework.beans.factory.annotation.Value("${solace.privacy.guest-retention:P365D}")
+          Duration retention,
       Clock clock) {
+    this.retention = retention;
     this.db = db;
     this.redis = redis;
     this.codes = codes;
@@ -159,6 +163,32 @@ class Guests implements GuestAccess {
                     rs.getObject("guest_contact_id", UUID.class),
                     rs.getObject("booking_id", UUID.class)))
         .optional();
+  }
+
+  /**
+   * Guest contacts lose their phone and links once unused for their retention (System Design, 12
+   * months after the last booking; D40). Each guest booking proves the phone again, so the last
+   * proof is when the contact was last used.
+   */
+  @org.springframework.scheduling.annotation.Scheduled(cron = "0 45 2 * * *", zone = "Africa/Douala")
+  void purgeOldContacts() {
+    Instant now = clock.instant();
+    Instant before = now.minus(retention);
+    db.sql(
+            """
+            DELETE FROM guest_token WHERE guest_contact_id IN
+              (SELECT id FROM guest_contact WHERE phone IS NOT NULL AND verified_at < :before)
+            """)
+        .param("before", Timestamp.from(before))
+        .update();
+    db.sql(
+            """
+            UPDATE guest_contact SET phone = NULL, purged_at = :now
+             WHERE phone IS NOT NULL AND verified_at < :before
+            """)
+        .param("before", Timestamp.from(before))
+        .param("now", Timestamp.from(now))
+        .update();
   }
 
   @Override

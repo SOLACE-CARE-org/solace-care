@@ -46,6 +46,7 @@ class Notifier {
   private final Availability availability;
   private final MessagingSettings settings;
   private final org.springframework.transaction.support.TransactionTemplate ownTransaction;
+  private final java.time.Duration messageRetention;
   private final Clock clock;
 
   Notifier(
@@ -56,7 +57,10 @@ class Notifier {
       Availability availability,
       MessagingSettings settings,
       org.springframework.transaction.PlatformTransactionManager transactions,
+      @org.springframework.beans.factory.annotation.Value("${solace.privacy.message-retention:P180D}")
+          java.time.Duration messageRetention,
       Clock clock) {
+    this.messageRetention = messageRetention;
     this.ownTransaction =
         new org.springframework.transaction.support.TransactionTemplate(transactions);
     this.ownTransaction.setPropagationBehavior(
@@ -105,6 +109,18 @@ class Notifier {
             .update();
     if (inserted == 1 && !sendAfter.isAfter(now)) {
       deliver(id, accountId, text, bookingId);
+    }
+  }
+
+  /** Delivered messages are deleted after their retention (D40). */
+  @Scheduled(cron = "0 30 2 * * *", zone = "Africa/Douala")
+  void forgetOldMessages() {
+    try {
+      db.sql("DELETE FROM notification WHERE created_at < :before AND status <> 'WAITING'")
+          .param("before", Timestamp.from(clock.instant().minus(messageRetention)))
+          .update();
+    } catch (RuntimeException e) {
+      LOG.warn("Deleting old messages failed", e);
     }
   }
 

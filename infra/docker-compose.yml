@@ -117,8 +117,9 @@ services:
     command:
       - |
         until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" > /dev/null 2>&1; do sleep 1; done &&
-        mc mb --ignore-existing local/solace-credentials local/solace-content &&
+        mc mb --ignore-existing local/solace-credentials local/solace-content local/solace-exports &&
         mc anonymous set none local/solace-credentials &&
+        mc anonymous set none local/solace-exports &&
         echo buckets ready
 
   # Identity provider. Admin console on http://localhost:8180.
