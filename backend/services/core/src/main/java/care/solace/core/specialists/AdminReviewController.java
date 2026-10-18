@@ -103,6 +103,7 @@ class AdminReviewController {
       StaffRef assignedTo,
       Instant interviewAt,
       String reviewNote,
+      Verification approvalProposal,
       int verifiedItems,
       Identity identity,
       Licence licence,
@@ -134,7 +135,12 @@ class AdminReviewController {
   record Offering(String modality, boolean enabled, int durationMinutes, long price) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  record Profile(List<String> focusAreas, String bioEn, String bioFr, Verification verification) {}
+  record Profile(
+      List<String> focusAreas,
+      String bioEn,
+      String bioFr,
+      String draftedLanguage,
+      Verification verification) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record Payout(String method, String phone, String holderName, Verification verification) {}
@@ -262,6 +268,21 @@ class AdminReviewController {
     return render(reviews.review(id, locale));
   }
 
+  @PostMapping("/admin/v1/specialist-applications/{id}/approval-proposal")
+  ApplicationReview proposeApproval(
+      @AuthenticationPrincipal Jwt token, @PathVariable UUID id, Locale locale) {
+    reviews.proposeApproval(id, changer(token), locale);
+    return render(reviews.review(id, locale));
+  }
+
+  @DeleteMapping("/admin/v1/specialist-applications/{id}/approval-proposal")
+  ApplicationReview withdrawApproval(
+      @AuthenticationPrincipal Jwt token, @PathVariable UUID id, Locale locale) {
+    reviews.withdrawApproval(id, changer(token));
+    return render(reviews.review(id, locale));
+  }
+
+  /** Confirms a proposed approval; only someone other than the proposer (D29). */
   @PostMapping("/admin/v1/specialist-applications/{id}/approval")
   ApplicationReview approve(
       @AuthenticationPrincipal Jwt token, @PathVariable UUID id, Locale locale) {
@@ -370,6 +391,7 @@ class AdminReviewController {
         staff(r.state().assignedTo()),
         p.interviewAt(),
         p.reviewNote(),
+        verification(r.state().approvalProposal()),
         r.verifiedItems(),
         new Identity(verification(items.get(ReviewStore.Item.IDENTITY))),
         new Licence(
@@ -393,6 +415,7 @@ class AdminReviewController {
             r.focusAreas(),
             p.bioEn(),
             p.bioFr(),
+            r.state().bioDraftedLanguage(),
             verification(items.get(ReviewStore.Item.PROFILE))),
         r.payout()
             .map(

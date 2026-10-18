@@ -61,7 +61,7 @@ class AdminReviewIntegrationTest extends MemberStackTest {
         .andExpect(jsonPath("$.verifiedItems").value(1)); // services: within the price bands
 
     // Approval waits for every item.
-    act(post(app(applicant, "/approval")).with(ops))
+    act(post(app(applicant, "/approval-proposal")).with(ops))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("specialist.review-incomplete"));
     // The profile needs the bio in both languages first.
@@ -90,11 +90,26 @@ class AdminReviewIntegrationTest extends MemberStackTest {
         .andExpect(jsonPath("$.verifiedItems").value(6))
         .andExpect(jsonPath("$.languages[1].verification.by.name").value("Nadine Ebai"));
 
+    // Two people (D29): the reviewer proposes, someone else confirms.
     act(post(app(applicant, "/approval")).with(ops))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("specialist.approval-not-proposed"));
+    act(post(app(applicant, "/approval-proposal")).with(ops))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("UNDER_REVIEW"))
+        .andExpect(jsonPath("$.approvalProposal.by.name").value("Nadine Ebai"));
+    act(post(app(applicant, "/approval")).with(ops))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("specialist.same-approver"));
+    var second = staff("sa-2", "Jean Fotso", "SUPER_ADMIN");
+    act(post(app(applicant, "/approval")).with(second))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("APPROVED"))
         .andExpect(jsonPath("$.activity[0].kind").value("APPROVED"))
-        .andExpect(jsonPath("$.activity[0].by.name").value("Nadine Ebai"));
+        .andExpect(jsonPath("$.activity[0].by.name").value("Jean Fotso"))
+        .andExpect(jsonPath("$.activity[1].kind").value("APPROVAL_PROPOSED"))
+        .andExpect(jsonPath("$.activity[1].by.name").value("Nadine Ebai"))
+        .andExpect(jsonPath("$.profile.draftedLanguage").value("fr"));
 
     // The specialist now gets the specialist app.
     mvc.perform(get("/v1/me").headers(bearer(applicant.token())))
@@ -111,8 +126,40 @@ class AdminReviewIntegrationTest extends MemberStackTest {
             "specialists.application.verify",
             "specialists.application.verify-language",
             "specialists.application.bio",
+            "specialists.application.propose-approval",
             "specialists.application.approve");
-    assertThat(audit).allSatisfy(row -> assertThat(row.get("actor_id")).isEqualTo("ops-1"));
+    assertThat(audit)
+        .filteredOn(row -> row.get("action").equals("specialists.application.approve"))
+        .allSatisfy(row -> assertThat(row.get("actor_id")).isEqualTo("sa-2"));
+    assertThat(audit)
+        .filteredOn(row -> !row.get("action").equals("specialists.application.approve"))
+        .allSatisfy(row -> assertThat(row.get("actor_id")).isEqualTo("ops-1"));
+  }
+
+  @Test
+  void aProposedApprovalIsWithdrawnWhenTheItemsChange() throws Exception {
+    var ops = staff("ops-4", "Ops Four", "OPERATIONS");
+    var second = staff("ops-5", "Ops Five", "OPERATIONS");
+    Applicant applicant = fullyVerified("+237698000007", "Changed Mind", ops);
+    act(post(app(applicant, "/approval-proposal")).with(ops)).andExpect(status().isOk());
+    act(post(app(applicant, "/approval-proposal")).with(second))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("specialist.approval-pending"));
+
+    // The second person lowers a language level: the proposal no longer stands.
+    language(applicant, second, "fr", "BELOW_PROFESSIONAL")
+        .andExpect(jsonPath("$.approvalProposal").doesNotExist())
+        .andExpect(jsonPath("$.activity[0].kind").value("APPROVAL_WITHDRAWN"));
+    act(post(app(applicant, "/approval")).with(second))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("specialist.approval-not-proposed"));
+
+    // A proposal can also be declined outright.
+    act(post(app(applicant, "/approval-proposal")).with(ops)).andExpect(status().isOk());
+    act(delete(app(applicant, "/approval-proposal")).with(second))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("UNDER_REVIEW"))
+        .andExpect(jsonPath("$.approvalProposal").doesNotExist());
   }
 
   @Test
@@ -307,6 +354,16 @@ class AdminReviewIntegrationTest extends MemberStackTest {
 
   private Applicant approvedSpecialist(String phone, String name, RequestPostProcessor ops)
       throws Exception {
+    Applicant applicant = fullyVerified(phone, name, ops);
+    act(post(app(applicant, "/approval-proposal")).with(ops)).andExpect(status().isOk());
+    act(post(app(applicant, "/approval")).with(staff("second", "Second Approver", "OPERATIONS")))
+        .andExpect(jsonPath("$.status").value("APPROVED"));
+    return applicant;
+  }
+
+  /** Opened for review by {@code ops}, with all six items verified. */
+  private Applicant fullyVerified(String phone, String name, RequestPostProcessor ops)
+      throws Exception {
     Applicant applicant = submittedApplicant(phone, name);
     act(post(app(applicant, "/review")).with(ops)).andExpect(status().isOk());
     item(applicant, ops, "IDENTITY", "{\"verified\":true}");
@@ -323,9 +380,7 @@ class AdminReviewIntegrationTest extends MemberStackTest {
     item(applicant, ops, "PROFILE", "{\"verified\":true}");
     item(applicant, ops, "PAYOUT", "{\"verified\":true}");
     language(applicant, ops, "en", "NATIVE");
-    language(applicant, ops, "fr", "FLUENT");
-    act(post(app(applicant, "/approval")).with(ops))
-        .andExpect(jsonPath("$.status").value("APPROVED"));
+    language(applicant, ops, "fr", "FLUENT").andExpect(jsonPath("$.verifiedItems").value(6));
     return applicant;
   }
 

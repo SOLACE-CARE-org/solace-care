@@ -32,7 +32,13 @@ enum SpecialistError implements ErrorCode {
   /** Approval needs all six items verified. */
   REVIEW_INCOMPLETE("specialist.review-incomplete", 409),
   /** Suspending needs an approved specialist; reinstating, a suspended one. */
-  NOT_APPROVED("specialist.not-approved", 409);
+  NOT_APPROVED("specialist.not-approved", 409),
+  /** An approval is already waiting for its second person (D29). */
+  APPROVAL_PENDING("specialist.approval-pending", 409),
+  /** Confirming or withdrawing an approval nobody proposed. */
+  APPROVAL_NOT_PROPOSED("specialist.approval-not-proposed", 409),
+  /** The person who proposed an approval cannot also confirm it (D29). */
+  SAME_APPROVER("specialist.same-approver", 409);
 
   private final String code;
   private final int status;

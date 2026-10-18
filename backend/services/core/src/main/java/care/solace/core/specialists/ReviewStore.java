@@ -59,7 +59,9 @@ class ReviewStore {
       Instant changesRequestedAt,
       Instant decidedAt,
       LocalDate licenceValidUntil,
-      String staffNotes) {}
+      String staffNotes,
+      Verification approvalProposal,
+      String bioDraftedLanguage) {}
 
   record LanguageReview(
       String code, String declared, String verifiedLevel, Verification verification) {}
@@ -131,7 +133,8 @@ class ReviewStore {
     return db.sql(
             """
             SELECT assigned_staff_id, assigned_staff_name, review_started_at, changes_requested_at,
-                   decided_at, licence_valid_until, staff_notes
+                   decided_at, licence_valid_until, staff_notes, approval_proposed_by_id,
+                   approval_proposed_by_name, approval_proposed_at, bio_drafted_language
               FROM specialist_profile WHERE account_id = :id
             """)
         .param("id", id)
@@ -143,7 +146,9 @@ class ReviewStore {
                     instant(rs, "changes_requested_at"),
                     instant(rs, "decided_at"),
                     rs.getObject("licence_valid_until", LocalDate.class),
-                    rs.getString("staff_notes")))
+                    rs.getString("staff_notes"),
+                    proposal(rs),
+                    rs.getString("bio_drafted_language")))
         .single();
   }
 
@@ -301,13 +306,49 @@ class ReviewStore {
     db.sql(
             "UPDATE specialist_profile SET "
                 + column
-                + " = :t, bio_language = COALESCE(bio_language, :l), updated_at = :now"
+                + " = :t, bio_language = COALESCE(bio_language, :l),"
+                // Staff writing the language the specialist did not: a Solace draft (D30).
+                + " bio_drafted_language = CASE WHEN bio_language IS NOT NULL AND bio_language <> :l"
+                + " THEN :l ELSE bio_drafted_language END,"
+                + " bio_draft_confirmed_at = NULL, updated_at = :now"
                 + " WHERE account_id = :id")
         .param("id", id)
         .param("t", text)
         .param("l", language)
         .param("now", Timestamp.from(now))
         .update();
+  }
+
+  /** Records the first person's approval (D29); true only if none was waiting. */
+  boolean proposeApproval(UUID id, StaffRef staff, Instant now) {
+    return db.sql(
+                """
+                UPDATE specialist_profile
+                   SET approval_proposed_by_id = :sid, approval_proposed_by_name = :sname,
+                       approval_proposed_at = :now
+                 WHERE account_id = :id AND verification_status = 'UNDER_REVIEW'
+                   AND approval_proposed_by_id IS NULL
+                """)
+            .param("id", id)
+            .param("sid", staff.id())
+            .param("sname", staff.name())
+            .param("now", Timestamp.from(now))
+            .update()
+        == 1;
+  }
+
+  /** Withdraws a waiting approval; true only if there was one. */
+  boolean clearProposal(UUID id) {
+    return db.sql(
+                """
+                UPDATE specialist_profile
+                   SET approval_proposed_by_id = NULL, approval_proposed_by_name = NULL,
+                       approval_proposed_at = NULL
+                 WHERE account_id = :id AND approval_proposed_by_id IS NOT NULL
+                """)
+            .param("id", id)
+            .update()
+        == 1;
   }
 
   void notes(UUID id, String notes) {
@@ -371,7 +412,8 @@ class ReviewStore {
             """
             UPDATE specialist_profile
                SET changes_requested_at = NULL, assigned_staff_id = NULL, assigned_staff_name = NULL,
-                   review_started_at = NULL
+                   review_started_at = NULL, approval_proposed_by_id = NULL,
+                   approval_proposed_by_name = NULL, approval_proposed_at = NULL
              WHERE account_id = :id
             """)
         .param("id", id)
@@ -401,6 +443,12 @@ class ReviewStore {
         .param("id", id)
         .query(UUID.class)
         .optional();
+  }
+
+  private static Verification proposal(ResultSet rs) throws SQLException {
+    StaffRef by = staff(rs, "approval_proposed_by_id", "approval_proposed_by_name");
+    Instant at = instant(rs, "approval_proposed_at");
+    return by == null || at == null ? null : new Verification(by, at);
   }
 
   private static StaffRef staff(ResultSet rs, String idColumn, String nameColumn)

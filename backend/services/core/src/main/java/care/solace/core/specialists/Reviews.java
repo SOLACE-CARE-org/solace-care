@@ -231,6 +231,7 @@ class Reviews {
           }
           reviews.record(
               id, verified ? "ITEM_VERIFIED" : "ITEM_UNVERIFIED", item.name(), null, staff, now);
+          withdrawOnChange(id, staff, now);
         });
   }
 
@@ -245,6 +246,7 @@ class Reviews {
             throw new SolaceException(CommonError.NOT_FOUND);
           }
           reviews.record(id, "LANGUAGE_VERIFIED", code, level, staff, now);
+          withdrawOnChange(id, staff, now);
         });
   }
 
@@ -266,6 +268,7 @@ class Reviews {
           reviews.bio(id, language, bio, now);
           reviews.unverify(id, ReviewStore.Item.PROFILE);
           reviews.record(id, "BIO_ADDED", language, null, staff, now);
+          withdrawOnChange(id, staff, now);
         });
   }
 
@@ -304,9 +307,57 @@ class Reviews {
         });
   }
 
+  /** The first of two people (D29): every item verified, nothing already waiting. */
+  void proposeApproval(UUID id, ReviewStore.StaffRef staff, Locale viewer) {
+    if (profile(id).status() != ApplicationStatus.UNDER_REVIEW) {
+      throw new SolaceException(SpecialistError.NOT_UNDER_REVIEW);
+    }
+    if (review(id, viewer).verifiedItems() < ITEMS) {
+      throw new SolaceException(SpecialistError.REVIEW_INCOMPLETE);
+    }
+    if (reviews.state(id).approvalProposal() != null) {
+      throw new SolaceException(SpecialistError.APPROVAL_PENDING);
+    }
+    change(
+        id,
+        "specialists.application.propose-approval",
+        Map.of(),
+        now -> {
+          if (!reviews.proposeApproval(id, staff, now)) {
+            throw new SolaceException(SpecialistError.APPROVAL_PENDING);
+          }
+          reviews.record(id, "APPROVAL_PROPOSED", null, null, staff, now);
+        });
+  }
+
+  /** Withdrawn by the proposer, or declined by the second person: back to review. */
+  void withdrawApproval(UUID id, ReviewStore.StaffRef staff) {
+    if (reviews.state(id).approvalProposal() == null) {
+      throw new SolaceException(SpecialistError.APPROVAL_NOT_PROPOSED);
+    }
+    change(
+        id,
+        "specialists.application.withdraw-approval",
+        Map.of(),
+        now -> {
+          if (!reviews.clearProposal(id)) {
+            throw new SolaceException(SpecialistError.APPROVAL_NOT_PROPOSED);
+          }
+          reviews.record(id, "APPROVAL_WITHDRAWN", null, null, staff, now);
+        });
+  }
+
+  /** The second of two people (D29): someone other than the proposer, every item still verified. */
   void approve(UUID id, ReviewStore.StaffRef staff, Locale viewer) {
     if (profile(id).status() != ApplicationStatus.UNDER_REVIEW) {
       throw new SolaceException(SpecialistError.NOT_UNDER_REVIEW);
+    }
+    var proposal = reviews.state(id).approvalProposal();
+    if (proposal == null) {
+      throw new SolaceException(SpecialistError.APPROVAL_NOT_PROPOSED);
+    }
+    if (proposal.by().id().equals(staff.id())) {
+      throw new SolaceException(SpecialistError.SAME_APPROVER);
     }
     if (review(id, viewer).verifiedItems() < ITEMS) {
       throw new SolaceException(SpecialistError.REVIEW_INCOMPLETE);
@@ -389,6 +440,13 @@ class Reviews {
     audit.adminAction(action, "specialist.application", id.toString(), details);
     Instant now = clock.instant();
     transactions.executeWithoutResult(s -> work.accept(now));
+  }
+
+  /** A proposal rests on the items as they were: any change to them withdraws it (D29). */
+  private void withdrawOnChange(UUID id, ReviewStore.StaffRef staff, Instant now) {
+    if (reviews.clearProposal(id)) {
+      reviews.record(id, "APPROVAL_WITHDRAWN", null, null, staff, now);
+    }
   }
 
   private ApplicationStore.Profile profile(UUID id) {
