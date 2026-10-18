@@ -41,6 +41,7 @@ class Guests implements GuestAccess {
   private final StringRedisTemplate redis;
   private final SignInCodes codes;
   private final GuestSettings settings;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final ApplicationEventPublisher events;
   private final TransactionTemplate transactions;
   private final Clock clock;
@@ -50,6 +51,7 @@ class Guests implements GuestAccess {
       StringRedisTemplate redis,
       SignInCodes codes,
       GuestSettings settings,
+      care.solace.core.admin.PlatformSettings platform,
       ApplicationEventPublisher events,
       TransactionTemplate transactions,
       @org.springframework.beans.factory.annotation.Value("${solace.privacy.guest-retention:P365D}")
@@ -60,6 +62,7 @@ class Guests implements GuestAccess {
     this.redis = redis;
     this.codes = codes;
     this.settings = settings;
+    this.platform = platform;
     this.events = events;
     this.transactions = transactions;
     this.clock = clock;
@@ -70,9 +73,18 @@ class Guests implements GuestAccess {
     String code = String.format("%06d", RANDOM.nextInt(1_000_000));
     redis
         .opsForValue()
-        .set(CODE + phone, hash(code) + "|" + settings.codeAttempts(), settings.codeLifetime());
+        .set(
+            CODE + phone,
+            hash(code)
+                + "|"
+                + platform.number("solace.guests.code-attempts", settings.codeAttempts()),
+            platform.duration("solace.guests.code-lifetime", settings.codeLifetime()));
     codes.send(
-        SignInCodes.Channel.SMS, phone, code, (int) settings.codeLifetime().toMinutes(), locale);
+        SignInCodes.Channel.SMS,
+        phone,
+        code,
+        (int) platform.duration("solace.guests.code-lifetime", settings.codeLifetime()).toMinutes(),
+        locale);
   }
 
   @Override
@@ -92,7 +104,10 @@ class Guests implements GuestAccess {
       } else {
         // Keep the code's remaining lifetime; only the tries go down.
         Long ttl = redis.getExpire(key);
-        Duration keep = ttl != null && ttl > 0 ? Duration.ofSeconds(ttl) : settings.codeLifetime();
+        Duration keep =
+            ttl != null && ttl > 0
+                ? Duration.ofSeconds(ttl)
+                : platform.duration("solace.guests.code-lifetime", settings.codeLifetime());
         redis.opsForValue().set(key, parts[0] + "|" + left, keep);
       }
       throw new SolaceException(GuestError.CODE_REJECTED);
@@ -175,7 +190,7 @@ class Guests implements GuestAccess {
       zone = "Africa/Douala")
   void purgeOldContacts() {
     Instant now = clock.instant();
-    Instant before = now.minus(retention);
+    Instant before = now.minus(platform.duration("solace.privacy.guest-retention", retention));
     db.sql(
             """
             DELETE FROM guest_token WHERE guest_contact_id IN

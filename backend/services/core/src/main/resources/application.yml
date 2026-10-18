@@ -45,6 +45,12 @@ spring:
             client-id: core-admin
             client-secret: ${SOLACE_CORE_ADMIN_SECRET:core-admin-dev-secret}
             authorization-grant-type: client_credentials
+          # Creates staff accounts and ends their sessions (staff realm, manage-users only; D42).
+          keycloak-staff-admin:
+            provider: keycloak
+            client-id: core-admin
+            client-secret: ${SOLACE_CORE_STAFF_ADMIN_SECRET:core-admin-dev-secret}
+            authorization-grant-type: client_credentials
         provider:
           keycloak:
             token-uri: http://localhost:8180/realms/solace-staff/protocol/openid-connect/token
@@ -81,6 +87,8 @@ solace:
       # The aggregator has no token either; Core checks each webhook's signature (D35, D36).
       - /v1/webhooks/**
       - /v1/catalogue/**
+      # Feature flags the apps read before anyone signs in (D42).
+      - /v1/config
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
     keycloak:

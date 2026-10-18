@@ -26,12 +26,15 @@ class PermissionMatrix implements StaffAccess {
   static final String RESOURCE = "/admin-permissions.json";
 
   private final String staffIssuer;
+  private final StaffDirectory directory;
   private final Map<String, Map<String, Level>> areas = new HashMap<>();
 
   PermissionMatrix(
       @Value("${solace.security.service-issuer:http://localhost:8180/realms/solace-staff}")
-          String staffIssuer) {
+          String staffIssuer,
+      StaffDirectory directory) {
     this.staffIssuer = staffIssuer;
+    this.directory = directory;
     try (InputStream in = PermissionMatrix.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing " + RESOURCE + " (contracts/permissions)");
@@ -65,7 +68,13 @@ class PermissionMatrix implements StaffAccess {
     if (name == null || name.isBlank()) {
       name = token.getClaimAsString("preferred_username");
     }
-    return new Staff(token.getSubject(), name == null ? token.getSubject() : name, roles(token));
+    var staff =
+        new Staff(token.getSubject(), name == null ? token.getSubject() : name, roles(token));
+    // Sessions end on a role change, a new password or deactivation (D7, D42).
+    if (!directory.admit(staff.id(), staff.name(), staff.roles(), token.getIssuedAt())) {
+      throw new SolaceException(CommonError.AUTH_REQUIRED);
+    }
+    return staff;
   }
 
   @Override

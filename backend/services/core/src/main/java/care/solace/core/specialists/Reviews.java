@@ -43,6 +43,7 @@ class Reviews {
   private final ObjectStorage storage;
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
+  private final LivePricing pricing;
   private final AuditLog audit;
   private final TransactionTemplate transactions;
   private final Clock clock;
@@ -54,6 +55,7 @@ class Reviews {
       ObjectStorage storage,
       Catalogue catalogue,
       SpecialistSettings settings,
+      LivePricing pricing,
       AuditLog audit,
       TransactionTemplate transactions,
       Clock clock) {
@@ -63,6 +65,7 @@ class Reviews {
     this.storage = storage;
     this.catalogue = catalogue;
     this.settings = settings;
+    this.pricing = pricing;
     this.audit = audit;
     this.transactions = transactions;
     this.clock = clock;
@@ -115,7 +118,7 @@ class Reviews {
     var items = reviews.items(id);
     var languages = reviews.languages(id);
     var offerings = applications.offerings(id);
-    var pricing = settings.pricing();
+    var pricing = this.pricing.current();
     boolean withinBands =
         offerings.stream().anyMatch(ApplicationStore.Offering::enabled)
             && offerings.stream()

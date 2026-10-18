@@ -51,6 +51,7 @@ class Sessions {
   private final BookingRecords bookings;
   private final JdbcClient db;
   private final SessionSettings settings;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final Clock clock;
   private final Set<String> rooms = ConcurrentHashMap.newKeySet();
 
@@ -59,11 +60,13 @@ class Sessions {
       BookingRecords bookings,
       JdbcClient db,
       SessionSettings settings,
+      care.solace.core.admin.PlatformSettings platform,
       Clock clock) {
     this.liveKit = liveKit;
     this.bookings = bookings;
     this.db = db;
     this.settings = settings;
+    this.platform = platform;
     this.clock = clock;
   }
 
@@ -169,7 +172,10 @@ class Sessions {
 
   void settleNow() {
     Instant now = clock.instant();
-    for (var b : bookings.confirmedStartedBefore(now.minus(settings.noShowAfter()))) {
+    for (var b :
+        bookings.confirmedStartedBefore(
+            now.minus(
+                platform.duration("solace.sessions.no-show-after", settings.noShowAfter())))) {
       List<String> joined = joined(b.id());
       if (joined.size() == 2) {
         bookings.start(b.id(), now);
@@ -188,7 +194,10 @@ class Sessions {
             .update();
       }
     }
-    for (var b : bookings.inProgressEndedBefore(now.minus(settings.completeAfter()))) {
+    for (var b :
+        bookings.inProgressEndedBefore(
+            now.minus(
+                platform.duration("solace.sessions.complete-after", settings.completeAfter())))) {
       bookings.complete(b.id(), now);
     }
   }

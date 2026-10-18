@@ -45,6 +45,7 @@ class Notifier {
   private final GuestAccess guests;
   private final Availability availability;
   private final MessagingSettings settings;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final org.springframework.transaction.support.TransactionTemplate ownTransaction;
   private final java.time.Duration messageRetention;
   private final Clock clock;
@@ -56,6 +57,7 @@ class Notifier {
       GuestAccess guests,
       Availability availability,
       MessagingSettings settings,
+      care.solace.core.admin.PlatformSettings platform,
       org.springframework.transaction.PlatformTransactionManager transactions,
       @org.springframework.beans.factory.annotation.Value(
               "${solace.privacy.message-retention:P180D}")
@@ -72,6 +74,7 @@ class Notifier {
     this.guests = guests;
     this.availability = availability;
     this.settings = settings;
+    this.platform = platform;
     this.clock = clock;
   }
 
@@ -118,7 +121,13 @@ class Notifier {
   void forgetOldMessages() {
     try {
       db.sql("DELETE FROM notification WHERE created_at < :before AND status <> 'WAITING'")
-          .param("before", Timestamp.from(clock.instant().minus(messageRetention)))
+          .param(
+              "before",
+              Timestamp.from(
+                  clock
+                      .instant()
+                      .minus(
+                          platform.duration("solace.privacy.message-retention", messageRetention))))
           .update();
     } catch (RuntimeException e) {
       LOG.warn("Deleting old messages failed", e);
@@ -311,9 +320,15 @@ class Notifier {
                     })
             .optional();
     LocalTime start =
-        quiet.map(q -> q[0]).filter(java.util.Objects::nonNull).orElse(settings.quietStart());
+        quiet
+            .map(q -> q[0])
+            .filter(java.util.Objects::nonNull)
+            .orElse(platform.time("solace.notifications.quiet-start", settings.quietStart()));
     LocalTime end =
-        quiet.map(q -> q[1]).filter(java.util.Objects::nonNull).orElse(settings.quietEnd());
+        quiet
+            .map(q -> q[1])
+            .filter(java.util.Objects::nonNull)
+            .orElse(platform.time("solace.notifications.quiet-end", settings.quietEnd()));
     return QuietHours.next(now, zone, start, end);
   }
 

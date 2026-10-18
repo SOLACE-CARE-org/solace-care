@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/config.changed.v1.schema.json",
+  "title": "core.config.changed v1",
+  "description": "A platform setting, feature flag or the specialty list changed. Tracking and AI refresh what they cache (System Design, Event catalog; D42). Carries keys and versions only; consumers read the new value from Core.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "core.config.changed" },
+    "version": { "const": 1 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "key", "configVersion"],
+      "properties": {
+        "kind": { "enum": ["SETTING", "FLAG", "SPECIALTIES", "CONTENT"] },
+        "key": { "type": "string", "maxLength": 100 },
+        "configVersion": { "description": "The setting's or flag's new version.", "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

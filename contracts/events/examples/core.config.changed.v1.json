@@ -1,0 +1,10 @@
+{
+  "eventId": "6f1c2b9a-0d3e-4c57-8a21-9e4b7d5c3f10",
+  "type": "core.config.changed",
+  "version": 1,
+  "occurredAt": "2026-10-18T10:02:00Z",
+  "subjectId": null,
+  "locale": null,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "payload": { "kind": "SETTING", "key": "solace.sessions.no-show-after", "configVersion": 2 }
+}

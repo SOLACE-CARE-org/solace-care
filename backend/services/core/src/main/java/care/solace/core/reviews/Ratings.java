@@ -37,6 +37,7 @@ class Ratings implements SpecialistRatings, BookingRatings {
   private final JdbcClient db;
   private final BookingRecords bookings;
   private final ReviewSettings settings;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final ApplicationEventPublisher events;
   private final TransactionTemplate transactions;
   private final Clock clock;
@@ -45,12 +46,14 @@ class Ratings implements SpecialistRatings, BookingRatings {
       JdbcClient db,
       BookingRecords bookings,
       ReviewSettings settings,
+      care.solace.core.admin.PlatformSettings platform,
       ApplicationEventPublisher events,
       TransactionTemplate transactions,
       Clock clock) {
     this.db = db;
     this.bookings = bookings;
     this.settings = settings;
+    this.platform = platform;
     this.events = events;
     this.transactions = transactions;
     this.clock = clock;
@@ -87,7 +90,10 @@ class Ratings implements SpecialistRatings, BookingRatings {
 
   void rate(BookingRecords.Info b, int stars, List<String> tags, String text, String privateNote) {
     Instant now = clock.instant();
-    if (!b.status().equals("COMPLETED") || b.end().plus(settings.window()).isBefore(now)) {
+    if (!b.status().equals("COMPLETED")
+        || b.end()
+            .plus(platform.duration("solace.reviews.window", settings.window()))
+            .isBefore(now)) {
       throw new SolaceException(ReviewError.NOT_RATEABLE);
     }
     String written = text == null || text.isBlank() ? null : text.strip();
@@ -156,7 +162,9 @@ class Ratings implements SpecialistRatings, BookingRatings {
     averages(specialistIds)
         .forEach(
             (id, r) -> {
-              if (r.count() >= settings.minRatingsShown()) {
+              if (r.count()
+                  >= platform.number(
+                      "solace.reviews.min-ratings-shown", settings.minRatingsShown())) {
                 shown.put(id, r);
               }
             });

@@ -41,6 +41,7 @@ class Applications implements SpecialistSummaries {
   private final MemberSignups signups;
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
+  private final LivePricing pricing;
   private final TransactionTemplate transactions;
   private final Clock clock;
 
@@ -53,6 +54,7 @@ class Applications implements SpecialistSummaries {
       MemberSignups signups,
       Catalogue catalogue,
       SpecialistSettings settings,
+      LivePricing pricing,
       TransactionTemplate transactions,
       Clock clock) {
     this.store = store;
@@ -63,6 +65,7 @@ class Applications implements SpecialistSummaries {
     this.signups = signups;
     this.catalogue = catalogue;
     this.settings = settings;
+    this.pricing = pricing;
     this.transactions = transactions;
     this.clock = clock;
   }
@@ -149,7 +152,7 @@ class Applications implements SpecialistSummaries {
         files,
         offerings,
         payout,
-        settings.pricing(),
+        pricing.current(),
         store.draftedBio(id));
   }
 
@@ -199,7 +202,7 @@ class Applications implements SpecialistSummaries {
 
   void saveServices(Account account, List<ApplicationStore.Offering> offerings) {
     UUID id = editable(account).accountId();
-    var pricing = settings.pricing();
+    var pricing = this.pricing.current();
     Set<String> modalities = new HashSet<>();
     for (var offering : offerings) {
       if (!modalities.add(offering.modality())) {

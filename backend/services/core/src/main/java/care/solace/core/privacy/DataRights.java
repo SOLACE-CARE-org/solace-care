@@ -57,6 +57,7 @@ class DataRights {
   private final TransactionTemplate transactions;
   private final AuditLog audit;
   private final PrivacySettings settings;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final Clock clock;
 
   DataRights(
@@ -69,6 +70,7 @@ class DataRights {
       TransactionTemplate transactions,
       AuditLog audit,
       PrivacySettings settings,
+      care.solace.core.admin.PlatformSettings platform,
       Clock clock) {
     this.db = db;
     this.modules = modules;
@@ -79,6 +81,7 @@ class DataRights {
     this.transactions = transactions;
     this.audit = audit;
     this.settings = settings;
+    this.platform = platform;
     this.clock = clock;
   }
 
@@ -160,11 +163,20 @@ class DataRights {
                     """)
                 .param("id", r.id())
                 .param("now", Timestamp.from(now))
-                .param("exp", Timestamp.from(now.plus(settings.exportLifetime())))
+                .param(
+                    "exp",
+                    Timestamp.from(
+                        now.plus(
+                            platform.duration(
+                                "solace.privacy.export-lifetime", settings.exportLifetime()))))
                 .param("k", key)
                 .update();
             events.publishEvent(
-                new DataCopyReady(r.accountId(), settings.exportLifetime().toDays()));
+                new DataCopyReady(
+                    r.accountId(),
+                    platform
+                        .duration("solace.privacy.export-lifetime", settings.exportLifetime())
+                        .toDays()));
           });
     }
   }
@@ -304,7 +316,12 @@ class DataRights {
         .param("k", kind)
         .param("s", status)
         .param("now", Timestamp.from(now))
-        .param("due", Timestamp.from(now.plus(settings.requestDeadline())))
+        .param(
+            "due",
+            Timestamp.from(
+                now.plus(
+                    platform.duration(
+                        "solace.privacy.request-deadline", settings.requestDeadline()))))
         .update();
   }
 

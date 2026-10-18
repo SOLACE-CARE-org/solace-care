@@ -14,21 +14,24 @@ class Offers implements SpecialistOffers {
   private final ApplicationStore applications;
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
+  private final LivePricing pricing;
 
   Offers(
       DirectoryStore directory,
       ApplicationStore applications,
       Catalogue catalogue,
-      SpecialistSettings settings) {
+      SpecialistSettings settings,
+      LivePricing pricing) {
     this.directory = directory;
     this.applications = applications;
     this.catalogue = catalogue;
     this.settings = settings;
+    this.pricing = pricing;
   }
 
   @Override
   public java.math.BigDecimal feePercent() {
-    return settings.pricing().feePercent();
+    return pricing.current().feePercent();
   }
 
   @Override

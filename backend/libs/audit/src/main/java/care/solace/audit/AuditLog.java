@@ -42,6 +42,17 @@ public interface AuditLog {
             currentActor(), action, targetType, targetId, null, Outcome.ALLOWED, null, details));
   }
 
+  /**
+   * Records an admin action with the reason the staff member gave (Admin Portal Spec: every change
+   * of money, a status, a policy, a setting or a module needs a written reason).
+   */
+  default void adminAction(
+      String action, String targetType, String targetId, String reason, Map<String, String> details) {
+    record(
+        new AuditEntry(
+            currentActor(), action, targetType, targetId, null, Outcome.ALLOWED, reason, details));
+  }
+
   /** Records a read, then runs it. Nothing is read if the entry cannot be written. */
   default <T> T readThen(
       String action, String targetType, String targetId, String subjectId, Supplier<T> reader) {

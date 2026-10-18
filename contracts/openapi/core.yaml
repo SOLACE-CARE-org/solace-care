@@ -48,6 +48,14 @@ tags:
     description: The crisis queue and the on-call rota (Phase 1, epic 10; D11, D15, D39)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
+  - name: config
+    description: Feature flags the apps read at start (D42)
+  - name: admin-settings
+    description: Platform settings and feature flags for staff (admin screen 20; D42). Every change needs a reason and creates a new version.
+  - name: admin-team
+    description: Staff accounts and their roles (admin screen 19; D7, D42). Super admins only.
+  - name: admin-audit
+    description: The append-only audit log (admin screen 18; D42)
 paths:
   /v1/signups:
     post:
@@ -2805,6 +2813,347 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /v1/config:
+    get:
+      operationId: getAppConfig
+      summary: Feature flags for the apps; open without a token, cached briefly
+      tags: [config]
+      security: []
+      responses:
+        "200":
+          description: The flags in force
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppConfig"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /admin/v1/settings:
+    get:
+      operationId: listPlatformSettings
+      summary: Platform settings and feature flags (admin screen 20)
+      tags: [admin-settings]
+      responses:
+        "200":
+          description: Every setting staff may see, and every flag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/settings/{key}:
+    parameters:
+      - $ref: "#/components/parameters/SettingKey"
+    put:
+      operationId: changePlatformSetting
+      summary: Change a setting with a reason; a new version reaches every service within a minute
+      tags: [admin-settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [value, reason]
+              properties:
+                value:
+                  description: As the setting's type writes it (minutes, days, a percent, FCFA or HH:MM).
+                  type: string
+                  maxLength: 40
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The setting after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSetting"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/settings/{key}/history:
+    parameters:
+      - $ref: "#/components/parameters/SettingKey"
+    get:
+      operationId: getPlatformSettingHistory
+      summary: Every version of a setting, newest first
+      tags: [admin-settings]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SettingVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/flags/{key}:
+    parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-zA-Z][a-zA-Z0-9]*$"
+    put:
+      operationId: changeFeatureFlag
+      summary: Turn a feature flag on or off with a reason
+      tags: [admin-settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [enabled, reason]
+              properties:
+                enabled:
+                  type: boolean
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The flag after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFlag"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/staff:
+    get:
+      operationId: listStaff
+      summary: Staff accounts, their roles and second factor (admin screen 19)
+      tags: [admin-team]
+      responses:
+        "200":
+          description: Everyone with a staff account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffMember"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: addStaff
+      summary: Add a staff member with a one-time temporary password, shown once (D7)
+      tags: [admin-team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, email, roles]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                roles:
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  items:
+                    $ref: "#/components/schemas/StaffRole"
+      responses:
+        "201":
+          description: Added; hand the password over in person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffPassword"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/staff/{staffId}/roles:
+    parameters:
+      - $ref: "#/components/parameters/StaffId"
+    put:
+      operationId: changeStaffRoles
+      summary: Change a staff member's roles; their current sessions end
+      tags: [admin-team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [roles, reason]
+              properties:
+                roles:
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  items:
+                    $ref: "#/components/schemas/StaffRole"
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The member after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffMember"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/staff/{staffId}/temporary-password:
+    parameters:
+      - $ref: "#/components/parameters/StaffId"
+    post:
+      operationId: resetStaffPassword
+      summary: A new temporary password (72 hours, works once); sessions end and the second factor is set up again
+      tags: [admin-team]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: The new password, shown once
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffPassword"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/staff/{staffId}/deactivation:
+    parameters:
+      - $ref: "#/components/parameters/StaffId"
+    post:
+      operationId: deactivateStaff
+      summary: Deactivate a staff account; sessions end and sign-in stops
+      tags: [admin-team]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: The member after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffMember"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/audit:
+    get:
+      operationId: searchAuditLog
+      summary: The audit log, newest first (admin screen 18)
+      tags: [admin-audit]
+      parameters:
+        - $ref: "#/components/parameters/AuditGroup"
+        - $ref: "#/components/parameters/AuditQuery"
+        - $ref: "#/components/parameters/AuditFrom"
+        - $ref: "#/components/parameters/AuditTo"
+        - name: before
+          in: query
+          description: Entries older than this entry id, for the next page.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Up to 100 entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntryView"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/audit/export:
+    get:
+      operationId: exportAuditLog
+      summary: The same search as CSV, up to 10,000 entries; the export is itself audited
+      tags: [admin-audit]
+      parameters:
+        - $ref: "#/components/parameters/AuditGroup"
+        - $ref: "#/components/parameters/AuditQuery"
+        - $ref: "#/components/parameters/AuditFrom"
+        - $ref: "#/components/parameters/AuditTo"
+      responses:
+        "200":
+          description: One line per entry
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -2900,6 +3249,47 @@ components:
       schema:
         type: string
         format: uuid
+    SettingKey:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9.-]*$"
+        maxLength: 100
+    StaffId:
+      name: staffId
+      in: path
+      required: true
+      description: The staff member's id in the staff realm.
+      schema:
+        type: string
+        maxLength: 64
+    AuditGroup:
+      name: group
+      in: query
+      schema:
+        type: string
+        enum: [CONTACT_REVEALED, CRISIS_VIEWED, REFUND, STATUS_CHANGE, SETTING_CHANGE, BREAK_GLASS]
+    AuditQuery:
+      name: q
+      in: query
+      description: A staff member's name, or what the entry is on (a booking reference, a person reference).
+      schema:
+        type: string
+        maxLength: 80
+    AuditFrom:
+      name: from
+      in: query
+      schema:
+        type: string
+        format: date-time
+    AuditTo:
+      name: to
+      in: query
+      schema:
+        type: string
+        format: date-time
   requestBodies:
     Rating:
       required: true
@@ -4873,3 +5263,186 @@ components:
         expiresAt:
           type: string
           format: date-time
+    AppConfig:
+      type: object
+      additionalProperties: false
+      required: [flags]
+      properties:
+        flags:
+          description: Every app-facing flag by key; an unknown key is off.
+          type: object
+          additionalProperties:
+            type: boolean
+    PlatformSettings:
+      type: object
+      additionalProperties: false
+      required: [settings, flags]
+      properties:
+        settings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformSetting"
+        flags:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureFlag"
+    PlatformSetting:
+      type: object
+      additionalProperties: false
+      required: [key, group, type, value, defaultValue, editable, version]
+      properties:
+        key:
+          type: string
+        group:
+          type: string
+          x-extensible-enum: [MONEY, SESSIONS, REVIEWS, NOTIFICATIONS, PRIVACY, SAFETY, ACCESS]
+        type:
+          type: string
+          x-extensible-enum: [PERCENT, FCFA, MINUTES, HOURS, DAYS, COUNT, TIME]
+        value:
+          type: string
+        defaultValue:
+          type: string
+        min:
+          type: integer
+        max:
+          type: integer
+        editable:
+          description: False for fixed decisions (the 10-minute hold, two people for every refund) and values set in the identity service.
+          type: boolean
+        version:
+          description: 0 while the default is in force.
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    SettingVersion:
+      type: object
+      additionalProperties: false
+      required: [version, value, reason, changedBy, changedAt]
+      properties:
+        version:
+          type: integer
+        value:
+          type: string
+        reason:
+          type: string
+        changedBy:
+          type: string
+        changedAt:
+          type: string
+          format: date-time
+    FeatureFlag:
+      type: object
+      additionalProperties: false
+      required: [key, enabled, locked]
+      properties:
+        key:
+          type: string
+        enabled:
+          type: boolean
+        locked:
+          description: Cannot be changed here, such as the safety monitor in production.
+          type: boolean
+        phase:
+          description: The phase the feature belongs to.
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    StaffRole:
+      type: string
+      enum: [SUPER_ADMIN, OPERATIONS, SUPPORT, FINANCE, CLINICAL_REVIEWER, CRISIS_RESPONDER, CONTENT_EDITOR]
+    StaffMember:
+      type: object
+      additionalProperties: false
+      required: [id, name, email, roles, secondFactor, status, addedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/StaffRole"
+        secondFactor:
+          description: The authenticator app is set up.
+          type: boolean
+        status:
+          type: string
+          x-extensible-enum: [INVITED, ACTIVE, DEACTIVATED]
+        lastActiveAt:
+          type: string
+          format: date-time
+        addedAt:
+          type: string
+          format: date-time
+    StaffPassword:
+      type: object
+      additionalProperties: false
+      required: [member, temporaryPassword, expiresAt]
+      properties:
+        member:
+          $ref: "#/components/schemas/StaffMember"
+        temporaryPassword:
+          description: Shown once; Core keeps no copy.
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AuditEntryView:
+      type: object
+      additionalProperties: false
+      required: [id, at, actor, action, target, outcome]
+      properties:
+        id:
+          type: integer
+          format: int64
+        at:
+          type: string
+          format: date-time
+        actor:
+          type: object
+          additionalProperties: false
+          required: [type, name, roles]
+          properties:
+            type:
+              type: string
+              x-extensible-enum: [SEEKER, SPECIALIST, GUEST, STAFF, SERVICE, SYSTEM]
+            name:
+              description: A staff member's name; a pseudonymous reference for anyone else.
+              type: string
+            roles:
+              type: array
+              items:
+                type: string
+        action:
+          type: string
+        target:
+          type: object
+          additionalProperties: false
+          required: [type, label]
+          properties:
+            type:
+              type: string
+            id:
+              type: string
+            label:
+              description: BK-7F9D1C2E, Seeker #5480, a specialist's name, a setting key.
+              type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+        reason:
+          type: string
+        outcome:
+          type: string
+          enum: [ALLOWED, DENIED]

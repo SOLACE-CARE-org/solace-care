@@ -73,8 +73,13 @@ public interface BookingRecords {
 
     /** "#5480", or "G-2244" for a guest, as staff screens name people without names (D41). */
     public String personRef() {
-      String digits = String.format("%04d", Math.floorMod(subjectId().hashCode(), 10_000));
-      return seekerAccountId == null ? "G-" + digits : "#" + digits;
+      return BookingRecords.personRef(subjectId(), seekerAccountId == null);
     }
+  }
+
+  /** "#5480", or "G-2244" for a guest: how staff screens name a person without a name (D41). */
+  static String personRef(UUID subjectId, boolean guest) {
+    String digits = String.format("%04d", Math.floorMod(subjectId.hashCode(), 10_000));
+    return guest ? "G-" + digits : "#" + digits;
   }
 }

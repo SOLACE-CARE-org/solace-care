@@ -1,0 +1,217 @@
+package care.solace.core.admin;
+
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
+/**
+ * The settings and flags staff see on Settings and flags (admin screen 20; D42). A bracketed number
+ * in the specs is a setting with that default (CLAUDE.md, Settings); a fixed decision is listed
+ * too, not editable. Each default comes from Core's configuration, so the screen shows what is in
+ * force.
+ */
+@Component
+class SettingCatalogue {
+
+  enum Group {
+    MONEY,
+    SESSIONS,
+    REVIEWS,
+    NOTIFICATIONS,
+    PRIVACY,
+    SAFETY,
+    ACCESS
+  }
+
+  /** How a value is written on the screen and stored: whole units, or HH:MM. */
+  enum Type {
+    PERCENT,
+    FCFA,
+    MINUTES,
+    HOURS,
+    DAYS,
+    COUNT,
+    TIME;
+
+    boolean isDuration() {
+      return this == MINUTES || this == HOURS || this == DAYS;
+    }
+
+    Duration toDuration(long units) {
+      return switch (this) {
+        case MINUTES -> Duration.ofMinutes(units);
+        case HOURS -> Duration.ofHours(units);
+        case DAYS -> Duration.ofDays(units);
+        default -> throw new IllegalStateException(name() + " is not a duration");
+      };
+    }
+
+    long fromDuration(Duration d) {
+      return switch (this) {
+        case MINUTES -> d.toMinutes();
+        case HOURS -> d.toHours();
+        case DAYS -> d.toDays();
+        default -> throw new IllegalStateException(name() + " is not a duration");
+      };
+    }
+  }
+
+  /**
+   * @param fallback the default when the configuration does not set the key, as the screen writes
+   *     it
+   * @param editable false for fixed decisions and values the identity service holds
+   */
+  record Definition(
+      String key, Group group, Type type, String fallback, long min, long max, boolean editable) {}
+
+  /**
+   * @param phase the phase the feature ships in
+   * @param locked not changeable from the portal
+   * @param app read by the apps through {@code /v1/config}
+   */
+  record Flag(String key, int phase, boolean fallback, boolean locked, boolean app) {}
+
+  private static final List<Definition> SETTINGS =
+      List.of(
+          // SpecServices' [n]% fee (D28), and its [Min] and [Max] prices (D27).
+          new Definition(
+              "solace.specialists.pricing.fee-percent",
+              Group.MONEY,
+              Type.PERCENT,
+              "20",
+              0,
+              50,
+              true),
+          new Definition(
+              "solace.specialists.pricing.min-price",
+              Group.MONEY,
+              Type.FCFA,
+              "5000",
+              0,
+              1_000_000,
+              true),
+          new Definition(
+              "solace.specialists.pricing.max-price",
+              Group.MONEY,
+              Type.FCFA,
+              "20000",
+              0,
+              1_000_000,
+              true),
+          // Every refund, at any amount, needs a second approver (D14): fixed.
+          new Definition(
+              "solace.payments.refund-approvers", Group.MONEY, Type.COUNT, "2", 2, 2, false),
+          // The 10-minute slot hold is a decision (CLAUDE.md, Settings).
+          new Definition(
+              "solace.scheduling.hold", Group.SESSIONS, Type.MINUTES, "10", 10, 10, false),
+          new Definition(
+              "solace.sessions.no-show-after", Group.SESSIONS, Type.MINUTES, "15", 5, 60, true),
+          new Definition(
+              "solace.sessions.complete-after", Group.SESSIONS, Type.MINUTES, "15", 5, 120, true),
+          new Definition("solace.reviews.window", Group.REVIEWS, Type.DAYS, "14", 1, 90, true),
+          new Definition(
+              "solace.reviews.min-ratings-shown", Group.REVIEWS, Type.COUNT, "3", 1, 50, true),
+          new Definition(
+              "solace.notifications.quiet-start",
+              Group.NOTIFICATIONS,
+              Type.TIME,
+              "21:00",
+              0,
+              0,
+              true),
+          new Definition(
+              "solace.notifications.quiet-end",
+              Group.NOTIFICATIONS,
+              Type.TIME,
+              "07:00",
+              0,
+              0,
+              true),
+          new Definition(
+              "solace.privacy.export-lifetime", Group.PRIVACY, Type.DAYS, "7", 1, 30, true),
+          new Definition(
+              "solace.privacy.request-deadline", Group.PRIVACY, Type.DAYS, "30", 1, 90, true),
+          new Definition(
+              "solace.privacy.guest-retention", Group.PRIVACY, Type.DAYS, "365", 30, 3650, true),
+          new Definition(
+              "solace.privacy.message-retention", Group.PRIVACY, Type.DAYS, "180", 30, 3650, true),
+          // Crisis escalation at 5 and then 10 minutes is a decision (D11, D15).
+          new Definition(
+              "solace.crisis.escalate-after", Group.SAFETY, Type.MINUTES, "5", 5, 5, false),
+          new Definition(
+              "solace.guests.code-lifetime", Group.ACCESS, Type.MINUTES, "10", 5, 30, true),
+          new Definition("solace.guests.code-attempts", Group.ACCESS, Type.COUNT, "3", 1, 10, true),
+          // Staff idle sign-out lives in the staff realm (System Design, Security): shown, not set
+          // here.
+          new Definition(
+              "solace.staff.idle-sign-out", Group.ACCESS, Type.MINUTES, "15", 5, 60, false));
+
+  private static final List<Flag> FLAGS =
+      List.of(
+          new Flag("safetyMonitor", 1, true, true, false),
+          new Flag("cardPayments", 1, false, false, true),
+          new Flag("specialistInterviewPicker", 1, false, false, true),
+          new Flag("payoutBankTransfer", 1, false, false, true),
+          // An off-cycle payout would skip the two-person run (D35).
+          new Flag("payoutOnRequest", 1, false, true, true),
+          new Flag("onCallSpecialistCall", 1, false, false, true),
+          new Flag("trackTab", 2, false, false, true),
+          new Flag("healthCheck", 2, false, false, true),
+          new Flag("aiAssist", 3, false, false, true),
+          new Flag("sessionScribe", 4, false, false, true),
+          new Flag("phoneDialIn", 4, false, false, true));
+
+  private final Map<String, Definition> settings = new LinkedHashMap<>();
+  private final Map<String, Flag> flags = new LinkedHashMap<>();
+  private final Environment environment;
+
+  SettingCatalogue(Environment environment) {
+    this.environment = environment;
+    SETTINGS.forEach(d -> settings.put(d.key(), d));
+    FLAGS.forEach(f -> flags.put(f.key(), f));
+  }
+
+  List<Definition> settings() {
+    return List.copyOf(settings.values());
+  }
+
+  Optional<Definition> setting(String key) {
+    return Optional.ofNullable(settings.get(key));
+  }
+
+  List<Flag> flags() {
+    return List.copyOf(flags.values());
+  }
+
+  Optional<Flag> flag(String key) {
+    return Optional.ofNullable(flags.get(key));
+  }
+
+  /** The configured default, written as the screen writes it (15, 21:00). */
+  String defaultValue(Definition d) {
+    var binder = Binder.get(environment);
+    if (d.type().isDuration()) {
+      return binder
+          .bind(d.key(), Duration.class)
+          .map(v -> String.valueOf(d.type().fromDuration(v)))
+          .orElse(d.fallback());
+    }
+    if (d.type() == Type.TIME) {
+      return binder.bind(d.key(), LocalTime.class).map(LocalTime::toString).orElse(d.fallback());
+    }
+    return binder
+        .bind(d.key(), java.math.BigDecimal.class)
+        .map(v -> v.stripTrailingZeros().toPlainString())
+        .orElse(d.fallback());
+  }
+
+  boolean defaultEnabled(Flag f) {
+    return environment.getProperty("solace.flags." + f.key(), Boolean.class, f.fallback());
+  }
+}
