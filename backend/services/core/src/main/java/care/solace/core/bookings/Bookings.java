@@ -279,6 +279,11 @@ class Bookings implements BookingRecords {
   }
 
   @Override
+  public Optional<Info> nextFor(UUID subjectId, Instant now) {
+    return store.nextFor(subjectId, now).map(BookingStore.Row::info);
+  }
+
+  @Override
   public List<Info> confirmedStartingBetween(Instant from, Instant to) {
     return store.confirmedStartingBetween(from, to).stream().map(BookingStore.Row::info).toList();
   }

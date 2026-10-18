@@ -18,10 +18,17 @@ message ModerateReviewRequest {
   string text = 2;
   // BCP 47 tag of the review's language, e.g. "fr".
   string locale = 3;
+  // The writer's pseudonymous subject id, for the ai.risk.flagged event (D39).
+  string subject_id = 4;
 }
 
 message ModerateReviewResponse {
   Decision decision = 1;
+  // True when the safety monitor flagged crisis risk: the review must never be
+  // published, and ai.risk.flagged follows (D37, D39).
+  bool risk = 2;
+  // The safety decision, for GetRiskDecision.
+  string decision_id = 3;
 }
 
 enum Decision {

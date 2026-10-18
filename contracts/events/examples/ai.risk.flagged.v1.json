@@ -1,0 +1,16 @@
+{
+  "eventId": "9b2f7c41-3a6e-4d18-8e5b-2c7a9f1d0e63",
+  "type": "ai.risk.flagged",
+  "version": 1,
+  "occurredAt": "2026-10-18T14:26:00Z",
+  "subjectId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+  "locale": "fr",
+  "traceId": "0af7651916cd43dd8448eb211c80319c",
+  "payload": {
+    "decisionId": "5d8e2a17-6c4b-4f90-a3d1-7e9b0c2f4a85",
+    "source": "REVIEW",
+    "sourceId": "7f9d1c2e-1111-4a7a-b3e5-5f0d9c1a7e64",
+    "classifierVersion": "phrases-1",
+    "policyVersion": "safety-1"
+  }
+}

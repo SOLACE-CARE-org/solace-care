@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/ai/risk.flagged.v1.schema.json",
+  "title": "ai.risk.flagged v1",
+  "description": "The safety monitor flagged crisis risk in something a person wrote (System Design, Event catalog; D39). Ids and versions only: the category is health data and is read through RiskService.GetRiskDecision.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "ai.risk.flagged"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "description": "The writer's pseudonymous id (an account, or a guest contact).",
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decisionId", "source", "sourceId", "classifierVersion", "policyVersion"],
+      "properties": {
+        "decisionId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source": {
+          "description": "What was checked.",
+          "enum": ["REVIEW"]
+        },
+        "sourceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "classifierVersion": {
+          "type": "string"
+        },
+        "policyVersion": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

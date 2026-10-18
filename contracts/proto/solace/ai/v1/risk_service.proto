@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package solace.ai.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.ai.v1";
+
+// Core -> AI. The category behind an ai.risk.flagged event, which carries ids
+// only (D39). 2-second deadline. Fallback: Core retries the event; it lands in
+// the dead-letter topic after its retries, and on-call is still alerted with
+// the category unknown.
+service RiskService {
+  rpc GetRiskDecision(GetRiskDecisionRequest) returns (GetRiskDecisionResponse);
+}
+
+message GetRiskDecisionRequest {
+  string decision_id = 1;
+}
+
+message GetRiskDecisionResponse {
+  string decision_id = 1;
+  RiskCategory category = 2;
+  // What was checked: REVIEW in Phase 1.
+  string source = 3;
+  string source_id = 4;
+  string subject_id = 5;
+  // Which classifier and policy decided (AI-9).
+  string classifier_version = 6;
+  string policy_version = 7;
+}
+
+// The six safety-monitor categories (System Design, AI).
+enum RiskCategory {
+  RISK_CATEGORY_UNSPECIFIED = 0;
+  RISK_CATEGORY_SUICIDAL_IDEATION = 1;
+  RISK_CATEGORY_SELF_HARM = 2;
+  RISK_CATEGORY_ACUTE_ANXIETY = 3;
+  RISK_CATEGORY_VIOLENT_THOUGHTS = 4;
+  RISK_CATEGORY_SUBSTANCE_CRISIS = 5;
+  RISK_CATEGORY_RISK_TAKING = 6;
+}

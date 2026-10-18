@@ -156,16 +156,25 @@ class NotificationIntegrationTest extends MemberStackTest {
         .contains("https://slc.cm/g/");
     assertThat(delivery.smsLength(text.getValue())).isBetween(1, 160);
     String token = text.getValue().substring(text.getValue().indexOf("/g/") + 3);
-    mvc.perform(get("/v1/guest/booking").header("X-Guest-Token", token))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(booking.toString()));
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () ->
+                mvc.perform(get("/v1/guest/booking").header("X-Guest-Token", token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(booking.toString())));
     // The SMS text, with its link, is never stored.
-    assertThat(
-            jdbc.queryForObject(
-                "SELECT text FROM notification WHERE booking_id = ? AND channel = 'SMS'",
-                String.class,
-                booking))
-        .isNull();
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () ->
+                assertThat(
+                        jdbc.queryForList(
+                            "SELECT coalesce(text, 'none') FROM notification"
+                                + " WHERE booking_id = ? AND channel = 'SMS'",
+                            String.class,
+                            booking))
+                    .containsExactly("none"));
   }
 
   @Test

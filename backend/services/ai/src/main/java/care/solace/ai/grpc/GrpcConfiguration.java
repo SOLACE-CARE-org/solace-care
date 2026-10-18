@@ -17,6 +17,7 @@ class GrpcConfiguration {
     return new GrpcMethodScopes(
         Map.of(
             "solace.platform.v1.PingService/Ping", "ai:ping",
-            "solace.ai.v1.ModerationService/ModerateReview", "ai:moderation.invoke"));
+            "solace.ai.v1.ModerationService/ModerateReview", "ai:moderation.invoke",
+            "solace.ai.v1.RiskService/GetRiskDecision", "ai:risk.read"));
   }
 }

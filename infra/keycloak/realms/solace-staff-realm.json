@@ -552,6 +552,27 @@
       ]
     },
     {
+      "name": "ai:risk.read",
+      "description": "Core reads one safety decision behind ai.risk.flagged (D39)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience ai",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "ai",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
       "name": "tracking:ping",
       "description": "Phase 0 end-to-end slice: Core pings Tracking",
       "protocol": "openid-connect",
@@ -680,6 +701,7 @@
         "basic",
         "service_account",
         "ai:moderation.invoke",
+        "ai:risk.read",
         "tracking:ping",
         "ai:ping"
       ]

@@ -198,6 +198,18 @@ class BookingStore {
         .update();
   }
 
+  Optional<Row> nextFor(UUID subjectId, Instant now) {
+    return db.sql(
+            "SELECT "
+                + COLUMNS
+                + " FROM booking WHERE (seeker_account_id = :s OR guest_contact_id = :s)"
+                + " AND status = 'CONFIRMED' AND starts_at > :now ORDER BY starts_at LIMIT 1")
+        .param("s", subjectId)
+        .param("now", Timestamp.from(now))
+        .query(BookingStore::row)
+        .optional();
+  }
+
   List<Row> confirmedStartingBetween(Instant from, Instant to) {
     return db.sql(
             "SELECT "

@@ -215,6 +215,12 @@ Every pair now meets WCAG 2.1 AA.
 - **In-app:** members also find each message in the Notifications inbox, worded as the push.
 - **Staff pushes** (refunds and payout runs waiting, module submitted) arrive with the admin portal's web push (epic 12); crisis SMS with the safety monitor (epic 10).
 
+**D39. The safety monitor and the crisis queue (epic 10).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Classifier until a model is approved:** the AI service checks text with a bilingual (EN, FR, code-switched) phrase classifier tuned to over-flag, which threat-model-ai accepts. A model adapter (Spring AI, self-hosted so no transfer authorisation is needed) sits behind `solace.safety.model.enabled`, off until the model is chosen and passes the 99% crisis-recall gate on the EN and FR sets; when on, text is flagged if either flags it. Each decision keeps the classifier and policy version (AI-9), never the text.
+- **Flow:** Core asks the AI service to moderate each written review (2-second deadline; on failure the review simply waits for a person, AI-4). A flag is answered at once, so the review never reaches the queue or the profile (D37), and published as `ai.risk.flagged` with ids, the category and versions only. Core turns the event into a crisis alert.
+- **On call:** a rota kept by Super admins in Core (who is primary, who is backup, their work phones, from when to when) until staffing is decided (Still open). The primary gets an SMS at once, the backup at 5 minutes, Super admins on the rota at 10 (D11, D15). Staff pushes join with the portal's web push (D38).
+- **Urgent help:** the app carries Cameroon's emergency numbers, police 117, fire 118 and ambulance (SAMU) 119, so they work offline; the Content module will override them per country (epic 12). The numbers need the owner's confirmation before launch. "Talk to an on-call specialist" stays behind the `onCallSpecialistCall` flag until that service is specified; "Message someone you trust" comes with the safety plan (Phase 4). "Breathe with me" works offline.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

@@ -5,6 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import care.solace.contracts.ai.v1.Decision;
+import care.solace.contracts.ai.v1.GetRiskDecisionRequest;
+import care.solace.contracts.ai.v1.ModerateReviewRequest;
+import care.solace.contracts.ai.v1.ModerationServiceGrpc;
+import care.solace.contracts.ai.v1.RiskCategory;
+import care.solace.contracts.ai.v1.RiskServiceGrpc;
 import care.solace.contracts.platform.v1.PingRequest;
 import care.solace.contracts.platform.v1.PingServiceGrpc;
 import io.grpc.ManagedChannel;
@@ -77,6 +83,91 @@ class AiApplicationTest {
         .isInstanceOfSatisfying(
             StatusRuntimeException.class,
             e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.PERMISSION_DENIED));
+  }
+
+  @Test
+  void aFlaggedReviewIsHeldPublishedAsAnEventAndReadableByCoreOnly() {
+    String review = java.util.UUID.randomUUID().toString();
+    String subject = java.util.UUID.randomUUID().toString();
+    var answer =
+        moderation("ai:moderation.invoke")
+            .moderateReview(
+                ModerateReviewRequest.newBuilder()
+                    .setReviewId(review)
+                    .setSubjectId(subject)
+                    .setLocale("fr")
+                    .setText("Honnêtement je ne sais pas combien de temps je peux encore tenir.")
+                    .build());
+    assertThat(answer.getRisk()).isTrue();
+    assertThat(answer.getDecision()).isEqualTo(Decision.DECISION_HOLD);
+
+    var decision =
+        risk("ai:risk.read")
+            .getRiskDecision(
+                GetRiskDecisionRequest.newBuilder().setDecisionId(answer.getDecisionId()).build());
+    assertThat(decision.getCategory()).isEqualTo(RiskCategory.RISK_CATEGORY_SUICIDAL_IDEATION);
+    assertThat(decision.getSourceId()).isEqualTo(review);
+    assertThat(decision.getClassifierVersion()).isEqualTo("phrases-1");
+    // The event is in the outbox, ids only: never the text or the category.
+    String event =
+        jdbc.queryForObject(
+            "SELECT serialized_event FROM event_publication WHERE serialized_event LIKE ?",
+            String.class,
+            "%" + answer.getDecisionId() + "%");
+    assertThat(event)
+        .contains("ai.risk.flagged")
+        .doesNotContain("tenir")
+        .doesNotContain("SUICIDAL");
+    // The text itself is stored nowhere.
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM safety_decision WHERE id = ?::uuid",
+                Integer.class,
+                answer.getDecisionId()))
+        .isEqualTo(1);
+
+    assertThatThrownBy(
+            () ->
+                risk("ai:moderation.invoke")
+                    .getRiskDecision(
+                        GetRiskDecisionRequest.newBuilder()
+                            .setDecisionId(answer.getDecisionId())
+                            .build()))
+        .isInstanceOfSatisfying(
+            StatusRuntimeException.class,
+            e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.PERMISSION_DENIED));
+  }
+
+  @Test
+  void anOrdinaryReviewIsHeldForAPersonWithoutAFlag() {
+    var answer =
+        moderation("ai:moderation.invoke")
+            .moderateReview(
+                ModerateReviewRequest.newBuilder()
+                    .setReviewId(java.util.UUID.randomUUID().toString())
+                    .setSubjectId(java.util.UUID.randomUUID().toString())
+                    .setLocale("en")
+                    .setText("Patient and practical. I left with tools I actually use at work.")
+                    .build());
+    assertThat(answer.getRisk()).isFalse();
+    assertThat(answer.getDecision()).isEqualTo(Decision.DECISION_HOLD);
+  }
+
+  private ModerationServiceGrpc.ModerationServiceBlockingStub moderation(String scope) {
+    return ModerationServiceGrpc.newBlockingStub(channel)
+        .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(bearer(scope)));
+  }
+
+  private RiskServiceGrpc.RiskServiceBlockingStub risk(String scope) {
+    return RiskServiceGrpc.newBlockingStub(channel)
+        .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(bearer(scope)));
+  }
+
+  private static Metadata bearer(String scope) {
+    Metadata headers = new Metadata();
+    headers.put(
+        Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), "Bearer " + scope);
+    return headers;
   }
 
   private PingServiceGrpc.PingServiceBlockingStub stub(String scope) {

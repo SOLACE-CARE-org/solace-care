@@ -42,6 +42,8 @@ tags:
     description: Review moderation for staff (Phase 1, epic 8)
   - name: notifications
     description: Push devices, notification settings and the in-app inbox (Phase 1, epic 9)
+  - name: admin-crisis
+    description: The crisis queue and the on-call rota (Phase 1, epic 10; D11, D15, D39)
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -2303,6 +2305,198 @@ paths:
           description: Marked
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /admin/v1/crisis/summary:
+    get:
+      operationId: getCrisisSummary
+      summary: Who is on call, and open and unacknowledged alerts (the red badge on every page)
+      tags: [admin-crisis]
+      responses:
+        "200":
+          description: The summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrisisSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/crisis/alerts:
+    get:
+      operationId: listCrisisAlerts
+      summary: Crisis alerts, oldest first (admin screen 3)
+      tags: [admin-crisis]
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [OPEN, IN_PROGRESS, CLOSED]
+      responses:
+        "200":
+          description: Up to 100 alerts, without their text
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CrisisAlert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/crisis/alerts/{alertId}:
+    parameters:
+      - $ref: "#/components/parameters/AlertId"
+    get:
+      operationId: getCrisisAlert
+      summary: One alert with the flagged text and the next session; every view is audited
+      tags: [admin-crisis]
+      responses:
+        "200":
+          description: The alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrisisAlert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/crisis/alerts/{alertId}/acknowledgement:
+    parameters:
+      - $ref: "#/components/parameters/AlertId"
+    post:
+      operationId: acknowledgeCrisisAlert
+      summary: Acknowledge and take the alert; escalation stops (D11)
+      tags: [admin-crisis]
+      responses:
+        "200":
+          description: Acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrisisAlert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/crisis/alerts/{alertId}/contact:
+    parameters:
+      - $ref: "#/components/parameters/AlertId"
+    post:
+      operationId: revealCrisisContact
+      summary: The person's phone, to call them (Reveal and call, logged)
+      tags: [admin-crisis]
+      responses:
+        "200":
+          description: The number
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [phone]
+                properties:
+                  phone:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/crisis/alerts/{alertId}/closure:
+    parameters:
+      - $ref: "#/components/parameters/AlertId"
+    post:
+      operationId: closeCrisisAlert
+      summary: Record the outcome and close the alert
+      tags: [admin-crisis]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [outcome]
+              properties:
+                outcome:
+                  $ref: "#/components/schemas/CrisisOutcome"
+                note:
+                  type: string
+                  maxLength: 2000
+      responses:
+        "200":
+          description: Closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrisisAlert"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/crisis/rota:
+    get:
+      operationId: getCrisisRota
+      summary: The on-call rota (D39)
+      tags: [admin-crisis]
+      responses:
+        "200":
+          description: Current and future shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RotaShift"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: saveCrisisRota
+      summary: Replace the current and future shifts (Super admin)
+      tags: [admin-crisis]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 200
+              items:
+                $ref: "#/components/schemas/RotaShift"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RotaShift"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /v1/system/ping:
     get:
       operationId: ping
@@ -2337,6 +2531,13 @@ components:
         format: uuid
     RefundId:
       name: refundId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AlertId:
+      name: alertId
       in: path
       required: true
       schema:
@@ -4064,3 +4265,116 @@ components:
           format: date-time
         read:
           type: boolean
+    CrisisCategory:
+      description: The six safety-monitor categories; UNKNOWN when the decision could not be read.
+      type: string
+      x-extensible-enum: [SUICIDAL_IDEATION, SELF_HARM, ACUTE_ANXIETY, VIOLENT_THOUGHTS, SUBSTANCE_CRISIS, RISK_TAKING, UNKNOWN]
+    CrisisOutcome:
+      type: string
+      enum: [SAFE_FOR_NOW, REFERRED_TO_EMERGENCY_SERVICES, NOT_REACHED_FOLLOW_UP, NOT_A_CRISIS]
+    CrisisAlert:
+      type: object
+      additionalProperties: false
+      required: [id, status, category, source, personRef, raisedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          x-extensible-enum: [OPEN, IN_PROGRESS, CLOSED]
+        category:
+          $ref: "#/components/schemas/CrisisCategory"
+        source:
+          type: string
+          x-extensible-enum: [REVIEW]
+        language:
+          type: string
+        personRef:
+          description: Pseudonymous, "#4821" or "G-2198" for a guest.
+          type: string
+        raisedAt:
+          type: string
+          format: date-time
+        escalatedToBackupAt:
+          type: string
+          format: date-time
+        escalatedToAdminsAt:
+          type: string
+          format: date-time
+        acknowledgedBy:
+          type: string
+        acknowledgedAt:
+          type: string
+          format: date-time
+        text:
+          description: Detail only. The flagged text as written; nothing else the person wrote.
+          type: string
+        contact:
+          description: Detail only, masked; revealing it is logged.
+          type: string
+        nextSession:
+          type: object
+          additionalProperties: false
+          required: [at, modality, sessionLanguage, specialistName]
+          properties:
+            at:
+              type: string
+              format: date-time
+            modality:
+              $ref: "#/components/schemas/Modality"
+            sessionLanguage:
+              type: string
+            specialistName:
+              type: string
+        outcome:
+          $ref: "#/components/schemas/CrisisOutcome"
+        note:
+          type: string
+        closedAt:
+          type: string
+          format: date-time
+    CrisisSummary:
+      type: object
+      additionalProperties: false
+      required: [open, unacknowledged]
+      properties:
+        open:
+          type: integer
+        unacknowledged:
+          type: integer
+        primary:
+          $ref: "#/components/schemas/RotaShift"
+        backup:
+          $ref: "#/components/schemas/RotaShift"
+        lastClosedAt:
+          type: string
+          format: date-time
+    RotaShift:
+      type: object
+      additionalProperties: false
+      required: [staffId, name, phone, role, startsAt, endsAt]
+      properties:
+        staffId:
+          description: The staff member's id in the staff realm.
+          type: string
+        name:
+          type: string
+        phone:
+          description: A work phone for crisis SMS (D15).
+          allOf:
+            - $ref: "#/components/schemas/Phone"
+        language:
+          description: The language of the crisis SMS this person gets.
+          type: string
+          enum: [en, fr]
+          default: en
+        role:
+          type: string
+          enum: [PRIMARY, BACKUP, ESCALATION]
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time

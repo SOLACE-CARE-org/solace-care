@@ -29,6 +29,9 @@ public interface BookingRecords {
   /** CONFIRMED bookings that started before {@code before}: not begun, maybe a no-show (D36). */
   java.util.List<Info> confirmedStartedBefore(Instant before);
 
+  /** The person's next confirmed session, by account or guest contact id (crisis queue). */
+  Optional<Info> nextFor(UUID subjectId, Instant now);
+
   /** CONFIRMED bookings starting in [from, to), for reminders (D38). */
   java.util.List<Info> confirmedStartingBetween(Instant from, Instant to);
 

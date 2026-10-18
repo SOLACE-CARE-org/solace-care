@@ -30,8 +30,11 @@ class ModuleBoundariesTest {
             "payments",
             "reviews",
             "notifications",
-            // Notifications split in two (D38): delivery, and messaging, which decides what to send.
+            // Notifications split in two (D38): delivery, and messaging, which decides what to
+            // send.
             "messaging",
+            // The crisis queue and the on-call rota (epic 10, D39).
+            "crisis",
             "content",
             "admin",
             "auditlog",

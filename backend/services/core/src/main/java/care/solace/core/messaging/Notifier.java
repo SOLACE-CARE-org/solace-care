@@ -45,6 +45,7 @@ class Notifier {
   private final GuestAccess guests;
   private final Availability availability;
   private final MessagingSettings settings;
+  private final org.springframework.transaction.support.TransactionTemplate ownTransaction;
   private final Clock clock;
 
   Notifier(
@@ -54,7 +55,12 @@ class Notifier {
       GuestAccess guests,
       Availability availability,
       MessagingSettings settings,
+      org.springframework.transaction.PlatformTransactionManager transactions,
       Clock clock) {
+    this.ownTransaction =
+        new org.springframework.transaction.support.TransactionTemplate(transactions);
+    this.ownTransaction.setPropagationBehavior(
+        org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.db = db;
     this.delivery = delivery;
     this.accounts = accounts;
@@ -194,7 +200,11 @@ class Notifier {
     if (withLink) {
       Object[] more = java.util.Arrays.copyOf(values, values.length + 1);
       more[values.length] =
-          settings.linkBase() + guests.issueLinkToken(guestContactId, bookingId, linkUntil);
+          settings.linkBase()
+              // Committed before the SMS leaves, so the link works even if this listener's
+              // transaction later rolls back.
+              + ownTransaction.execute(
+                  s -> guests.issueLinkToken(guestContactId, bookingId, linkUntil));
       values = more;
     }
     if (locale == Locale.FRENCH) {
