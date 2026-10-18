@@ -86,7 +86,7 @@ export default function Language() {
         style={styles.continue}
         onPress={() => {
           chooseLanguage(selected);
-          router.replace('/welcome');
+          router.replace('/intro');
         }}
       />
     </SafeAreaView>

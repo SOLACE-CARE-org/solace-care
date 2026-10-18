@@ -11,6 +11,7 @@ import { displayContact } from '@/auth/contact';
 import { signOut } from '@/notifications/push';
 import { useSession } from '@/state/session';
 import { Avatar } from '@/ui/Avatar';
+import { Button } from '@/ui/Button';
 import { CrisisButton } from '@/ui/CrisisButton';
 import { Text } from '@/ui/Text';
 
@@ -40,6 +41,11 @@ export default function You() {
               </Text>
             ) : null}
           </View>
+          <Button
+            variant="secondary"
+            label={t('you.edit')}
+            onPress={() => router.push('/profile/edit')}
+          />
         </View>
 
         <View style={styles.card}>

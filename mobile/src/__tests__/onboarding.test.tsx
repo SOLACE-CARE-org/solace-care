@@ -11,6 +11,7 @@ const routes = {
   splash: Splash,
   language: Language,
   welcome: Welcome,
+  intro: () => null,
   // Find a specialist has its own tests (search.test.tsx); here only the way there matters.
   search: () => null,
 };
@@ -50,7 +51,8 @@ describe('language choice', () => {
     await act(() => fireEvent.press(screen.getByRole('button', { name: 'Continuer' })));
 
     expect(useSession.getState().language).toBe('fr');
-    expect(screen.getPathname()).toBe('/welcome');
+    // The three intro screens come next (Onboard1–3.dc.html).
+    expect(screen.getPathname()).toBe('/intro');
   });
 });
 

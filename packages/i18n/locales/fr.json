@@ -1658,5 +1658,50 @@
     "version": "Version {{version}}",
     "updated": "Nous avons mis à jour ce document. Lisez la nouvelle version et acceptez-la pour continuer.",
     "accept": "J'accepte"
+  },
+  "home": {
+    "morning": "Bonjour, {{name}}",
+    "afternoon": "Bon après-midi, {{name}}",
+    "evening": "Bonsoir, {{name}}",
+    "morningPlain": "Bonjour",
+    "afternoonPlain": "Bon après-midi",
+    "eveningPlain": "Bonsoir",
+    "next": "Prochaine séance",
+    "kind": "{{modality}} · {{language}}",
+    "with": "avec {{name}}",
+    "withUpdated": "avec {{name}} · mis à jour à {{time}}",
+    "joinOpens": "Ouverture à {{time}}",
+    "join": "Rejoindre",
+    "reschedule": "Reporter",
+    "rescheduleOffline": "Le report demande une connexion",
+    "offlineTitle": "Vous êtes hors ligne.",
+    "offlineBody": "Réservation, paiement et appels demandent une connexion.",
+    "emergencyOffline": "Les numéros d'urgence fonctionnent hors ligne"
+  },
+  "intro": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "start": "Commencer",
+    "momo": "MTN MoMo",
+    "orange": "Orange Money",
+    "sms": "SMS",
+    "title1": "Parlez à un spécialiste agréé",
+    "body1": "Des séances privées, audio ou vidéo, en anglais ou en français. Solace vérifie l'autorisation d'exercer de chaque spécialiste avant qu'il puisse être réservé.",
+    "title2": "Réservez sans compte",
+    "body2": "Confirmez votre numéro, payez par mobile money, et votre réservation arrive par SMS. Personne d'autre n'a besoin de savoir.",
+    "title3": "Suivez ce qui compte, en toute discrétion",
+    "body3": "Avec un compte, notez votre humeur, votre sommeil ou votre cycle en 30 secondes environ par jour. Si un schéma mérite attention, nous vous suggérons un spécialiste. Vous décidez de ce que les autres voient."
+  },
+  "editProfile": {
+    "title": "Modifier le profil",
+    "name": "Nom vu par votre spécialiste",
+    "phone": "Numéro de téléphone",
+    "verified": "Vérifié",
+    "languages": "Langues dans lesquelles vous voulez parler",
+    "preference": "Préférence de spécialiste",
+    "any": "Indifférent",
+    "woman": "Femme",
+    "man": "Homme",
+    "save": "Enregistrer"
   }
 }

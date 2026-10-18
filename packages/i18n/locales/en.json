@@ -1658,5 +1658,50 @@
     "version": "Version {{version}}",
     "updated": "We have updated this document. Read the new version and accept it to carry on.",
     "accept": "I accept"
+  },
+  "home": {
+    "morning": "Good morning, {{name}}",
+    "afternoon": "Good afternoon, {{name}}",
+    "evening": "Good evening, {{name}}",
+    "morningPlain": "Good morning",
+    "afternoonPlain": "Good afternoon",
+    "eveningPlain": "Good evening",
+    "next": "Next session",
+    "kind": "{{modality}} · {{language}}",
+    "with": "with {{name}}",
+    "withUpdated": "with {{name}} · last updated {{time}}",
+    "joinOpens": "Join opens {{time}}",
+    "join": "Join",
+    "reschedule": "Reschedule",
+    "rescheduleOffline": "Reschedule needs a connection",
+    "offlineTitle": "You're offline.",
+    "offlineBody": "Booking, payments and calls need a connection.",
+    "emergencyOffline": "Emergency numbers work offline"
+  },
+  "intro": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Get started",
+    "momo": "MTN MoMo",
+    "orange": "Orange Money",
+    "sms": "SMS",
+    "title1": "Talk to a licensed specialist",
+    "body1": "Private audio or video sessions, in English or French. Solace verifies every specialist's licence before they can take bookings.",
+    "title2": "Book without an account",
+    "body2": "Confirm your phone number, pay with mobile money, and your booking arrives by SMS. Nobody else needs to know.",
+    "title3": "Track what matters, privately",
+    "body3": "With an account, log your mood, sleep or cycle in about 30 seconds a day. If a pattern is worth checking, we'll suggest a specialist. You decide what anyone else sees."
+  },
+  "editProfile": {
+    "title": "Edit profile",
+    "name": "Name your specialist sees",
+    "phone": "Phone number",
+    "verified": "Verified",
+    "languages": "Languages you're happy to talk in",
+    "preference": "Specialist preference",
+    "any": "Any",
+    "woman": "Woman",
+    "man": "Man",
+    "save": "Save changes"
   }
 }

@@ -268,6 +268,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Who gets what:** crisis alerts go to the rota's shifts as push too, alongside the SMS that counts (D39); refunds waiting go to every active Finance member with the number waiting; a submitted payout run goes to Finance and Super admins except the person who submitted it. "Module submitted" arrives with tracking modules (Phase 2).
 - **Emails:** "Staff account created" goes when a Super admin adds someone; "Data requests due" goes to Operations every morning at 08:00 Douala time while any request falls due within the week. Staff emails are in English and French together, since a new member has not chosen a portal language.
 
+**D48. Seeker home, intro and Edit profile (Phase 1 gaps).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Home (Phase 1):** the date, a greeting by time of day, Urgent help, and the next confirmed session with "Join opens" (Join from 10 minutes before) and Reschedule; with nothing booked, the way to find a specialist. The mood check-in, tracking cards and homework join with Phases 2 and 4. Offline, Home shows the last next session it saw with when it was updated, says what needs a connection, and reminds that emergency numbers work offline; the tracking sentence of the offline banner joins with Phase 2.
+- **Intro:** the three intro screens follow the language choice once; Skip and Get started go to Welcome.
+- **Edit profile:** the name the specialist sees, session languages and specialist preference. The phone (and email) show as verified; changing a contact needs a code sent to the new one, so the Change control waits for that flow.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
