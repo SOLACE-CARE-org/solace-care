@@ -53,7 +53,7 @@ function review(patch: Partial<Review> = {}): Review {
   };
 }
 
-function setUp(roles: string[], client: Record<string, ReturnType<typeof fn>>) {
+function setUp(roles: string[], client: Record<string, ReturnType<typeof fn>>, sub = 'ops-1') {
   TestBed.configureTestingModule({
     imports: [
       TranslocoTestingModule.forRoot({
@@ -68,6 +68,7 @@ function setUp(roles: string[], client: Record<string, ReturnType<typeof fn>>) {
     ],
   });
   TestBed.inject(StaffSession).fromToken({
+    sub,
     name: 'Nadine Ebai',
     realm_access: { roles },
   });
@@ -88,30 +89,63 @@ const button = (root: HTMLElement, label: string) =>
 describe('Application review', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
-  it('keeps Approve locked until all six items are verified', async () => {
+  it('keeps Propose approval locked until all six items are verified', async () => {
     const client = { GET: fn(() => ok(review())), POST: fn(), PUT: fn() };
     setUp(['OPERATIONS'], client);
     const root = await render(ApplicationReviewPage, { id: review().id });
 
     expect(root.textContent).toContain('5 of 6 items verified.');
     expect(root.textContent).toContain('Approve unlocks when every item is verified.');
-    expect(button(root, 'Approve')!.disabled).toBe(true);
+    expect(button(root, 'Propose approval')!.disabled).toBe(true);
     expect(root.textContent).toContain('Verified by N. Ebai');
   });
 
-  it('lets Operations approve once every item is verified', async () => {
-    const approved = review({ status: 'APPROVED', verifiedItems: 6 });
+  it('lets the reviewer propose approval once every item is verified', async () => {
     const client = {
       GET: fn(() => ok(review({ verifiedItems: 6 }))),
-      POST: fn(() => ok(approved)),
+      POST: fn(() => ok(review({ verifiedItems: 6 }))),
       PUT: fn(),
     };
     setUp(['OPERATIONS'], client);
     const root = await render(ApplicationReviewPage, { id: review().id });
 
-    const approve = button(root, 'Approve')!;
-    expect(approve.disabled).toBe(false);
-    approve.click();
+    const propose = button(root, 'Propose approval')!;
+    expect(propose.disabled).toBe(false);
+    propose.click();
+    await vi.waitFor(() => expect(client.POST).toHaveBeenCalled());
+    expect(client.POST.mock.calls[0][0]).toBe(
+      '/admin/v1/specialist-applications/{id}/approval-proposal',
+    );
+  });
+
+  it('lets the proposer withdraw, not confirm (D29)', async () => {
+    const proposal = { by: { id: 'ops-1', name: 'Nadine Ebai' }, at: '2026-10-16T10:00:00Z' };
+    const client = {
+      GET: fn(() => ok(review({ verifiedItems: 6, approvalProposal: proposal }))),
+      POST: fn(),
+      PUT: fn(),
+    };
+    setUp(['OPERATIONS'], client, 'ops-1');
+    const root = await render(ApplicationReviewPage, { id: review().id });
+
+    expect(root.textContent).toContain('You proposed approval');
+    expect(button(root, 'Withdraw')).toBeDefined();
+    expect(button(root, 'Confirm approval')).toBeUndefined();
+  });
+
+  it('lets a second person confirm or decline (D29)', async () => {
+    const proposal = { by: { id: 'ops-1', name: 'Nadine Ebai' }, at: '2026-10-16T10:00:00Z' };
+    const client = {
+      GET: fn(() => ok(review({ verifiedItems: 6, approvalProposal: proposal }))),
+      POST: fn(() => ok(review({ status: 'APPROVED', verifiedItems: 6 }))),
+      PUT: fn(),
+    };
+    setUp(['SUPER_ADMIN'], client, 'sa-2');
+    const root = await render(ApplicationReviewPage, { id: review().id });
+
+    expect(root.textContent).toContain('Approval proposed by Nadine Ebai');
+    expect(button(root, 'Decline')).toBeDefined();
+    button(root, 'Confirm approval')!.click();
     await vi.waitFor(() => expect(client.POST).toHaveBeenCalled());
     expect(client.POST.mock.calls[0][0]).toBe('/admin/v1/specialist-applications/{id}/approval');
   });
@@ -122,7 +156,7 @@ describe('Application review', () => {
     const root = await render(ApplicationReviewPage, { id: review().id });
 
     expect(root.textContent).toContain('Kamga Estelle');
-    for (const label of ['Approve', 'Reject', 'Request changes', 'Mark verified']) {
+    for (const label of ['Propose approval', 'Reject', 'Request changes', 'Mark verified']) {
       expect(button(root, label)).toBeUndefined();
     }
   });

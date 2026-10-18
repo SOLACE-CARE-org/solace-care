@@ -221,7 +221,17 @@
         "rejectTitle": "Refuser la candidature",
         "reasonLabel": "Motif que verra le candidat",
         "send": "Envoyer",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "proposeApproval": "Proposer l'approbation",
+        "confirmApproval": "Confirmer l'approbation",
+        "withdraw": "Retirer",
+        "decline": "Décliner",
+        "proposedBy": "Approbation proposée par {{name}}, le {{date}}.",
+        "waitingSecond": "Une deuxième personne la confirme.",
+        "proposedByYou": "Vous avez proposé l'approbation le {{date}}. Une autre personne ayant accès aux spécialistes la confirme.",
+        "kind_APPROVAL_PROPOSED": "Approbation proposée",
+        "kind_APPROVAL_WITHDRAWN": "Proposition d'approbation retirée",
+        "draftedBySolace": "Rédigée par Solace ; le spécialiste la vérifie avant la mise en ligne"
       },
       "record": {
         "search": "Trouver un spécialiste par nom ou numéro d'autorisation",

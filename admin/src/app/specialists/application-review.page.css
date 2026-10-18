@@ -161,3 +161,8 @@ h2 {
   gap: var(--space-10);
   margin-top: var(--space-16);
 }
+.proposal {
+  margin: 0 0 var(--space-16);
+  border-color: var(--brand);
+  background: var(--brand-tint);
+}

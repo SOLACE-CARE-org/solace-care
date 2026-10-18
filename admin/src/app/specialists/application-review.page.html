@@ -32,19 +32,46 @@
     <button class="sl-button" type="button" [disabled]="busy()" (click)="ask('changes')">
       {{ 'admin.specialists.review.requestChanges' | transloco }}
     </button>
-    } @if (underReview()) {
+    }
+    <!-- Two people approve (D29): one proposes, someone else confirms or declines. -->
+    @if (underReview() && !r.approvalProposal) {
+    <button
+      class="sl-button sl-button--primary"
+      type="button"
+      [disabled]="busy() || r.verifiedItems < 6"
+      (click)="proposeApproval()"
+    >
+      {{ 'admin.specialists.review.proposeApproval' | transloco }}
+    </button>
+    } @else if (underReview() && proposedByMe(r)) {
+    <button class="sl-button" type="button" [disabled]="busy()" (click)="withdrawApproval()">
+      {{ 'admin.specialists.review.withdraw' | transloco }}
+    </button>
+    } @else if (underReview()) {
+    <button class="sl-button" type="button" [disabled]="busy()" (click)="withdrawApproval()">
+      {{ 'admin.specialists.review.decline' | transloco }}
+    </button>
     <button
       class="sl-button sl-button--primary"
       type="button"
       [disabled]="busy() || r.verifiedItems < 6"
       (click)="approve()"
     >
-      {{ 'admin.specialists.review.approve' | transloco }}
+      {{ 'admin.specialists.review.confirmApproval' | transloco }}
     </button>
     }
   </div>
   }
 </header>
+
+@if (r.approvalProposal; as proposal) {
+<p class="sl-card proposal" aria-live="polite">
+  @if (proposedByMe(r)) { {{ 'admin.specialists.review.proposedByYou' | transloco: { date:
+  short(proposal.at) } }} } @else { {{ 'admin.specialists.review.proposedBy' | transloco: { name:
+  proposal.by.name, date: short(proposal.at) } }} {{ 'admin.specialists.review.waitingSecond' |
+  transloco }} }
+</p>
+}
 
 <p class="sl-card summary" aria-live="polite">
   {{ 'admin.specialists.review.summary' | transloco: { count: r.verifiedItems } }} @if
@@ -243,7 +270,11 @@
       </div>
       @for (language of ['en', 'fr']; track language) {
       <label class="sl-field bio">
-        <span class="sl-meta">{{ 'admin.specialists.review.bio_' + language | transloco }}</span>
+        <span class="sl-meta">
+          {{ 'admin.specialists.review.bio_' + language | transloco }} @if
+          (r.profile.draftedLanguage === language) { · {{ 'admin.specialists.review.draftedBySolace'
+          | transloco }} }
+        </span>
         @if (underReview() && canChange()) {
         <textarea
           class="sl-textarea"

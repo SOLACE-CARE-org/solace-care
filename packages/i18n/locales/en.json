@@ -221,7 +221,17 @@
         "rejectTitle": "Reject application",
         "reasonLabel": "Reason the applicant will see",
         "send": "Send",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "proposeApproval": "Propose approval",
+        "confirmApproval": "Confirm approval",
+        "withdraw": "Withdraw",
+        "decline": "Decline",
+        "proposedBy": "Approval proposed by {{name}}, {{date}}.",
+        "waitingSecond": "A second person confirms it.",
+        "proposedByYou": "You proposed approval, {{date}}. Another person with access to Specialists confirms it.",
+        "kind_APPROVAL_PROPOSED": "Approval proposed",
+        "kind_APPROVAL_WITHDRAWN": "Approval proposal withdrawn",
+        "draftedBySolace": "Drafted by Solace; the specialist checks it before going live"
       },
       "record": {
         "search": "Find a specialist by name or licence number",

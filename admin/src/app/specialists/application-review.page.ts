@@ -264,6 +264,28 @@ export class ApplicationReviewPage {
     );
   }
 
+  /** True when the signed-in staff member proposed the waiting approval (D29). */
+  proposedByMe(r: Review): boolean {
+    return r.approvalProposal?.by.id === this.staff.id();
+  }
+
+  proposeApproval() {
+    return this.act(() =>
+      this.api.client.POST('/admin/v1/specialist-applications/{id}/approval-proposal', {
+        params: { path: { id: this.id() } },
+      }),
+    );
+  }
+
+  withdrawApproval() {
+    return this.act(() =>
+      this.api.client.DELETE('/admin/v1/specialist-applications/{id}/approval-proposal', {
+        params: { path: { id: this.id() } },
+      }),
+    );
+  }
+
+  /** The second person confirms; Core refuses the proposer. */
   approve() {
     return this.act(() =>
       this.api.client.POST('/admin/v1/specialist-applications/{id}/approval', {

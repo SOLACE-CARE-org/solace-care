@@ -1,11 +1,20 @@
 import { computed, effect, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
+import {
+  patchState,
+  signalStore,
+  withComputed,
+  withHooks,
+  withMethods,
+  withState,
+} from '@ngrx/signals';
 import Keycloak from 'keycloak-js';
 import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType } from 'keycloak-angular';
 
 import { type Access, type Area, accessTo, isStaffRole, type StaffRole } from './permissions';
 
 type StaffState = {
+  /** Keycloak's subject in the staff realm: tells the person who proposed an approval apart (D29). */
+  id: string;
   /** Display name from the token; shown in the sidebar footer only. */
   name: string;
   roles: StaffRole[];
@@ -27,7 +36,7 @@ export function initialsOf(name: string): string {
  */
 export const StaffSession = signalStore(
   { providedIn: 'root' },
-  withState<StaffState>({ name: '', roles: [] }),
+  withState<StaffState>({ id: '', name: '', roles: [] }),
   withComputed(({ name, roles }) => ({
     initials: computed(() => initialsOf(name())),
     /** The first role, shown under the name in the sidebar. */
@@ -43,6 +52,7 @@ export const StaffSession = signalStore(
         (token?.['name'] as string | undefined) ??
         [token?.['given_name'], token?.['family_name']].filter(Boolean).join(' ');
       patchState(store, {
+        id: String(token?.['sub'] ?? ''),
         name: name || String(token?.['preferred_username'] ?? ''),
         roles: (realmAccess?.roles ?? []).filter(isStaffRole),
       });
