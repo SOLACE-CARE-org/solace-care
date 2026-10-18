@@ -14,6 +14,8 @@ import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
 import { environment } from '../environments/environment';
+import { HealthCheckVersionPage } from './health-check/health-check-version.page';
+import { HealthCheckPage } from './health-check/health-check.page';
 import { ModuleBuilderPage } from './modules/module-builder.page';
 import { ModuleReviewPage } from './modules/module-review.page';
 import { ModulesPage } from './modules/modules.page';
@@ -49,6 +51,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   team: TeamPage,
   settings: SettingsPage,
   modules: ModulesPage,
+  'health-check': HealthCheckPage,
 };
 
 /**
@@ -109,6 +112,15 @@ export const routes: Routes = [
               path: 'modules/versions/:id/review',
               component: ModuleReviewPage,
               canActivate: [areaGuard('trackingModules')],
+            },
+          ]
+        : []),
+      ...(environment.flags.healthCheck
+        ? [
+            {
+              path: 'health-check/versions/:id',
+              component: HealthCheckVersionPage,
+              canActivate: [areaGuard('healthCheck')],
             },
           ]
         : []),
