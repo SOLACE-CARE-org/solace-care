@@ -8,6 +8,8 @@ import { ContentEditorPage } from './content/content-editor.page';
 import { ContentPage } from './content/content.page';
 import { PeoplePage } from './people/people.page';
 import { PersonRecordPage } from './people/person-record.page';
+import { AnalyticsPage } from './analytics/analytics.page';
+import { OverviewPage } from './overview/overview.page';
 import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
@@ -27,6 +29,8 @@ import { TeamPage } from './team/team.page';
 
 /** Screens built so far; every other entry shows the not-built stand-in. */
 const SCREENS: Record<string, Type<unknown>> = {
+  overview: OverviewPage,
+  analytics: AnalyticsPage,
   crisis: CrisisQueuePage,
   applications: ApplicationsPage,
   bookings: BookingsPage,

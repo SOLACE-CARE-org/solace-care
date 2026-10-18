@@ -928,6 +928,95 @@
         "ERASE": "Erase this person's data? This cannot be undone."
       },
       "openAlert": "1 crisis alert in progress"
+    },
+    "overview": {
+      "title": "Overview",
+      "live": "Live · {{when}} Douala time",
+      "crisisCount": "{{count}} crisis alerts are not acknowledged",
+      "oldest": "The oldest was raised {{minutes}} minutes ago.",
+      "onCall": "On call: {{name}}.",
+      "openCrisis": "Open crisis queue",
+      "inSession": "In session now",
+      "inSessionSplit": "{{video}} video · {{audio}} audio",
+      "sessionsToday": "Sessions today",
+      "sessionsSplit": "{{completed}} completed · {{noShows}} no-shows",
+      "bookingsToday": "New bookings today",
+      "inLanguage": "{{count}} {{language}}",
+      "paymentsToday": "Payments captured today",
+      "failed": "{{count}} failed",
+      "sessionsNow": "Sessions now",
+      "allBookings": "All bookings",
+      "noSessions": "No sessions right now.",
+      "time": "Time",
+      "seeker": "Seeker",
+      "waiting_SEEKER": "Waiting room: seeker only",
+      "waiting_SPECIALIST": "Waiting room: specialist only",
+      "startsIn": "Starts in {{minutes}} min",
+      "attention": "Needs attention",
+      "applications": "Specialist applications waiting",
+      "refunds": "Refunds to approve",
+      "reviews": "Reviews to moderate",
+      "disputes": "No-show disputes",
+      "dataRequests": "Data requests due this week",
+      "health": "Service health",
+      "service": {
+        "CORE": "Core",
+        "AI": "AI and safety monitor",
+        "CALLS": "Calls (LiveKit)",
+        "PAYMENTS": "Mobile money",
+        "SMS": "SMS"
+      },
+      "status": {
+        "CORE_HEALTHY": "Healthy",
+        "CORE_DOWN": "Not responding",
+        "CORE_UNKNOWN": "Not checked yet",
+        "CORE_SLOW": "Slow",
+        "AI_HEALTHY": "Healthy",
+        "AI_DOWN": "Not responding",
+        "AI_UNKNOWN": "Not checked yet",
+        "AI_SLOW": "Slow",
+        "CALLS_HEALTHY": "Healthy",
+        "CALLS_DOWN": "Not responding",
+        "CALLS_UNKNOWN": "Not checked yet",
+        "CALLS_SLOW": "Slow",
+        "PAYMENTS_HEALTHY": "Healthy",
+        "PAYMENTS_DOWN": "Not responding",
+        "PAYMENTS_UNKNOWN": "Not checked yet",
+        "PAYMENTS_SLOW": "Slow confirmations",
+        "SMS_HEALTHY": "Healthy",
+        "SMS_DOWN": "Not responding",
+        "SMS_UNKNOWN": "Not checked yet",
+        "SMS_SLOW": "Some messages failed"
+      },
+      "crisisOne": "1 crisis alert is not acknowledged"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "subtitle": "Aggregated and de-identified. {{period}}.",
+      "period": "Period",
+      "periods": {
+        "LAST_30_DAYS": "Last 30 days",
+        "LAST_7_DAYS": "Last 7 days",
+        "THIS_QUARTER": "This quarter"
+      },
+      "headline": "Most people who pay complete their session",
+      "funnel": "Booking funnel",
+      "step": {
+        "searched": "Searched",
+        "choseSlot": "Chose a slot",
+        "paid": "Paid",
+        "completed": "Completed a session"
+      },
+      "drop": {
+        "choseSlot": "The biggest drop is between searching and choosing a slot.",
+        "paid": "The biggest drop is between choosing a slot and paying.",
+        "completed": "The biggest drop is between paying and completing a session."
+      },
+      "averageRating": "Average rating",
+      "bookedAgain": "Booked again within 30 days",
+      "inFrench": "Sessions in French",
+      "recommendations": "Recommendations that led to a booking",
+      "fromPhase2": "From Phase 2"
     }
   },
   "roleChoice": {

@@ -928,6 +928,95 @@
         "ERASE": "Effacer les données de cette personne ? Action irréversible."
       },
       "openAlert": "1 alerte de crise en cours"
+    },
+    "overview": {
+      "title": "Vue d'ensemble",
+      "live": "En direct · {{when}} heure de Douala",
+      "crisisCount": "{{count}} alertes de crise ne sont pas prises en charge",
+      "oldest": "La plus ancienne date de {{minutes}} minutes.",
+      "onCall": "D'astreinte : {{name}}.",
+      "openCrisis": "Ouvrir la file de crise",
+      "inSession": "En séance maintenant",
+      "inSessionSplit": "{{video}} vidéo · {{audio}} audio",
+      "sessionsToday": "Séances du jour",
+      "sessionsSplit": "{{completed}} terminées · {{noShows}} absences",
+      "bookingsToday": "Nouvelles réservations du jour",
+      "inLanguage": "{{count}} en {{language}}",
+      "paymentsToday": "Paiements encaissés aujourd'hui",
+      "failed": "{{count}} échecs",
+      "sessionsNow": "Séances en cours",
+      "allBookings": "Toutes les réservations",
+      "noSessions": "Aucune séance en ce moment.",
+      "time": "Heure",
+      "seeker": "Usager",
+      "waiting_SEEKER": "Salle d'attente : usager seul",
+      "waiting_SPECIALIST": "Salle d'attente : spécialiste seul",
+      "startsIn": "Commence dans {{minutes}} min",
+      "attention": "À traiter",
+      "applications": "Candidatures de spécialistes en attente",
+      "refunds": "Remboursements à approuver",
+      "reviews": "Avis à modérer",
+      "disputes": "Absences contestées",
+      "dataRequests": "Demandes de données à traiter cette semaine",
+      "health": "État des services",
+      "service": {
+        "CORE": "Core",
+        "AI": "IA et veille de sécurité",
+        "CALLS": "Appels (LiveKit)",
+        "PAYMENTS": "Mobile money",
+        "SMS": "SMS"
+      },
+      "status": {
+        "CORE_HEALTHY": "Opérationnel",
+        "CORE_DOWN": "Ne répond pas",
+        "CORE_UNKNOWN": "Pas encore vérifié",
+        "CORE_SLOW": "Lent",
+        "AI_HEALTHY": "Opérationnel",
+        "AI_DOWN": "Ne répond pas",
+        "AI_UNKNOWN": "Pas encore vérifié",
+        "AI_SLOW": "Lent",
+        "CALLS_HEALTHY": "Opérationnel",
+        "CALLS_DOWN": "Ne répond pas",
+        "CALLS_UNKNOWN": "Pas encore vérifié",
+        "CALLS_SLOW": "Lent",
+        "PAYMENTS_HEALTHY": "Opérationnel",
+        "PAYMENTS_DOWN": "Ne répond pas",
+        "PAYMENTS_UNKNOWN": "Pas encore vérifié",
+        "PAYMENTS_SLOW": "Confirmations lentes",
+        "SMS_HEALTHY": "Opérationnel",
+        "SMS_DOWN": "Ne répond pas",
+        "SMS_UNKNOWN": "Pas encore vérifié",
+        "SMS_SLOW": "Des messages ont échoué"
+      },
+      "crisisOne": "1 alerte de crise n'est pas prise en charge"
+    },
+    "analytics": {
+      "title": "Statistiques",
+      "subtitle": "Données agrégées et anonymisées. {{period}}.",
+      "period": "Période",
+      "periods": {
+        "LAST_30_DAYS": "30 derniers jours",
+        "LAST_7_DAYS": "7 derniers jours",
+        "THIS_QUARTER": "Ce trimestre"
+      },
+      "headline": "La plupart des personnes qui paient vont au bout de leur séance",
+      "funnel": "Parcours de réservation",
+      "step": {
+        "searched": "Ont cherché",
+        "choseSlot": "Ont choisi un créneau",
+        "paid": "Ont payé",
+        "completed": "Ont terminé une séance"
+      },
+      "drop": {
+        "choseSlot": "La plus forte baisse se situe entre la recherche et le choix d'un créneau.",
+        "paid": "La plus forte baisse se situe entre le choix d'un créneau et le paiement.",
+        "completed": "La plus forte baisse se situe entre le paiement et la fin de la séance."
+      },
+      "averageRating": "Note moyenne",
+      "bookedAgain": "Ont réservé à nouveau sous 30 jours",
+      "inFrench": "Séances en français",
+      "recommendations": "Recommandations suivies d'une réservation",
+      "fromPhase2": "À partir de la phase 2"
     }
   },
   "roleChoice": {
