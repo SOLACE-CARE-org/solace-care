@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import { core } from '@/api/core';
 import { useAuth } from '@/auth/auth';
 import { useSession } from '@/state/session';
+import { forgetOnSignOut } from '@/tracking/outbox';
 
 let token: string | null = null;
 
@@ -73,6 +74,8 @@ export async function signOut(): Promise<void> {
     }
     token = null;
   }
+  // Nothing logged stays on a phone someone signed out of (epic 9).
+  await forgetOnSignOut().catch(() => undefined);
   await useAuth.getState().signOut();
 }
 

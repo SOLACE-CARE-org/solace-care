@@ -33,6 +33,7 @@ type Params = {
   expiresAt: string;
   modality: Modality;
   language: string;
+  recommendationId?: string;
 };
 
 /**
@@ -94,7 +95,14 @@ export default function Checkout() {
     };
     if (member) {
       book.mutate(
-        { holdId: params.holdId, sessionLanguage: params.language, source: 'SEARCH' },
+        params.recommendationId
+          ? {
+              holdId: params.holdId,
+              sessionLanguage: params.language,
+              source: 'TRACKING_RECOMMENDATION',
+              recommendationId: params.recommendationId,
+            }
+          : { holdId: params.holdId, sessionLanguage: params.language, source: 'SEARCH' },
         { onSuccess: (b) => opened(b.id), onError: say },
       );
     } else {

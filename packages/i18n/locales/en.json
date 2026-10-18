@@ -1341,6 +1341,8 @@
   "signupPrivacy": {
     "title": "Your privacy, your call",
     "subtitle": "Choose what Solace may do with your information. Change any of this later in Privacy & data.",
+    "TRACKING_title": "Health tracking",
+    "TRACKING_meta": "Store what you log so we can show trends and suggest care when patterns appear.",
     "AI_ASSIST_title": "AI assistance",
     "AI_ASSIST_meta": "Plain-language insights and the between-session companion.",
     "AI_SCRIBE_title": "AI session notes",
@@ -1946,5 +1948,108 @@
     "woman": "Woman",
     "man": "Man",
     "save": "Save changes"
+  },
+  "track": {
+    "title": "Track",
+    "yourModules": "Your modules",
+    "logToday": "Log today",
+    "trends": "Trends",
+    "addModule": "Add a module",
+    "notLoggedToday": "Not logged today",
+    "loggedToday": "Logged today",
+    "cycleDayNotLogged": "Cycle day {{n}} · not logged today",
+    "cycleDayLogged": "Cycle day {{n}} · logged today",
+    "seePattern": "{{module}} · see the pattern",
+    "waitingToSync": "Waiting to sync",
+    "loggedOnPhone": "Logged today at {{time}} on this phone",
+    "savedOffline": "Saved on this phone. It syncs when you're back online.",
+    "emptyTitle": "You're not tracking anything yet",
+    "emptyBody": "Pick a module. It takes about 30 seconds a day, and only you see what you log.",
+    "consentTitle": "Health tracking is off",
+    "consentBody": "Store what you log so we can show trends and suggest care when patterns appear. Turn it on in Privacy & data.",
+    "consentAction": "Open Privacy & data",
+    "catalogue": {
+      "title": "Add a module",
+      "section": "Tracking modules",
+      "intro": "Each module is reviewed by Solace's clinical team. Leave one any time; what you logged stays yours.",
+      "tracking": "Tracking",
+      "add": "Add",
+      "tooYoung": "This module is for people aged {{age}} and over.",
+      "update": "Update the app to use this module."
+    },
+    "enrol": {
+      "add": "Add {{module}}",
+      "reminder": "Daily reminder",
+      "noReminder": "No reminder",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "log": {
+      "title": "Log today",
+      "checkinTitle": "How was today?",
+      "header": "{{module}} · {{date}}",
+      "headerCycle": "{{module}} · {{date}} · cycle day {{n}}",
+      "optional": "(optional)",
+      "notePrivate": "Private. A specialist sees notes only if you say yes to sharing them.",
+      "save": "Save today's log",
+      "saveCheckin": "Save check-in",
+      "decrease": "Less",
+      "increase": "More",
+      "hours": "{{h}} h {{m}}",
+      "nothingYet": "Choose at least one answer to save.",
+      "periodDates": "Period dates"
+    },
+    "trend": {
+      "title": "{{module}} trends",
+      "range": "Period",
+      "ranges": {
+        "TWO_WEEKS": "2 weeks",
+        "MONTH": "Month",
+        "THREE_MONTHS": "3 months"
+      },
+      "scale": "{{low}} to {{high}}",
+      "hours": "hours",
+      "today": "Today",
+      "notes": "Your notes",
+      "notesCount": {
+        "TWO_WEEKS": "{{n}} in these 2 weeks · only you can see them",
+        "MONTH": "{{n}} this month · only you can see them",
+        "THREE_MONTHS": "{{n}} in these 3 months · only you can see them"
+      },
+      "noData": "Nothing logged in this period.",
+      "days": "{{n}} of {{total}} days logged",
+      "reminder": "Daily reminder",
+      "reminderLine": "{{time}} · stops if you ignore 5 days in a row",
+      "reminderOff": "Off",
+      "cycles": "Your last cycles",
+      "cycleLine": "{{days}} days",
+      "leave": "Stop tracking {{module}}",
+      "leaveNote": "What you logged stays yours, and you can add the module again any time."
+    },
+    "recommendation": {
+      "title": "Recommendation",
+      "invite": "Consider talking to a specialist in {{specialty}}",
+      "pattern": "A pattern in what you logged",
+      "lastCycles": "Your last {{n}} cycles",
+      "days": "days",
+      "guide": "{{n}}-day guide",
+      "why": "Why we're suggesting this",
+      "reviewed": "Rule reviewed by Solace clinicians",
+      "dataChanged": "Your data has changed since, and this pattern no longer holds.",
+      "later": "Remind me later",
+      "book": "Book a session",
+      "dismiss": "Not now",
+      "noMatches": "No specialist is free for this yet. Search all specialists.",
+      "searchAll": "Search all specialists",
+      "next": "{{specialty}} · next {{slot}}"
+    },
+    "signup": {
+      "title": "What would you like to track?",
+      "subtitle": "Pick any. About 30 seconds a day. Change it later in the Track tab.",
+      "section": "Tracking modules",
+      "start": "Start tracking {{count}} modules",
+      "startOne": "Start tracking 1 module",
+      "skip": "Skip for now"
+    }
   }
 }

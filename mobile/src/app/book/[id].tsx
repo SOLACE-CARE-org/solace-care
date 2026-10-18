@@ -34,10 +34,13 @@ export default function ChooseSession() {
     id,
     reschedule,
     modality: fixedModality,
+    recommendationId,
   } = useLocalSearchParams<{
     id: string;
     reschedule?: string;
     modality?: Modality;
+    /** Set when the booking answers a tracking invite (D52). */
+    recommendationId?: string;
   }>();
   const moving = Boolean(reschedule);
   const guestToken = useGuestToken(reschedule ?? '');
@@ -98,6 +101,7 @@ export default function ChooseSession() {
                 params: {
                   holdId: held.holdId,
                   specialistId: id,
+                  ...(recommendationId ? { recommendationId } : {}),
                   start: held.start,
                   end: held.end,
                   expiresAt: held.expiresAt,

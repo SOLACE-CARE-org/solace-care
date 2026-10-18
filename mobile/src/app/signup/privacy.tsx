@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { type ConsentPurpose, useConsents, useSaveConsents } from '@/api/account';
+import { flags } from '@/config/flags';
 import { signupSteps } from '@/state/signup';
 import { Button } from '@/ui/Button';
 import { FlowScreen } from '@/ui/FlowScreen';
@@ -14,8 +15,8 @@ import { SwitchRow } from '@/ui/SwitchRow';
 import { Text } from '@/ui/Text';
 
 /** The purposes this screen can show; Core lists the ones offered in this release. */
-type Shown = Extract<ConsentPurpose, 'AI_ASSIST' | 'AI_SCRIBE'>;
-const SHOWN: readonly Shown[] = ['AI_ASSIST', 'AI_SCRIBE'];
+type Shown = Extract<ConsentPurpose, 'TRACKING' | 'AI_ASSIST' | 'AI_SCRIBE'>;
+const SHOWN: readonly Shown[] = ['TRACKING', 'AI_ASSIST', 'AI_SCRIBE'];
 
 /**
  * Seeker sign-up, step 3: privacy choices (SeekerConsent.dc.html). The health check and tracking
@@ -33,13 +34,20 @@ export default function SignupPrivacy() {
     .map((c) => c.purpose)
     .filter((p): p is Shown => (SHOWN as readonly string[]).includes(p));
   const granted = (purpose: Shown) =>
-    changed[purpose] ??
-    current.data?.consents.find((c) => c.purpose === purpose)?.granted === true;
+    changed[purpose] ?? current.data?.consents.find((c) => c.purpose === purpose)?.granted === true;
 
   const submit = () =>
     save.mutate(
       offered.map((purpose) => ({ purpose, granted: granted(purpose) })),
-      { onSuccess: () => router.replace('/signup/done') },
+      {
+        // With tracking on, step 4 asks what to track (SeekerModules.dc.html).
+        onSuccess: () =>
+          router.replace(
+            flags.trackTab && offered.includes('TRACKING') && granted('TRACKING')
+              ? '/signup/modules'
+              : '/signup/done',
+          ),
+      },
     );
 
   return (
@@ -49,7 +57,10 @@ export default function SignupPrivacy() {
         <Button
           label={t('signupPrivacy.save')}
           disabled={offered.length === 0 || save.isPending}
-          accessibilityState={{ disabled: offered.length === 0 || save.isPending, busy: save.isPending }}
+          accessibilityState={{
+            disabled: offered.length === 0 || save.isPending,
+            busy: save.isPending,
+          }}
           onPress={submit}
         />
       }

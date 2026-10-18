@@ -1341,6 +1341,8 @@
   "signupPrivacy": {
     "title": "Votre vie privée, votre décision",
     "subtitle": "Choisissez ce que Solace peut faire de vos informations. Modifiable plus tard dans Confidentialité et données.",
+    "TRACKING_title": "Suivi de santé",
+    "TRACKING_meta": "Conserver ce que vous notez pour vous montrer des tendances et suggérer un soin quand un schéma apparaît.",
     "AI_ASSIST_title": "Assistance IA",
     "AI_ASSIST_meta": "Explications claires et compagnon entre les séances.",
     "AI_SCRIBE_title": "Notes de séance par IA",
@@ -1946,5 +1948,108 @@
     "woman": "Femme",
     "man": "Homme",
     "save": "Enregistrer"
+  },
+  "track": {
+    "title": "Suivi",
+    "yourModules": "Vos modules",
+    "logToday": "Noter aujourd'hui",
+    "trends": "Tendances",
+    "addModule": "Ajouter un module",
+    "notLoggedToday": "Pas noté aujourd'hui",
+    "loggedToday": "Noté aujourd'hui",
+    "cycleDayNotLogged": "Jour {{n}} du cycle · pas noté aujourd'hui",
+    "cycleDayLogged": "Jour {{n}} du cycle · noté aujourd'hui",
+    "seePattern": "{{module}} · voir le schéma",
+    "waitingToSync": "En attente de synchro",
+    "loggedOnPhone": "Noté aujourd'hui à {{time}} sur ce téléphone",
+    "savedOffline": "Enregistré sur ce téléphone. Synchronisation dès votre retour en ligne.",
+    "emptyTitle": "Vous ne suivez encore rien",
+    "emptyBody": "Choisissez un module. Environ 30 secondes par jour, et vous seul voyez ce que vous notez.",
+    "consentTitle": "Le suivi de santé est désactivé",
+    "consentBody": "Conserver ce que vous notez pour vous montrer des tendances et suggérer un soin quand un schéma apparaît. Activez-le dans Confidentialité et données.",
+    "consentAction": "Ouvrir Confidentialité et données",
+    "catalogue": {
+      "title": "Ajouter un module",
+      "section": "Modules de suivi",
+      "intro": "Chaque module est validé par l'équipe clinique de Solace. Quittez-en un quand vous voulez ; vos données restent à vous.",
+      "tracking": "Suivi en cours",
+      "add": "Ajouter",
+      "tooYoung": "Ce module est réservé aux personnes de {{age}} ans et plus.",
+      "update": "Mettez l'application à jour pour utiliser ce module."
+    },
+    "enrol": {
+      "add": "Ajouter {{module}}",
+      "reminder": "Rappel quotidien",
+      "noReminder": "Pas de rappel",
+      "yes": "Oui",
+      "no": "Non"
+    },
+    "log": {
+      "title": "Noter aujourd'hui",
+      "checkinTitle": "Comment s'est passée la journée ?",
+      "header": "{{module}} · {{date}}",
+      "headerCycle": "{{module}} · {{date}} · jour {{n}} du cycle",
+      "optional": "(facultatif)",
+      "notePrivate": "Privée. Un spécialiste ne voit vos notes que si vous acceptez de les partager.",
+      "save": "Enregistrer la journée",
+      "saveCheckin": "Enregistrer le bilan",
+      "decrease": "Moins",
+      "increase": "Plus",
+      "hours": "{{h}} h {{m}}",
+      "nothingYet": "Choisissez au moins une réponse pour enregistrer.",
+      "periodDates": "Dates des règles"
+    },
+    "trend": {
+      "title": "Tendances · {{module}}",
+      "range": "Période",
+      "ranges": {
+        "TWO_WEEKS": "2 semaines",
+        "MONTH": "Mois",
+        "THREE_MONTHS": "3 mois"
+      },
+      "scale": "De {{low}} à {{high}}",
+      "hours": "heures",
+      "today": "Aujourd'hui",
+      "notes": "Vos notes",
+      "notesCount": {
+        "TWO_WEEKS": "{{n}} sur ces 2 semaines · vous seul pouvez les voir",
+        "MONTH": "{{n}} ce mois-ci · vous seul pouvez les voir",
+        "THREE_MONTHS": "{{n}} sur ces 3 mois · vous seul pouvez les voir"
+      },
+      "noData": "Rien de noté sur cette période.",
+      "days": "{{n}} jours notés sur {{total}}",
+      "reminder": "Rappel quotidien",
+      "reminderLine": "{{time}} · s'arrête si vous l'ignorez 5 jours de suite",
+      "reminderOff": "Désactivé",
+      "cycles": "Vos derniers cycles",
+      "cycleLine": "{{days}} jours",
+      "leave": "Arrêter de suivre {{module}}",
+      "leaveNote": "Vos données restent à vous, et vous pouvez rajouter le module quand vous voulez."
+    },
+    "recommendation": {
+      "title": "Recommandation",
+      "invite": "Pensez à consulter un spécialiste en {{specialty}}",
+      "pattern": "Un schéma dans ce que vous avez noté",
+      "lastCycles": "Vos {{n}} derniers cycles",
+      "days": "jours",
+      "guide": "repère de {{n}} jours",
+      "why": "Pourquoi nous vous le suggérons",
+      "reviewed": "Règle validée par les cliniciens Solace",
+      "dataChanged": "Vos données ont changé depuis, et ce schéma ne tient plus.",
+      "later": "Plus tard",
+      "book": "Réserver une séance",
+      "dismiss": "Pas maintenant",
+      "noMatches": "Aucun spécialiste n'est encore disponible pour cela. Cherchez parmi tous les spécialistes.",
+      "searchAll": "Chercher parmi tous les spécialistes",
+      "next": "{{specialty}} · prochain créneau {{slot}}"
+    },
+    "signup": {
+      "title": "Que voulez-vous suivre ?",
+      "subtitle": "Choisissez librement. Environ 30 secondes par jour. Modifiable plus tard dans l'onglet Suivi.",
+      "section": "Modules de suivi",
+      "start": "Suivre {{count}} modules",
+      "startOne": "Suivre 1 module",
+      "skip": "Passer pour l'instant"
+    }
   }
 }
