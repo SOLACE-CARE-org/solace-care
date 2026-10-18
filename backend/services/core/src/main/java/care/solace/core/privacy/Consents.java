@@ -96,7 +96,7 @@ class Consents implements ConsentProgress {
     }
   }
 
-  private Map<Purpose, Current> latest(UUID accountId) {
+  Map<Purpose, Current> latest(UUID accountId) {
     Map<Purpose, Current> latest = new EnumMap<>(Purpose.class);
     db.sql(
             """

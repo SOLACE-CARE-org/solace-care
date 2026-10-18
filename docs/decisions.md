@@ -253,6 +253,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Crisis numbers:** a crisis resource carries the numbers the app dials, per country. The app ships Cameroon's (D39) and replaces them with the published ones when it can, so Urgent help works offline either way. Seeded as published v1, with its clinical check still to do.
 - **Legal texts:** terms, privacy notice, specialist terms and code of conduct start as empty drafts for counsel. Until one is published, the configured v1 is what people accept. Once published, its version is the one sign-up requires; a seeker who accepted an older terms or privacy notice is asked to accept the new one on their next visit (`legalToAccept` on `/v1/me`, then `POST /v1/me/legal-acceptance`). Specialists accept new specialist terms and code of conduct at sign-up; asking approved specialists again waits for a screen.
 
+**D45. Admin portal v1: people and data requests (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Finding someone:** staff search by phone (typed with or without +237), email, or a booking reference; with no search the newest 50 accounts and unclaimed guests are listed. People appear as #5480 or G-2244 (D41), contacts masked as +237 6•• •• •• 34 or a•••••@gmail.com.
+- **The record:** account or guest, bookings, current consents, data requests and how many crisis alerts are open. Every view is audited as a read of the person's data; revealing a contact needs a reason and is audited with it. Nothing clinical is shown.
+- **Requests for the person:** Operations (and Super admins) can prepare an export, which goes to the person as in D40, never to staff, and erase a seeker's account or a guest's contact under the same rules as the person's own request (nothing upcoming, in session or unpaid). A specialist's erasure stays a data request for Operations to work through (D40).
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

@@ -62,6 +62,8 @@ tags:
     description: Published articles, FAQs, crisis resources and legal text for the apps (D44)
   - name: admin-content
     description: Writing, translating, checking and publishing content (admin screens 15 and 16; D44)
+  - name: admin-people
+    description: Seekers, specialists' accounts and guests, their consents and data requests (admin screens 9 and 10; D45)
 paths:
   /v1/signups:
     post:
@@ -3566,6 +3568,132 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/people:
+    get:
+      operationId: searchPeople
+      summary: Find a person by phone, email or booking reference; the newest 50 without a search
+      tags: [admin-people]
+      parameters:
+        - name: q
+          in: query
+          description: A phone number (+237…), an email, or a booking reference (BK-7F9D1C2E).
+          schema:
+            type: string
+            maxLength: 120
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [ACCOUNT, GUEST]
+      responses:
+        "200":
+          description: People, contacts masked
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonRow"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/people/{personId}:
+    parameters:
+      - $ref: "#/components/parameters/PersonId"
+    get:
+      operationId: getPerson
+      summary: One person's account, bookings, consents and data requests; the view is audited
+      tags: [admin-people]
+      responses:
+        "200":
+          description: The person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/people/{personId}/contact-reveal:
+    parameters:
+      - $ref: "#/components/parameters/PersonId"
+    post:
+      operationId: revealPersonContact
+      summary: Show the unmasked phone and email; a logged action with a reason
+      tags: [admin-people]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: The contact
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  phone:
+                    type: string
+                  email:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/people/{personId}/data-export:
+    parameters:
+      - $ref: "#/components/parameters/PersonId"
+    post:
+      operationId: preparePersonExport
+      summary: Prepare the person's copy of their data; it is sent to them, never to staff (D40)
+      tags: [admin-people]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "202":
+          description: Being prepared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonDataRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/people/{personId}/erasure:
+    parameters:
+      - $ref: "#/components/parameters/PersonId"
+    post:
+      operationId: erasePerson
+      summary: Erase a seeker's account or a guest's contact; refused while money or a session is open (D40, D45)
+      tags: [admin-people]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: Erased
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -3714,6 +3842,14 @@ components:
       name: contentId
       in: path
       required: true
+      schema:
+        type: string
+        format: uuid
+    PersonId:
+      name: personId
+      in: path
+      required: true
+      description: An account id or a guest contact id.
       schema:
         type: string
         format: uuid
@@ -6113,3 +6249,121 @@ components:
         updatedAt:
           type: string
           format: date-time
+    PersonRow:
+      type: object
+      additionalProperties: false
+      required: [id, ref, type, contact, appLanguage, bookings, since, openRequests]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ref:
+          description: "#5480, or G-2244 for a guest (D41)."
+          type: string
+        type:
+          type: string
+          enum: [ACCOUNT, GUEST]
+        role:
+          type: string
+          x-extensible-enum: [SEEKER, SPECIALIST]
+        status:
+          type: string
+          x-extensible-enum: [PENDING, ACTIVE, SUSPENDED, ERASED]
+        contact:
+          description: Masked, +237 6•• •• •• 34 or a•••••@gmail.com.
+          type: string
+        appLanguage:
+          type: string
+        bookings:
+          type: integer
+        since:
+          type: string
+          format: date-time
+        openRequests:
+          type: array
+          items:
+            type: string
+            enum: [EXPORT, ERASURE]
+    PersonDataRequest:
+      type: object
+      additionalProperties: false
+      required: [id, kind, status, requestedAt, dueAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [EXPORT, ERASURE]
+        status:
+          type: string
+          x-extensible-enum: [PREPARING, READY, EXPIRED, REQUESTED, DONE]
+        requestedAt:
+          type: string
+          format: date-time
+        dueAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    PersonBooking:
+      type: object
+      additionalProperties: false
+      required: [id, reference, startsAt, specialist, modality, sessionLanguage, status, price]
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        specialist:
+          type: string
+        modality:
+          $ref: "#/components/schemas/Modality"
+        sessionLanguage:
+          type: string
+        status:
+          type: string
+        price:
+          type: integer
+    PersonConsent:
+      type: object
+      additionalProperties: false
+      required: [purpose, granted, version]
+      properties:
+        purpose:
+          type: string
+        granted:
+          type: boolean
+        version:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+    PersonRecord:
+      allOf:
+        - $ref: "#/components/schemas/PersonRow"
+        - type: object
+          required: [bookingList, consents, dataRequests, openCrisisAlerts]
+          properties:
+            bookingList:
+              type: array
+              items:
+                $ref: "#/components/schemas/PersonBooking"
+            consents:
+              type: array
+              items:
+                $ref: "#/components/schemas/PersonConsent"
+            dataRequests:
+              type: array
+              items:
+                $ref: "#/components/schemas/PersonDataRequest"
+            openCrisisAlerts:
+              type: integer
+            canErase:
+              description: A seeker or guest with nothing open; a specialist's erasure is a data request (D40).
+              type: boolean

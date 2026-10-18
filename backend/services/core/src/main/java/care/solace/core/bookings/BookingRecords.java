@@ -32,6 +32,12 @@ public interface BookingRecords {
   /** Every booking a member made, for their copy of their data and for erasure (D40). */
   java.util.List<UUID> idsFor(UUID accountId);
 
+  /** Every booking of a person, by account or guest contact id, newest first (People, D45). */
+  java.util.List<Info> forSubject(UUID subjectId);
+
+  /** The one booking a reference (BK-7F9D1C2E) or id names, if exactly one (D41). */
+  Optional<Info> byReference(String reference);
+
   /** The person's next confirmed session, by account or guest contact id (crisis queue). */
   Optional<Info> nextFor(UUID subjectId, Instant now);
 

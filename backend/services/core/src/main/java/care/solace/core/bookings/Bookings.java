@@ -284,6 +284,26 @@ class Bookings implements BookingRecords {
   }
 
   @Override
+  public List<Info> forSubject(UUID subjectId) {
+    return store.forSubject(subjectId).stream().map(BookingStore.Row::info).toList();
+  }
+
+  @Override
+  public Optional<Info> byReference(String reference) {
+    String prefix;
+    try {
+      prefix = AdminBookings.prefix(reference);
+    } catch (SolaceException e) {
+      return Optional.empty();
+    }
+    if (prefix == null) {
+      return Optional.empty();
+    }
+    var rows = store.search(new BookingStore.Search(null, null, null, null, null, prefix, null), 2);
+    return rows.size() == 1 ? Optional.of(rows.get(0).info()) : Optional.empty();
+  }
+
+  @Override
   public Optional<Info> nextFor(UUID subjectId, Instant now) {
     return store.nextFor(subjectId, now).map(BookingStore.Row::info);
   }

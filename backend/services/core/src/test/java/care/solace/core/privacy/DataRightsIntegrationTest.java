@@ -181,6 +181,81 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
 
   // --- Helpers ---------------------------------------------------------------------------------
 
+  @Test
+  void supportFindsAPersonByPhoneAndEveryViewAndRevealIsAudited() throws Exception {
+    String token = seeker("+237670000455", "Ama");
+    String id = id(token);
+    UUID booked = booking(id, "CONFIRMED", Duration.ofDays(3));
+    var support = staff("sup-p", "E. Nkeng", "SUPPORT");
+    var ops = staff("ops-p", "N. Ebai", "OPERATIONS");
+
+    mvc.perform(get("/admin/v1/people").with(support).param("q", "670 000 455"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(id))
+        .andExpect(jsonPath("$[0].contact").value("+237 6•• •• •• 55"))
+        .andExpect(jsonPath("$[0].bookings").value(1));
+    String reference = "BK-" + booked.toString().replace("-", "").substring(0, 8).toUpperCase();
+    mvc.perform(get("/admin/v1/people").with(support).param("q", reference))
+        .andExpect(jsonPath("$[0].id").value(id));
+
+    mvc.perform(get("/admin/v1/people/" + id).with(support))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.bookingList[0].status").value("CONFIRMED"))
+        .andExpect(jsonPath("$.canErase").value(false))
+        .andExpect(jsonPath("$.consents").isArray());
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM audit_log WHERE action = 'people.record.read' AND subject_id = ?",
+                Integer.class,
+                id))
+        .isEqualTo(1);
+
+    mvc.perform(
+            post("/admin/v1/people/" + id + "/contact-reveal")
+                .with(support)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Seeker asked for a callback\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.phone").value("+237670000455"));
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT reason FROM audit_log WHERE action = 'people.contact.reveal' AND subject_id = ?",
+                String.class,
+                id))
+        .isEqualTo("Seeker asked for a callback");
+
+    // Support can look; erasure is Operations' (People: Support V).
+    mvc.perform(
+            post("/admin/v1/people/" + id + "/erasure")
+                .with(support)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"x\"}"))
+        .andExpect(status().isForbidden());
+    mvc.perform(
+            post("/admin/v1/people/" + id + "/erasure")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Seeker asked by phone\"}"))
+        .andExpect(status().isConflict());
+    jdbc.update("UPDATE booking SET status = 'CANCELLED' WHERE id = ?", booked);
+    mvc.perform(
+            post("/admin/v1/people/" + id + "/data-export")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Seeker asked by phone\"}"))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.kind").value("EXPORT"));
+    mvc.perform(
+            post("/admin/v1/people/" + id + "/erasure")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Seeker asked by phone\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ERASED"))
+        .andExpect(jsonPath("$.contact").value(""));
+  }
+
   private org.springframework.test.web.servlet.ResultActions erase(String token) throws Exception {
     return mvc.perform(
         post("/v1/me/erasure")

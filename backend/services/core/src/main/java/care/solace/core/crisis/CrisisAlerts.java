@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
  * acknowledgement, the escalation list after 10. Messages carry no personal details.
  */
 @Service
-class CrisisAlerts {
+class CrisisAlerts implements CrisisSummaries {
 
   static final String CONSUMER = "core.crisis-alerts";
 
@@ -370,5 +370,13 @@ class CrisisAlerts {
   private static Instant instant(ResultSet rs, String column) throws SQLException {
     Timestamp t = rs.getTimestamp(column);
     return t == null ? null : t.toInstant();
+  }
+
+  @Override
+  public int openFor(UUID subjectId) {
+    return db.sql("SELECT count(*) FROM crisis_alert WHERE subject_id = :s AND status <> 'CLOSED'")
+        .param("s", subjectId)
+        .query(Integer.class)
+        .single();
   }
 }
