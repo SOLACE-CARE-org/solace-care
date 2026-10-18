@@ -42,6 +42,7 @@ class Applications implements SpecialistSummaries {
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
   private final LivePricing pricing;
+  private final care.solace.core.content.LegalTexts legal;
   private final TransactionTemplate transactions;
   private final Clock clock;
 
@@ -55,6 +56,7 @@ class Applications implements SpecialistSummaries {
       Catalogue catalogue,
       SpecialistSettings settings,
       LivePricing pricing,
+      care.solace.core.content.LegalTexts legal,
       TransactionTemplate transactions,
       Clock clock) {
     this.store = store;
@@ -66,6 +68,7 @@ class Applications implements SpecialistSummaries {
     this.catalogue = catalogue;
     this.settings = settings;
     this.pricing = pricing;
+    this.legal = legal;
     this.transactions = transactions;
     this.clock = clock;
   }
@@ -112,8 +115,15 @@ class Applications implements SpecialistSummaries {
       Optional<ApplicationStore.DraftedBio> draftedBio) {}
 
   void startSignup(SignupRequest request) {
-    if (!settings.termsVersion().equals(request.termsVersion())
-        || !settings.codeOfConductVersion().equals(request.codeOfConductVersion())) {
+    // The published versions, else the configured ones (D44).
+    if (!legal
+            .currentVersion("specialist-terms")
+            .orElse(settings.termsVersion())
+            .equals(request.termsVersion())
+        || !legal
+            .currentVersion("code-of-conduct")
+            .orElse(settings.codeOfConductVersion())
+            .equals(request.codeOfConductVersion())) {
       throw new SolaceException(SpecialistError.OUTDATED_TERMS);
     }
     String name = request.fullName().strip();

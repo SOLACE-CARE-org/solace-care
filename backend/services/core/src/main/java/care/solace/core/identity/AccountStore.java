@@ -302,4 +302,27 @@ class AccountStore {
     Timestamp t = rs.getTimestamp(column);
     return t == null ? null : t.toInstant();
   }
+
+  record LegalVersions(String terms, String privacyNotice) {}
+
+  /** The terms and privacy notice versions the account accepted. */
+  Optional<LegalVersions> legalVersions(UUID id) {
+    return db.sql("SELECT terms_version, privacy_notice_version FROM user_account WHERE id = :id")
+        .param("id", id)
+        .query(
+            (rs, n) ->
+                new LegalVersions(
+                    rs.getString("terms_version"), rs.getString("privacy_notice_version")))
+        .optional();
+  }
+
+  void acceptLegal(UUID id, String slug, String version) {
+    db.sql(
+            "UPDATE user_account SET "
+                + (slug.equals("terms") ? "terms_version" : "privacy_notice_version")
+                + " = :v WHERE id = :id")
+        .param("id", id)
+        .param("v", version)
+        .update();
+  }
 }

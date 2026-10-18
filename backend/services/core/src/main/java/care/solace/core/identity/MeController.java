@@ -31,6 +31,7 @@ class MeController {
   private final ObjectProvider<SpecialistSummaries> specialists;
   private final TransactionTemplate transactions;
   private final Clock clock;
+  private final Signups signups;
 
   MeController(
       Members members,
@@ -39,7 +40,8 @@ class MeController {
       ConsentProgress consents,
       ObjectProvider<SpecialistSummaries> specialists,
       TransactionTemplate transactions,
-      Clock clock) {
+      Clock clock,
+      Signups signups) {
     this.members = members;
     this.store = store;
     this.catalogue = catalogue;
@@ -47,6 +49,7 @@ class MeController {
     this.specialists = specialists;
     this.transactions = transactions;
     this.clock = clock;
+    this.signups = signups;
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -57,7 +60,15 @@ class MeController {
       String phone,
       String appLanguage,
       Onboarding onboarding,
-      String applicationStatus) {}
+      String applicationStatus,
+      List<Legal> legalToAccept) {}
+
+  record Legal(
+      @NotNull @Pattern(regexp = "terms|privacy-notice") String slug,
+      @NotNull @Size(max = 20) String version) {}
+
+  record Acceptance(
+      @NotNull @Size(min = 1, max = 2) List<@jakarta.validation.Valid Legal> accepted) {}
 
   record Onboarding(boolean preferences, boolean privacy) {}
 
@@ -80,7 +91,8 @@ class MeController {
           members.phone(account.id()).orElse(null),
           account.appLanguage().getLanguage(),
           new Onboarding(true, true),
-          summary.map(SpecialistSummaries.Summary::applicationStatus).orElse(null));
+          summary.map(SpecialistSummaries.Summary::applicationStatus).orElse(null),
+          null);
     }
     var profile = store.seekerProfile(account.id());
     return new Me(
@@ -92,7 +104,42 @@ class MeController {
         new Onboarding(
             profile.map(p -> p.preferencesSavedAt() != null).orElse(true),
             consents.recordedAny(account.id())),
-        null);
+        null,
+        legalToAccept(account.id()));
+  }
+
+  /** Legal texts published since this seeker accepted them (D44). */
+  private List<Legal> legalToAccept(UUID accountId) {
+    var accepted = store.legalVersions(accountId);
+    var pending = new java.util.ArrayList<Legal>();
+    if (accepted.isEmpty()) {
+      return pending;
+    }
+    if (!signups.termsVersion().equals(accepted.get().terms())) {
+      pending.add(new Legal("terms", signups.termsVersion()));
+    }
+    if (accepted.get().privacyNotice() != null
+        && !signups.privacyNoticeVersion().equals(accepted.get().privacyNotice())) {
+      pending.add(new Legal("privacy-notice", signups.privacyNoticeVersion()));
+    }
+    return pending;
+  }
+
+  @org.springframework.web.bind.annotation.PostMapping("/v1/me/legal-acceptance")
+  @org.springframework.web.bind.annotation.ResponseStatus(
+      org.springframework.http.HttpStatus.NO_CONTENT)
+  void accept(
+      @AuthenticationPrincipal Jwt token,
+      @jakarta.validation.Valid @RequestBody Acceptance request) {
+    Account account = members.require(token);
+    for (Legal l : request.accepted()) {
+      String current =
+          l.slug().equals("terms") ? signups.termsVersion() : signups.privacyNoticeVersion();
+      if (!current.equals(l.version())) {
+        throw new care.solace.errors.SolaceException(IdentityError.OUTDATED_TERMS);
+      }
+      store.acceptLegal(account.id(), l.slug(), l.version());
+    }
   }
 
   @GetMapping("/v1/me/preferences")

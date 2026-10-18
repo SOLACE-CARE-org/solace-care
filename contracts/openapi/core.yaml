@@ -58,6 +58,10 @@ tags:
     description: The append-only audit log (admin screen 18; D42)
   - name: admin-catalogue
     description: Specialties, session languages, help topics and cancellation policy versions (admin screen 14; D43)
+  - name: content
+    description: Published articles, FAQs, crisis resources and legal text for the apps (D44)
+  - name: admin-content
+    description: Writing, translating, checking and publishing content (admin screens 15 and 16; D44)
 paths:
   /v1/signups:
     post:
@@ -3281,6 +3285,287 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/content:
+    get:
+      operationId: listPublishedContent
+      summary: Published items of one type in the app language; crisis resources are cached by the app for offline use
+      tags: [content]
+      security: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentType"
+        - name: country
+          in: query
+          description: ISO 3166 country of a crisis resource.
+          schema:
+            type: string
+            pattern: "^[A-Z]{2}$"
+      responses:
+        "200":
+          description: Published items, newest version of each
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublishedContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /v1/content/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/ContentSlug"
+    get:
+      operationId: getPublishedContent
+      summary: One published item in the app language (Accept-Language)
+      tags: [content]
+      security: []
+      responses:
+        "200":
+          description: The item's newest published version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishedContent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/me/legal-acceptance:
+    post:
+      operationId: acceptLegalTexts
+      summary: Accept the current versions of the legal texts the member has not accepted yet (D44)
+      tags: [accounts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [accepted]
+              properties:
+                accepted:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: "#/components/schemas/LegalAcceptance"
+      responses:
+        "204":
+          description: Recorded
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/v1/content:
+    get:
+      operationId: listContent
+      summary: Every content item and where it stands (admin screen 15)
+      tags: [admin-content]
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentType"
+      responses:
+        "200":
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentRow"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createContent
+      summary: Start a new item as a draft
+      tags: [admin-content]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [type, slug]
+              properties:
+                type:
+                  $ref: "#/components/schemas/ContentType"
+                slug:
+                  type: string
+                  pattern: "^[a-z][a-z0-9-]*$"
+                  maxLength: 60
+                country:
+                  type: string
+                  pattern: "^[A-Z]{2}$"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/content/{contentId}:
+    parameters:
+      - $ref: "#/components/parameters/ContentId"
+    get:
+      operationId: getContent
+      summary: One item's draft beside its published version (admin screen 16)
+      tags: [admin-content]
+      responses:
+        "200":
+          description: The item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: saveContentDraft
+      summary: Save the draft; a changed language is no longer marked done, and a crisis resource needs its clinical check again
+      tags: [admin-content]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentDraft"
+      responses:
+        "200":
+          description: The item after saving
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/content/{contentId}/translation-status:
+    parameters:
+      - $ref: "#/components/parameters/ContentId"
+    put:
+      operationId: markContentLanguageDone
+      summary: Mark one language done or not done
+      tags: [admin-content]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [language, done]
+              properties:
+                language:
+                  type: string
+                  enum: [en, fr]
+                done:
+                  type: boolean
+      responses:
+        "200":
+          description: The item after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/content/{contentId}/clinical-check:
+    parameters:
+      - $ref: "#/components/parameters/ContentId"
+    post:
+      operationId: requestClinicalCheck
+      summary: Send the draft for a clinical reviewer's check
+      tags: [admin-content]
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/content/{contentId}/clinical-approval:
+    parameters:
+      - $ref: "#/components/parameters/ContentId"
+    post:
+      operationId: approveClinicalCheck
+      summary: A clinical reviewer who did not edit the draft approves it
+      tags: [admin-content]
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/content/{contentId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/ContentId"
+    post:
+      operationId: publishContent
+      summary: Publish the draft as the next version; needs EN and FR done, and the clinical check where required
+      tags: [admin-content]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: Published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -3417,6 +3702,21 @@ components:
       schema:
         type: string
         format: date-time
+    ContentSlug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9-]*$"
+        maxLength: 60
+    ContentId:
+      name: contentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   requestBodies:
     Rating:
       required: true
@@ -3641,6 +3941,11 @@ components:
           description: Specialists only. Where their application stands, so the app opens the right screen.
           allOf:
             - $ref: "#/components/schemas/ApplicationStatus"
+        legalToAccept:
+          description: Seekers only. Legal texts with a newer published version than the one accepted; the app asks before going on (D44).
+          type: array
+          items:
+            $ref: "#/components/schemas/LegalAcceptance"
     Preferences:
       type: object
       additionalProperties: false
@@ -5659,3 +5964,152 @@ components:
               type: string
             inForce:
               type: boolean
+    ContentType:
+      type: string
+      enum: [CRISIS_RESOURCE, ARTICLE, FAQ, LEGAL]
+    EmergencyNumber:
+      type: object
+      additionalProperties: false
+      required: [service, number]
+      properties:
+        service:
+          type: string
+          enum: [police, ambulance, fire, helpline]
+        number:
+          type: string
+          pattern: "^[0-9+ ]{2,20}$"
+    LegalAcceptance:
+      type: object
+      additionalProperties: false
+      required: [slug, version]
+      properties:
+        slug:
+          type: string
+          enum: [terms, privacy-notice]
+        version:
+          type: string
+          maxLength: 20
+    PublishedContent:
+      type: object
+      additionalProperties: false
+      required: [slug, type, version, language, title, body]
+      properties:
+        slug:
+          type: string
+        type:
+          $ref: "#/components/schemas/ContentType"
+        version:
+          description: v1, v2; legal texts are accepted by this version.
+          type: string
+        language:
+          type: string
+          enum: [en, fr]
+        title:
+          type: string
+        body:
+          type: string
+        country:
+          type: string
+        numbers:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmergencyNumber"
+        publishedAt:
+          type: string
+          format: date-time
+    ContentDraft:
+      type: object
+      additionalProperties: false
+      required: [titleEn, bodyEn, titleFr, bodyFr]
+      properties:
+        titleEn:
+          type: string
+          maxLength: 200
+        bodyEn:
+          type: string
+          maxLength: 40000
+        titleFr:
+          type: string
+          maxLength: 200
+        bodyFr:
+          type: string
+          maxLength: 40000
+        numbers:
+          type: array
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/EmergencyNumber"
+    ContentRow:
+      type: object
+      additionalProperties: false
+      required: [id, slug, type, title, enDone, frDone, clinical, status, version, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        type:
+          $ref: "#/components/schemas/ContentType"
+        title:
+          description: In the portal language, or the other one when it is missing.
+          type: string
+        enDone:
+          type: boolean
+        frDone:
+          type: boolean
+        clinical:
+          $ref: "#/components/schemas/ClinicalCheck"
+        status:
+          type: string
+          x-extensible-enum: [DRAFT, EDITED, PUBLISHED]
+        version:
+          description: The published version; 0 before the first.
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+    ClinicalCheck:
+      type: string
+      x-extensible-enum: [NOT_NEEDED, NEEDED, REQUESTED, APPROVED]
+    ContentItem:
+      type: object
+      additionalProperties: false
+      required: [id, slug, type, draft, enDone, frDone, clinical, status, version, canPublish, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        type:
+          $ref: "#/components/schemas/ContentType"
+        country:
+          type: string
+        draft:
+          $ref: "#/components/schemas/ContentDraft"
+        published:
+          $ref: "#/components/schemas/ContentDraft"
+        enDone:
+          type: boolean
+        frDone:
+          type: boolean
+        clinical:
+          $ref: "#/components/schemas/ClinicalCheck"
+        clinicalBy:
+          type: string
+        status:
+          type: string
+          x-extensible-enum: [DRAFT, EDITED, PUBLISHED]
+        version:
+          type: integer
+        canPublish:
+          type: boolean
+        canApprove:
+          description: This staff member may approve the clinical check.
+          type: boolean
+        editedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time

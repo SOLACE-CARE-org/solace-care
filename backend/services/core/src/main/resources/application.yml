@@ -89,6 +89,9 @@ solace:
       - /v1/catalogue/**
       # Feature flags the apps read before anyone signs in (D42).
       - /v1/config
+      # Published legal texts and crisis resources, read before sign-in and by guests (D44).
+      - /v1/content
+      - /v1/content/**
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
     keycloak:

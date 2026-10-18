@@ -31,6 +31,7 @@ class Signups {
   private final AccountStore store;
   private final KeycloakMembers keycloak;
   private final IdentitySettings settings;
+  private final care.solace.core.content.LegalTexts legal;
   private final TransactionTemplate transactions;
   private final Clock clock;
 
@@ -38,11 +39,13 @@ class Signups {
       AccountStore store,
       KeycloakMembers keycloak,
       IdentitySettings settings,
+      care.solace.core.content.LegalTexts legal,
       TransactionTemplate transactions,
       Clock clock) {
     this.store = store;
     this.keycloak = keycloak;
     this.settings = settings;
+    this.legal = legal;
     this.transactions = transactions;
     this.clock = clock;
   }
@@ -57,9 +60,18 @@ class Signups {
       String privacyNoticeVersion,
       Locale appLanguage) {}
 
+  /** The terms new seekers accept: the published version, else the configured one (D44). */
+  String termsVersion() {
+    return legal.currentVersion("terms").orElse(settings.termsVersion());
+  }
+
+  String privacyNoticeVersion() {
+    return legal.currentVersion("privacy-notice").orElse(settings.privacyNoticeVersion());
+  }
+
   void start(Request request) {
-    if (!settings.termsVersion().equals(request.termsVersion())
-        || !settings.privacyNoticeVersion().equals(request.privacyNoticeVersion())) {
+    if (!termsVersion().equals(request.termsVersion())
+        || !privacyNoticeVersion().equals(request.privacyNoticeVersion())) {
       throw new SolaceException(IdentityError.OUTDATED_TERMS);
     }
     LocalDate today = LocalDate.now(clock.withZone(CAMEROON));

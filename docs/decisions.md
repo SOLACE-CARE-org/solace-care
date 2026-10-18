@@ -247,6 +247,12 @@ Every pair now meets WCAG 2.1 AA.
 - **Price bands:** the lowest and highest price are platform settings (D42), so changing them is a Super admin's step in Settings and flags; the Catalogue screen shows them.
 - **Cancellation policy:** staff edit a draft in the browser and publish it with a reason as the next whole version (v2, v3), in force at once for new bookings; each booking keeps its own version (D33). The late-joiner minutes stay a session setting (D36, D42).
 
+**D44. Content: articles, FAQs, crisis resources and legal text (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Workflow:** a content editor writes EN and FR side by side and marks each language done; editing a language clears its done mark. Publishing needs both done and creates the next version, kept as written; the apps read only published versions (`/v1/content`, no token, cached five minutes).
+- **Clinical check:** crisis resources need a clinical reviewer's approval after every edit, from someone who did not make the edit; articles and FAQs do not unless a later spec says so.
+- **Crisis numbers:** a crisis resource carries the numbers the app dials, per country. The app ships Cameroon's (D39) and replaces them with the published ones when it can, so Urgent help works offline either way. Seeded as published v1, with its clinical check still to do.
+- **Legal texts:** terms, privacy notice, specialist terms and code of conduct start as empty drafts for counsel. Until one is published, the configured v1 is what people accept. Once published, its version is the one sign-up requires; a seeker who accepted an older terms or privacy notice is asked to accept the new one on their next visit (`legalToAccept` on `/v1/me`, then `POST /v1/me/legal-acceptance`). Specialists accept new specialist terms and code of conduct at sign-up; asking approved specialists again waits for a screen.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
