@@ -743,6 +743,49 @@
         "privacy_export_download": "Copie des données téléchargée",
         "specialists_document_read": "Justificatif consulté"
       }
+    },
+    "catalogue": {
+      "title": "Catalogue et politiques",
+      "tab": {
+        "SPECIALTIES": "Spécialités",
+        "SESSION_TYPES": "Types de séance",
+        "PRICE_BANDS": "Fourchettes de prix",
+        "LANGUAGES": "Langues de séance",
+        "TOPICS": "Sujets d'aide",
+        "POLICY": "Politique d'annulation"
+      },
+      "durationsNote": "Durées de séance que les spécialistes peuvent proposer.",
+      "minutes": "{{n}} min",
+      "modalities": "Chaque durée peut être en audio ou en vidéo.",
+      "priceBand": "Les spécialistes fixent leur prix entre {{min}} et {{max}} par séance.",
+      "priceBandNote": "La fourchette est un paramètre de la plateforme : un Super admin la modifie dans Paramètres et fonctionnalités, avec un motif.",
+      "draft": "Brouillon v{{version}}",
+      "draftNote": "Brouillon · s'applique aux réservations faites après publication",
+      "term": {
+        "fullRefundHours": "Remboursement total si l'usager annule au moins ce nombre d'heures avant",
+        "partialRefundHours": "Une annulation tardive reste remboursée en partie jusqu'à ce nombre d'heures avant",
+        "partialRefundPercent": "Remboursement d'une annulation tardive (% du prix)",
+        "seekerNoShowRefundPercent": "Remboursement si l'usager est absent (% du prix)",
+        "specialistNoShowRefundPercent": "Remboursement si le spécialiste est absent (% du prix)",
+        "maxReschedules": "Reports gratuits par réservation",
+        "rescheduleMinHours": "Une séance peut être déplacée jusqu'à ce nombre d'heures avant"
+      },
+      "seekersReadEn": "Ce que lisent les usagers · EN",
+      "seekersReadFr": "Ce que lisent les usagers · FR",
+      "seekerText": "Annulez au moins {{hours}} heures avant pour être remboursé en totalité. Plus tard, vous récupérez {{percent}} %.",
+      "discard": "Abandonner le brouillon",
+      "publish": "Publier la v{{version}}, avec motif",
+      "versions": "Versions",
+      "inForce": "en vigueur",
+      "versionsNote": "Chaque réservation garde la version de la politique en vigueur au moment où elle a été faite : les changements ne touchent jamais les réservations existantes.",
+      "code": "Code",
+      "english": "Anglais",
+      "french": "Français",
+      "shown": "Visible pour les usagers",
+      "yes": "Oui",
+      "hidden": "Masqué",
+      "add": "Ajouter",
+      "showToSeekers": "Montrer aux usagers"
     }
   },
   "roleChoice": {

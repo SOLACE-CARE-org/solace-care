@@ -241,6 +241,12 @@ Every pair now meets WCAG 2.1 AA.
 - **Team:** a Super admin adds staff by name, email and roles; Core creates the Keycloak account with a 16-character temporary password, shown once and never stored, plus a new password and the authenticator as required actions (D7). A new password also resets the authenticator. A role change, a new password or deactivation logs the person out of Keycloak and Core refuses any token issued before it. A Super admin cannot remove their own Super admin role or deactivate themselves.
 - **Audit log:** Core keeps a staff directory (names, last active) so entries show staff by name; people appear as pseudonymous references and bookings as BK- references. Filters: contact revealed, crisis alert viewed, refunds, status changes, setting changes, break-glass. Admin actions now record the reason given. Export is capped at 10,000 entries and is itself audited.
 
+**D43. Admin portal v1: catalogue and policies (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Entries:** Operations and Super admins add, rename, reorder and hide specialties, session languages (ISO 639 codes, D16) and help topics. Each needs both EN and FR and a reason; nothing is deleted, because bookings and applications refer to codes. A specialty change sends `core.config.changed`.
+- **Session types:** the lengths specialists can offer (30, 50, 80 minutes) stay in configuration until a spec says who may change them; each can be audio or video.
+- **Price bands:** the lowest and highest price are platform settings (D42), so changing them is a Super admin's step in Settings and flags; the Catalogue screen shows them.
+- **Cancellation policy:** staff edit a draft in the browser and publish it with a reason as the next whole version (v2, v3), in force at once for new bookings; each booking keeps its own version (D33). The late-joiner minutes stay a session setting (D36, D42).
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

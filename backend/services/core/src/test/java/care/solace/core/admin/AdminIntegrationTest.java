@@ -193,6 +193,55 @@ class AdminIntegrationTest extends SpecialistFlowTest {
     change("solace.reviews.window", "14", superAdmin);
   }
 
+  @Test
+  void theCatalogueNeedsBothLanguagesAndAPolicyVersionAppliesFromNowOn() throws Exception {
+    mvc.perform(get("/admin/v1/catalogue").with(staff("fin", "F", "FINANCE")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.specialties[?(@.code == 'gynaecology')].enabled").value(false))
+        .andExpect(jsonPath("$.durations[1]").value(50));
+    mvc.perform(
+            put("/admin/v1/catalogue/session-languages/pcm")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"labelEn\":\"Pidgin English\",\"enabled\":true,\"reason\":\"x\"}"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            put("/admin/v1/catalogue/session-languages/pcm")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"labelEn\":\"Pidgin English\",\"labelFr\":\"Pidgin\",\"enabled\":false,"
+                        + "\"reason\":\"Interviews in Pidgin start next month\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.position").value(3));
+    mvc.perform(get("/v1/catalogue/session-languages"))
+        .andExpect(jsonPath("$[?(@.code == 'pcm')]").isEmpty());
+
+    String terms =
+        "{\"fullRefundHours\":24,\"partialRefundHours\":2,\"partialRefundPercent\":50,"
+            + "\"seekerNoShowRefundPercent\":0,\"specialistNoShowRefundPercent\":100,"
+            + "\"maxReschedules\":2,\"rescheduleMinHours\":2,\"reason\":\"Same terms, new wording\"}";
+    mvc.perform(
+            post("/admin/v1/cancellation-policies")
+                .with(staff("sup", "S", "SUPPORT"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(terms))
+        .andExpect(status().isForbidden());
+    var published =
+        json(
+            mvc.perform(
+                    post("/admin/v1/cancellation-policies")
+                        .with(ops)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(terms))
+                .andExpect(status().isCreated()));
+    assertThat(published.path("inForce").asBoolean()).isTrue();
+    assertThat(published.path("publishedBy").asText()).isEqualTo("N. Ebai");
+    mvc.perform(get("/admin/v1/cancellation-policies").with(ops))
+        .andExpect(jsonPath("$[0].version").value(published.path("version").asInt()))
+        .andExpect(jsonPath("$[1].inForce").value(false));
+  }
+
   private org.springframework.test.web.servlet.ResultActions change(
       String key, String value, RequestPostProcessor who) throws Exception {
     return mvc.perform(

@@ -3,6 +3,7 @@ import type { Routes } from '@angular/router';
 
 import { areaGuard } from './auth/area.guard';
 import { AuditLogPage } from './audit/audit-log.page';
+import { CataloguePage } from './catalogue/catalogue.page';
 import { BookingDetailPage } from './bookings/booking-detail.page';
 import { BookingsPage } from './bookings/bookings.page';
 import { CrisisQueuePage } from './crisis/crisis-queue.page';
@@ -25,6 +26,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   crisis: CrisisQueuePage,
   applications: ApplicationsPage,
   bookings: BookingsPage,
+  catalogue: CataloguePage,
   reviews: ReviewsPage,
   payments: PaymentsPage,
   payouts: PayoutRunsPage,

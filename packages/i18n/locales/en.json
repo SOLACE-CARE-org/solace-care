@@ -743,6 +743,49 @@
         "privacy_export_download": "Data copy downloaded",
         "specialists_document_read": "Credential document opened"
       }
+    },
+    "catalogue": {
+      "title": "Catalogue and policies",
+      "tab": {
+        "SPECIALTIES": "Specialties",
+        "SESSION_TYPES": "Session types",
+        "PRICE_BANDS": "Price bands",
+        "LANGUAGES": "Session languages",
+        "TOPICS": "Help topics",
+        "POLICY": "Cancellation policy"
+      },
+      "durationsNote": "Session lengths specialists can offer.",
+      "minutes": "{{n}} min",
+      "modalities": "Every length can be audio or video.",
+      "priceBand": "Specialists set their price between {{min}} and {{max}} per session.",
+      "priceBandNote": "The range is a platform setting: a Super admin changes it in Settings and flags, with a reason.",
+      "draft": "Draft v{{version}}",
+      "draftNote": "Draft · applies to bookings made after publishing",
+      "term": {
+        "fullRefundHours": "Full refund if the seeker cancels at least this many hours before",
+        "partialRefundHours": "A later cancellation still gets a partial refund up to this many hours before",
+        "partialRefundPercent": "Refund for a later cancellation (% of the price)",
+        "seekerNoShowRefundPercent": "Seeker no-show refund (% of the price)",
+        "specialistNoShowRefundPercent": "Specialist no-show refund (% of the price)",
+        "maxReschedules": "Free reschedules per booking",
+        "rescheduleMinHours": "A session can be moved up to this many hours before"
+      },
+      "seekersReadEn": "What seekers read · EN",
+      "seekersReadFr": "What seekers read · FR",
+      "seekerText": "Cancel at least {{hours}} hours before for a full refund. Later, you get {{percent}}% back.",
+      "discard": "Discard draft",
+      "publish": "Publish v{{version}}, with reason",
+      "versions": "Versions",
+      "inForce": "in force",
+      "versionsNote": "Each booking keeps the policy version that was in force when it was made, so changes never affect existing bookings.",
+      "code": "Code",
+      "english": "English",
+      "french": "French",
+      "shown": "Shown to seekers",
+      "yes": "Yes",
+      "hidden": "Hidden",
+      "add": "Add",
+      "showToSeekers": "Show to seekers"
     }
   },
   "roleChoice": {

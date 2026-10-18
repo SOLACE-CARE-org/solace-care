@@ -56,6 +56,8 @@ tags:
     description: Staff accounts and their roles (admin screen 19; D7, D42). Super admins only.
   - name: admin-audit
     description: The append-only audit log (admin screen 18; D42)
+  - name: admin-catalogue
+    description: Specialties, session languages, help topics and cancellation policy versions (admin screen 14; D43)
 paths:
   /v1/signups:
     post:
@@ -3154,6 +3156,131 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/catalogue:
+    get:
+      operationId: getAdminCatalogue
+      summary: Every specialty, session language and help topic, enabled or not, in EN and FR
+      tags: [admin-catalogue]
+      responses:
+        "200":
+          description: The catalogue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCatalogue"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/catalogue/{kind}/{code}:
+    parameters:
+      - name: kind
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [specialties, session-languages, help-topics]
+      - name: code
+        in: path
+        required: true
+        description: Lower case; a session language is an ISO 639 code (D16).
+        schema:
+          type: string
+          pattern: "^[a-z][a-z0-9-]*$"
+          maxLength: 40
+    put:
+      operationId: saveCatalogueEntry
+      summary: Add or change an entry; both EN and FR are required (CLAUDE.md, Language)
+      tags: [admin-catalogue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [labelEn, labelFr, enabled, reason]
+              properties:
+                labelEn:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                labelFr:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                enabled:
+                  type: boolean
+                position:
+                  description: Display order; a new entry goes last when absent.
+                  type: integer
+                  minimum: 1
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The entry after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogueEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/cancellation-policies:
+    get:
+      operationId: listCancellationPolicies
+      summary: Every cancellation policy version, newest first; the newest is in force
+      tags: [admin-catalogue]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CancellationPolicy"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: publishCancellationPolicy
+      summary: Publish a new version; it applies to bookings made from now on, never to existing ones (D33)
+      tags: [admin-catalogue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CancellationPolicyTerms"
+                - type: object
+                  required: [reason]
+                  properties:
+                    reason:
+                      type: string
+                      minLength: 1
+                      maxLength: 500
+      responses:
+        "201":
+          description: Published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationPolicy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -5446,3 +5573,89 @@ components:
         outcome:
           type: string
           enum: [ALLOWED, DENIED]
+    CatalogueEntry:
+      type: object
+      additionalProperties: false
+      required: [code, labelEn, labelFr, position, enabled]
+      properties:
+        code:
+          type: string
+        labelEn:
+          type: string
+        labelFr:
+          type: string
+        position:
+          type: integer
+        enabled:
+          type: boolean
+    AdminCatalogue:
+      type: object
+      additionalProperties: false
+      required: [specialties, sessionLanguages, helpTopics, durations]
+      properties:
+        specialties:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogueEntry"
+        sessionLanguages:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogueEntry"
+        helpTopics:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogueEntry"
+        durations:
+          description: Session lengths in minutes specialists can offer (SpecServices).
+          type: array
+          items:
+            type: integer
+    CancellationPolicyTerms:
+      type: object
+      required: [fullRefundHours, partialRefundHours, partialRefundPercent, seekerNoShowRefundPercent, specialistNoShowRefundPercent, maxReschedules, rescheduleMinHours]
+      properties:
+        fullRefundHours:
+          type: integer
+          minimum: 0
+          maximum: 336
+        partialRefundHours:
+          type: integer
+          minimum: 0
+          maximum: 336
+        partialRefundPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        seekerNoShowRefundPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        specialistNoShowRefundPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        maxReschedules:
+          type: integer
+          minimum: 0
+          maximum: 10
+        rescheduleMinHours:
+          type: integer
+          minimum: 0
+          maximum: 336
+    CancellationPolicy:
+      allOf:
+        - $ref: "#/components/schemas/CancellationPolicyTerms"
+        - type: object
+          required: [version, publishedAt, publishedBy, inForce]
+          properties:
+            version:
+              type: integer
+            publishedAt:
+              type: string
+              format: date-time
+            publishedBy:
+              type: string
+            reason:
+              type: string
+            inForce:
+              type: boolean
