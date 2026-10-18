@@ -31,6 +31,7 @@ const routes = {
   '(seeker)/sessions': Sessions,
   'book/checkout': Checkout,
   'book/[id]': () => null,
+  'book/pay': () => null,
   'session/[id]': SessionDetail,
   'session/change': ChangeSession,
   'guest/[token]': GuestJoin,
@@ -138,6 +139,19 @@ describe('Checkout', () => {
   it('lets a guest prove their phone with a code, then books', async () => {
     answer = ({ url, method }) => {
       if (url.endsWith('/v1/guest/codes') && method === 'POST') return { status: 202 };
+      if (url.endsWith('/v1/guest/booking/payments') && method === 'POST')
+        return {
+          status: 201,
+          body: {
+            id: 'p1',
+            bookingId,
+            method: 'MTN_MOMO',
+            amount: 15000,
+            status: 'PENDING',
+            phone: '+237677000000',
+            createdAt: new Date().toISOString(),
+          },
+        };
       if (url.endsWith('/v1/guest/bookings') && method === 'POST')
         return {
           status: 201,
@@ -166,7 +180,7 @@ describe('Checkout', () => {
     await fireEvent.changeText(screen.getByLabelText('Enter the 6-digit code we sent'), '482051');
     await fireEvent.press(screen.getByRole('button', { name: 'Pay 15,000 FCFA' }));
 
-    await waitFor(() => expect(screen.getPathname()).toBe(`/session/${bookingId}`));
+    await waitFor(() => expect(screen.getPathname()).toBe('/book/pay'));
     const made = JSON.parse(calls.find((c) => c.url.endsWith('/v1/guest/bookings'))!.body);
     expect(made).toEqual({
       holdId,
@@ -176,8 +190,10 @@ describe('Checkout', () => {
       appLanguage: 'en',
     });
     expect(await guestTokenFor(bookingId)).toBe('guest-token');
-    // Session details shows the booking checkout just made, waiting for payment.
-    expect(await screen.findByText('Awaiting payment')).toBeTruthy();
+    // The wallet is asked with the guest token, on the number the guest proved.
+    const pay = calls.find((c) => c.url.endsWith('/v1/guest/booking/payments'))!;
+    expect(pay.headers.get('X-Guest-Token')).toBe('guest-token');
+    expect(JSON.parse(pay.body)).toEqual({ method: 'MTN_MOMO' });
   });
 
   it('books straight away for a signed-in seeker', async () => {
@@ -190,7 +206,7 @@ describe('Checkout', () => {
 
     await fireEvent.press(await screen.findByRole('button', { name: 'Pay 15,000 FCFA' }));
 
-    await waitFor(() => expect(screen.getPathname()).toBe(`/session/${bookingId}`));
+    await waitFor(() => expect(screen.getPathname()).toBe('/book/pay'));
     expect(screen.queryByText('Where should we reach you?')).toBeNull();
     expect(JSON.parse(calls.find((c) => c.url.endsWith('/v1/bookings'))!.body)).toEqual({
       holdId,

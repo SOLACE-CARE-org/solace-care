@@ -110,6 +110,10 @@ export default function SessionDetail() {
             <Text variant="body" color={colors.warningInk}>
               {t('session.payBy', { time: timeOf(new Date(b.payBy), lang) })}
             </Text>
+            <Button
+              label={t('session.pay')}
+              onPress={() => router.push({ pathname: '/book/pay', params: { id: b.id } })}
+            />
           </View>
         ) : null}
 

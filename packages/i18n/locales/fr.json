@@ -612,7 +612,8 @@
     "join": "Rejoindre la séance",
     "joinOpens": "Ouverture à {{time}}",
     "payBy": "Payez avant {{time}} pour garder ce créneau.",
-    "refunded": "Remboursement : {{amount}} FCFA"
+    "refunded": "Remboursement : {{amount}} FCFA",
+    "pay": "Payer maintenant"
   },
   "change": {
     "title": "Modifier votre séance ?",
@@ -644,5 +645,58 @@
     "afterTitle": "Après votre séance",
     "afterBody": "Créez un compte gratuit avec ce numéro pour garder cette réservation et voir votre historique.",
     "createAccount": "Créer un compte"
+  },
+  "pay": {
+    "title": "Validez le paiement sur votre téléphone",
+    "lead": "Nous avons envoyé une demande de {{price}} FCFA sur {{method}} au {{phone}}. Saisissez votre code PIN pour la valider.",
+    "heldFor": "Votre créneau est réservé pendant",
+    "approved": "J'ai validé",
+    "resend": "Renvoyer la demande",
+    "another": "Payer autrement",
+    "waiting": "En attente de votre validation",
+    "failed": "Paiement non abouti. Votre créneau est gardé jusqu'à {{time}}.",
+    "notYet": "Nous n'avons pas encore reçu la validation. Cela peut prendre une minute.",
+    "expired": "Votre créneau n'est plus gardé. Choisissez à nouveau un horaire.",
+    "pickAgain": "Choisir un autre horaire"
+  },
+  "confirmed": {
+    "title": "C'est réservé",
+    "lead": "Nous vous enverrons votre lien par SMS et un rappel 10 minutes avant.",
+    "when": "Quand",
+    "type": "Type",
+    "typeValue": "{{modality}} · {{minutes}} min",
+    "language": "Langue",
+    "paid": "Payé",
+    "paidValue": "{{amount}} FCFA",
+    "keepTitle": "Gardez vos séances au même endroit",
+    "keepBody": "Créez un compte gratuit avec ce numéro pour voir votre historique et suivre votre santé.",
+    "createAccount": "Créer un compte",
+    "view": "Voir la réservation"
+  },
+  "earnings": {
+    "title": "Revenus",
+    "available": "Disponible au versement",
+    "amount": "{{amount}} FCFA",
+    "payoutTo": "Sur {{method}} •• {{end}} · prochain versement automatique {{date}}",
+    "noPayoutTo": "Prochain versement automatique {{date}}",
+    "payOutNow": "Verser maintenant",
+    "thisMonth": "Ce mois-ci",
+    "sessions": "séances",
+    "onHold": "En attente",
+    "upcoming": "à venir",
+    "noShows": "Absences",
+    "thisMonthLower": "ce mois-ci",
+    "activity": "Historique",
+    "session": "Séance · {{name}}",
+    "afterFee": "{{when}} · après frais Solace",
+    "payout": "Versement sur {{method}}",
+    "adjustment": "Ajustement de remboursement",
+    "payoutStatus_SENT": "en cours",
+    "payoutStatus_PAID": "terminé",
+    "payoutStatus_FAILED": "échoué",
+    "payoutWhen": "{{when}} · {{status}}",
+    "none": "Aucune activité pour l'instant. Les séances terminées apparaissent ici.",
+    "MTN_MOMO": "MTN MoMo",
+    "ORANGE_MONEY": "Orange Money"
   }
 }

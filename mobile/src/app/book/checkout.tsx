@@ -9,6 +9,7 @@ import { useSessionLanguages } from '@/api/account';
 import { useCreateBooking, useCreateGuestBooking, useSendGuestCode } from '@/api/bookings';
 import { type Modality, useSpecialistProfile } from '@/api/catalogue';
 import { ApiProblem } from '@/api/core';
+import { startPayment } from '@/api/payments';
 import { useAuth } from '@/auth/auth';
 import { CAMEROON_PREFIX, displayContact, toE164 } from '@/auth/contact';
 import { flags } from '@/config/flags';
@@ -22,7 +23,7 @@ import { BackButton } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
 import { spacedLocalNumber, TextField } from '@/ui/TextField';
 
-export type PayMethod = 'MTN_MOMO' | 'ORANGE_MONEY' | 'CARD';
+type PayMethod = 'MTN_MOMO' | 'ORANGE_MONEY' | 'CARD';
 
 type Params = {
   holdId: string;
@@ -36,8 +37,8 @@ type Params = {
 
 /**
  * Verify and pay (Checkout.dc.html). A signed-in seeker books straight away; a guest first proves
- * their phone with a 6-digit code (D34). The booking holds the time until the hold window ends;
- * payment follows (epic 6).
+ * their phone with a 6-digit code (D34). Paying books the held time, then asks the chosen wallet for
+ * the price and opens Approve payment; the booking keeps the time until the hold window ends.
  */
 export default function Checkout() {
   const { t } = useTranslation();
@@ -83,8 +84,14 @@ export default function Checkout() {
   const pay = () => {
     if (!ready || busy) return;
     setProblem(null);
-    const opened = (bookingId: string) =>
-      router.replace({ pathname: '/session/[id]', params: { id: bookingId } });
+    // The booking exists from here: whatever happens to the payment request, Approve payment shows
+    // it and can send it again.
+    const opened = async (bookingId: string, guestToken?: string) => {
+      if (method !== 'CARD') {
+        await startPayment({ bookingId, guestToken }, { method }).catch(() => undefined);
+      }
+      router.replace({ pathname: '/book/pay', params: { id: bookingId } });
+    };
     if (member) {
       book.mutate(
         { holdId: params.holdId, sessionLanguage: params.language, source: 'SEARCH' },
@@ -100,7 +107,7 @@ export default function Checkout() {
           appLanguage: lang,
         },
         {
-          onSuccess: (made) => opened(made.booking.id),
+          onSuccess: (made) => opened(made.booking.id, made.guestToken),
           onError: (e) => {
             setCode('');
             say(e);

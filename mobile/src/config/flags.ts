@@ -11,4 +11,6 @@ export const flags = {
   payoutBankTransfer: false,
   /** Card payments on Checkout: cards follow mobile money as a second adapter (implementation-plan.md, epic 6). */
   cardPayments: false,
+  /** Pay out now on Earnings: off, an off-cycle payout would skip the two-person run (D35). */
+  payoutOnRequest: false,
 } as const;

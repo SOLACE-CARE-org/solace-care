@@ -612,7 +612,8 @@
     "join": "Join session",
     "joinOpens": "Joining opens at {{time}}",
     "payBy": "Pay by {{time}} to keep this time.",
-    "refunded": "Refund: {{amount}} FCFA"
+    "refunded": "Refund: {{amount}} FCFA",
+    "pay": "Pay now"
   },
   "change": {
     "title": "Change your session?",
@@ -644,5 +645,58 @@
     "afterTitle": "After your session",
     "afterBody": "Create a free account with this number to keep this booking and see your history.",
     "createAccount": "Create account"
+  },
+  "pay": {
+    "title": "Approve the payment on your phone",
+    "lead": "We sent a request for {{price}} FCFA to {{method}} on {{phone}}. Enter your PIN to approve it.",
+    "heldFor": "Your slot is held for",
+    "approved": "I've approved it",
+    "resend": "Resend request",
+    "another": "Pay another way",
+    "waiting": "Waiting for your approval",
+    "failed": "Payment not completed. Your time is held until {{time}}.",
+    "notYet": "We haven't received the approval yet. It can take a minute.",
+    "expired": "Your time is no longer held. Pick a time again.",
+    "pickAgain": "Pick a time again"
+  },
+  "confirmed": {
+    "title": "You're booked",
+    "lead": "We'll text your join link and remind you 10 minutes before.",
+    "when": "When",
+    "type": "Type",
+    "typeValue": "{{modality}} · {{minutes}} min",
+    "language": "Language",
+    "paid": "Paid",
+    "paidValue": "{{amount}} FCFA",
+    "keepTitle": "Keep your sessions in one place",
+    "keepBody": "Create a free account with this number to see your history and track your health.",
+    "createAccount": "Create account",
+    "view": "View booking"
+  },
+  "earnings": {
+    "title": "Earnings",
+    "available": "Available to pay out",
+    "amount": "{{amount}} FCFA",
+    "payoutTo": "To {{method}} •• {{end}} · next automatic payout {{date}}",
+    "noPayoutTo": "Next automatic payout {{date}}",
+    "payOutNow": "Pay out now",
+    "thisMonth": "This month",
+    "sessions": "sessions",
+    "onHold": "On hold",
+    "upcoming": "upcoming",
+    "noShows": "No-shows",
+    "thisMonthLower": "this month",
+    "activity": "Activity",
+    "session": "Session · {{name}}",
+    "afterFee": "{{when}} · after Solace fee",
+    "payout": "Payout to {{method}}",
+    "adjustment": "Refund adjustment",
+    "payoutStatus_SENT": "on its way",
+    "payoutStatus_PAID": "completed",
+    "payoutStatus_FAILED": "failed",
+    "payoutWhen": "{{when}} · {{status}}",
+    "none": "No activity yet. Completed sessions appear here.",
+    "MTN_MOMO": "MTN MoMo",
+    "ORANGE_MONEY": "Orange Money"
   }
 }
