@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiProblem } from '@/api/core';
 import { useMe } from '@/api/account';
 import { useApplication, useConfirmBio, useWeeklyHours } from '@/api/specialist';
-import { useAuth } from '@/auth/auth';
+import { signOut as signOutEverywhere } from '@/notifications/push';
 import { initials } from '@/state/format';
 import { useSession } from '@/state/session';
 import { Button } from '@/ui/Button';
@@ -43,7 +43,7 @@ export default function SpecialistProfileTab() {
   const payout = a?.payout ? t(`specialistSignup.payout.${a.payout.method}`) : '';
 
   const signOut = async () => {
-    await useAuth.getState().signOut();
+    await signOutEverywhere();
     useSession.getState().signedOut();
     router.replace('/welcome');
   };
@@ -137,6 +137,16 @@ export default function SpecialistProfileTab() {
           variant="secondary"
           label={t('reviews.title')}
           onPress={() => router.push('/reviews')}
+        />
+        <Button
+          variant="secondary"
+          label={t('you.notifications')}
+          onPress={() => router.push('/notifications')}
+        />
+        <Button
+          variant="secondary"
+          label={t('you.settings')}
+          onPress={() => router.push('/settings')}
         />
 
         <Pressable

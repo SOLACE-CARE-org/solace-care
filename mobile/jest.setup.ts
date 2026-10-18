@@ -33,3 +33,21 @@ jest.mock('react-native-callkeep', () => ({
     endCall: jest.fn(),
   },
 }));
+
+// Notifications (epic 9): no push service under Jest.
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+}));
+
+// Notifications (epic 9): no push service under Jest.
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+}));

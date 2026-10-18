@@ -6,6 +6,8 @@ import { accountKeys } from '@/api/account';
 import i18n from '@/i18n';
 import { type Role, useSession } from '@/state/session';
 
+import { registerIfAllowed } from '@/notifications/push';
+
 import { useAuth } from './auth';
 import type { Tokens } from './keycloak';
 
@@ -22,7 +24,14 @@ export async function afterSignIn(tokens: Tokens): Promise<Href> {
     useSession.getState().chooseLanguage(me.appLanguage);
     await i18n.changeLanguage(me.appLanguage);
   }
-  return nextStep(me);
+  const next = nextStep(me);
+  // Once per device, where a person lands in their shell: offer reminders (AllowReminders, D38).
+  const shell = next === '/(seeker)/home' || next === '/(specialist)/today';
+  if (shell && !useSession.getState().remindersAsked) {
+    return { pathname: '/reminders', params: { next: next as string } };
+  }
+  if (shell) void registerIfAllowed();
+  return next;
 }
 
 /** The shell a member gets: specialists only once their application is approved. */

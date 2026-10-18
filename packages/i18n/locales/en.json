@@ -799,5 +799,45 @@
     "empty": "Published reviews appear here."
   },
   "ratingShort": "{{average}} ({{count}})",
-  "ratingLabel": "Rated {{average}} out of 5 from {{count}} sessions"
+  "ratingLabel": "Rated {{average}} out of 5 from {{count}} sessions",
+  "you": {
+    "edit": "Edit",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "privacy": "Privacy & data",
+    "signOut": "Sign out",
+    "unread_one": "{{count}} new",
+    "unread_other": "{{count}} new"
+  },
+  "reminders": {
+    "preview": "You have an appointment today at 10:00.",
+    "title": "Turn on reminders?",
+    "body": "We'll remind you before each session and, if you track, once a day at a time you choose. Reminders use neutral wording, so nothing private shows on your lock screen.",
+    "turnOn": "Turn on reminders",
+    "notNow": "Not now",
+    "later": "Change this any time in Settings."
+  },
+  "inbox": {
+    "title": "Notifications",
+    "markAll": "Mark all read",
+    "today": "Today",
+    "earlier": "Earlier",
+    "empty": "Nothing new. Messages about your sessions appear here.",
+    "settings": "Notification settings",
+    "unread": "Unread"
+  },
+  "settings": {
+    "title": "Settings",
+    "appLanguage": "App language",
+    "notifications": "Notifications",
+    "sessionReminders": "Session reminders",
+    "sessionRemindersMeta": "The day before each session",
+    "discreet": "Discreet notifications",
+    "discreetMeta": "Show \"You have a reminder\" only",
+    "security": "Security and data",
+    "dataSaver": "Data saver",
+    "dataSaverMeta": "Start video calls with my camera off",
+    "version": "Solace {{version}}",
+    "pushOff": "Notifications are off for Solace on this phone. Turn them on in your phone's settings."
+  }
 }

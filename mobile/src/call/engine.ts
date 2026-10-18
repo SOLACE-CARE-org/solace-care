@@ -15,6 +15,7 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 
 import type { JoinToken } from '@/api/sessions';
+import { useSession } from '@/state/session';
 
 /** Below "poor" for this long, a video session offers audio only (System Design, Weak networks). */
 const POOR_OFFER_MS = 10_000;
@@ -129,7 +130,9 @@ export const useCall = create<CallState>()((set, get) => {
 
     connect: async (join) => {
       const video = join.modality === 'VIDEO';
-      set({ ...initial, status: 'connecting', video, cameraOn: video });
+      // Data saver (Settings): video sessions start with the camera off.
+      const camera = video && !useSession.getState().dataSaver;
+      set({ ...initial, status: 'connecting', video, cameraOn: camera });
       await AudioSession.startAudioSession();
       room = new Room({
         adaptiveStream: true,
@@ -157,7 +160,7 @@ export const useCall = create<CallState>()((set, get) => {
         });
       await room.connect(join.url, join.token, { autoSubscribe: true });
       await room.localParticipant.setMicrophoneEnabled(true);
-      if (video) await room.localParticipant.setCameraEnabled(true, { facingMode: facing });
+      if (camera) await room.localParticipant.setCameraEnabled(true, { facingMode: facing });
       set({ status: 'connected', connectedAt: Date.now() });
       refresh();
     },

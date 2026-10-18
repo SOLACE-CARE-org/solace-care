@@ -22,6 +22,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '@/api/query-client';
 import { useAuth } from '@/auth/auth';
 import { deviceLanguage, initI18n } from '@/i18n';
+import { openTappedNotifications, registerIfAllowed } from '@/notifications/push';
 import { useSession } from '@/state/session';
 
 // Keep the native splash (brand-splash with the lockup) up until fonts, strings and the saved
@@ -52,7 +53,12 @@ export default function RootLayout() {
     useAuth
       .getState()
       .load()
+      .then(() => {
+        // Each start: keep Core's push token and time zone for this device fresh (D38).
+        if (useAuth.getState().status === 'signedIn') void registerIfAllowed();
+      })
       .catch(() => useAuth.getState().signOut());
+    return openTappedNotifications();
   }, []);
 
   useEffect(() => {

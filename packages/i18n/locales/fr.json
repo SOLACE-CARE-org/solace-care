@@ -799,5 +799,45 @@
     "empty": "Les avis publiés apparaissent ici."
   },
   "ratingShort": "{{average}} ({{count}})",
-  "ratingLabel": "Note de {{average}} sur 5 pour {{count}} séances"
+  "ratingLabel": "Note de {{average}} sur 5 pour {{count}} séances",
+  "you": {
+    "edit": "Modifier",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "privacy": "Confidentialité et données",
+    "signOut": "Se déconnecter",
+    "unread_one": "{{count}} nouvelle",
+    "unread_other": "{{count}} nouvelles"
+  },
+  "reminders": {
+    "preview": "Vous avez un rendez-vous aujourd'hui à 10:00.",
+    "title": "Activer les rappels ?",
+    "body": "Nous vous rappelons chaque séance et, si vous faites un suivi, une fois par jour à l'heure de votre choix. Les rappels restent neutres : rien de privé ne s'affiche sur votre écran verrouillé.",
+    "turnOn": "Activer les rappels",
+    "notNow": "Plus tard",
+    "later": "Modifiable à tout moment dans les Paramètres."
+  },
+  "inbox": {
+    "title": "Notifications",
+    "markAll": "Tout marquer comme lu",
+    "today": "Aujourd'hui",
+    "earlier": "Plus tôt",
+    "empty": "Rien de nouveau. Les messages sur vos séances apparaissent ici.",
+    "settings": "Réglages des notifications",
+    "unread": "Non lue"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "appLanguage": "Langue de l'application",
+    "notifications": "Notifications",
+    "sessionReminders": "Rappels de séance",
+    "sessionRemindersMeta": "La veille de chaque séance",
+    "discreet": "Notifications discrètes",
+    "discreetMeta": "Afficher seulement « Vous avez un rappel »",
+    "security": "Sécurité et données",
+    "dataSaver": "Économie de données",
+    "dataSaverMeta": "Démarrer les appels vidéo caméra éteinte",
+    "version": "Solace {{version}}",
+    "pushOff": "Les notifications de Solace sont désactivées sur ce téléphone. Activez-les dans les réglages du téléphone."
+  }
 }
