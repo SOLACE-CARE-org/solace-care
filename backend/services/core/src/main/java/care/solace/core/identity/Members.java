@@ -4,6 +4,7 @@ import care.solace.errors.SolaceException;
 import care.solace.events.Events;
 import java.time.Clock;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,16 @@ class Members implements Accounts {
   @Override
   public Account require(Jwt token) {
     return of(token).orElseThrow(() -> new SolaceException(IdentityError.NOT_A_MEMBER));
+  }
+
+  @Override
+  public Optional<String> seekerDisplayName(UUID accountId) {
+    return store.seekerProfile(accountId).map(AccountStore.SeekerProfile::displayName);
+  }
+
+  @Override
+  public Optional<java.util.Locale> appLanguage(UUID accountId) {
+    return store.byId(accountId).map(AccountStore.Row::locale);
   }
 
   /** The signed-in member, after recording what this sign-in proved. */

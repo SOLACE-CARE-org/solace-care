@@ -2696,6 +2696,9 @@ components:
         refundAmount:
           description: When cancelled, the refund the policy gave.
           type: integer
+        guestPhone:
+          description: Guest calls only. The masked phone the booking belongs to (GuestJoin), e.g. "+237 6 •• •• •• 00".
+          type: string
     CancellationQuote:
       type: object
       additionalProperties: false

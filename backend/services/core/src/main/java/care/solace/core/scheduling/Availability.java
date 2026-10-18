@@ -42,6 +42,19 @@ public interface Availability {
   /** Lets a hold go; nothing happens if it already expired. */
   void release(UUID holdId);
 
+  /**
+   * Turns a live hold into a booking on the specialist's calendar (with the break after it), and
+   * lets the hold go. Answers 409 {@code slot.taken} when the hold expired, belongs to another
+   * specialist, or the time is no longer free.
+   */
+  Reservation reserve(UUID bookingId, UUID holdId, UUID specialistId);
+
+  /** Moves a booking to a newly held start, in one step (rescheduling). Same answers as reserve. */
+  Reservation move(UUID bookingId, UUID holdId, UUID specialistId);
+
+  /** Frees a booking's time (expired or cancelled); nothing happens if it is already free. */
+  void releaseBooking(UUID bookingId);
+
   /** Time off between two instants, for the specialist's calendar. */
   List<TimeOff> timeOff(UUID specialistId, Instant from, Instant to);
 
@@ -53,4 +66,9 @@ public interface Availability {
       UUID id, UUID specialistId, Instant start, Instant end, String modality, Instant expiresAt) {}
 
   record TimeOff(UUID id, Instant start, Instant end, String reason) {}
+
+  /**
+   * A reserved session: its start and end, the format held, and when the hold would have expired.
+   */
+  record Reservation(Instant start, Instant end, String modality, Instant holdExpiresAt) {}
 }

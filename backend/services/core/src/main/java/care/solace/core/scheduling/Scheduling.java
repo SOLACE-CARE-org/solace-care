@@ -8,7 +8,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * {@link Availability}: starts from weekly hours (Slots), less the calendar (bookings with their
@@ -20,11 +22,17 @@ class Scheduling implements Availability {
   private final WeeklyHoursStore hours;
   private final CalendarStore calendar;
   private final HoldStore holds;
+  private final TransactionTemplate transactions;
 
-  Scheduling(WeeklyHoursStore hours, CalendarStore calendar, HoldStore holds) {
+  Scheduling(
+      WeeklyHoursStore hours,
+      CalendarStore calendar,
+      HoldStore holds,
+      TransactionTemplate transactions) {
     this.hours = hours;
     this.calendar = calendar;
     this.holds = holds;
+    this.transactions = transactions;
   }
 
   @Override
@@ -92,6 +100,54 @@ class Scheduling implements Availability {
   @Override
   public void release(UUID holdId) {
     holds.delete(holdId);
+  }
+
+  @Override
+  public Reservation reserve(UUID bookingId, UUID holdId, UUID specialistId) {
+    var hold = liveHold(holdId, specialistId);
+    Instant end = hold.end().plus(breakOf(specialistId));
+    try {
+      transactions.executeWithoutResult(
+          s -> calendar.insertBooking(bookingId, specialistId, hold.start(), end));
+    } catch (DataIntegrityViolationException taken) {
+      throw new SolaceException(SchedulingError.SLOT_TAKEN);
+    }
+    holds.delete(holdId);
+    return new Reservation(hold.start(), hold.end(), hold.modality(), hold.expiresAt());
+  }
+
+  @Override
+  public Reservation move(UUID bookingId, UUID holdId, UUID specialistId) {
+    var hold = liveHold(holdId, specialistId);
+    Instant end = hold.end().plus(breakOf(specialistId));
+    try {
+      transactions.executeWithoutResult(
+          s -> {
+            calendar.deleteBooking(bookingId);
+            calendar.insertBooking(bookingId, specialistId, hold.start(), end);
+          });
+    } catch (DataIntegrityViolationException taken) {
+      throw new SolaceException(SchedulingError.SLOT_TAKEN);
+    }
+    holds.delete(holdId);
+    return new Reservation(hold.start(), hold.end(), hold.modality(), hold.expiresAt());
+  }
+
+  @Override
+  public void releaseBooking(UUID bookingId) {
+    calendar.deleteBooking(bookingId);
+  }
+
+  private Hold liveHold(UUID holdId, UUID specialistId) {
+    return holds
+        .find(holdId)
+        .filter(h -> h.specialistId().equals(specialistId))
+        .orElseThrow(() -> new SolaceException(SchedulingError.SLOT_TAKEN));
+  }
+
+  private Duration breakOf(UUID specialistId) {
+    return Duration.ofMinutes(
+        hours.find(specialistId).map(WeeklyHoursStore.Schedule::breakMinutes).orElse(0));
   }
 
   @Override

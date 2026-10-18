@@ -1,6 +1,7 @@
 package care.solace.core.identity;
 
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /** Finds the member account behind a token, for any module serving a signed-in person. */
@@ -17,4 +18,10 @@ public interface Accounts {
    * account.not-a-member} otherwise.
    */
   Account require(Jwt token);
+
+  /** The name a seeker wants to be called; only their specialist sees it. */
+  Optional<String> seekerDisplayName(UUID accountId);
+
+  /** The account's app language, for messages about it. */
+  Optional<java.util.Locale> appLanguage(UUID accountId);
 }

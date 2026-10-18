@@ -1,0 +1,224 @@
+package care.solace.core.guests;
+
+import care.solace.core.identity.ContactVerified;
+import care.solace.core.notifications.SignInCodes;
+import care.solace.errors.SolaceException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
+
+/**
+ * {@link GuestAccess}. Codes live in Redis (System Design: Redis for OTP), hashed, with their
+ * remaining tries; guest contacts and token hashes live in PostgreSQL.
+ */
+@Service
+@EnableConfigurationProperties(GuestSettings.class)
+class Guests implements GuestAccess {
+
+  private static final String CODE = "solace:guest-code:";
+  private static final SecureRandom RANDOM = new SecureRandom();
+
+  private final JdbcClient db;
+  private final StringRedisTemplate redis;
+  private final SignInCodes codes;
+  private final GuestSettings settings;
+  private final ApplicationEventPublisher events;
+  private final TransactionTemplate transactions;
+  private final Clock clock;
+
+  Guests(
+      JdbcClient db,
+      StringRedisTemplate redis,
+      SignInCodes codes,
+      GuestSettings settings,
+      ApplicationEventPublisher events,
+      TransactionTemplate transactions,
+      Clock clock) {
+    this.db = db;
+    this.redis = redis;
+    this.codes = codes;
+    this.settings = settings;
+    this.events = events;
+    this.transactions = transactions;
+    this.clock = clock;
+  }
+
+  @Override
+  public void sendCode(String phone, Locale locale) {
+    String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+    redis
+        .opsForValue()
+        .set(CODE + phone, hash(code) + "|" + settings.codeAttempts(), settings.codeLifetime());
+    codes.send(
+        SignInCodes.Channel.SMS, phone, code, (int) settings.codeLifetime().toMinutes(), locale);
+  }
+
+  @Override
+  public UUID verify(String phone, String code, Locale locale) {
+    String key = CODE + phone;
+    String stored = redis.opsForValue().get(key);
+    if (stored == null) {
+      throw new SolaceException(GuestError.CODE_REJECTED);
+    }
+    String[] parts = stored.split("\\|");
+    if (!MessageDigest.isEqual(
+        parts[0].getBytes(StandardCharsets.US_ASCII),
+        hash(code).getBytes(StandardCharsets.US_ASCII))) {
+      int left = Integer.parseInt(parts[1]) - 1;
+      if (left <= 0) {
+        redis.delete(key);
+      } else {
+        // Keep the code's remaining lifetime; only the tries go down.
+        Long ttl = redis.getExpire(key);
+        Duration keep = ttl != null && ttl > 0 ? Duration.ofSeconds(ttl) : settings.codeLifetime();
+        redis.opsForValue().set(key, parts[0] + "|" + left, keep);
+      }
+      throw new SolaceException(GuestError.CODE_REJECTED);
+    }
+    redis.delete(key);
+    Instant now = clock.instant();
+    return transactions.execute(
+        s ->
+            db.sql(
+                    """
+                    INSERT INTO guest_contact (id, phone, preferred_locale, verified_at)
+                    VALUES (:id, :p, :l, :now)
+                    ON CONFLICT (phone) DO UPDATE
+                       SET verified_at = EXCLUDED.verified_at,
+                           preferred_locale = EXCLUDED.preferred_locale
+                    RETURNING id
+                    """)
+                .param("id", UUID.randomUUID())
+                .param("p", phone)
+                .param("l", "fr".equals(locale.getLanguage()) ? "fr" : "en")
+                .param("now", Timestamp.from(now))
+                .query(UUID.class)
+                .single());
+  }
+
+  @Override
+  public String issueToken(UUID guestContactId, UUID bookingId, Instant expiresAt) {
+    byte[] raw = new byte[32];
+    RANDOM.nextBytes(raw);
+    String token = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
+    db.sql(
+            """
+            INSERT INTO guest_token (token_hash, guest_contact_id, booking_id, expires_at)
+            VALUES (:h, :g, :b, :e)
+            """)
+        .param("h", hash(token))
+        .param("g", guestContactId)
+        .param("b", bookingId)
+        .param("e", Timestamp.from(expiresAt))
+        .update();
+    return token;
+  }
+
+  @Override
+  public Optional<GuestPass> check(String token, Instant now) {
+    if (token == null || token.isBlank() || token.length() > 100) {
+      return Optional.empty();
+    }
+    return db.sql(
+            """
+            SELECT guest_contact_id, booking_id FROM guest_token
+             WHERE token_hash = :h AND expires_at > :now
+            """)
+        .param("h", hash(token))
+        .param("now", Timestamp.from(now))
+        .query(
+            (rs, n) ->
+                new GuestPass(
+                    rs.getObject("guest_contact_id", UUID.class),
+                    rs.getObject("booking_id", UUID.class)))
+        .optional();
+  }
+
+  @Override
+  public GuestPass require(String token, Instant now) {
+    return check(token, now).orElseThrow(() -> new SolaceException(GuestError.TOKEN_INVALID));
+  }
+
+  @Override
+  public Optional<Locale> locale(UUID guestContactId) {
+    return db.sql("SELECT preferred_locale FROM guest_contact WHERE id = :id")
+        .param("id", guestContactId)
+        .query(String.class)
+        .optional()
+        .map(Locale::of);
+  }
+
+  @Override
+  public Optional<String> maskedPhone(UUID guestContactId) {
+    return db.sql("SELECT phone FROM guest_contact WHERE id = :id")
+        .param("id", guestContactId)
+        .query(String.class)
+        .optional()
+        .map(Guests::mask);
+  }
+
+  /**
+   * A member's first sign-in proved a phone: any guest contact with that phone becomes theirs, and
+   * Bookings moves the bookings (D34). Runs after the sign-in commits, retried until it succeeds.
+   */
+  @ApplicationModuleListener
+  void claim(ContactVerified verified) {
+    if (verified.phone() == null) {
+      return;
+    }
+    Instant now = clock.instant();
+    List<UUID> claimed =
+        db.sql(
+                """
+                UPDATE guest_contact SET claimed_by_account_id = :a, claimed_at = :now
+                 WHERE phone = :p AND claimed_by_account_id IS NULL
+                RETURNING id
+                """)
+            .param("a", verified.accountId())
+            .param("p", verified.phone())
+            .param("now", Timestamp.from(now))
+            .query(UUID.class)
+            .list();
+    for (UUID id : claimed) {
+      events.publishEvent(new GuestContactClaimed(id, verified.accountId()));
+    }
+  }
+
+  /** "+237677000000" as "+237 6 •• •• •• 00". */
+  static String mask(String phone) {
+    if (phone.startsWith("+237") && phone.length() == 13) {
+      return "+237 " + phone.charAt(4) + " •• •• •• " + phone.substring(11);
+    }
+    return phone.substring(0, Math.min(4, phone.length()))
+        + " •• "
+        + phone.substring(phone.length() - 2);
+  }
+
+  static String hash(String value) {
+    try {
+      return HexFormat.of()
+          .formatHex(
+              MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+}

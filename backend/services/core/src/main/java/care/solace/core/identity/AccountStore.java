@@ -58,6 +58,13 @@ class AccountStore {
         .optional();
   }
 
+  Optional<Row> byId(UUID id) {
+    return db.sql("SELECT " + ACCOUNT_COLUMNS + " FROM user_account WHERE id = :id")
+        .param("id", id)
+        .query(AccountStore::row)
+        .optional();
+  }
+
   Optional<Row> byPhone(String phone) {
     return db.sql("SELECT " + ACCOUNT_COLUMNS + " FROM user_account WHERE phone = :p")
         .param("p", phone)

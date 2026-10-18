@@ -60,6 +60,25 @@ class CalendarStore {
         .update();
   }
 
+  /** Throws a DataIntegrityViolationException when it overlaps another entry. */
+  void insertBooking(UUID bookingId, UUID specialistId, Instant start, Instant end) {
+    db.sql(
+            """
+            INSERT INTO calendar_entry (id, specialist_id, during, kind, booking_id)
+            VALUES (:id, :sid, tstzrange(:s, :e), 'BOOKING', :b)
+            """)
+        .param("id", UUID.randomUUID())
+        .param("sid", specialistId)
+        .param("s", Timestamp.from(start))
+        .param("e", Timestamp.from(end))
+        .param("b", bookingId)
+        .update();
+  }
+
+  void deleteBooking(UUID bookingId) {
+    db.sql("DELETE FROM calendar_entry WHERE booking_id = :b").param("b", bookingId).update();
+  }
+
   void deleteTimeOff(UUID id, UUID specialistId) {
     db.sql(
             "DELETE FROM calendar_entry WHERE id = :id AND specialist_id = :sid AND kind = 'TIME_OFF'")
