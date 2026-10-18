@@ -12,9 +12,34 @@ spring:
     password: tracking
   kafka:
     bootstrap-servers: localhost:9092
+  servlet:
+    multipart:
+      # Module card images are at most 1 MB (Tracking Service Spec); the form adds a little.
+      max-file-size: 2MB
+      max-request-size: 2MB
   grpc:
     server:
       port: 9102
+    client:
+      channels:
+        # Plain text locally; mTLS between services in the cluster (System Design).
+        core:
+          address: static://localhost:9101
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+  security:
+    oauth2:
+      client:
+        # Tracking's client-credentials token for its calls to Core (infra/keycloak: tracking-service).
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: tracking-service
+            client-secret: ${SOLACE_TRACKING_SERVICE_SECRET:tracking-service-dev-secret}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/solace-staff/protocol/openid-connect/token
 
 server:
   port: 8102
@@ -32,3 +57,13 @@ management:
 solace:
   security:
     audience: tracking
+    # Module card images are not personal data: the app shows them before anyone logs.
+    public-paths:
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
+      - /v1/tracking/images/**
+  grpc:
+    client-registration: keycloak
+  storage:
+    endpoint: ${SOLACE_STORAGE_ENDPOINT:http://localhost:9000}

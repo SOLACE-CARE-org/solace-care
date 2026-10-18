@@ -1,0 +1,10 @@
+{
+  "eventId": "3d4e5f6a-7b8c-4d9e-8f0a-2b3c4d5e6f7a",
+  "type": "tracking.module.published",
+  "version": 1,
+  "occurredAt": "2026-10-18T10:00:00Z",
+  "subjectId": null,
+  "locale": null,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "payload": { "moduleCode": "pcos_cycle", "version": "1.0" }
+}

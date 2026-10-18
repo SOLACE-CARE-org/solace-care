@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/tracking/recommendation.resolved.v1.schema.json",
+  "title": "tracking.recommendation.resolved v1",
+  "description": "A recommendation was dismissed, booked or withdrawn because the data changed (Tracking Service Spec, Events), so Core can stop showing the invite and clinicians can see which rules lead to care.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "tracking.recommendation.resolved" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendationId", "ruleCode", "status"],
+      "properties": {
+        "recommendationId": { "type": "string", "format": "uuid" },
+        "ruleCode": { "type": "string", "maxLength": 80 },
+        "status": { "enum": ["DISMISSED", "BOOKED", "SUPERSEDED"] }
+      }
+    }
+  }
+}

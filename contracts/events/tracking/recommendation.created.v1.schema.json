@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/tracking/recommendation.created.v1.schema.json",
+  "title": "tracking.recommendation.created v1",
+  "description": "A rule invited the person to talk to a type of specialist (Tracking Service Spec, Events). Core matches specialists in the person's session language and shows the invite. Ids and codes only: the evidence stays in Tracking, and notes are never involved.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "tracking.recommendation.created" },
+    "version": { "const": 1 },
+    "subjectId": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendationId", "ruleCode", "moduleCode", "outcome", "specialtyCodes"],
+      "properties": {
+        "recommendationId": { "type": "string", "format": "uuid" },
+        "ruleCode": { "type": "string", "maxLength": 80 },
+        "moduleCode": { "type": "string", "maxLength": 40 },
+        "outcome": { "enum": ["INVITE"] },
+        "specialtyCodes": { "type": "array", "items": { "type": "string", "maxLength": 40 }, "minItems": 1 }
+      }
+    }
+  }
+}

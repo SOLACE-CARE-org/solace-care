@@ -23,6 +23,12 @@ tags:
     description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
   - name: cycles
     description: Cycles derived from period dates and flow (D50); facts only, never a forecast
+  - name: modules
+    description: The module catalogue, enrolment and the tracking profile, for seekers (D51)
+  - name: recommendations
+    description: Patterns and invitations from the pattern check (D51); the person decides
+  - name: admin-modules
+    description: The module builder for staff (admin screens 21 to 25; D51)
 paths:
   /v1/system/info:
     get:
@@ -146,6 +152,586 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/tracking/modules:
+    get:
+      operationId: listModules
+      summary: Published modules, with what the person is enrolled in
+      tags: [modules]
+      responses:
+        "200":
+          description: The catalogue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogueModule"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/modules/{code}/enrolment:
+    parameters:
+      - $ref: "#/components/parameters/ModuleCode"
+    post:
+      operationId: enrol
+      summary: Start tracking a module; needs tracking consent, and the minimum age when there is one
+      tags: [modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                answer:
+                  description: The code of the chosen answer to the module's enrolment question.
+                  type: string
+                  maxLength: 40
+                reminderTime:
+                  type: string
+                  pattern: "^[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?$"
+      responses:
+        "204":
+          description: Enrolled
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: leaveModule
+      summary: Stop tracking a module; everything logged stays
+      tags: [modules]
+      responses:
+        "204":
+          description: Left
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tracking/modules/{code}/reminder:
+    parameters:
+      - $ref: "#/components/parameters/ModuleCode"
+    put:
+      operationId: setReminder
+      summary: The daily reminder time for a module, or none
+      tags: [modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                reminderTime:
+                  type: [string, "null"]
+      responses:
+        "204":
+          description: Saved
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tracking/profile:
+    get:
+      operationId: getTrackingProfile
+      summary: Profile answers that can only switch rules off
+      tags: [modules]
+      responses:
+        "200":
+          description: The profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      operationId: saveTrackingProfile
+      summary: Save the profile answers
+      tags: [modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackingProfile"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/tracking/images/{imageId}:
+    parameters:
+      - name: imageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: small
+        in: query
+        description: The phone-sized rendition when there is one.
+        schema:
+          type: boolean
+          default: true
+    get:
+      operationId: getModuleImage
+      summary: A module's card image; open without a token
+      tags: [modules]
+      security: []
+      responses:
+        "200":
+          description: The image
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tracking/recommendations:
+    get:
+      operationId: listRecommendations
+      summary: My open patterns and invitations, worded in the app language
+      tags: [recommendations]
+      responses:
+        "200":
+          description: Recommendations, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recommendation"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/tracking/recommendations/{id}/seen:
+    parameters:
+      - $ref: "#/components/parameters/RecommendationId"
+    post:
+      operationId: markRecommendationSeen
+      summary: The card was shown
+      tags: [recommendations]
+      responses:
+        "204":
+          description: Recorded
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/tracking/recommendations/{id}/snooze:
+    parameters:
+      - $ref: "#/components/parameters/RecommendationId"
+    post:
+      operationId: snoozeRecommendation
+      summary: Remind me later; the rule's cooldown restarts
+      tags: [recommendations]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                days:
+                  type: integer
+                  minimum: 1
+                  maximum: 90
+      responses:
+        "204":
+          description: Snoozed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/tracking/recommendations/{id}/dismissal:
+    parameters:
+      - $ref: "#/components/parameters/RecommendationId"
+    post:
+      operationId: dismissRecommendation
+      summary: Dismiss; the rule's cooldown restarts
+      tags: [recommendations]
+      responses:
+        "204":
+          description: Dismissed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/tracking/elements:
+    get:
+      operationId: adminListElements
+      summary: The element library, read-only
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: Elements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/modules:
+    get:
+      operationId: adminListModules
+      summary: Every module and its versions (admin screen 21)
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: Modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModuleRow"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createModule
+      summary: A new module, with its v1.0 draft (Operations or Super admin)
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [code, accentColour]
+              properties:
+                code:
+                  type: string
+                  pattern: "^[a-z][a-z0-9_]*$"
+                  maxLength: 40
+                accentColour:
+                  $ref: "#/components/schemas/AccentColour"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleVersion"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/modules/{moduleId}/versions:
+    parameters:
+      - $ref: "#/components/parameters/ModuleId"
+    post:
+      operationId: newModuleVersion
+      summary: A new draft from the published version; numbered by what changes
+      tags: [admin-modules]
+      responses:
+        "201":
+          description: The draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    get:
+      operationId: getModuleVersion
+      summary: One version with its elements, rules, reviews and what stops it being submitted
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: The version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/tracking/versions/{versionId}/details:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    put:
+      operationId: saveModuleDetails
+      summary: Builder step 1, details (admin screen 22)
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModuleDetails"
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/elements:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    put:
+      operationId: saveModuleElements
+      summary: Builder step 2, elements in order (admin screen 23)
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 20
+              items:
+                $ref: "#/components/schemas/Binding"
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/rules:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: addRule
+      summary: Builder step 3, a rule (admin screen 24)
+      tags: [admin-modules]
+      requestBody:
+        $ref: "#/components/requestBodies/RuleBody"
+      responses:
+        "201":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/rules/{ruleId}:
+    parameters:
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      operationId: saveRule
+      summary: Change a rule of a draft
+      tags: [admin-modules]
+      requestBody:
+        $ref: "#/components/requestBodies/RuleBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: deleteRule
+      summary: Remove a rule from a draft
+      tags: [admin-modules]
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/images:
+    post:
+      operationId: uploadModuleImage
+      summary: A card image; 3:2, at least 1200×800, JPG, PNG or WebP, at most 1 MB
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Stored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  width:
+                    type: integer
+                  height:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/versions/{versionId}/test-run:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: testRunRules
+      summary: Every rule against the made-up histories; never real patient data
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: One line per history and rule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/versions/{versionId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: submitModuleVersion
+      summary: Send a complete draft for clinical review
+      tags: [admin-modules]
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/review:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: reviewModuleVersion
+      summary: A Clinical reviewer who did not draft it approves, or returns it with comments (admin screen 25)
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [approve]
+              properties:
+                approve:
+                  type: boolean
+                comments:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: publishModuleVersion
+      summary: Publish an approved version; the old one retires and enrolled people move to it
+      tags: [admin-modules]
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/retirement:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    post:
+      operationId: retireModuleVersion
+      summary: Hide a published version from the catalogue; history stays
+      tags: [admin-modules]
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -184,14 +770,54 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+    VersionResponse:
+      description: The version after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ModuleVersion"
     TooManyRequests:
       description: Rate limit exceeded
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
-  parameters: {}
-  requestBodies: {}
+  parameters:
+    ModuleCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9_]*$"
+    ModuleId:
+      name: moduleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    VersionId:
+      name: versionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RecommendationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBodies:
+    RuleBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Rule"
   schemas:
     Problem:
       description: RFC 9457 problem details. title and detail are localised to the caller's language.
@@ -471,3 +1097,378 @@ components:
             $ref: "#/components/schemas/Cycle"
         cycleDay:
           type: integer
+    AccentColour:
+      type: string
+      enum: [brand, track-pink, track-gold, track-blue]
+    Text:
+      type: object
+      additionalProperties: false
+      required: [en, fr]
+      properties:
+        en:
+          type: string
+        fr:
+          type: string
+    Binding:
+      type: object
+      additionalProperties: false
+      required: [code, version, required]
+      properties:
+        code:
+          type: string
+        version:
+          type: string
+        required:
+          type: boolean
+        position:
+          type: integer
+    EnrolmentQuestion:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [YES_NO, CHOICE]
+        question:
+          $ref: "#/components/schemas/Text"
+        options:
+          type: array
+          maxItems: 6
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              en:
+                type: string
+              fr:
+                type: string
+    CatalogueModule:
+      type: object
+      required: [code, version, accentColour, name, description, audience, imageAlt, elements, minAppVersion, enrolled]
+      properties:
+        code:
+          type: string
+        version:
+          type: string
+        accentColour:
+          $ref: "#/components/schemas/AccentColour"
+        name:
+          $ref: "#/components/schemas/Text"
+        description:
+          $ref: "#/components/schemas/Text"
+        audience:
+          $ref: "#/components/schemas/Text"
+        imageAlt:
+          $ref: "#/components/schemas/Text"
+        imageId:
+          type: string
+          format: uuid
+        minAge:
+          type: integer
+        enrolmentQuestion:
+          $ref: "#/components/schemas/EnrolmentQuestion"
+        reminderDefault:
+          type: string
+        elements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Binding"
+        minAppVersion:
+          description: Older apps hide the module and ask for an update.
+          type: string
+        enrolled:
+          type: boolean
+        reminderTime:
+          type: string
+    TrackingProfile:
+      type: object
+      additionalProperties: false
+      properties:
+        pcosStatus:
+          type: string
+          enum: [DIAGNOSED, NOT_DIAGNOSED, NOT_SURE]
+        tryingToConceive:
+          type: boolean
+        treatments:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            maxLength: 40
+    Recommendation:
+      type: object
+      required: [id, ruleCode, moduleCode, outcome, specialtyCodes, status, message, evidence, createdAt, dataChanged]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ruleCode:
+          type: string
+        moduleCode:
+          type: string
+        outcome:
+          type: string
+          enum: [PATTERN, INVITE]
+        specialtyCodes:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          x-extensible-enum: [NEW, SEEN, SNOOZED, SUPERSEDED]
+        message:
+          description: The rule's template in the app language, filled from the evidence.
+          type: string
+        evidence:
+          description: The thresholds and the exact cycles or days used, for the chart. Never notes.
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        snoozedUntil:
+          type: string
+          format: date-time
+        dataChanged:
+          description: The data changed after it was seen and the pattern no longer holds.
+          type: boolean
+    ModuleRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        accentColour:
+          type: string
+        name:
+          $ref: "#/components/schemas/Text"
+        enrolled:
+          type: integer
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              number:
+                type: string
+              status:
+                type: string
+              draftedBy:
+                type: string
+              approvedBy:
+                type: string
+              publishedAt:
+                type: string
+                format: date-time
+    ModuleDetails:
+      type: object
+      required: [nameEn, nameFr, descriptionEn, descriptionFr, imageAltEn, imageAltFr, audienceEn, audienceFr]
+      properties:
+        nameEn:
+          type: string
+          maxLength: 80
+        nameFr:
+          type: string
+          maxLength: 80
+        descriptionEn:
+          type: string
+          maxLength: 200
+        descriptionFr:
+          type: string
+          maxLength: 200
+        imageId:
+          type: string
+          format: uuid
+        imageAltEn:
+          type: string
+          maxLength: 200
+        imageAltFr:
+          type: string
+          maxLength: 200
+        minAge:
+          type: integer
+          minimum: 18
+        audienceEn:
+          type: string
+          maxLength: 120
+        audienceFr:
+          type: string
+          maxLength: 120
+        enrolmentQuestion:
+          $ref: "#/components/schemas/EnrolmentQuestion"
+        reminderDefault:
+          type: string
+        accentColour:
+          $ref: "#/components/schemas/AccentColour"
+    Rule:
+      type: object
+      required: [code, conditions, outcome, messageEn, messageFr, cooldownDays]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+        conditions:
+          description: One to three conditions, all must hold (Tracking Service Spec, What a rule is made of).
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/Condition"
+        unless:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                enum: [pcos_status, trying_to_conceive, treatments, enrolment_answer]
+              equals: {}
+              includes:
+                type: string
+        outcome:
+          type: string
+          enum: [PATTERN, INVITE]
+        specialtyCodes:
+          type: array
+          items:
+            type: string
+        messageEn:
+          type: string
+          maxLength: 300
+        messageFr:
+          type: string
+          maxLength: 300
+        cooldownDays:
+          type: integer
+          minimum: 0
+        repeatWithinDays:
+          type: integer
+          minimum: 1
+        position:
+          type: integer
+        problems:
+          type: array
+          items:
+            type: string
+    Condition:
+      type: object
+      required: [signal, operator, comparison, threshold]
+      properties:
+        signal:
+          type: string
+          enum: [daily_value, cycle_length_days, period_days, very_heavy_days]
+        element:
+          type: string
+        operator:
+          type: string
+          enum: [consecutive_cycles, days_in_window, average_in_window]
+        comparison:
+          type: string
+          enum: [gt, gte, lt, lte, eq, in]
+        threshold: {}
+        count:
+          type: integer
+          minimum: 0
+        mode:
+          type: string
+          enum: [at_least, at_most]
+        window:
+          type: integer
+          minimum: 1
+          maximum: 365
+        minData:
+          type: integer
+          minimum: 0
+    ModuleVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        moduleId:
+          type: string
+          format: uuid
+        moduleCode:
+          type: string
+        accentColour:
+          type: string
+        number:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        name:
+          $ref: "#/components/schemas/Text"
+        description:
+          $ref: "#/components/schemas/Text"
+        audience:
+          $ref: "#/components/schemas/Text"
+        imageAlt:
+          $ref: "#/components/schemas/Text"
+        imageId:
+          type: string
+          format: uuid
+        minAge:
+          type: integer
+        enrolmentQuestion:
+          $ref: "#/components/schemas/EnrolmentQuestion"
+        reminderDefault:
+          type: string
+        elements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Binding"
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/Rule"
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer:
+                type: string
+              decision:
+                type: string
+              comments:
+                type: string
+              decidedAt:
+                type: string
+                format: date-time
+        problems:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        canApprove:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+    TestResult:
+      type: object
+      properties:
+        history:
+          type: string
+        ruleCode:
+          type: string
+        fires:
+          type: boolean
+        blockedByUnless:
+          type: boolean
+        evidence: {}

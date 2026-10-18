@@ -4,6 +4,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +14,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * Tracking with its own PostgreSQL, shared by the integration tests (one Spring context). Kafka is
@@ -27,7 +36,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
     properties = {
       "spring.grpc.server.inprocess.name=tracking-stack",
       "spring.grpc.server.port=0",
-      "spring.kafka.listener.auto-startup=false"
+      "spring.kafka.listener.auto-startup=false",
+      "solace.grpc.client-registration="
     })
 @AutoConfigureMockMvc
 public abstract class TrackingStackTest {
@@ -35,8 +45,35 @@ public abstract class TrackingStackTest {
   @ServiceConnection
   static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 
+  /** The image infra/docker-compose.yml runs, as in Core's tests. */
+  static final MinIOContainer MINIO =
+      new MinIOContainer(
+              DockerImageName.parse(
+                      "cgr.dev/chainguard/minio@sha256:c93745c56fccdaf0e5dcb88999a96a65a136428beb045ef5d546255a80d747a7")
+                  .asCompatibleSubstituteFor("minio/minio"))
+          .withCreateContainerCmdModifier(cmd -> cmd.withUser("0"));
+
   static {
     POSTGRES.start();
+    MINIO.start();
+    try (var s3 =
+        S3Client.builder()
+            .endpointOverride(URI.create(MINIO.getS3URL()))
+            .region(Region.US_EAST_1)
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(MINIO.getUserName(), MINIO.getPassword())))
+            .forcePathStyle(true)
+            .build()) {
+      s3.createBucket(b -> b.bucket("solace-module-images"));
+    }
+  }
+
+  @DynamicPropertySource
+  static void storage(DynamicPropertyRegistry properties) {
+    properties.add("solace.storage.endpoint", MINIO::getS3URL);
+    properties.add("solace.storage.access-key", MINIO::getUserName);
+    properties.add("solace.storage.secret-key", MINIO::getPassword);
   }
 
   protected static final ObjectMapper JSON = new ObjectMapper();

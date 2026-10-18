@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/tracking/module.published.v1.schema.json",
+  "title": "tracking.module.published v1",
+  "description": "A module version was published (Tracking Service Spec, Events). Core refreshes its catalogue cache and the admin overview.",
+  "type": "object",
+  "allOf": [{ "$ref": "../envelope.schema.json" }],
+  "properties": {
+    "type": { "const": "tracking.module.published" },
+    "version": { "const": 1 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["moduleCode", "version"],
+      "properties": {
+        "moduleCode": { "type": "string", "maxLength": 40 },
+        "version": { "type": "string", "pattern": "^[0-9]+[.][0-9]+$" }
+      }
+    }
+  }
+}
