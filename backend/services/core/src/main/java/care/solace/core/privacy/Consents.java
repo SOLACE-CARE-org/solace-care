@@ -1,5 +1,6 @@
 package care.solace.core.privacy;
 
+import care.solace.core.admin.FeatureFlags;
 import care.solace.core.identity.Account;
 import care.solace.core.identity.ConsentProgress;
 import care.solace.events.Events;
@@ -28,8 +29,15 @@ class Consents implements ConsentProgress {
   private final PrivacySettings settings;
   private final ApplicationEventPublisher events;
   private final Clock clock;
+  private final FeatureFlags flags;
 
-  Consents(JdbcClient db, PrivacySettings settings, ApplicationEventPublisher events, Clock clock) {
+  Consents(
+      JdbcClient db,
+      PrivacySettings settings,
+      ApplicationEventPublisher events,
+      Clock clock,
+      FeatureFlags flags) {
+    this.flags = flags;
     this.db = db;
     this.settings = settings;
     this.events = events;
@@ -47,11 +55,26 @@ class Consents implements ConsentProgress {
         .single();
   }
 
+  /**
+   * The purposes the app asks about now: the configured ones, plus tracking and the health check
+   * while their Phase 2 flags are on, so the switch appears with the feature it allows (D52).
+   */
+  List<Purpose> offered() {
+    List<Purpose> offered = new ArrayList<>(settings.offeredPurposes());
+    if (flags.enabled("trackTab") && !offered.contains(Purpose.TRACKING)) {
+      offered.add(0, Purpose.TRACKING);
+    }
+    if (flags.enabled("healthCheck") && !offered.contains(Purpose.HEALTH_CHECK)) {
+      offered.add(Purpose.HEALTH_CHECK);
+    }
+    return offered;
+  }
+
   /** The offered purposes, each with its latest choice, or "not granted" when never asked. */
   List<Current> current(UUID accountId) {
     Map<Purpose, Current> latest = latest(accountId);
     List<Current> result = new ArrayList<>();
-    for (Purpose purpose : settings.offeredPurposes()) {
+    for (Purpose purpose : offered()) {
       result.add(
           Optional.ofNullable(latest.get(purpose))
               .orElse(new Current(purpose, false, settings.versionOf(purpose), null)));

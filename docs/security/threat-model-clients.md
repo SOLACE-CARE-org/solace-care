@@ -16,7 +16,7 @@
 | ID | STRIDE | Threat | Control | Status |
 | --- | --- | --- | --- | --- |
 | CL-1 | I | Someone with the phone opens the app and sees health data | Optional PIN or biometric app lock; neutral notifications; no health data in push payloads | Planned (Phase 1 app lock, Phase 2 tracking) |
-| CL-2 | I | Offline entries and notes read from a stolen or rooted device | Encrypted local storage (System Design) | Planned (Phase 2); choose the encryption (SQLCipher with a key in the Keystore/Keychain) |
+| CL-2 | I | Offline entries and notes read from a stolen or rooted device | Encrypted local storage (System Design): op-sqlite with SQLCipher, a random 256-bit key in the Keychain or Keystore (this device only, when unlocked); the module catalogue cache lives there too; both are cleared on sign-out | In place (D53; `mobile/src/tracking/store.ts`) |
 | CL-3 | I | Tokens stolen from device storage | Tokens in the platform's secure storage (Keychain, Keystore), never AsyncStorage; the session store persists only language and role today | Planned (Phase 1 sign-in) |
 | CL-4 | T / I | Traffic intercepted on hostile networks | TLS; certificate pinning (System Design, OWASP MASVS) | Planned; see Findings 1 |
 | CL-5 | T | App run on a rooted or jailbroken device | Warning shown (System Design) | Planned |
