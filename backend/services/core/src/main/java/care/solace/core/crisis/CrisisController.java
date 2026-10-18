@@ -53,6 +53,8 @@ class CrisisController {
   private final GuestAccess guests;
   private final Clock clock;
 
+  private final java.util.List<CallbackContacts> callbacks;
+
   CrisisController(
       CrisisAlerts alerts,
       StaffAccess access,
@@ -62,7 +64,9 @@ class CrisisController {
       SpecialistOffers specialists,
       Accounts accounts,
       GuestAccess guests,
+      java.util.List<CallbackContacts> callbacks,
       Clock clock) {
+    this.callbacks = callbacks;
     this.alerts = alerts;
     this.access = access;
     this.audit = audit;
@@ -282,7 +286,17 @@ class CrisisController {
   }
 
   private Optional<String> phone(CrisisAlerts.Alert a) {
-    return a.guest() ? guests.phone(a.subjectId()) : accounts.phone(a.subjectId());
+    if (!a.guest()) {
+      return accounts.phone(a.subjectId());
+    }
+    // A guest who stopped at the health check's safety question left a number to call back.
+    for (CallbackContacts c : callbacks) {
+      Optional<String> left = c.phone(a.source(), a.sourceId());
+      if (left.isPresent()) {
+        return left;
+      }
+    }
+    return guests.phone(a.subjectId());
   }
 
   private static Shift shift(CrisisAlerts.Shift s) {

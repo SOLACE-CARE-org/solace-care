@@ -64,6 +64,18 @@ class JdbcCatalogue implements Catalogue {
   }
 
   @Override
+  public java.util.Optional<String> professionFor(String specialty, Locale viewer) {
+    String column = french(viewer) ? "label_fr" : "label_en";
+    return db.sql(
+            "SELECT "
+                + column
+                + " FROM profession WHERE specialty_code = :s ORDER BY position LIMIT 1")
+        .param("s", specialty)
+        .query(String.class)
+        .optional();
+  }
+
+  @Override
   public boolean areSessionLanguages(Collection<String> codes) {
     return allEnabled("session_language", codes);
   }

@@ -168,4 +168,12 @@ class DirectoryStore {
         .query(String.class)
         .list();
   }
+
+  /** Focus area codes, for matching on the seeker's topics (the health check). */
+  List<String> focusCodes(UUID id) {
+    return db.sql("SELECT topic_code FROM specialist_focus_area WHERE account_id = :id")
+        .param("id", id)
+        .query(String.class)
+        .list();
+  }
 }

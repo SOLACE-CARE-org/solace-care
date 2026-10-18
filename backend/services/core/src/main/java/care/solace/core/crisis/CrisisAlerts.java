@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
  * acknowledgement, the escalation list after 10. Messages carry no personal details.
  */
 @Service
-class CrisisAlerts implements CrisisSummaries {
+class CrisisAlerts implements CrisisSummaries, CrisisRaising {
 
   static final String CONSUMER = "core.crisis-alerts";
 
@@ -135,6 +135,38 @@ class CrisisAlerts implements CrisisSummaries {
       guest = review.map(FlaggedReviews.Flagged::guest).orElse(false);
       language = review.map(FlaggedReviews.Flagged::language).orElse(null);
     }
+    insert(
+        flagged.decisionId(),
+        flagged.source(),
+        flagged.sourceId(),
+        subjectId,
+        guest,
+        category,
+        language,
+        now);
+  }
+
+  @Override
+  public void raise(
+      String source,
+      UUID sourceId,
+      UUID subjectId,
+      boolean guest,
+      String category,
+      String language) {
+    // The source item is its own decision: one alert per health check response.
+    insert(sourceId, source, sourceId, subjectId, guest, category, language, clock.instant());
+  }
+
+  private void insert(
+      UUID decisionId,
+      String source,
+      UUID sourceId,
+      UUID subjectId,
+      boolean guest,
+      String category,
+      String language,
+      Instant now) {
     int inserted =
         db.sql(
                 """
@@ -144,9 +176,9 @@ class CrisisAlerts implements CrisisSummaries {
                 ON CONFLICT (decision_id) DO NOTHING
                 """)
             .param("id", UUID.randomUUID())
-            .param("d", flagged.decisionId())
-            .param("src", flagged.source())
-            .param("sid", flagged.sourceId())
+            .param("d", decisionId)
+            .param("src", source)
+            .param("sid", sourceId)
             .param("sub", subjectId)
             .param("g", guest)
             .param("c", category)

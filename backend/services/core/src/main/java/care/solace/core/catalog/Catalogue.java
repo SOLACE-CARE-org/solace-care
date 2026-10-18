@@ -32,5 +32,8 @@ public interface Catalogue {
   boolean isProfession(String code);
 
   /** A code and its label in one language. */
+  /** The professional for a specialty ("Clinical psychologist" for clinical psychology). */
+  java.util.Optional<String> professionFor(String specialty, Locale viewer);
+
   record Entry(String code, String label) {}
 }

@@ -44,6 +44,30 @@ public interface SpecialistOffers {
       java.util.List<String> languages,
       java.time.Instant nextAvailable) {}
 
+  /**
+   * Health check matches (System Design, Health check, Matching): listed specialists of these
+   * specialties in any of these languages, with this format and at most this price, each with its
+   * focus area codes, price and rating so the caller can rank them.
+   */
+  java.util.List<Candidate> candidates(
+      java.util.Collection<String> specialties,
+      java.util.Collection<String> languages,
+      String modality,
+      Long maxPrice,
+      Locale viewer,
+      int limit);
+
+  record Candidate(
+      UUID id,
+      String fullName,
+      String professionLabel,
+      String specialty,
+      java.util.List<String> languages,
+      java.util.List<String> focusCodes,
+      java.time.Instant nextAvailable,
+      long price,
+      double rating) {}
+
   record Offer(String modality, int durationMinutes, long price) {}
 
   record Summary(String fullName, String professionLabel) {}

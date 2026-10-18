@@ -94,6 +94,16 @@ solace:
       # Published legal texts and crisis resources, read before sign-in and by guests (D44).
       - /v1/content
       - /v1/content/**
+      # The health check works for guests; a response is found by its token or the bearer (D55).
+      - /v1/health-check
+      - /v1/health-check/responses
+      - /v1/health-check/responses/*/answers
+      - /v1/health-check/responses/*/completion
+      - /v1/health-check/responses/*/matches
+      - /v1/health-check/responses/*/callback
+  health-check:
+    # Seals answers (AES-256-GCM). Production sets SOLACE_HEALTH_CHECK_KEY from the vault (D55).
+    answers-key: ${SOLACE_HEALTH_CHECK_KEY:zXkjKmXrFytJmhcpmOSzDroSNvI57XY+AVR+rMCTVXU=}
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
     keycloak:

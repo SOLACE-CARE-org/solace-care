@@ -69,6 +69,43 @@ class Offers implements SpecialistOffers {
   }
 
   @Override
+  public java.util.List<Candidate> candidates(
+      java.util.Collection<String> specialties,
+      java.util.Collection<String> languages,
+      String modality,
+      Long maxPrice,
+      Locale viewer,
+      int limit) {
+    java.util.Map<UUID, Candidate> found = new java.util.LinkedHashMap<>();
+    for (String specialty : specialties) {
+      for (String language : languages) {
+        var page =
+            search
+                .getObject()
+                .search(
+                    new Directory.Query(
+                        language, modality, null, specialty, maxPrice, null, limit, 0),
+                    viewer);
+        for (var card : page.items()) {
+          found.putIfAbsent(
+              card.id(),
+              new Candidate(
+                  card.id(),
+                  card.fullName(),
+                  card.professionLabel(),
+                  specialty,
+                  card.languages().stream().map(DirectoryStore.Language::code).toList(),
+                  directory.focusCodes(card.id()),
+                  card.nextAvailable(),
+                  card.offering() == null ? 0 : card.offering().price(),
+                  card.rating() == null ? 0 : card.rating().average()));
+        }
+      }
+    }
+    return java.util.List.copyOf(found.values());
+  }
+
+  @Override
   public java.math.BigDecimal feePercent() {
     return pricing.current().feePercent();
   }

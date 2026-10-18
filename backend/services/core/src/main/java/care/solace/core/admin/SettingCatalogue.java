@@ -144,6 +144,37 @@ class SettingCatalogue {
           // A specialist reads shared tracking while a booking is live and this long after (D52).
           new Definition(
               "solace.tracking.sharing-after-session", Group.PRIVACY, Type.DAYS, "7", 0, 30, true),
+          // The health check (System Design, Health check; D55): unclaimed guest responses go
+          // after [30] days; one older than [90] days asks for a retake; "also a good fit" within
+          // [1] point; the two price bands on its preferences screen.
+          new Definition(
+              "solace.health-check.unclaimed-retention",
+              Group.PRIVACY,
+              Type.DAYS,
+              "30",
+              1,
+              365,
+              true),
+          new Definition(
+              "solace.health-check.retake-after", Group.PRIVACY, Type.DAYS, "90", 7, 365, true),
+          new Definition(
+              "solace.health-check.also-fit-within", Group.SAFETY, Type.COUNT, "1", 0, 10, true),
+          new Definition(
+              "solace.health-check.price-band-1",
+              Group.MONEY,
+              Type.FCFA,
+              "15000",
+              1000,
+              1000000,
+              true),
+          new Definition(
+              "solace.health-check.price-band-2",
+              Group.MONEY,
+              Type.FCFA,
+              "25000",
+              1000,
+              1000000,
+              true),
           // Crisis escalation at 5 and then 10 minutes is a decision (D11, D15).
           new Definition(
               "solace.crisis.escalate-after", Group.SAFETY, Type.MINUTES, "5", 5, 5, false),

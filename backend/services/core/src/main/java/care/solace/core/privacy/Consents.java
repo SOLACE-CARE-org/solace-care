@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
  * change is published as {@code core.consent.changed} so Tracking and AI can act on it.
  */
 @Service
-class Consents implements ConsentProgress {
+class Consents implements ConsentProgress, ConsentCheck {
 
   private final JdbcClient db;
   private final PrivacySettings settings;
@@ -53,6 +53,12 @@ class Consents implements ConsentProgress {
         .param("a", accountId)
         .query(Boolean.class)
         .single();
+  }
+
+  @Override
+  public boolean granted(UUID accountId, String purpose) {
+    Current c = latest(accountId).get(Purpose.valueOf(purpose));
+    return c != null && c.granted();
   }
 
   /**

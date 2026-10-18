@@ -70,6 +70,10 @@ tags:
     description: Browser notifications for staff (D38, D47)
   - name: invites
     description: Invitations from tracking with matched specialists (D52)
+  - name: health-check
+    description: The health check for seekers and guests (System Design, Health check; D55). No AI reads the answers
+  - name: admin-health-check
+    description: Writing, testing and approving health check versions (admin screens 28 to 31; D55)
 paths:
   /v1/signups:
     post:
@@ -3897,6 +3901,503 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /v1/health-check:
+    get:
+      operationId: getHealthCheck
+      summary: The published version's questions, worded in the app language
+      tags: [health-check]
+      security: []
+      responses:
+        "200":
+          description: The questions in order, with when each is shown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckForm"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/health-check/responses:
+    post:
+      operationId: startHealthCheck
+      summary: Start a response; a seeker needs the HEALTH_CHECK consent, a guest gives it on the start screen
+      description: |
+        Signed in, the response belongs to the account. As a guest, the answer carries a token for the
+        X-Health-Check-Token header; the response is claimed when the guest signs up.
+      tags: [health-check]
+      security: [{}, bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [consentVersion]
+              properties:
+                consentVersion:
+                  description: The wording version of the consent the person saw on the start screen.
+                  type: string
+                  maxLength: 20
+      responses:
+        "201":
+          description: Started
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [id]
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  token:
+                    description: Guests only. Send as X-Health-Check-Token; it is never shown again.
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/health-check/responses/latest:
+    get:
+      operationId: getLatestHealthCheck
+      summary: My latest completed response's suggestion; stale after the retake window
+      tags: [health-check]
+      responses:
+        "200":
+          description: The suggestion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/health-check/responses/{responseId}/answers:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckResponseId"
+      - $ref: "#/components/parameters/HealthCheckToken"
+    put:
+      operationId: saveHealthCheckAnswers
+      summary: Every answer so far; the answer says what to ask next, or that urgent help opens now
+      tags: [health-check]
+      security: [{}, bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [answers]
+              properties:
+                answers:
+                  description: Option codes chosen, by question code.
+                  type: object
+                  additionalProperties:
+                    type: array
+                    maxItems: 20
+                    items:
+                      type: string
+                      maxLength: 40
+      responses:
+        "200":
+          description: What comes next
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckProgress"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/health-check/responses/{responseId}/completion:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckResponseId"
+      - $ref: "#/components/parameters/HealthCheckToken"
+    post:
+      operationId: completeHealthCheck
+      summary: The preferences, then the suggestion; preferences filter matches and never score
+      tags: [health-check]
+      security: [{}, bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HealthCheckPreferences"
+      responses:
+        "200":
+          description: The suggestion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/health-check/responses/{responseId}/matches:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckResponseId"
+      - $ref: "#/components/parameters/HealthCheckToken"
+    get:
+      operationId: getHealthCheckMatches
+      summary: Specialists for the suggestion, in the chosen language, format and price band
+      tags: [health-check]
+      security: [{}, bearerAuth: []]
+      responses:
+        "200":
+          description: Matches, best first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthCheckMatch"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/health-check/responses/{responseId}/callback:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckResponseId"
+      - $ref: "#/components/parameters/HealthCheckToken"
+    post:
+      operationId: requestHealthCheckCallback
+      summary: After the safety answer, a guest leaves a number and the on-call specialist calls back
+      tags: [health-check]
+      security: [{}, bearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [phone]
+              properties:
+                phone:
+                  $ref: "#/components/schemas/Phone"
+      responses:
+        "202":
+          description: The on-call specialist is alerted
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/health-check/responses/{responseId}/claim:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckResponseId"
+      - $ref: "#/components/parameters/HealthCheckToken"
+    post:
+      operationId: claimHealthCheck
+      summary: A guest who signed up keeps the answers they gave as a guest
+      tags: [health-check]
+      responses:
+        "204":
+          description: Claimed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/specialist/bookings/{bookingId}/health-check:
+    parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getSharedHealthCheck
+      summary: For the booked specialist, the answers the seeker chose to share for this booking
+      description: Every read is audited. Totals and bands are for the specialist, never shown to the seeker.
+      tags: [health-check]
+      responses:
+        "200":
+          description: The shared answers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedHealthCheck"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/health-check/versions:
+    get:
+      operationId: adminListHealthCheckVersions
+      summary: Every version, with completions and safety stops (admin screen 28)
+      tags: [admin-health-check]
+      responses:
+        "200":
+          description: Versions, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthCheckVersionRow"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: newHealthCheckVersion
+      summary: A new draft from the published version (a Clinical reviewer or Super admin)
+      tags: [admin-health-check]
+      responses:
+        "201":
+          description: The draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/stats:
+    get:
+      operationId: adminHealthCheckStats
+      summary: Counts for admin screen 28; never anyone's answers
+      tags: [admin-health-check]
+      responses:
+        "200":
+          description: The last 7 and 30 days
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [completedLast7Days, startedLast7Days, safetyStopsLast7Days, suggestionsLast30Days]
+                properties:
+                  completedLast7Days:
+                    type: integer
+                  startedLast7Days:
+                    type: integer
+                  safetyStopsLast7Days:
+                    type: integer
+                  suggestionsLast30Days:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [code, count]
+                      properties:
+                        code:
+                          type: string
+                        count:
+                          type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/health-check/versions/{versionId}:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    get:
+      operationId: getHealthCheckVersion
+      summary: One version with its questions, rules, test sets, reviews and what stops it being submitted
+      tags: [admin-health-check]
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/health-check/versions/{versionId}/questions:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    put:
+      operationId: saveHealthCheckQuestions
+      summary: The questions in order (admin screen 29); the safety question and screener items cannot change
+      tags: [admin-health-check]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 60
+              items:
+                $ref: "#/components/schemas/HealthCheckQuestion"
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/versions/{versionId}/scoring:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    put:
+      operationId: saveHealthCheckScoring
+      summary: Rules that add points to specialties, and the order that breaks ties (admin screen 30)
+      tags: [admin-health-check]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [rules, specialtyOrder]
+              properties:
+                rules:
+                  type: array
+                  maxItems: 100
+                  items:
+                    $ref: "#/components/schemas/HealthCheckRule"
+                specialtyOrder:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/versions/{versionId}/test-sets:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    put:
+      operationId: saveHealthCheckTestSets
+      summary: Made-up answer sets to test the draft with; never real answers
+      tags: [admin-health-check]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 50
+              items:
+                $ref: "#/components/schemas/HealthCheckTestSet"
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/versions/{versionId}/test-run:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    post:
+      operationId: testRunHealthCheck
+      summary: Every test set against this version and the published one (admin screen 31)
+      tags: [admin-health-check]
+      responses:
+        "200":
+          description: One line per test set
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthCheckTestResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/health-check/versions/{versionId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    post:
+      operationId: submitHealthCheckVersion
+      summary: Send a complete draft for review by a second Clinical reviewer
+      tags: [admin-health-check]
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/versions/{versionId}/review:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    post:
+      operationId: reviewHealthCheckVersion
+      summary: A Clinical reviewer who did not write it approves, or returns it with comments
+      tags: [admin-health-check]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [approve]
+              properties:
+                approve:
+                  type: boolean
+                comments:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/health-check/versions/{versionId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/HealthCheckVersionId"
+    post:
+      operationId: publishHealthCheckVersion
+      summary: Publish an approved version; the old one retires and new responses use this one
+      tags: [admin-health-check]
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthCheckVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -4063,6 +4564,27 @@ components:
         type: string
         enum: [LAST_7_DAYS, LAST_30_DAYS, THIS_QUARTER]
         default: LAST_30_DAYS
+    HealthCheckResponseId:
+      name: responseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HealthCheckToken:
+      name: X-Health-Check-Token
+      in: header
+      description: A guest's response token; seekers send their bearer token instead.
+      schema:
+        type: string
+        maxLength: 100
+    HealthCheckVersionId:
+      name: versionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   requestBodies:
     Rating:
       required: true
@@ -4132,6 +4654,12 @@ components:
                 minLength: 1
                 maxLength: 1000
   responses:
+    HealthCheckVersionResponse:
+      description: The version after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HealthCheckVersion"
     ApplicationReviewResponse:
       description: The application or record after the change
       content:
@@ -5354,6 +5882,13 @@ components:
           type: string
           enum: [SEARCH, HEALTH_CHECK, TRACKING_RECOMMENDATION]
           default: SEARCH
+        healthCheckResponseId:
+          description: With source HEALTH_CHECK, the response the booking came from (D55).
+          type: string
+          format: uuid
+        shareHealthCheck:
+          description: The seeker ticked "Share my answers with the specialist I book" (D55).
+          type: boolean
         recommendationId:
           description: With source TRACKING_RECOMMENDATION, the invite the booking answers (D52).
           type: string
@@ -6742,3 +7277,451 @@ components:
         nextAvailable:
           type: string
           format: date-time
+    HealthCheckForm:
+      type: object
+      additionalProperties: false
+      required: [version, questions]
+      properties:
+        version:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthCheckFormQuestion"
+    HealthCheckFormQuestion:
+      type: object
+      additionalProperties: false
+      required: [code, kind, multi, step, text, options]
+      properties:
+        code:
+          type: string
+        kind:
+          $ref: "#/components/schemas/HealthCheckQuestionKind"
+        multi:
+          type: boolean
+        step:
+          description: Which of the screens it belongs to, 1 or 2 (the preferences are step 3).
+          type: integer
+        text:
+          type: string
+        intro:
+          description: Words shown above the question, such as the screener's lead-in.
+          type: string
+        source:
+          description: For screener items, the questionnaire it comes from (PHQ-9, GAD-7).
+          type: string
+        options:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, label]
+            properties:
+              code:
+                type: string
+              label:
+                type: string
+        showIf:
+          $ref: "#/components/schemas/HealthCheckShowIf"
+    HealthCheckQuestionKind:
+      type: string
+      enum: [CHOICE, SAFETY, SCREENER]
+    HealthCheckShowIf:
+      description: Shown only when a chosen option matches, or a screener's first items reach a total.
+      type: object
+      additionalProperties: false
+      properties:
+        question:
+          type: string
+        anyOf:
+          type: array
+          items:
+            type: string
+        screener:
+          type: string
+          enum: [PHQ9, GAD7]
+        firstItems:
+          type: integer
+          minimum: 1
+        atLeast:
+          type: integer
+          minimum: 0
+    HealthCheckProgress:
+      type: object
+      additionalProperties: false
+      required: [status, next]
+      properties:
+        status:
+          description: SAFETY_STOP opens urgent help at once; the person may come back and go on.
+          type: string
+          enum: [IN_PROGRESS, SAFETY_STOP, READY]
+        next:
+          description: Codes of the questions still to answer, in order.
+          type: array
+          items:
+            type: string
+    HealthCheckPreferences:
+      type: object
+      additionalProperties: false
+      properties:
+        sessionLanguage:
+          description: A session language code; absent for either.
+          type: string
+        modality:
+          type: string
+          enum: [AUDIO, VIDEO]
+        maxPrice:
+          description: The price band's upper bound in FCFA; absent for any price.
+          type: integer
+          minimum: 0
+        gender:
+          type: string
+          enum: [WOMAN, MAN]
+    HealthCheckResult:
+      type: object
+      additionalProperties: false
+      required: [responseId, specialty, reasons, completedAt, stale, preferences]
+      properties:
+        responseId:
+          type: string
+          format: uuid
+        specialty:
+          $ref: "#/components/schemas/HealthCheckSpecialty"
+        alsoFit:
+          $ref: "#/components/schemas/HealthCheckSpecialty"
+        reasons:
+          description: The reasons from the rules that scored, in the app language.
+          type: array
+          items:
+            type: string
+        alsoFitReason:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        stale:
+          description: Older than the retake window; matching asks for a retake first.
+          type: boolean
+        preferences:
+          $ref: "#/components/schemas/HealthCheckPreferences"
+    HealthCheckSpecialty:
+      type: object
+      additionalProperties: false
+      required: [code, label, person]
+      properties:
+        code:
+          type: string
+        label:
+          description: The specialty, such as Clinical psychology.
+          type: string
+        person:
+          description: The professional, such as Clinical psychologist.
+          type: string
+    HealthCheckMatch:
+      type: object
+      additionalProperties: false
+      required: [id, fullName, professionLabel, languages, specialty, alsoFit, focusAreas]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        professionLabel:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        specialty:
+          type: string
+        alsoFit:
+          description: Matched on the "also a good fit" specialty.
+          type: boolean
+        focusAreas:
+          description: The seeker's topics this specialist works with, labelled in the app language.
+          type: array
+          items:
+            type: string
+        nextAvailable:
+          type: string
+          format: date-time
+        price:
+          type: integer
+    SharedHealthCheck:
+      type: object
+      additionalProperties: false
+      required: [version, completedAt, answers, scores]
+      properties:
+        version:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        answers:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [question, answers]
+            properties:
+              question:
+                type: string
+              answers:
+                type: array
+                items:
+                  type: string
+        scores:
+          description: Screener totals and their published bands, for the specialist only.
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [screener, total, band]
+            properties:
+              screener:
+                type: string
+              total:
+                type: integer
+              band:
+                type: string
+    HealthCheckVersionRow:
+      type: object
+      additionalProperties: false
+      required: [id, number, status, completions, safetyStops]
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        topSpecialties:
+          description: What this version recommended most, with counts; no one's answers.
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              count:
+                type: integer
+        completions:
+          type: integer
+        safetyStops:
+          type: integer
+    HealthCheckVersion:
+      type: object
+      additionalProperties: false
+      required: [id, number, status, questions, rules, specialtyOrder, testSets, reviews, problems, canApprove]
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthCheckQuestion"
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthCheckRule"
+        specialtyOrder:
+          type: array
+          items:
+            type: string
+        testSets:
+          type: array
+          items:
+            $ref: "#/components/schemas/HealthCheckTestSet"
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer:
+                type: string
+              decision:
+                type: string
+              comments:
+                type: string
+              decidedAt:
+                type: string
+                format: date-time
+        problems:
+          type: array
+          items:
+            type: string
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        canApprove:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+    HealthCheckQuestion:
+      type: object
+      additionalProperties: false
+      required: [code, kind, multi, step, textEn, textFr, options]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        kind:
+          $ref: "#/components/schemas/HealthCheckQuestionKind"
+        multi:
+          type: boolean
+        step:
+          type: integer
+          minimum: 1
+          maximum: 2
+        textEn:
+          type: string
+          maxLength: 300
+        textFr:
+          type: string
+          maxLength: 300
+        introEn:
+          type: string
+          maxLength: 300
+        introFr:
+          type: string
+          maxLength: 300
+        screener:
+          type: string
+          enum: [PHQ9, GAD7]
+        item:
+          type: integer
+          minimum: 1
+          maximum: 9
+        locked:
+          description: The safety question and screener items; set by Solace, never edited.
+          type: boolean
+        options:
+          type: array
+          minItems: 2
+          maxItems: 12
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, labelEn, labelFr]
+            properties:
+              code:
+                type: string
+                pattern: "^[a-z][a-z0-9_]*$"
+                maxLength: 40
+              labelEn:
+                type: string
+                maxLength: 120
+              labelFr:
+                type: string
+                maxLength: 120
+              value:
+                description: Screener items only, 0 to 3.
+                type: integer
+              topic:
+                description: The help topic this option means, for matching on focus areas.
+                type: string
+        showIf:
+          $ref: "#/components/schemas/HealthCheckShowIf"
+    HealthCheckRule:
+      type: object
+      additionalProperties: false
+      required: [code, when, specialty, points, reasonEn, reasonFr]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_.]*$"
+          maxLength: 60
+        when:
+          description: Every condition must hold.
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              question:
+                type: string
+              anyOf:
+                type: array
+                items:
+                  type: string
+              screener:
+                type: string
+                enum: [PHQ9, GAD7]
+              atLeast:
+                description: A screener total at least this.
+                type: integer
+                minimum: 0
+              atMost:
+                description: A screener total at most this.
+                type: integer
+                minimum: 0
+        specialty:
+          type: string
+        points:
+          type: integer
+          minimum: 1
+          maximum: 10
+        reasonEn:
+          type: string
+          maxLength: 200
+        reasonFr:
+          type: string
+          maxLength: 200
+    HealthCheckTestSet:
+      type: object
+      additionalProperties: false
+      required: [name, answers]
+      properties:
+        name:
+          type: string
+          maxLength: 80
+        answers:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        expected:
+          description: The specialty the clinician expects; the run says when it differs.
+          type: string
+    HealthCheckTestResult:
+      type: object
+      additionalProperties: false
+      required: [name, safetyStop]
+      properties:
+        name:
+          type: string
+        safetyStop:
+          type: boolean
+        specialty:
+          type: string
+        alsoFit:
+          type: string
+        expected:
+          type: string
+        published:
+          description: What the published version suggests for the same answers.
+          type: string
+        publishedSafetyStop:
+          type: boolean

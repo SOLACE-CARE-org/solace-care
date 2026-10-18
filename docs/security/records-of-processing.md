@@ -206,7 +206,8 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | Data | Answers (encrypted), screener totals and bands (never shown to the seeker as a label), recommended specialties, risk flag |
 | Consent | HEALTH_CHECK, before the first question |
 | Recipients | A specialist, only when the seeker ticks "Share my answers" for that booking |
-| Retention | Unclaimed guest responses deleted after `[30]` days (D8). A response older than `[90]` days asks for a retake before matching but is not deleted by that rule. Otherwise **Open** |
+| Retention | Unclaimed guest responses deleted after `solace.health-check.unclaimed-retention` (`[30]` days, nightly at 03:15 Douala). A response older than `[90]` days asks for a retake before matching but is not deleted by that rule. Deleted with the account on erasure; included in the data export. Otherwise **Open** |
+| Where | Core database, `hc_response.sealed` (AES-256-GCM); preferences and the suggested specialty code in the clear for counts; a guest's call-back number for the crisis responder (D55) |
 | Security | CO-7 |
 
 ### P15. Tracking (Phase 2)

@@ -41,7 +41,9 @@ class BookingController {
       BookingViews views,
       Accounts accounts,
       Clock clock,
-      care.solace.core.invites.TrackingInvites invites) {
+      care.solace.core.invites.TrackingInvites invites,
+      org.springframework.context.ApplicationEventPublisher events) {
+    this.events = events;
     this.invites = invites;
     this.bookings = bookings;
     this.store = store;
@@ -50,11 +52,15 @@ class BookingController {
     this.clock = clock;
   }
 
+  private final org.springframework.context.ApplicationEventPublisher events;
+
   record BookingRequest(
       @NotNull UUID holdId,
       @NotBlank String sessionLanguage,
       @Pattern(regexp = "SEARCH|HEALTH_CHECK|TRACKING_RECOMMENDATION") String source,
-      UUID recommendationId) {}
+      UUID recommendationId,
+      UUID healthCheckResponseId,
+      Boolean shareHealthCheck) {}
 
   record CancellationReason(
       @Pattern(regexp = "TIME_NO_LONGER_WORKS|FEELING_BETTER|DIFFERENT_SPECIALIST|OTHER")
@@ -86,6 +92,12 @@ class BookingController {
             body.sessionLanguage(),
             source,
             recommendation);
+    if (source.equals("HEALTH_CHECK")
+        && body.healthCheckResponseId() != null
+        && Boolean.TRUE.equals(body.shareHealthCheck())) {
+      events.publishEvent(
+          new HealthCheckShared(row.id(), body.healthCheckResponseId(), account.id()));
+    }
     return views.of(row, false, LocaleContextHolder.getLocale());
   }
 
