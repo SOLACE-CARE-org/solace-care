@@ -34,6 +34,8 @@ tags:
     description: Paying for a booking, the aggregator's webhooks and specialist earnings (Phase 1, epic 6)
   - name: admin-payments
     description: Transactions, refunds and payout runs for staff (Phase 1, epic 6). Two people for every refund and payout run (D14, D35).
+  - name: admin-bookings
+    description: Bookings, attendance and disputes for staff (admin screens 7 and 8; D41).
   - name: sessions
     description: Joining a session's room and attendance from the media server (Phase 1, epic 7)
   - name: reviews
@@ -1683,6 +1685,182 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/bookings:
+    get:
+      operationId: searchBookings
+      summary: Search all bookings (admin screen 7), soonest first within the dates
+      tags: [admin-bookings]
+      parameters:
+        - $ref: "#/components/parameters/AdminBookingStatus"
+        - $ref: "#/components/parameters/AdminBookingFrom"
+        - $ref: "#/components/parameters/AdminBookingTo"
+        - $ref: "#/components/parameters/AdminBookingLanguage"
+        - $ref: "#/components/parameters/AdminBookingSpecialist"
+        - $ref: "#/components/parameters/AdminBookingQuery"
+      responses:
+        "200":
+          description: Up to 200 bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminBookingRow"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/bookings/export:
+    get:
+      operationId: exportBookings
+      summary: The same search as CSV (Export CSV); every export is audited (D41)
+      tags: [admin-bookings]
+      parameters:
+        - $ref: "#/components/parameters/AdminBookingStatus"
+        - $ref: "#/components/parameters/AdminBookingFrom"
+        - $ref: "#/components/parameters/AdminBookingTo"
+        - $ref: "#/components/parameters/AdminBookingLanguage"
+        - $ref: "#/components/parameters/AdminBookingSpecialist"
+        - $ref: "#/components/parameters/AdminBookingQuery"
+      responses:
+        "200":
+          description: One line per booking, without names or contacts of seekers
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/bookings/{bookingId}:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: getAdminBooking
+      summary: One booking with its timeline, attendance and money (admin screen 8)
+      tags: [admin-bookings]
+      responses:
+        "200":
+          description: The booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBooking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/bookings/{bookingId}/disputes:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: openBookingDispute
+      summary: Record that a party disputes what happened (D41)
+      tags: [admin-bookings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [note]
+              properties:
+                note:
+                  description: What Support was told, briefly.
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "201":
+          description: Opened
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBooking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/bookings/{bookingId}/dispute-resolution:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: resolveBookingDispute
+      summary: Resolve the dispute or flag; refunds then wait for Finance (D14, D41)
+      tags: [admin-bookings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [outcome]
+              properties:
+                outcome:
+                  $ref: "#/components/schemas/DisputeOutcome"
+                amount:
+                  description: The refund, when it differs from what the policy proposes; needs a reason.
+                  type: integer
+                  minimum: 0
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        "200":
+          description: Resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBooking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/bookings/{bookingId}/cancellation:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: cancelBookingAsStaff
+      summary: Cancel an upcoming booking for the seeker; a paid one is refunded in full (D33)
+      tags: [admin-bookings]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBooking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/bookings/{bookingId}/refunds:
     parameters:
       - $ref: "#/components/parameters/BookingId"
@@ -2635,6 +2813,43 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    AdminBookingStatus:
+      name: status
+      in: query
+      schema:
+        $ref: "#/components/schemas/AdminBookingStatus"
+    AdminBookingFrom:
+      name: from
+      in: query
+      description: Starts at or after this moment.
+      schema:
+        type: string
+        format: date-time
+    AdminBookingTo:
+      name: to
+      in: query
+      description: Starts before this moment.
+      schema:
+        type: string
+        format: date-time
+    AdminBookingLanguage:
+      name: language
+      in: query
+      schema:
+        type: string
+    AdminBookingSpecialist:
+      name: specialistId
+      in: query
+      schema:
+        type: string
+        format: uuid
+    AdminBookingQuery:
+      name: q
+      in: query
+      description: A booking reference (BK-7F9D1C2E), a full booking id or a longer prefix (D41).
+      schema:
+        type: string
+        maxLength: 40
     BookingId:
       name: bookingId
       in: path
@@ -3045,6 +3260,153 @@ components:
     DocumentKind:
       type: string
       enum: [LICENCE, IDENTITY, PHOTO, CV]
+    AdminBookingStatus:
+      description: A booking status as staff filter it; DISPUTED while a dispute or flag is open (D41).
+      type: string
+      enum: [PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW, EXPIRED, DISPUTED]
+    DisputeOutcome:
+      type: string
+      enum: [SPECIALIST_NO_SHOW, SEEKER_NO_SHOW, CONNECTION_PROBLEM]
+    AdminBookingRow:
+      type: object
+      additionalProperties: false
+      required: [id, reference, startsAt, endsAt, specialist, personRef, modality, sessionLanguage, price, status, disputed]
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          description: BK- and the first eight characters of the id.
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        specialist:
+          type: object
+          additionalProperties: false
+          required: [id, fullName]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fullName:
+              type: string
+        personRef:
+          description: Pseudonymous, "#5480" or "G-2244" for a guest; no names on this screen.
+          type: string
+        modality:
+          $ref: "#/components/schemas/Modality"
+        sessionLanguage:
+          type: string
+        price:
+          type: integer
+        status:
+          type: string
+          x-extensible-enum: [PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW, EXPIRED]
+        cancelledBy:
+          type: string
+          x-extensible-enum: [SEEKER, SPECIALIST, STAFF, SYSTEM]
+        waiting:
+          description: Who is alone in the room right now, if anyone.
+          type: string
+          x-extensible-enum: [SEEKER, SPECIALIST]
+        disputed:
+          type: boolean
+    AdminBooking:
+      allOf:
+        - $ref: "#/components/schemas/AdminBookingRow"
+        - type: object
+          required: [createdAt, source, policy, timeline, canCancel]
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            source:
+              type: string
+              x-extensible-enum: [SEARCH, HEALTH_CHECK, TRACKING_RECOMMENDATION]
+            reschedules:
+              type: integer
+            policy:
+              type: object
+              additionalProperties: false
+              required: [version, seekerNoShowRefundPercent, specialistNoShowRefundPercent]
+              properties:
+                version:
+                  type: integer
+                seekerNoShowRefundPercent:
+                  type: integer
+                specialistNoShowRefundPercent:
+                  type: integer
+            money:
+              type: object
+              additionalProperties: false
+              required: [method, phone, amount, status, held, refunded]
+              properties:
+                method:
+                  $ref: "#/components/schemas/PayMethod"
+                phone:
+                  description: Masked.
+                  type: string
+                amount:
+                  type: integer
+                status:
+                  $ref: "#/components/schemas/PaymentStatus"
+                held:
+                  description: Still held for this booking (FCFA).
+                  type: integer
+                refunded:
+                  description: Refunds proposed, approved or paid so far (FCFA).
+                  type: integer
+            dispute:
+              type: object
+              additionalProperties: false
+              required: [openedAt]
+              properties:
+                openedAt:
+                  type: string
+                  format: date-time
+                openedBy:
+                  description: The staff member, or absent when Core flagged it because neither joined.
+                  type: string
+                note:
+                  type: string
+                outcome:
+                  $ref: "#/components/schemas/DisputeOutcome"
+                resolvedBy:
+                  type: string
+                resolvedAt:
+                  type: string
+                  format: date-time
+            timeline:
+              type: array
+              items:
+                $ref: "#/components/schemas/BookingTimelineEntry"
+            canCancel:
+              description: Upcoming and not yet in session.
+              type: boolean
+    BookingTimelineEntry:
+      type: object
+      additionalProperties: false
+      required: [at, kind]
+      properties:
+        at:
+          type: string
+          format: date-time
+        kind:
+          type: string
+          x-extensible-enum: [BOOKED, PAID, JOINED, LEFT, ROOM_CLOSED, FLAGGED, CANCELLED, DISPUTE_OPENED, DISPUTE_RESOLVED, REFUND]
+        role:
+          description: Who joined, left or cancelled, by role only (D36).
+          type: string
+          x-extensible-enum: [SEEKER, SPECIALIST, STAFF, SYSTEM]
+        amount:
+          type: integer
+        detail:
+          description: A dispute note in the words of staff, a dispute outcome, or a refund status.
+          type: string
     Modality:
       type: string
       enum: [AUDIO, VIDEO]

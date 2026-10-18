@@ -270,6 +270,85 @@ class BookingStore {
         .update();
   }
 
+  /**
+   * The admin search (admin screen 7). {@code ids}, when not null, limits it to those bookings
+   * (disputed ones); {@code idPrefix} is the hex of an id without dashes, or its start (D41).
+   */
+  record Search(
+      String status,
+      Instant from,
+      Instant to,
+      String language,
+      UUID specialistId,
+      String idPrefix,
+      java.util.Collection<UUID> ids) {}
+
+  List<Row> search(Search s, int limit) {
+    if (s.ids() != null && s.ids().isEmpty()) {
+      return List.of();
+    }
+    var where = new java.util.ArrayList<String>();
+    var params = new java.util.LinkedHashMap<String, Object>();
+    if (s.status() != null) {
+      where.add("status = :status");
+      params.put("status", s.status());
+    }
+    if (s.from() != null) {
+      where.add("starts_at >= :from");
+      params.put("from", Timestamp.from(s.from()));
+    }
+    if (s.to() != null) {
+      where.add("starts_at < :to");
+      params.put("to", Timestamp.from(s.to()));
+    }
+    if (s.language() != null) {
+      where.add("session_language = :lang");
+      params.put("lang", s.language());
+    }
+    if (s.specialistId() != null) {
+      where.add("specialist_id = :sp");
+      params.put("sp", s.specialistId());
+    }
+    if (s.idPrefix() != null) {
+      where.add("replace(id::text, '-', '') LIKE :prefix");
+      params.put("prefix", s.idPrefix() + "%");
+    }
+    if (s.ids() != null) {
+      where.add("id IN (:ids)");
+      params.put("ids", s.ids());
+    }
+    var spec =
+        db.sql(
+            "SELECT "
+                + COLUMNS
+                + " FROM booking"
+                + (where.isEmpty() ? "" : " WHERE " + String.join(" AND ", where))
+                + " ORDER BY starts_at LIMIT :n");
+    for (var p : params.entrySet()) {
+      spec = spec.param(p.getKey(), p.getValue());
+    }
+    return spec.param("n", limit).query(BookingStore::row).list();
+  }
+
+  /** When the booking was made, paid and cancelled, for its timeline. */
+  record Times(Instant createdAt, Instant confirmedAt, Instant cancelledAt) {}
+
+  Times times(UUID id) {
+    return db.sql("SELECT created_at, confirmed_at, cancelled_at FROM booking WHERE id = :id")
+        .param("id", id)
+        .query(
+            (rs, n) ->
+                new Times(
+                    rs.getTimestamp("created_at").toInstant(),
+                    instant(rs.getTimestamp("confirmed_at")),
+                    instant(rs.getTimestamp("cancelled_at"))))
+        .single();
+  }
+
+  private static Instant instant(Timestamp t) {
+    return t == null ? null : t.toInstant();
+  }
+
   Policy currentPolicy() {
     return db.sql("SELECT * FROM cancellation_policy ORDER BY version DESC LIMIT 1")
         .query(BookingStore::policy)

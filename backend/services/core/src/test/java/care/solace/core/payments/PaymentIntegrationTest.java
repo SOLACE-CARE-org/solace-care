@@ -299,6 +299,108 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
   }
 
   @Test
+  void supportResolvesADisputeAndADifferentFinanceMemberApprovesTheRefund() throws Exception {
+    String bookingId = paidBooking(seeker());
+    bookings.complete(UUID.fromString(bookingId), Instant.now());
+    String reference = "BK-" + bookingId.replace("-", "").substring(0, 8).toUpperCase();
+
+    mvc.perform(get("/admin/v1/bookings").with(support).param("q", reference))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].reference").value(reference))
+        .andExpect(jsonPath("$[0].personRef").value(org.hamcrest.Matchers.startsWith("#")))
+        .andExpect(jsonPath("$[0].disputed").value(false));
+
+    // Nothing to resolve before a dispute is opened.
+    resolve(bookingId, "{\"outcome\":\"SPECIALIST_NO_SHOW\"}")
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("booking.not-disputed"));
+    mvc.perform(
+            post("/admin/v1/bookings/" + bookingId + "/disputes")
+                .with(support)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"note\":\"Seeker says the specialist never came.\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.disputed").value(true))
+        .andExpect(jsonPath("$.dispute.openedBy").value("E. Nkeng"));
+    mvc.perform(get("/admin/v1/bookings").with(support).param("status", "DISPUTED"))
+        .andExpect(jsonPath("$[?(@.id == '%s')]".formatted(bookingId)).exists());
+
+    // Changing the policy amount needs a reason.
+    resolve(bookingId, "{\"outcome\":\"SPECIALIST_NO_SHOW\",\"amount\":5000}")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("booking.reason-needed"));
+    resolve(bookingId, "{\"outcome\":\"SPECIALIST_NO_SHOW\"}")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.disputed").value(false))
+        .andExpect(jsonPath("$.dispute.outcome").value("SPECIALIST_NO_SHOW"))
+        .andExpect(jsonPath("$.timeline[?(@.kind == 'DISPUTE_RESOLVED')]").exists());
+
+    JsonNode refund = proposedFor(bookingId);
+    assertThat(refund).isNotNull();
+    assertThat(refund.path("proposedBy").path("name").asText()).isEqualTo("E. Nkeng");
+    mvc.perform(post("/admin/v1/refunds/" + refund.path("id").asText() + "/approval").with(finance))
+        .andExpect(status().isOk());
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM audit_log WHERE action LIKE 'bookings.dispute.%' AND target_id = ?",
+                Integer.class, bookingId))
+        .isEqualTo(2);
+  }
+
+  @Test
+  void bookingsCannotBeChangedWithViewAccessAndExportsAreAudited() throws Exception {
+    String bookingId = paidBooking(seeker());
+    mvc.perform(
+            post("/admin/v1/bookings/" + bookingId + "/disputes")
+                .with(finance)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"note\":\"x\"}"))
+        .andExpect(status().isForbidden());
+    mvc.perform(get("/admin/v1/bookings/" + bookingId).with(staff("cs", "C", "CONTENT_EDITOR")))
+        .andExpect(status().isForbidden());
+    mvc.perform(get("/admin/v1/bookings").with(support).param("q", "not hex"))
+        .andExpect(status().isBadRequest());
+    String csv =
+        mvc.perform(get("/admin/v1/bookings/export").with(support))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertThat(csv).startsWith("reference,starts_at");
+    assertThat(csv).doesNotContain("+237");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM audit_log WHERE action = 'bookings.export'", Integer.class))
+        .isPositive();
+
+    // Support cancels an upcoming booking for the seeker: the full price is proposed back.
+    mvc.perform(
+            post("/admin/v1/bookings/" + bookingId + "/cancellation")
+                .with(support)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Seeker called, cannot make it.\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CANCELLED"))
+        .andExpect(jsonPath("$.cancelledBy").value("STAFF"))
+        .andExpect(jsonPath("$.canCancel").value(false));
+    JsonNode refund =
+        await().atMost(Duration.ofSeconds(10)).until(() -> proposedFor(bookingId), r -> r != null);
+    assertThat(refund.path("amount").asLong()).isEqualTo(15000);
+    // Settle it, so the specialist's payout is not held for other tests.
+    mvc.perform(post("/admin/v1/refunds/" + refund.path("id").asText() + "/approval").with(finance))
+        .andExpect(status().isOk());
+  }
+
+  private ResultActions resolve(String bookingId, String body) throws Exception {
+    return mvc.perform(
+        post("/admin/v1/bookings/" + bookingId + "/dispute-resolution")
+            .with(support)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
   void onlyStaffWithPaymentsSeeTheSummary() throws Exception {
     mvc.perform(get("/admin/v1/payments/summary").with(staff("cr", "C", "CRISIS_RESPONDER")))
         .andExpect(status().isForbidden());

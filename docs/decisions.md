@@ -227,6 +227,13 @@ Every pair now meets WCAG 2.1 AA.
 - **Erasure, specialists:** the button files a data request for Operations (licence documents, payouts and patients' records need checking), answered within `solace.privacy.request-deadline` ([30] days, the legal deadline is still open).
 - **Retention:** guest contacts lose their phone `solace.privacy.guest-retention` ([12] months) after their last booking (System Design); delivered messages are deleted after `solace.privacy.message-retention` ([180] days, delivery-record retention is open); expired export files are deleted.
 
+**D41. Admin portal v1: bookings, disputes and exports (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Booking reference:** staff see a booking as `BK-` plus the first eight characters of its id (BK-7F9D1C2E), short enough to read out on the phone. Searches take it, the full id, or a longer prefix.
+- **Disputed:** a booking is shown as disputed while Support has an open dispute on it, or while Core has flagged it because neither person joined (D36). Support opens a dispute with a short note of what they were told.
+- **Resolving:** Support picks who missed the session. "Specialist was late" or "seeker left early" applies the no-show percent of the booking's own policy (D33). A booking Core has not settled yet becomes a no-show, and the policy refund follows as the system's proposal (D35). A settled booking gets a refund proposed by the staff member, at the policy amount unless they change it with a reason; a different Finance member approves it (D14). "Connection problem" counts as nobody's fault: the full price is proposed back, so the seeker can book the time again at no cost, and the specialist keeps what the new session pays. Every step is audited.
+- **Not in v1:** staff do not book or move a session for someone (the seeker reschedules in the app; Support talks them through it), and the crisis queue has no separate Assign (acknowledging takes the alert; the rota decides who is called). Notification copy has no dispute message, so both parties hear through the refund messages and from Support. These wait for copy and a slot picker for staff.
+- **Exports:** every CSV export (bookings, payout report, audit log) is made by Core, not the browser, so it is audited like any other admin action. A cell that starts with = + - or @ gets a leading apostrophe so a spreadsheet does not run it.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

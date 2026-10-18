@@ -21,13 +21,19 @@ import org.springframework.stereotype.Component;
 class BookingData implements PersonalData {
 
   private final BookingStore store;
+  private final DisputeStore disputes;
   private final Availability availability;
   private final SpecialistOffers specialists;
   private final Clock clock;
 
   BookingData(
-      BookingStore store, Availability availability, SpecialistOffers specialists, Clock clock) {
+      BookingStore store,
+      DisputeStore disputes,
+      Availability availability,
+      SpecialistOffers specialists,
+      Clock clock) {
     this.store = store;
+    this.disputes = disputes;
     this.availability = availability;
     this.specialists = specialists;
     this.clock = clock;
@@ -76,7 +82,10 @@ class BookingData implements PersonalData {
   @Override
   public void erase(UUID accountId) {
     Instant now = clock.instant();
-    for (var b : store.forAccount(accountId)) {
+    var bookings = store.forAccount(accountId);
+    // A dispute note may repeat what the person said (D41).
+    disputes.forgetNotes(bookings.stream().map(BookingStore.Row::id).toList());
+    for (var b : bookings) {
       if (b.status().equals("PENDING_PAYMENT")
           && store.move(b.id(), List.of("PENDING_PAYMENT"), "EXPIRED", null, now)) {
         availability.releaseBooking(b.id());

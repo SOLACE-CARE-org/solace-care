@@ -17,7 +17,15 @@ enum BookingError implements ErrorCode {
   /** Too close to the start to move it. */
   RESCHEDULE_TOO_LATE("booking.reschedule-too-late", 409),
   /** The new time is with another specialist or in another format. */
-  RESCHEDULE_MISMATCH("booking.reschedule-mismatch", 400);
+  RESCHEDULE_MISMATCH("booking.reschedule-mismatch", 400),
+  /** Support already opened a dispute on this booking (D41). */
+  DISPUTE_OPEN("booking.dispute-open", 409),
+  /** Nothing to resolve: no open dispute and no flag. */
+  NOT_DISPUTED("booking.not-disputed", 409),
+  /** Before Core settles a session, a no-show refunds what the policy gives (D41). */
+  POLICY_AMOUNT_ONLY("booking.policy-amount-only", 400),
+  /** Changing the policy amount needs a reason. */
+  REASON_NEEDED("booking.reason-needed", 400);
 
   private final String code;
   private final int status;
