@@ -34,13 +34,13 @@ export function ProgressSteps({ step, total }: Props) {
   );
 }
 
-/** The 44px back arrow at the top left of every flow screen. */
-export function BackButton({ onPress }: { onPress?: () => void }) {
+/** The 44px back arrow at the top left of every flow screen; {@code label} is for screen readers. */
+export function BackButton({ onPress, label }: { onPress?: () => void; label?: string }) {
   const { t } = useTranslation();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('common.back')}
+      accessibilityLabel={label ?? t('common.back')}
       onPress={onPress ?? (() => router.back())}
       style={styles.back}
     >

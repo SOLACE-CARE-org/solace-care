@@ -45,7 +45,10 @@ export default function RootLayout() {
 
   // Read the stored tokens (secure storage) before the first screen decides where to go.
   useEffect(() => {
-    useAuth.getState().load().catch(() => useAuth.getState().signOut());
+    useAuth
+      .getState()
+      .load()
+      .catch(() => useAuth.getState().signOut());
   }, []);
 
   useEffect(() => {
@@ -72,6 +75,14 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+          <Stack.Screen
+            name="session/change"
+            options={{
+              presentation: 'transparentModal',
+              animation: 'slide_from_bottom',
+              contentStyle: { backgroundColor: 'transparent' },
+            }}
+          />
         </Stack>
       </QueryClientProvider>
     </SafeAreaProvider>

@@ -7,8 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSessionLanguages } from '@/api/account';
 import { type Modality, useSpecialistProfile } from '@/api/catalogue';
+import { useGuestToken, useRescheduleBooking } from '@/api/bookings';
 import { ApiProblem } from '@/api/core';
-import { useHoldSlot, useSlots } from '@/api/scheduling';
+import { releaseHold, useHoldSlot, useSlots } from '@/api/scheduling';
 import i18n from '@/i18n';
 import { capitalised, money, timeOf, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
@@ -24,11 +25,26 @@ function dayKey(date: Date): string {
 /**
  * Choose a session (Book.dc.html): the session language, audio or video, then a day and a time in
  * the viewer's own time zone. Taken times stay visible, greyed. Continue holds the start for 10
- * minutes and opens checkout (epics 5 and 6).
+ * minutes and opens checkout (epics 5 and 6). With {@code reschedule} (a booking id) it picks a new
+ * time for that booking instead: same specialist, format and language, no checkout (D33).
  */
 export default function ChooseSession() {
   const { t } = useTranslation();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    id,
+    reschedule,
+    modality: fixedModality,
+  } = useLocalSearchParams<{
+    id: string;
+    reschedule?: string;
+    modality?: Modality;
+  }>();
+  const moving = Boolean(reschedule);
+  const guestToken = useGuestToken(reschedule ?? '');
+  const move = useRescheduleBooking({
+    bookingId: reschedule ?? '',
+    guestToken: guestToken.data ?? undefined,
+  });
   const lang = i18n.language === 'fr' ? 'fr' : 'en';
   const profile = useSpecialistProfile(id, lang);
   const catalogue = useSessionLanguages(lang);
@@ -37,7 +53,7 @@ export default function ChooseSession() {
   const bookable = p?.languages.map((l) => l.code) ?? [];
   const [language, setLanguage] = useState<string | null>(null);
   const sessionLanguage = language ?? (bookable.includes(lang) ? lang : (bookable[0] ?? lang));
-  const offerings = p?.offerings ?? [];
+  const offerings = (p?.offerings ?? []).filter((o) => !moving || o.modality === fixedModality);
   const [modality, setModality] = useState<Modality | null>(null);
   const format: Modality = modality ?? offerings[0]?.modality ?? 'AUDIO';
 
@@ -60,29 +76,40 @@ export default function ChooseSession() {
   const proceed = () => {
     if (!chosenStart) return;
     setProblem(null);
+    const failed = (e: unknown) => {
+      setStart(null);
+      setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection'));
+    };
     hold.mutate(
       { specialistId: id, start: chosenStart, modality: format },
       {
         onSuccess: (held) =>
-          router.push({
-            pathname: '/book/checkout',
-            params: {
-              holdId: held.holdId,
-              specialistId: id,
-              start: held.start,
-              end: held.end,
-              expiresAt: held.expiresAt,
-              modality: format,
-              language: sessionLanguage,
-            },
-          }),
-        onError: (e) => {
-          setStart(null);
-          setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection'));
-        },
+          moving
+            ? move.mutate(held.holdId, {
+                onSuccess: () =>
+                  router.dismissTo({ pathname: '/session/[id]', params: { id: reschedule! } }),
+                onError: (e) => {
+                  void releaseHold(held.holdId);
+                  failed(e);
+                },
+              })
+            : router.push({
+                pathname: '/book/checkout',
+                params: {
+                  holdId: held.holdId,
+                  specialistId: id,
+                  start: held.start,
+                  end: held.end,
+                  expiresAt: held.expiresAt,
+                  modality: format,
+                  language: sessionLanguage,
+                },
+              }),
+        onError: failed,
       },
     );
   };
+  const busy = hold.isPending || move.isPending;
 
   if (!p) {
     return (
@@ -108,7 +135,7 @@ export default function ChooseSession() {
           <BackButton />
           <View style={styles.titleText}>
             <Text variant="meta" color={colors.inkMuted}>
-              {t('book.step', { name: p.fullName })}
+              {t(moving ? 'book.rescheduleStep' : 'book.step', { name: p.fullName })}
             </Text>
             <Text variant="titleMd" accessibilityRole="header">
               {t('book.title')}
@@ -116,7 +143,7 @@ export default function ChooseSession() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, moving && styles.hidden]}>
           <Text variant="label" style={styles.question}>
             {t('book.languageQ')}
           </Text>
@@ -174,7 +201,11 @@ export default function ChooseSession() {
               <Text variant="body" color={colors.inkMuted}>
                 {t('common.checkConnection')}
               </Text>
-              <Button variant="quiet" label={t('common.tryAgain')} onPress={() => slots.refetch()} />
+              <Button
+                variant="quiet"
+                label={t('common.tryAgain')}
+                onPress={() => slots.refetch()}
+              />
             </View>
           ) : days.length === 0 ? (
             <Text variant="body" color={colors.inkMuted}>
@@ -182,7 +213,11 @@ export default function ChooseSession() {
             </Text>
           ) : (
             <>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.days}
+              >
                 {days.map((key) => {
                   const date = new Date(`${key}T12:00:00`);
                   const today = key === dayKey(new Date());
@@ -195,17 +230,27 @@ export default function ChooseSession() {
                       key={key}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: on }}
-                      accessibilityLabel={new Intl.DateTimeFormat(lang, { dateStyle: 'full' }).format(date)}
+                      accessibilityLabel={new Intl.DateTimeFormat(lang, {
+                        dateStyle: 'full',
+                      }).format(date)}
                       onPress={() => {
                         setDay(key);
                         setStart(null);
                       }}
                       style={[styles.day, on && styles.dayOn]}
                     >
-                      <Text variant="meta" color={on ? colors.onBrand : colors.inkMuted} style={styles.strong}>
+                      <Text
+                        variant="meta"
+                        color={on ? colors.onBrand : colors.inkMuted}
+                        style={styles.strong}
+                      >
                         {weekday}
                       </Text>
-                      <Text variant="label" color={on ? colors.onBrand : colors.ink} style={styles.dayNumber}>
+                      <Text
+                        variant="label"
+                        color={on ? colors.onBrand : colors.ink}
+                        style={styles.dayNumber}
+                      >
                         {date.getDate()}
                       </Text>
                     </Pressable>
@@ -224,7 +269,11 @@ export default function ChooseSession() {
                       accessibilityLabel={slot.available ? time : t('book.taken', { time })}
                       disabled={!slot.available}
                       onPress={() => setStart(slot.start)}
-                      style={[styles.time, !slot.available && styles.timeTaken, on && styles.timeOn]}
+                      style={[
+                        styles.time,
+                        !slot.available && styles.timeTaken,
+                        on && styles.timeOn,
+                      ]}
                     >
                       <Text
                         variant="label"
@@ -260,9 +309,9 @@ export default function ChooseSession() {
           </Text>
         </View>
         <Button
-          label={t('common.continue')}
-          disabled={!chosenStart || hold.isPending}
-          accessibilityState={{ disabled: !chosenStart || hold.isPending, busy: hold.isPending }}
+          label={moving ? t('book.move') : t('common.continue')}
+          disabled={!chosenStart || busy}
+          accessibilityState={{ disabled: !chosenStart || busy, busy }}
           onPress={proceed}
         />
       </View>
@@ -294,6 +343,9 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: space.space10,
+  },
+  hidden: {
+    display: 'none',
   },
   question: {
     fontSize: 16,

@@ -9,4 +9,6 @@ export const flags = {
   specialistInterviewPicker: false,
   /** Bank transfer on SpecPayout: off until the bank details to collect are specified (D26). */
   payoutBankTransfer: false,
+  /** Card payments on Checkout: cards follow mobile money as a second adapter (implementation-plan.md, epic 6). */
+  cardPayments: false,
 } as const;

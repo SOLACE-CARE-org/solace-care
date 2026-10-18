@@ -1,21 +1,19 @@
-import { colors, fontFamily, radius, size, space } from '@solace/tokens/native';
+import { colors, fontFamily, size, space } from '@solace/tokens/native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Mail, Smartphone } from 'lucide-react-native';
-import { type ComponentRef, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { afterSignIn } from '@/auth/afterSignIn';
 import { displayContact } from '@/auth/contact';
 import { CodeRejected, requestCode, verifyCode } from '@/auth/keycloak';
 import { env } from '@/config/env';
 import { Button } from '@/ui/Button';
+import { CODE_LENGTH, CodeInput, type CodeInputHandle } from '@/ui/CodeInput';
 import { FlowScreen } from '@/ui/FlowScreen';
 import { BackButton } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
-
-const CODE_LENGTH = 6;
-const BOX_HEIGHT = 58;
 
 type Problem =
   | { kind: 'wrong'; attemptsLeft: number }
@@ -35,7 +33,7 @@ export default function Verify() {
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [wait, setWait] = useState(env.codeResendSeconds);
-  const input = useRef<ComponentRef<typeof TextInput>>(null);
+  const input = useRef<CodeInputHandle>(null);
 
   useEffect(() => {
     if (wait <= 0) return;
@@ -119,41 +117,23 @@ export default function Verify() {
       </View>
 
       <View style={styles.codeField}>
-        <Text variant="label" color={colors.inkMuted} style={styles.codeLabel}>
-          {t('verify.codeLabel')}
-        </Text>
-        <Pressable onPress={() => input.current?.focus()} accessible={false}>
-          <View style={styles.boxes} aria-hidden>
-            {Array.from({ length: CODE_LENGTH }, (_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.box,
-                  i === code.length && styles.boxCurrent,
-                  error !== undefined && problem?.kind === 'wrong' && styles.boxWrong,
-                ]}
-              >
-                <Text style={styles.digit}>{code[i] ?? ''}</Text>
-              </View>
-            ))}
-          </View>
-        </Pressable>
-        <TextInput
+        <CodeInput
           ref={input}
+          label={t('verify.codeLabel')}
           value={code}
-          onChangeText={(text) => setCode(text.replace(/\D/g, '').slice(0, CODE_LENGTH))}
-          onSubmitEditing={verify}
-          keyboardType="number-pad"
-          textContentType="oneTimeCode"
-          autoComplete="sms-otp"
+          onChange={setCode}
+          onSubmit={verify}
+          wrong={error !== undefined && problem?.kind === 'wrong'}
+          hint={error}
           autoFocus
-          maxLength={CODE_LENGTH}
-          accessibilityLabel={t('verify.codeLabel')}
-          accessibilityHint={error}
-          style={styles.hiddenInput}
         />
         {error !== undefined ? (
-          <Text variant="meta" color={colors.danger} style={styles.error} accessibilityLiveRegion="polite">
+          <Text
+            variant="meta"
+            color={colors.danger}
+            style={styles.error}
+            accessibilityLiveRegion="polite"
+          >
             {error}
           </Text>
         ) : null}
@@ -214,42 +194,6 @@ const styles = StyleSheet.create({
   },
   codeField: {
     gap: space.space10,
-  },
-  codeLabel: {
-    fontSize: 13,
-  },
-  boxes: {
-    flexDirection: 'row',
-    gap: space.space8,
-  },
-  box: {
-    flex: 1,
-    height: BOX_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.radius14,
-    borderWidth: 1,
-    borderColor: colors.lineControl,
-    backgroundColor: colors.surfaceCard,
-  },
-  boxCurrent: {
-    borderWidth: 2,
-    borderColor: colors.brand,
-  },
-  boxWrong: {
-    borderWidth: 2,
-    borderColor: colors.danger,
-  },
-  digit: {
-    fontFamily: fontFamily.body[700],
-    fontSize: 22,
-    color: colors.ink,
-  },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
   },
   error: {
     fontFamily: fontFamily.body[600],
