@@ -64,7 +64,11 @@ export default function SpecialistHours() {
     save.mutate(current, {
       onSuccess: () => {
         // The application's hours step follows from the saved hours.
-        application.refetch().then((r) => r.data && router.push(stepRoute(r.data)));
+        // During sign-up, on to the next step; afterwards (from the calendar), back where they were.
+        application.refetch().then((r) => {
+          if (r.data?.status === 'DRAFT') router.push(stepRoute(r.data));
+          else router.back();
+        });
       },
       onError: (e) =>
         setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),

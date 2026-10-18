@@ -516,5 +516,39 @@
     "draftConfirm": "Confirm bio",
     "language_en": "English",
     "language_fr": "French"
+  },
+  "book": {
+    "step": "Step 1 of 2 · with {{name}}",
+    "title": "Choose your session",
+    "languageQ": "Which language would you like to speak in?",
+    "formatQ": "How would you like to meet?",
+    "AUDIO": "Audio call",
+    "AUDIO_meta": "Uses less data · camera stays off",
+    "VIDEO": "Video call",
+    "VIDEO_meta": "Face to face · needs a steadier connection",
+    "price": "{{price}} FCFA",
+    "pickTime": "Pick a time",
+    "yourTime": "Your time ({{zone}})",
+    "today": "Today",
+    "taken": "{{time}}, taken",
+    "noTimes": "No free times this day.",
+    "summaryFormat": "{{modality}} · {{language}}",
+    "modality_AUDIO": "Audio",
+    "modality_VIDEO": "Video"
+  },
+  "calendar": {
+    "weeklyHours": "Weekly hours",
+    "openSlot": "Open slot",
+    "blocked": "Blocked · {{reason}}",
+    "reason_PERSONAL": "personal",
+    "reason_HOLIDAY": "holiday",
+    "reason_OTHER": "other",
+    "blockTimeOff": "Block time off",
+    "unblock": "Unblock",
+    "from": "From",
+    "to": "To",
+    "reasonLabel": "Reason",
+    "save": "Block",
+    "nothing": "Nothing on this day."
   }
 }

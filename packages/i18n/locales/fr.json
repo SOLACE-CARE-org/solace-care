@@ -516,5 +516,39 @@
     "draftConfirm": "Confirmer la bio",
     "language_en": "anglais",
     "language_fr": "français"
+  },
+  "book": {
+    "step": "Étape 1 sur 2 · avec {{name}}",
+    "title": "Choisissez votre séance",
+    "languageQ": "Dans quelle langue voulez-vous parler ?",
+    "formatQ": "Comment voulez-vous échanger ?",
+    "AUDIO": "Appel audio",
+    "AUDIO_meta": "Consomme moins de données · caméra éteinte",
+    "VIDEO": "Appel vidéo",
+    "VIDEO_meta": "Face à face · demande une connexion plus stable",
+    "price": "{{price}} FCFA",
+    "pickTime": "Choisissez un horaire",
+    "yourTime": "Votre heure ({{zone}})",
+    "today": "Auj.",
+    "taken": "{{time}}, pris",
+    "noTimes": "Aucun horaire libre ce jour-là.",
+    "summaryFormat": "{{modality}} · {{language}}",
+    "modality_AUDIO": "Audio",
+    "modality_VIDEO": "Vidéo"
+  },
+  "calendar": {
+    "weeklyHours": "Horaires de la semaine",
+    "openSlot": "Créneau libre",
+    "blocked": "Bloqué · {{reason}}",
+    "reason_PERSONAL": "personnel",
+    "reason_HOLIDAY": "congés",
+    "reason_OTHER": "autre",
+    "blockTimeOff": "Bloquer un créneau",
+    "unblock": "Débloquer",
+    "from": "De",
+    "to": "À",
+    "reasonLabel": "Motif",
+    "save": "Bloquer",
+    "nothing": "Rien ce jour-là."
   }
 }
