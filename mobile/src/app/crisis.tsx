@@ -7,7 +7,7 @@ import { Animated, Easing, Linking, Pressable, ScrollView, StyleSheet, View } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { flags } from '@/config/flags';
-import { EMERGENCY_NUMBERS } from '@/content/crisis';
+import { useEmergencyNumbers } from '@/content/crisis';
 import { Button } from '@/ui/Button';
 import { Text } from '@/ui/Text';
 
@@ -17,12 +17,14 @@ const OUT_MS = 6_000;
 const BREATHS = 6;
 
 /**
- * Urgent help (Crisis.dc.html). Works for guests and with no connection: the numbers are in the app
- * and nothing here calls Solace's servers (System Design, Crisis button; AI-4).
+ * Urgent help (Crisis.dc.html). Works for guests and with no connection: the numbers are on the
+ * device (bundled, or the last published ones, D44) and nothing here calls Solace's servers (System
+ * Design, Crisis button; AI-4).
  */
 export default function UrgentHelp() {
   const { t } = useTranslation();
   const [breathing, setBreathing] = useState(false);
+  const numbers = useEmergencyNumbers((s) => s.numbers);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -45,7 +47,7 @@ export default function UrgentHelp() {
           {t('crisis.body')}
         </Text>
 
-        {EMERGENCY_NUMBERS.map((n) => (
+        {numbers.map((n) => (
           <Pressable
             key={n.number}
             accessibilityRole="button"

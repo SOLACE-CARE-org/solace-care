@@ -1460,7 +1460,8 @@
     "breatheDone": "Well done. Take another minute if you need it.",
     "again": "Again",
     "offline": "Emergency numbers here work even without internet.",
-    "close": "Close"
+    "close": "Close",
+    "helpline": "Helpline"
   },
   "privacy": {
     "title": "Privacy & data",
@@ -1484,5 +1485,11 @@
     "confirmDelete": "Delete",
     "cancel": "Cancel",
     "requested": "We've received your request. The Solace team will be in touch about your account."
+  },
+  "legal": {
+    "notPublished": "This document is being prepared. You can read it here once it is published.",
+    "version": "Version {{version}}",
+    "updated": "We have updated this document. Read the new version and accept it to carry on.",
+    "accept": "I accept"
   }
 }

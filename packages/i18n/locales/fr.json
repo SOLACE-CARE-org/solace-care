@@ -1460,7 +1460,8 @@
     "breatheDone": "Bravo. Prenez une autre minute si besoin.",
     "again": "Recommencer",
     "offline": "Les numéros d'urgence fonctionnent même sans internet.",
-    "close": "Fermer"
+    "close": "Fermer",
+    "helpline": "Ligne d'écoute"
   },
   "privacy": {
     "title": "Confidentialité et données",
@@ -1484,5 +1485,11 @@
     "confirmDelete": "Supprimer",
     "cancel": "Annuler",
     "requested": "Nous avons bien reçu votre demande. L'équipe Solace vous contactera au sujet de votre compte."
+  },
+  "legal": {
+    "notPublished": "Ce document est en préparation. Vous pourrez le lire ici dès sa publication.",
+    "version": "Version {{version}}",
+    "updated": "Nous avons mis à jour ce document. Lisez la nouvelle version et acceptez-la pour continuer.",
+    "accept": "J'accepte"
   }
 }

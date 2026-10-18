@@ -26,6 +26,7 @@ import { openTappedNotifications, registerIfAllowed } from '@/notifications/push
 import { useSession } from '@/state/session';
 import { core } from '@/api/core';
 import { refreshFlags } from '@/config/flags';
+import { CRISIS_COUNTRY, refreshEmergencyNumbers } from '@/content/crisis';
 
 // Keep the native splash (brand-splash with the lockup) up until fonts, strings and the saved
 // session are ready, so the first frame is already in the right language and typefaces.
@@ -62,6 +63,13 @@ export default function RootLayout() {
       .catch(() => useAuth.getState().signOut());
     // Feature flags staff set in the admin portal (D42); the stored ones serve offline.
     void refreshFlags(async () => (await core.GET('/v1/config')).data?.flags);
+    // Published crisis numbers, stored for Urgent help, which never waits on the network (D44).
+    void refreshEmergencyNumbers(async () => {
+      const { data } = await core.GET('/v1/content', {
+        params: { query: { type: 'CRISIS_RESOURCE', country: CRISIS_COUNTRY } },
+      });
+      return data?.[0]?.numbers;
+    });
     return openTappedNotifications();
   }, []);
 
