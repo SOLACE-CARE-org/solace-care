@@ -13,7 +13,7 @@ import {
 } from '@/api/account';
 import i18n from '@/i18n';
 import { type AppLanguage, useSession } from '@/state/session';
-import { SIGNUP_STEPS } from '@/state/signup';
+import { signupSteps } from '@/state/signup';
 import { Button } from '@/ui/Button';
 import { Chip } from '@/ui/Chip';
 import { FlowScreen } from '@/ui/FlowScreen';
@@ -63,7 +63,7 @@ export default function SignupPreferences() {
 
   return (
     <FlowScreen
-      top={<ProgressSteps step={2} total={SIGNUP_STEPS} />}
+      top={<ProgressSteps step={2} total={signupSteps()} />}
       footer={
         <Button
           label={t('common.continue')}

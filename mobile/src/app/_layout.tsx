@@ -24,6 +24,8 @@ import { useAuth } from '@/auth/auth';
 import { deviceLanguage, initI18n } from '@/i18n';
 import { openTappedNotifications, registerIfAllowed } from '@/notifications/push';
 import { useSession } from '@/state/session';
+import { core } from '@/api/core';
+import { refreshFlags } from '@/config/flags';
 
 // Keep the native splash (brand-splash with the lockup) up until fonts, strings and the saved
 // session are ready, so the first frame is already in the right language and typefaces.
@@ -58,6 +60,8 @@ export default function RootLayout() {
         if (useAuth.getState().status === 'signedIn') void registerIfAllowed();
       })
       .catch(() => useAuth.getState().signOut());
+    // Feature flags staff set in the admin portal (D42); the stored ones serve offline.
+    void refreshFlags(async () => (await core.GET('/v1/config')).data?.flags);
     return openTappedNotifications();
   }, []);
 

@@ -11,7 +11,7 @@ import { CAMEROON_PREFIX, toE164 } from '@/auth/contact';
 import { requestCode } from '@/auth/keycloak';
 import { env } from '@/config/env';
 import i18n from '@/i18n';
-import { age, maskDate, parseDate, SIGNUP_STEPS } from '@/state/signup';
+import { age, maskDate, parseDate, signupSteps } from '@/state/signup';
 import { Button } from '@/ui/Button';
 import { FlowScreen } from '@/ui/FlowScreen';
 import { ProgressSteps } from '@/ui/ProgressSteps';
@@ -68,7 +68,7 @@ export default function SignupDetails() {
 
   return (
     <FlowScreen
-      top={<ProgressSteps step={1} total={SIGNUP_STEPS} />}
+      top={<ProgressSteps step={1} total={signupSteps()} />}
       footer={
         <Button
           label={t('signupDetails.submit')}

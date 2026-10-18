@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
 import { type ConsentPurpose, useConsents, useSaveConsents } from '@/api/account';
-import { SIGNUP_STEPS } from '@/state/signup';
+import { signupSteps } from '@/state/signup';
 import { Button } from '@/ui/Button';
 import { FlowScreen } from '@/ui/FlowScreen';
 import { ProgressSteps } from '@/ui/ProgressSteps';
@@ -44,7 +44,7 @@ export default function SignupPrivacy() {
 
   return (
     <FlowScreen
-      top={<ProgressSteps step={3} total={SIGNUP_STEPS} />}
+      top={<ProgressSteps step={3} total={signupSteps()} />}
       footer={
         <Button
           label={t('signupPrivacy.save')}

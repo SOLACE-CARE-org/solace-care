@@ -25,9 +25,11 @@ import { spacedLocalNumber, TextField } from '@/ui/TextField';
 type Method = PayoutDetails['method'];
 
 /** Bank transfer waits behind its flag until the bank details to collect are specified (D26). */
-const METHODS: Method[] = flags.payoutBankTransfer
-  ? ['MTN_MOMO', 'ORANGE_MONEY', 'BANK_TRANSFER']
-  : ['MTN_MOMO', 'ORANGE_MONEY'];
+function methods(): Method[] {
+  return flags.payoutBankTransfer
+    ? ['MTN_MOMO', 'ORANGE_MONEY', 'BANK_TRANSFER']
+    : ['MTN_MOMO', 'ORANGE_MONEY'];
+}
 
 /**
  * Specialist application, step 7 of 7: payouts (SpecPayout.dc.html). "Submit application" saves the
@@ -106,7 +108,7 @@ export default function SpecialistPayout() {
           accessibilityLabel={t('specialistSignup.payout.methodLabel')}
           style={styles.options}
         >
-          {METHODS.map((m) => (
+          {methods().map((m) => (
             <OptionCard
               key={m}
               kind="radio"

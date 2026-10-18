@@ -4,7 +4,9 @@ import { flags } from '@/config/flags';
  * Seeker sign-up has three steps until tracking ships; the tracking step makes four
  * (implementation-plan.md, Phase 2: "until then, sign-up has three steps").
  */
-export const SIGNUP_STEPS = flags.trackTab ? 4 : 3;
+export function signupSteps(): number {
+  return flags.trackTab ? 4 : 3;
+}
 
 /** Keeps digits and lays them out as "DD / MM / YYYY" while typing. */
 export function maskDate(text: string): string {
