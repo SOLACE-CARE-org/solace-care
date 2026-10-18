@@ -1017,6 +1017,10 @@
       "inFrench": "Séances en français",
       "recommendations": "Recommandations suivies d'une réservation",
       "fromPhase2": "À partir de la phase 2"
+    },
+    "push": {
+      "turnOn": "Activer les notifications du navigateur",
+      "turnOff": "Désactiver les notifications du navigateur"
     }
   },
   "roleChoice": {

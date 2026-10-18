@@ -1017,6 +1017,10 @@
       "inFrench": "Sessions in French",
       "recommendations": "Recommendations that led to a booking",
       "fromPhase2": "From Phase 2"
+    },
+    "push": {
+      "turnOn": "Turn on browser notifications",
+      "turnOff": "Turn off browser notifications"
     }
   },
   "roleChoice": {

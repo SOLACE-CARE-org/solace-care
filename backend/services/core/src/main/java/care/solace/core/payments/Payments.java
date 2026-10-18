@@ -299,6 +299,7 @@ class Payments {
             null,
             null,
             now));
+    events.publishEvent(new FinanceAlerts.RefundWaiting());
   }
 
   /** A staff member proposes a refund for a paid booking (Refund or no-show dispute). */
@@ -337,6 +338,7 @@ class Payments {
             null,
             clock.instant());
     store.insertRefund(refund);
+    events.publishEvent(new FinanceAlerts.RefundWaiting());
     return store.refund(refund.id()).orElseThrow();
   }
 

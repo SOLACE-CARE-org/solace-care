@@ -40,6 +40,8 @@ class ModuleBoundariesTest {
             "auditlog",
             // Implementation plan, Phase 1 epic 11: consent records, export, erasure, retention.
             "privacy",
+            // The live overview and analytics, read-only aggregates (epic 12, D46).
+            "insight",
             "system");
   }
 }

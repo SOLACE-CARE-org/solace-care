@@ -104,6 +104,12 @@ solace:
     # Push through Expo's service (D38); local runs, tests and the dev cluster log pushes instead.
     push-sender: ${SOLACE_NOTIFICATIONS_PUSH_SENDER:expo}
     expo-access-token: ${SOLACE_NOTIFICATIONS_EXPO_ACCESS_TOKEN:}
+    # Staff browser notifications (D47): Solace's VAPID key pair, base64url (public: the 65-byte
+    # point; private: the 32-byte scalar). Unset, staff pushes are only logged.
+    vapid:
+      public-key: ${SOLACE_NOTIFICATIONS_VAPID_PUBLIC_KEY:}
+      private-key: ${SOLACE_NOTIFICATIONS_VAPID_PRIVATE_KEY:}
+      subject: ${SOLACE_NOTIFICATIONS_VAPID_SUBJECT:mailto:ops@solace.care}
   payments:
     # The aggregator adapter (D35): notchpay, or sandbox where no real money may move. Nothing is
     # set here, so Core will not start without a choice: local runs and the dev cluster set sandbox.

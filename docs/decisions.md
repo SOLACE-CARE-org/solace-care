@@ -263,6 +263,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Overview:** today in Douala time; sessions in progress or starting within 30 minutes; what needs attention (applications, refunds to approve, reviews, disputes and flags, data requests due within 7 days). Service health: Core; AI from the gRPC circuit breaker; calls from a once-a-minute check of the media server; mobile money "slow" while a payment has waited more than [5] minutes; SMS "slow" after a failed SMS in the last hour.
 - **Analytics:** last 7 days, last 30 days or this quarter. The booking funnel counts searches (a bare daily count, first pages only, nothing about who or what), bookings started, paid and completed: counts, not distinct people, because searches carry no identity. Average rating, the share of seekers who book again within 30 days of a completed session, and sessions by language. Recommendations to booking shows "From Phase 2". Exports are audited.
 
+**D47. Staff notifications (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Browser push:** staff turn on notifications per browser from the bell in the sidebar. Core encrypts each message to the browser (RFC 8291) and signs it with Solace's VAPID key (RFC 8292), using the JDK only; the push service (Google, Mozilla, Apple) sees neither the text nor who it is for. Copy is word for word from notification-copy.md (Staff), in the portal language chosen when subscribing. Without a VAPID key (local runs), pushes are logged.
+- **Who gets what:** crisis alerts go to the rota's shifts as push too, alongside the SMS that counts (D39); refunds waiting go to every active Finance member with the number waiting; a submitted payout run goes to Finance and Super admins except the person who submitted it. "Module submitted" arrives with tracking modules (Phase 2).
+- **Emails:** "Staff account created" goes when a Super admin adds someone; "Data requests due" goes to Operations every morning at 08:00 Douala time while any request falls due within the week. Staff emails are in English and French together, since a new member has not chosen a portal language.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

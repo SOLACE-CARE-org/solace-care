@@ -162,6 +162,7 @@ class PayoutRuns {
     if (!store.submitRun(runId, by.id(), by.name(), clock.instant())) {
       throw new SolaceException(PaymentError.RUN_NOT_DRAFT);
     }
+    events.publishEvent(new FinanceAlerts.RunWaiting(by.id()));
   }
 
   /** The second person approves: ready items are paid out, held ones wait for the next run. */

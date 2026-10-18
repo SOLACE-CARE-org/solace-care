@@ -26,11 +26,17 @@ class Team {
   private final KeycloakStaff keycloak;
   private final StaffDirectory directory;
   private final Clock clock;
+  private final org.springframework.context.ApplicationEventPublisher events;
 
-  Team(KeycloakStaff keycloak, StaffDirectory directory, Clock clock) {
+  Team(
+      KeycloakStaff keycloak,
+      StaffDirectory directory,
+      Clock clock,
+      org.springframework.context.ApplicationEventPublisher events) {
     this.keycloak = keycloak;
     this.directory = directory;
     this.clock = clock;
+    this.events = events;
   }
 
   List<StaffDirectory.Member> members() {
@@ -47,6 +53,7 @@ class Team {
     String id = keycloak.create(name.trim(), normalised, roles, password);
     Instant now = clock.instant();
     directory.add(id, name.trim(), normalised, roles, by.id(), now);
+    events.publishEvent(new StaffAccountCreated(normalised));
     return new Password(member(id), password, now.plus(PASSWORD_VALIDITY));
   }
 

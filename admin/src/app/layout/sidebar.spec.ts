@@ -20,7 +20,10 @@ function setUp(roles: string[], name = 'Nadine Ebai', language: 'en' | 'fr' = 'e
       }),
     ],
     // The shell signs out through Keycloak; tests never reach a real server.
-    providers: [provideRouter(routes), { provide: Keycloak, useValue: { logout: () => undefined } }],
+    providers: [
+      provideRouter(routes),
+      { provide: Keycloak, useValue: { logout: () => undefined } },
+    ],
   });
   TestBed.inject(StaffSession).fromToken({
     given_name: name.split(' ')[0],

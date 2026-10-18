@@ -107,6 +107,20 @@ public class StaffDirectory {
     return names;
   }
 
+  /** An active staff member who can be told something (D47). */
+  public record Recipient(String id, String name, String email) {}
+
+  /** Active staff holding a role, for staff notifications (D47). */
+  public List<Recipient> activeWithRole(String role) {
+    return db.sql(
+            "SELECT id, name, email FROM staff_member WHERE status <> 'DEACTIVATED' AND :r = ANY(roles)")
+        .param("r", role)
+        .query(
+            (rs, n) ->
+                new Recipient(rs.getString("id"), rs.getString("name"), rs.getString("email")))
+        .list();
+  }
+
   /** Staff ids whose name contains the text, for searching the audit log. */
   public List<String> idsNamed(String text) {
     return db.sql("SELECT id FROM staff_member WHERE name ILIKE :q")

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideDynamicIcon, LucideLogOut } from '@lucide/angular';
+import { LucideBell, LucideBellOff, LucideDynamicIcon, LucideLogOut } from '@lucide/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { StaffSession } from '../auth/staff-session';
 import { NAV, type NavGroup } from '../nav/nav';
+import { StaffPush } from './staff-push';
 
 /**
  * Sidebar (design-system components/Sidebar; screens/admin/source/Sidebar.dc.html). Shows only the
@@ -17,7 +18,12 @@ import { NAV, type NavGroup } from '../nav/nav';
   styleUrl: './sidebar.css',
   template: `
     <div class="brand">
-      <img src="brand/solace-care-logo.png" [alt]="'common.appName' | transloco" width="96" height="32" />
+      <img
+        src="brand/solace-care-logo.png"
+        [alt]="'common.appName' | transloco"
+        width="96"
+        height="32"
+      />
       <span class="pill">{{ 'admin.badge' | transloco }}</span>
     </div>
 
@@ -37,7 +43,9 @@ import { NAV, type NavGroup } from '../nav/nav';
               @if (entry.key === 'crisis' && crisisCount() > 0) {
                 <span
                   class="count-badge"
-                  [attr.aria-label]="'admin.nav.crisisUnacknowledged' | transloco: { count: crisisCount() }"
+                  [attr.aria-label]="
+                    'admin.nav.crisisUnacknowledged' | transloco: { count: crisisCount() }
+                  "
                   >{{ crisisCount() }}</span
                 >
               }
@@ -57,7 +65,29 @@ import { NAV, type NavGroup } from '../nav/nav';
           <span class="role">{{ 'admin.roles.' + role | transloco }}</span>
         }
       </div>
-      <button type="button" class="sign-out" [attr.aria-label]="'admin.signOut' | transloco" (click)="signOut.emit()">
+      @if (push.state() === 'on' || push.state() === 'off') {
+        <button
+          type="button"
+          class="sign-out"
+          [attr.aria-label]="
+            (push.state() === 'on' ? 'admin.push.turnOff' : 'admin.push.turnOn') | transloco
+          "
+          [attr.aria-pressed]="push.state() === 'on'"
+          (click)="togglePush()"
+        >
+          <svg
+            [lucideIcon]="push.state() === 'on' ? bellIcon : bellOffIcon"
+            [size]="18"
+            [strokeWidth]="1.8"
+          ></svg>
+        </button>
+      }
+      <button
+        type="button"
+        class="sign-out"
+        [attr.aria-label]="'admin.signOut' | transloco"
+        (click)="signOut.emit()"
+      >
         <svg [lucideIcon]="logOutIcon" [size]="18" [strokeWidth]="1.8"></svg>
       </button>
     </div>
@@ -66,6 +96,19 @@ import { NAV, type NavGroup } from '../nav/nav';
 export class Sidebar {
   protected readonly session = inject(StaffSession);
   protected readonly logOutIcon = LucideLogOut;
+  protected readonly bellIcon = LucideBell;
+  protected readonly bellOffIcon = LucideBellOff;
+  protected readonly push = inject(StaffPush);
+
+  constructor() {
+    void this.push.refresh();
+  }
+
+  protected togglePush() {
+    void (this.push.state() === 'on' ? this.push.turnOff() : this.push.turnOn()).catch(() =>
+      this.push.refresh(),
+    );
+  }
 
   /** Unacknowledged crisis alerts; the badge shows on every page when above zero. */
   readonly crisisCount = input(0);

@@ -46,6 +46,7 @@ class CrisisAlerts implements CrisisSummaries {
   private final RiskDecisions risks;
   private final FlaggedReviews reviews;
   private final Delivery delivery;
+  private final care.solace.core.notifications.StaffPush push;
   private final Clock clock;
 
   CrisisAlerts(
@@ -54,12 +55,14 @@ class CrisisAlerts implements CrisisSummaries {
       RiskDecisions risks,
       FlaggedReviews reviews,
       Delivery delivery,
+      care.solace.core.notifications.StaffPush push,
       Clock clock) {
     this.db = db;
     this.once = once;
     this.risks = risks;
     this.reviews = reviews;
     this.delivery = delivery;
+    this.push = push;
     this.clock = clock;
   }
 
@@ -202,7 +205,26 @@ class CrisisAlerts implements CrisisSummaries {
         == 1;
   }
 
+  private void pushStaff(List<Shift> people, String key, String category, Instant raisedAt) {
+    for (Shift s : people) {
+      // Worded in the language the person chose for crisis messages on the rota.
+      Locale locale = "fr".equals(s.language()) ? Locale.FRENCH : Locale.ENGLISH;
+      try {
+        push.send(
+            List.of(s.staffId()),
+            key,
+            true,
+            delivery.text("category." + category, locale),
+            DateTimeFormatter.ofPattern("HH:mm").format(raisedAt.atZone(DOUALA)));
+      } catch (RuntimeException e) {
+        LOG.warn("Crisis push to on-call shift {} failed", s.id(), e);
+      }
+    }
+  }
+
   private void notify(List<Shift> people, String key, String category, Instant raisedAt) {
+    // Browser push too, to whoever on the shift turned it on (D47); SMS stays the one that counts.
+    pushStaff(people, key.replace("sms.", "push.staff."), category, raisedAt);
     for (Shift s : people) {
       Locale locale = "fr".equals(s.language()) ? Locale.FRENCH : Locale.ENGLISH;
       String text =

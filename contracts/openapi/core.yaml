@@ -66,6 +66,8 @@ tags:
     description: Seekers, specialists' accounts and guests, their consents and data requests (admin screens 9 and 10; D45)
   - name: admin-insight
     description: The live overview and aggregated analytics (admin screens 2 and 17; D46). Counts only, never people.
+  - name: admin-push
+    description: Browser notifications for staff (D38, D47)
 paths:
   /v1/signups:
     post:
@@ -3744,6 +3746,84 @@ paths:
             text/csv:
               schema:
                 type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/me/push:
+    get:
+      operationId: getStaffPushSetup
+      summary: The key browsers subscribe with, and how many browsers this staff member has subscribed
+      tags: [admin-push]
+      responses:
+        "200":
+          description: The setup
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [subscriptions]
+                properties:
+                  publicKey:
+                    description: The VAPID public key, base64url; absent while web push is not set up.
+                    type: string
+                  subscriptions:
+                    type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/me/push-subscription:
+    put:
+      operationId: subscribeStaffPush
+      summary: Save this browser's push subscription, with the portal language for the copy
+      tags: [admin-push]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [endpoint, p256dh, auth, language]
+              properties:
+                endpoint:
+                  type: string
+                  pattern: "^https://.+"
+                  maxLength: 1000
+                p256dh:
+                  type: string
+                  maxLength: 200
+                auth:
+                  type: string
+                  maxLength: 100
+                language:
+                  type: string
+                  enum: [en, fr]
+      responses:
+        "204":
+          description: Saved
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      operationId: unsubscribeStaffPush
+      summary: Forget this browser's subscription
+      tags: [admin-push]
+      parameters:
+        - name: endpoint
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 1000
+      responses:
+        "204":
+          description: Forgotten
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
