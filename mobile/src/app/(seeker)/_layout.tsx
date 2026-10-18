@@ -13,7 +13,10 @@ export default function SeekerTabs() {
       <Tabs.Screen name="home" options={tab(t('nav.seeker.home'), House)} />
       <Tabs.Screen
         name="track"
-        options={{ ...tab(t('nav.seeker.track'), ChartLine), href: flags.trackTab ? undefined : null }}
+        options={{
+          ...tab(t('nav.seeker.track'), ChartLine),
+          href: flags.trackTab ? undefined : null,
+        }}
       />
       <Tabs.Screen name="sessions" options={tab(t('nav.seeker.sessions'), Calendar)} />
       <Tabs.Screen name="you" options={tab(t('nav.seeker.you'), User)} />

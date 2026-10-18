@@ -839,5 +839,27 @@
     "dataSaverMeta": "Start video calls with my camera off",
     "version": "Solace {{version}}",
     "pushOff": "Notifications are off for Solace on this phone. Turn them on in your phone's settings."
+  },
+  "crisis": {
+    "button": "Urgent help",
+    "title": "Urgent help",
+    "lead": "You don't have to go through this alone.",
+    "body": "If you might act on thoughts of harming yourself, or you're in danger right now, please reach out immediately.",
+    "call": "Call {{number}}",
+    "anyTime": "Emergency services, any time",
+    "ambulance": "Ambulance (SAMU)",
+    "police": "Police",
+    "fire": "Fire service",
+    "onCall": "Talk to an on-call specialist",
+    "onCallMeta": "Free audio call · English or Français",
+    "breathe": "Breathe with me",
+    "breatheMeta": "A slow one-minute exercise",
+    "start": "Start",
+    "breatheIn": "Breathe in",
+    "breatheOut": "Breathe out",
+    "breatheDone": "Well done. Take another minute if you need it.",
+    "again": "Again",
+    "offline": "Emergency numbers here work even without internet.",
+    "close": "Close"
   }
 }

@@ -11,6 +11,7 @@ import { displayContact } from '@/auth/contact';
 import { signOut } from '@/notifications/push';
 import { useSession } from '@/state/session';
 import { Avatar } from '@/ui/Avatar';
+import { CrisisButton } from '@/ui/CrisisButton';
 import { Text } from '@/ui/Text';
 
 /**
@@ -54,6 +55,8 @@ export default function You() {
             divider
           />
         </View>
+
+        <CrisisButton label={t('crisis.button')} onPress={() => router.push('/crisis')} />
 
         <Pressable
           accessibilityRole="button"

@@ -19,6 +19,7 @@ import i18n from '@/i18n';
 import { toneOf } from '@/state/bookingView';
 import { timeOf } from '@/state/format';
 import { Button } from '@/ui/Button';
+import { CrisisButton } from '@/ui/CrisisButton';
 import { Pill } from '@/ui/Pill';
 import { Segmented } from '@/ui/Segmented';
 import { Text } from '@/ui/Text';
@@ -70,6 +71,8 @@ export default function Sessions() {
             </Text>
           </Pressable>
         </View>
+
+        <CrisisButton label={t('crisis.button')} onPress={() => router.push('/crisis')} />
 
         {empty ? (
           <View style={styles.empty}>

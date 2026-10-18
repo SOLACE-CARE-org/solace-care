@@ -13,4 +13,6 @@ export const flags = {
   cardPayments: false,
   /** Pay out now on Earnings: off, an off-cycle payout would skip the two-person run (D35). */
   payoutOnRequest: false,
+  /** Talk to an on-call specialist on Urgent help: off until that service is specified (D39). */
+  onCallSpecialistCall: false,
 } as const;

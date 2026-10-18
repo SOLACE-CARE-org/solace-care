@@ -839,5 +839,27 @@
     "dataSaverMeta": "Démarrer les appels vidéo caméra éteinte",
     "version": "Solace {{version}}",
     "pushOff": "Les notifications de Solace sont désactivées sur ce téléphone. Activez-les dans les réglages du téléphone."
+  },
+  "crisis": {
+    "button": "Aide urgente",
+    "title": "Aide urgente",
+    "lead": "Vous n'avez pas à affronter cela sans aide.",
+    "body": "Si vous risquez de passer à l'acte ou si vous êtes en danger maintenant, demandez de l'aide tout de suite.",
+    "call": "Appeler le {{number}}",
+    "anyTime": "Services d'urgence, à toute heure",
+    "ambulance": "Ambulance (SAMU)",
+    "police": "Police",
+    "fire": "Pompiers",
+    "onCall": "Parler à un spécialiste de garde",
+    "onCallMeta": "Appel audio gratuit · anglais ou français",
+    "breathe": "Respirez avec moi",
+    "breatheMeta": "Un exercice lent d'une minute",
+    "start": "Commencer",
+    "breatheIn": "Inspirez",
+    "breatheOut": "Expirez",
+    "breatheDone": "Bravo. Prenez une autre minute si besoin.",
+    "again": "Recommencer",
+    "offline": "Les numéros d'urgence fonctionnent même sans internet.",
+    "close": "Fermer"
   }
 }
