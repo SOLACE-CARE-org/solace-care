@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import Keycloak from 'keycloak-js';
 
+import { CrisisWatch } from '../crisis/crisis-watch';
 import { Sidebar } from './sidebar';
 
 /** Signed-in layout: the sidebar beside the current page. */
@@ -10,7 +11,7 @@ import { Sidebar } from './sidebar';
   imports: [RouterOutlet, Sidebar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sl-sidebar (signOut)="signOut()" />
+    <sl-sidebar [crisisCount]="crisis.unacknowledged()" (signOut)="signOut()" />
     <main class="page"><router-outlet /></main>
   `,
   styles: `
@@ -28,6 +29,11 @@ import { Sidebar } from './sidebar';
 })
 export class Shell {
   private readonly keycloak = inject(Keycloak);
+  protected readonly crisis = inject(CrisisWatch);
+
+  constructor() {
+    this.crisis.start(inject(DestroyRef));
+  }
 
   signOut() {
     this.keycloak.logout({ redirectUri: window.location.origin });

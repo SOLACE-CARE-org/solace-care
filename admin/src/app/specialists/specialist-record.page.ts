@@ -14,7 +14,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
-import { calendarDate, capitalised, initials, languageName, shortDate } from './format';
+import { calendarDate, capitalised, initials, languageName, shortDate } from '../shared/format';
 
 type RecordView = CoreSchemas['ApplicationReview'];
 type Summary = CoreSchemas['SpecialistSummary'];

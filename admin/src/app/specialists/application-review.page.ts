@@ -24,7 +24,7 @@ import {
   initials,
   languageName,
   shortDate,
-} from './format';
+} from '../shared/format';
 
 type Review = CoreSchemas['ApplicationReview'];
 type Item = 'IDENTITY' | 'LICENCE' | 'PROFILE' | 'PAYOUT';

@@ -254,6 +254,78 @@
         "tab_history": "History",
         "laterEpic": "Shown here once bookings open."
       }
+    },
+    "crisis": {
+      "title": "Crisis queue",
+      "onCall": "On call: {{primary}} until {{until}} · backup: {{backup}} · unacknowledged alerts escalate after 5 minutes",
+      "noRota": "Nobody is on call. A Super admin sets the rota.",
+      "tab_OPEN": "Open ({{count}})",
+      "tab_IN_PROGRESS": "In progress ({{count}})",
+      "tab_CLOSED": "Closed",
+      "minutes": "{{count}} min",
+      "notAcknowledged": "not acknowledged",
+      "with": "with {{name}}",
+      "closedOn": "closed {{date}}",
+      "seeker": "Seeker {{ref}}",
+      "guest": "Guest {{ref}}",
+      "from_REVIEW": "From a session review",
+      "category": {
+        "SUICIDAL_IDEATION": "Suicidal ideation",
+        "SELF_HARM": "Self-harm",
+        "ACUTE_ANXIETY": "Acute anxiety",
+        "VIOLENT_THOUGHTS": "Violent thoughts",
+        "SUBSTANCE_CRISIS": "Substance crisis",
+        "RISK_TAKING": "Risk-taking",
+        "UNKNOWN": "Unclassified"
+      },
+      "raised": "Raised {{time}} by the safety monitor",
+      "escalatedBackup": "escalated to the backup at {{time}}",
+      "escalatedAdmins": "escalated to Super admins at {{time}}",
+      "acknowledgedBy": "acknowledged by {{name}} at {{time}}",
+      "acknowledge": "Acknowledge",
+      "flaggedText": "Flagged text · {{language}}, shown as written",
+      "flaggedNote": "The review is held and not published. Only this text is shown; nothing else the person wrote or logged is visible here.",
+      "contact": "Contact",
+      "noContact": "No contact on file",
+      "reveal": "Reveal and call (logged)",
+      "call": "Call {{phone}}",
+      "nextSession": "Next session",
+      "noSession": "No upcoming session",
+      "outcome": "Outcome",
+      "outcomes": {
+        "SAFE_FOR_NOW": "Reached the person; they are safe for now",
+        "REFERRED_TO_EMERGENCY_SERVICES": "Reached; referred to emergency services",
+        "NOT_REACHED_FOLLOW_UP": "Not reached; follow-up scheduled",
+        "NOT_A_CRISIS": "Not a crisis on review"
+      },
+      "note": "Responder note",
+      "close": "Close alert",
+      "confirmClose": "Close this alert with the outcome above?",
+      "closed": "Closed {{time}}",
+      "empty": "No open alerts. New alerts appear here and the on-call responder is called.",
+      "emptyClosed": "No closed alerts yet.",
+      "select": "Choose an alert to see it.",
+      "viewOnly": "You can see this queue. Only crisis responders and Super admins act on alerts.",
+      "back": "All alerts"
+    },
+    "modality": {
+      "AUDIO": "audio",
+      "VIDEO": "video"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "reason": "Reason",
+      "reasonHint": "Say why. It goes to the audit log.",
+      "export": "Export CSV",
+      "search": "Search",
+      "all": "All",
+      "previous": "Previous",
+      "next": "Next",
+      "confirm": "Confirm",
+      "masked": "Masked",
+      "reveal": "Reveal (logged)",
+      "noResults": "Nothing matches these filters."
     }
   },
   "roleChoice": {

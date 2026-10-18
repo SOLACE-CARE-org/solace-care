@@ -65,3 +65,30 @@ export function initials(name: string): string {
     .map((word) => word[0]!.toUpperCase())
     .join('');
 }
+
+/** "14:26" in the viewer's time zone. */
+export function clock(iso: string | undefined, lang: string): string {
+  if (!iso) return '';
+  return new Intl.DateTimeFormat(lang, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(iso));
+}
+
+/** "Mon 19 Oct, 10:00" */
+export function dayAndTime(iso: string | undefined, lang: string): string {
+  if (!iso) return '';
+  return new Intl.DateTimeFormat(lang, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(iso));
+}
+
+/** Whole minutes since a moment. */
+export function minutesSince(iso: string | undefined, now = new Date()): number {
+  if (!iso) return 0;
+  return Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / 60_000));
+}

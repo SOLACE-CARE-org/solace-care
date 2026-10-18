@@ -254,6 +254,78 @@
         "tab_history": "Historique",
         "laterEpic": "Affiché ici dès l'ouverture des réservations."
       }
+    },
+    "crisis": {
+      "title": "File de crise",
+      "onCall": "De garde : {{primary}} jusqu'à {{until}} · relais : {{backup}} · les alertes non prises en charge sont transmises après 5 minutes",
+      "noRota": "Personne n'est de garde. Un Super admin établit le planning.",
+      "tab_OPEN": "Ouvertes ({{count}})",
+      "tab_IN_PROGRESS": "En cours ({{count}})",
+      "tab_CLOSED": "Clôturées",
+      "minutes": "{{count}} min",
+      "notAcknowledged": "non prise en charge",
+      "with": "avec {{name}}",
+      "closedOn": "clôturée le {{date}}",
+      "seeker": "Utilisateur {{ref}}",
+      "guest": "Invité {{ref}}",
+      "from_REVIEW": "Depuis un avis de séance",
+      "category": {
+        "SUICIDAL_IDEATION": "Idées suicidaires",
+        "SELF_HARM": "Automutilation",
+        "ACUTE_ANXIETY": "Anxiété aiguë",
+        "VIOLENT_THOUGHTS": "Pensées violentes",
+        "SUBSTANCE_CRISIS": "Crise liée à une substance",
+        "RISK_TAKING": "Prise de risque",
+        "UNKNOWN": "Non classée"
+      },
+      "raised": "Signalée à {{time}} par le moniteur de sécurité",
+      "escalatedBackup": "transmise au relais à {{time}}",
+      "escalatedAdmins": "transmise aux Super admins à {{time}}",
+      "acknowledgedBy": "prise en charge par {{name}} à {{time}}",
+      "acknowledge": "Prendre en charge",
+      "flaggedText": "Texte signalé · {{language}}, tel qu'écrit",
+      "flaggedNote": "L'avis est retenu et non publié. Seul ce texte est affiché ; rien d'autre de ce que la personne a écrit ou noté n'est visible ici.",
+      "contact": "Contact",
+      "noContact": "Aucun contact enregistré",
+      "reveal": "Afficher et appeler (journalisé)",
+      "call": "Appeler le {{phone}}",
+      "nextSession": "Prochaine séance",
+      "noSession": "Aucune séance à venir",
+      "outcome": "Issue",
+      "outcomes": {
+        "SAFE_FOR_NOW": "Personne jointe ; elle est en sécurité pour le moment",
+        "REFERRED_TO_EMERGENCY_SERVICES": "Jointe ; orientée vers les services d'urgence",
+        "NOT_REACHED_FOLLOW_UP": "Non jointe ; suivi prévu",
+        "NOT_A_CRISIS": "Pas une crise après examen"
+      },
+      "note": "Note de l'intervenant",
+      "close": "Clôturer l'alerte",
+      "confirmClose": "Clôturer cette alerte avec l'issue ci-dessus ?",
+      "closed": "Clôturée à {{time}}",
+      "empty": "Aucune alerte ouverte. Les nouvelles alertes apparaissent ici et l'intervenant de garde est appelé.",
+      "emptyClosed": "Aucune alerte clôturée pour l'instant.",
+      "select": "Choisissez une alerte pour l'afficher.",
+      "viewOnly": "Vous pouvez consulter cette file. Seuls les intervenants de crise et les Super admins agissent sur les alertes.",
+      "back": "Toutes les alertes"
+    },
+    "modality": {
+      "AUDIO": "audio",
+      "VIDEO": "vidéo"
+    },
+    "common": {
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "reason": "Motif",
+      "reasonHint": "Indiquez pourquoi. Le motif est inscrit au journal d'audit.",
+      "export": "Exporter en CSV",
+      "search": "Rechercher",
+      "all": "Tous",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "confirm": "Confirmer",
+      "masked": "Masqué",
+      "reveal": "Afficher (journalisé)",
+      "noResults": "Aucun résultat pour ces filtres."
     }
   },
   "roleChoice": {

@@ -11,7 +11,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
-import { daysSince, languageName, shortDate } from './format';
+import { daysSince, languageName, shortDate } from '../shared/format';
 
 type Tab = 'SUBMITTED' | 'UNDER_REVIEW' | 'CHANGES_REQUESTED' | 'DECIDED';
 type Queue = CoreSchemas['ApplicationQueue'];

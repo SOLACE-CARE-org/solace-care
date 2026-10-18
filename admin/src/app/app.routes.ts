@@ -2,6 +2,7 @@ import type { Type } from '@angular/core';
 import type { Routes } from '@angular/router';
 
 import { areaGuard } from './auth/area.guard';
+import { CrisisQueuePage } from './crisis/crisis-queue.page';
 import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
 import { NoAccess } from './pages/no-access';
@@ -12,6 +13,7 @@ import { SpecialistRecordPage } from './specialists/specialist-record.page';
 
 /** Screens built so far; every other entry shows the not-built stand-in. */
 const SCREENS: Record<string, Type<unknown>> = {
+  crisis: CrisisQueuePage,
   applications: ApplicationsPage,
   specialists: SpecialistRecordPage,
 };
