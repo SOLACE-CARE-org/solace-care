@@ -21,6 +21,8 @@ tags:
     description: The engineer-seeded element library (Tracking Service Spec, Elements)
   - name: sync
     description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
+  - name: cycles
+    description: Cycles derived from period dates and flow (D50); facts only, never a forecast
 paths:
   /v1/system/info:
     get:
@@ -121,6 +123,29 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /v1/tracking/cycles:
+    get:
+      operationId: getCycles
+      summary: My cycles, oldest first, and today's cycle day; the newest cycle is never complete
+      tags: [cycles]
+      parameters:
+        - name: timeZone
+          in: query
+          description: The phone's time zone, for today's cycle day.
+          schema:
+            type: string
+            default: Africa/Douala
+      responses:
+        "200":
+          description: The cycles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -413,3 +438,36 @@ components:
           format: int64
         hasMore:
           type: boolean
+    Cycle:
+      type: object
+      additionalProperties: false
+      required: [start, veryHeavyDays, complete]
+      properties:
+        start:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        lengthDays:
+          type: integer
+        periodDays:
+          type: integer
+        veryHeavyDays:
+          type: integer
+        complete:
+          type: boolean
+    CycleSummary:
+      type: object
+      additionalProperties: false
+      required: [cycles]
+      properties:
+        cycles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Cycle"
+        cycleDay:
+          type: integer

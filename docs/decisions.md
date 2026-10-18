@@ -283,6 +283,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Element labels** are the designs' wording (Tracking.dc.html, Checkin.dc.html) until the clinicians' wording review; `stress_level` has no design yet, so its labels (Low, Some, High) are placeholders for that review.
 - **Not built:** `timeline_view` from the tracking design document has no screen that needs it; recommendation status SEEN covers what has been seen.
 
+**D50. Tracking: the cycle model (Phase 2, epic 3).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- A cycle starts on a logged period start, or on the first day of flow above none after at least `solace.tracking.cycle.new-period-gap-days` ([10]) days without any; a logged start beats an inferred one near it, and two starts within the gap are one period. The cycle ends the day before the next one starts; the newest cycle is never complete and never counts.
+- The period ends on a logged period end within the cycle, otherwise on the last day of the first run of flow above none; one unlogged day inside the run does not end it, a day logged "none" does. Very heavy days count days logged very heavy in the cycle.
+- `CycleReconciler` rebuilds the person's cycles after every push or delete that touches flow or period dates, in the same transaction and before the pattern check. Cycles are derived data: erasure and edits rebuild or remove them. The cycle summary is facts only, never a forecast or a "next period" date.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
