@@ -24,8 +24,12 @@ class DirectoryController {
 
   private final Directory directory;
 
-  DirectoryController(Directory directory) {
+  private final org.springframework.context.ApplicationEventPublisher events;
+
+  DirectoryController(
+      Directory directory, org.springframework.context.ApplicationEventPublisher events) {
     this.directory = directory;
+    this.events = events;
   }
 
   record Offering(String modality, int durationMinutes, long price) {}
@@ -84,6 +88,10 @@ class DirectoryController {
         || limit > 50
         || offset < 0) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    // Counted for the booking funnel, with nothing about the search (D46). Only first pages count.
+    if (offset == 0) {
+      events.publishEvent(new CatalogueSearched());
     }
     var page =
         directory.search(

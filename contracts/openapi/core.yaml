@@ -64,6 +64,8 @@ tags:
     description: Writing, translating, checking and publishing content (admin screens 15 and 16; D44)
   - name: admin-people
     description: Seekers, specialists' accounts and guests, their consents and data requests (admin screens 9 and 10; D45)
+  - name: admin-insight
+    description: The live overview and aggregated analytics (admin screens 2 and 17; D46). Counts only, never people.
 paths:
   /v1/signups:
     post:
@@ -3694,6 +3696,58 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/overview:
+    get:
+      operationId: getOverview
+      summary: What is happening now, today in Douala time (admin screen 2)
+      tags: [admin-insight]
+      responses:
+        "200":
+          description: The overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Overview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/analytics:
+    get:
+      operationId: getAnalytics
+      summary: Aggregated, de-identified numbers for a period (admin screen 17)
+      tags: [admin-insight]
+      parameters:
+        - $ref: "#/components/parameters/AnalyticsPeriod"
+      responses:
+        "200":
+          description: The numbers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analytics"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/analytics/export:
+    get:
+      operationId: exportAnalytics
+      summary: The same numbers as CSV; audited
+      tags: [admin-insight]
+      parameters:
+        - $ref: "#/components/parameters/AnalyticsPeriod"
+      responses:
+        "200":
+          description: One line per measure
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -3853,6 +3907,13 @@ components:
       schema:
         type: string
         format: uuid
+    AnalyticsPeriod:
+      name: period
+      in: query
+      schema:
+        type: string
+        enum: [LAST_7_DAYS, LAST_30_DAYS, THIS_QUARTER]
+        default: LAST_30_DAYS
   requestBodies:
     Rating:
       required: true
@@ -6367,3 +6428,145 @@ components:
             canErase:
               description: A seeker or guest with nothing open; a specialist's erasure is a data request (D40).
               type: boolean
+    Overview:
+      type: object
+      additionalProperties: false
+      required: [at, crisis, inSession, sessionsToday, bookingsToday, paymentsToday, sessionsNow, attention, health]
+      properties:
+        at:
+          type: string
+          format: date-time
+        crisis:
+          type: object
+          additionalProperties: false
+          required: [unacknowledged]
+          properties:
+            unacknowledged:
+              type: integer
+            oldestAt:
+              type: string
+              format: date-time
+            onCall:
+              description: The primary responder's name now, if the rota has one.
+              type: string
+        inSession:
+          type: object
+          additionalProperties: false
+          required: [total, video, audio]
+          properties:
+            total:
+              type: integer
+            video:
+              type: integer
+            audio:
+              type: integer
+        sessionsToday:
+          type: object
+          additionalProperties: false
+          required: [total, completed, noShows]
+          properties:
+            total:
+              type: integer
+            completed:
+              type: integer
+            noShows:
+              type: integer
+        bookingsToday:
+          type: object
+          additionalProperties: false
+          required: [total, byLanguage]
+          properties:
+            total:
+              type: integer
+            byLanguage:
+              type: object
+              additionalProperties:
+                type: integer
+        paymentsToday:
+          type: object
+          additionalProperties: false
+          required: [captured, failed]
+          properties:
+            captured:
+              type: integer
+            failed:
+              type: integer
+        sessionsNow:
+          description: Sessions in progress or starting within 30 minutes.
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminBookingRow"
+        attention:
+          type: object
+          additionalProperties: false
+          required: [applications, refunds, reviews, disputes, dataRequestsDue]
+          properties:
+            applications:
+              type: integer
+            refunds:
+              type: integer
+            reviews:
+              type: integer
+            disputes:
+              type: integer
+            dataRequestsDue:
+              description: Due within the next 7 days.
+              type: integer
+        health:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceHealth"
+    ServiceHealth:
+      type: object
+      additionalProperties: false
+      required: [service, status]
+      properties:
+        service:
+          type: string
+          x-extensible-enum: [CORE, AI, CALLS, PAYMENTS, SMS]
+        status:
+          type: string
+          x-extensible-enum: [HEALTHY, SLOW, DOWN, UNKNOWN]
+    Analytics:
+      type: object
+      additionalProperties: false
+      required: [period, from, to, funnel, completedSessions, sessionsByLanguage]
+      properties:
+        period:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        funnel:
+          type: object
+          additionalProperties: false
+          required: [searched, choseSlot, paid, completed]
+          properties:
+            searched:
+              description: Searches, not people; searches carry no identity (D46).
+              type: integer
+            choseSlot:
+              type: integer
+            paid:
+              type: integer
+            completed:
+              type: integer
+        averageRating:
+          type: number
+        ratings:
+          type: integer
+        bookedAgainPercent:
+          description: Of seekers who completed a session, the share who booked again within 30 days.
+          type: integer
+        completedSessions:
+          type: integer
+        sessionsByLanguage:
+          type: object
+          additionalProperties:
+            type: integer
+        recommendationsToBookingPercent:
+          description: From Phase 2; absent until tracking recommendations exist.
+          type: integer

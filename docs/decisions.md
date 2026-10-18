@@ -258,6 +258,11 @@ Every pair now meets WCAG 2.1 AA.
 - **The record:** account or guest, bookings, current consents, data requests and how many crisis alerts are open. Every view is audited as a read of the person's data; revealing a contact needs a reason and is audited with it. Nothing clinical is shown.
 - **Requests for the person:** Operations (and Super admins) can prepare an export, which goes to the person as in D40, never to staff, and erase a seeker's account or a guest's contact under the same rules as the person's own request (nothing upcoming, in session or unpaid). A specialist's erasure stays a data request for Operations to work through (D40).
 
+**D46. Admin portal v1: overview and analytics (epic 12).** Taken 18 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **Where the numbers come from:** an Insight module in Core runs read-only aggregate queries over Core's own database and returns counts and shares only, never a person. Tracking and AI numbers join through their own APIs when those phases ship; no service reads another's database.
+- **Overview:** today in Douala time; sessions in progress or starting within 30 minutes; what needs attention (applications, refunds to approve, reviews, disputes and flags, data requests due within 7 days). Service health: Core; AI from the gRPC circuit breaker; calls from a once-a-minute check of the media server; mobile money "slow" while a payment has waited more than [5] minutes; SMS "slow" after a failed SMS in the last hour.
+- **Analytics:** last 7 days, last 30 days or this quarter. The booking funnel counts searches (a bare daily count, first pages only, nothing about who or what), bookings started, paid and completed: counts, not distinct people, because searches carry no identity. Average rating, the share of seekers who book again within 30 days of a completed session, and sessions by language. Recommendations to booking shows "From Phase 2". Exports are audited.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
