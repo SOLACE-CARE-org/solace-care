@@ -26,6 +26,10 @@ tags:
     description: A specialist's weekly hours (Phase 1, epics 2 and 4)
   - name: admin-specialists
     description: Staff review of specialist applications and specialist records (Phase 1, epic 2). Staff realm only; the permission matrix (contracts/permissions) decides who may view or change.
+  - name: bookings
+    description: Bookings, cancellation and rescheduling (Phase 1, epic 5)
+  - name: guests
+    description: Guest bookings without an account (D34); the guest token goes in X-Guest-Token
   - name: catalogue
     description: Reference data shown before sign-in, in the caller's language
 paths:
@@ -1117,6 +1121,8 @@ paths:
       responses:
         "204":
           description: Released, or already gone
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
   /v1/me/calendar:
     get:
       operationId: getCalendar
@@ -1192,6 +1198,263 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/bookings:
+    post:
+      operationId: createBooking
+      summary: Book a held start (signed-in seeker); payment follows (epic 6)
+      tags: [bookings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingRequest"
+      responses:
+        "201":
+          description: Booked, waiting for payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/bookings:
+    get:
+      operationId: listMyBookings
+      summary: My sessions (seekers) or the specialist's sessions
+      tags: [bookings]
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [UPCOMING, PAST]
+      responses:
+        "200":
+          description: Upcoming soonest first; past most recent first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/bookings/{bookingId}:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: getBooking
+      summary: One booking, for its seeker or its specialist
+      tags: [bookings]
+      responses:
+        "200":
+          description: The booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/bookings/{bookingId}/cancellation:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: quoteCancellation
+      summary: What cancelling now would refund, under the booking's policy (D33)
+      tags: [bookings]
+      responses:
+        "200":
+          description: The quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationQuote"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    post:
+      operationId: cancelBooking
+      summary: Cancel (seeker or specialist); the refund follows the policy
+      tags: [bookings]
+      requestBody:
+        $ref: "#/components/requestBodies/CancellationReason"
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/bookings/{bookingId}/reschedule:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: rescheduleBooking
+      summary: Move to a newly held start with the same specialist, at no charge (D33)
+      tags: [bookings]
+      requestBody:
+        $ref: "#/components/requestBodies/Reschedule"
+      responses:
+        "200":
+          description: Moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/codes:
+    post:
+      operationId: sendGuestCode
+      summary: Send a 6-digit code to a guest's phone (Checkout, no account needed)
+      tags: [guests]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [phone, appLanguage]
+              properties:
+                phone:
+                  $ref: "#/components/schemas/Phone"
+                appLanguage:
+                  $ref: "#/components/schemas/AppLanguage"
+      responses:
+        "202":
+          description: Sent
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/guest/bookings:
+    post:
+      operationId: createGuestBooking
+      summary: Check the code and book a held start as a guest (D34)
+      description: Returns the guest token, scoped to this booking; send it as X-Guest-Token.
+      tags: [guests]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestBookingRequest"
+      responses:
+        "201":
+          description: Booked, waiting for payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestBooking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /v1/guest/booking:
+    get:
+      operationId: getGuestBooking
+      summary: The booking a guest token is for
+      tags: [guests]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      responses:
+        "200":
+          description: The booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/guest/booking/cancellation:
+    get:
+      operationId: quoteGuestCancellation
+      summary: What cancelling now would refund (guest)
+      tags: [guests]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      responses:
+        "200":
+          description: The quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationQuote"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    post:
+      operationId: cancelGuestBooking
+      summary: Cancel (guest)
+      tags: [guests]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      requestBody:
+        $ref: "#/components/requestBodies/CancellationReason"
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/booking/reschedule:
+    post:
+      operationId: rescheduleGuestBooking
+      summary: Move to a newly held start (guest)
+      tags: [guests]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      requestBody:
+        $ref: "#/components/requestBodies/Reschedule"
+      responses:
+        "200":
+          description: Moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/system/ping:
     get:
       operationId: ping
@@ -1217,6 +1480,20 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    BookingId:
+      name: bookingId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GuestToken:
+      name: X-Guest-Token
+      in: header
+      required: true
+      description: The token from createGuestBooking (D34).
+      schema:
+        type: string
     SpecialistId:
       name: id
       in: path
@@ -1226,6 +1503,30 @@ components:
         type: string
         format: uuid
   requestBodies:
+    CancellationReason:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              reason:
+                description: CancelSession's choices; optional.
+                type: string
+                enum: [TIME_NO_LONGER_WORKS, FEELING_BETTER, DIFFERENT_SPECIALIST, OTHER]
+    Reschedule:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [holdId]
+            properties:
+              holdId:
+                type: string
+                format: uuid
     Reason:
       required: true
       content:
@@ -2285,3 +2586,124 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/TimeOff"
+    BookingStatus:
+      description: D32. PENDING_PAYMENT → CONFIRMED → IN_PROGRESS → COMPLETED; exits EXPIRED, CANCELLED, NO_SHOW.
+      type: string
+      x-extensible-enum: [PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, EXPIRED, CANCELLED, NO_SHOW]
+    BookingRequest:
+      type: object
+      additionalProperties: false
+      required: [holdId, sessionLanguage]
+      properties:
+        holdId:
+          type: string
+          format: uuid
+        sessionLanguage:
+          description: A language the specialist is bookable in.
+          type: string
+        source:
+          type: string
+          enum: [SEARCH, HEALTH_CHECK, TRACKING_RECOMMENDATION]
+          default: SEARCH
+    GuestBookingRequest:
+      type: object
+      additionalProperties: false
+      required: [holdId, sessionLanguage, phone, code, appLanguage]
+      properties:
+        holdId:
+          type: string
+          format: uuid
+        sessionLanguage:
+          type: string
+        phone:
+          $ref: "#/components/schemas/Phone"
+        code:
+          type: string
+          pattern: "^[0-9]{6}$"
+        appLanguage:
+          $ref: "#/components/schemas/AppLanguage"
+    GuestBooking:
+      type: object
+      additionalProperties: false
+      required: [booking, guestToken, expiresAt]
+      properties:
+        booking:
+          $ref: "#/components/schemas/Booking"
+        guestToken:
+          description: Scoped to this booking; send as the X-Guest-Token header.
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    Booking:
+      type: object
+      additionalProperties: false
+      required: [id, status, specialist, start, end, modality, sessionLanguage, price, reschedulesLeft]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        specialist:
+          type: object
+          additionalProperties: false
+          required: [id, fullName]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fullName:
+              type: string
+            professionLabel:
+              type: string
+        seeker:
+          description: For the specialist only; never a contact detail.
+          type: object
+          additionalProperties: false
+          required: [label]
+          properties:
+            label:
+              description: The seeker's chosen name, or "Guest".
+              type: string
+            guest:
+              type: boolean
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        modality:
+          $ref: "#/components/schemas/Modality"
+        sessionLanguage:
+          type: string
+        price:
+          description: Whole FCFA.
+          type: integer
+        payBy:
+          description: While PENDING_PAYMENT, when the booking expires unpaid.
+          type: string
+          format: date-time
+        reschedulesLeft:
+          type: integer
+        sessionNumber:
+          description: The seeker's nth session with this specialist, counting this one.
+          type: integer
+        cancelledBy:
+          type: string
+          enum: [SEEKER, SPECIALIST, STAFF, SYSTEM]
+        refundAmount:
+          description: When cancelled, the refund the policy gave.
+          type: integer
+    CancellationQuote:
+      type: object
+      additionalProperties: false
+      required: [refundAmount, refundPercent, policyVersion]
+      properties:
+        refundAmount:
+          type: integer
+        refundPercent:
+          type: integer
+        policyVersion:
+          type: integer

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/booking.cancelled.v1.schema.json",
+  "title": "core.booking.cancelled v1",
+  "description": "A booking was cancelled before its session (System Design, Event catalog). Ids and codes only.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "core.booking.cancelled"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bookingId",
+        "specialistId",
+        "source",
+        "guest",
+        "cancelledBy"
+      ],
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "specialistId": {
+          "description": "The specialist's pseudonymous account id.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "source": {
+          "enum": [
+            "SEARCH",
+            "HEALTH_CHECK",
+            "TRACKING_RECOMMENDATION"
+          ]
+        },
+        "guest": {
+          "description": "True when the seeker booked as a guest; subjectId is then the guest contact's id.",
+          "type": "boolean"
+        },
+        "cancelledBy": {
+          "enum": [
+            "SEEKER",
+            "SPECIALIST",
+            "STAFF",
+            "SYSTEM"
+          ]
+        }
+      }
+    }
+  }
+}

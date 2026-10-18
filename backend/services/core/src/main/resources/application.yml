@@ -76,6 +76,8 @@ solace:
       - /v1/specialist-signups
       - /v1/slot-holds
       - /v1/slot-holds/**
+      # Guests have no Keycloak token; Core checks their booking-scoped token itself (D34).
+      - /v1/guest/**
       - /v1/catalogue/**
   identity:
     members-issuer: http://localhost:8180/realms/solace-members

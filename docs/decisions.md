@@ -171,6 +171,20 @@ Every pair now meets WCAG 2.1 AA.
 - Search lists only approved specialists with a verified level of Professional or above in the chosen session language, an enabled session, and a bio in EN and FR whose Solace draft, if any, the specialist has confirmed (D30).
 - "Next available" comes from weekly hours, notice and break until Scheduling (epic 4) subtracts bookings and holds. Ratings appear with Ratings and reviews (epic 8).
 
+**D32. The booking lifecycle (epic 5).** Taken 18 Oct 2026 under the owner's standing instruction to choose the best option when the specs are silent. The System Design's diagram ("4 main states, 3 exits") was lost in the export.
+- Main states: PENDING_PAYMENT → CONFIRMED → IN_PROGRESS → COMPLETED. Exits: EXPIRED (not paid within the hold window), CANCELLED, NO_SHOW.
+- Creating a booking turns the 10-minute hold into a calendar entry at once, so the exclusion constraint guards the time while the seeker pays. EXPIRED and CANCELLED free it.
+- Money follows the System Design: captured at CONFIRMED, released at COMPLETED (epic 6).
+
+**D33. Cancellation and reschedule policy, as versioned admin settings.** Taken 18 Oct 2026; the specs give no numbers.
+- Defaults: a full refund when cancelled 24 hours or more before the start, half between 24 and 2 hours, none under 2 hours; a seeker no-show gets nothing back, a specialist no-show everything. Up to 2 reschedules, at least 2 hours before the start, to the same specialist at no charge (CancelSession).
+- Each booking keeps the policy version in force when it was made (Admin Portal Spec, Refund or no-show dispute). Admins publish new versions in Catalogue and policies.
+
+**D34. Guest access (epic 1's guest part, built with bookings).** Taken 18 Oct 2026.
+- A guest proves a phone number with a 6-digit code that Core sends by SMS (kept in Redis, [10] minutes, [3] tries). The code check creates the booking and returns a guest token: random, stored hashed, scoped to that one booking, valid until a day after the session. Guests have no Keycloak account (D6).
+- Guest calls go to `/v1/guest/**`, open at the gateway; Core checks the guest token itself.
+- When a member's first sign-in proves the same phone or email (`ContactVerified`), their guest bookings move into the account.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

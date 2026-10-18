@@ -1,0 +1,16 @@
+{
+  "eventId": "c1d7a4f2-5e8b-4a39-9f06-7b2e1d3c4a58",
+  "type": "core.booking.cancelled",
+  "version": 1,
+  "occurredAt": "2026-10-17T09:31:00Z",
+  "subjectId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+  "locale": "fr",
+  "traceId": "0af7651916cd43dd8448eb211c80319c",
+  "payload": {
+    "bookingId": "7f9d1c2e-1111-4a7a-b3e5-5f0d9c1a7e64",
+    "specialistId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+    "source": "SEARCH",
+    "guest": false,
+    "cancelledBy": "SEEKER"
+  }
+}
