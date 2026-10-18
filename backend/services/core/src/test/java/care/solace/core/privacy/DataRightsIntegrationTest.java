@@ -256,6 +256,25 @@ class DataRightsIntegrationTest extends SpecialistFlowTest {
         .andExpect(jsonPath("$.contact").value(""));
   }
 
+  @Test
+  void aSeekerRenamesThemselvesForTheirSpecialist() throws Exception {
+    String token = seeker("+237670000466", "Mireille");
+    mvc.perform(
+            put("/v1/me/profile")
+                .headers(bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"  \"}"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            put("/v1/me/profile")
+                .headers(bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Mimi\"}"))
+        .andExpect(status().isNoContent());
+    mvc.perform(get("/v1/me").headers(bearer(token)))
+        .andExpect(jsonPath("$.displayName").value("Mimi"));
+  }
+
   private org.springframework.test.web.servlet.ResultActions erase(String token) throws Exception {
     return mvc.perform(
         post("/v1/me/erasure")

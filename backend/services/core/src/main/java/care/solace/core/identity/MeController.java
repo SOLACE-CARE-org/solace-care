@@ -179,4 +179,22 @@ class MeController {
                 clock.instant()));
     return preferences(token);
   }
+
+  record Profile(@NotNull @Size(min = 1, max = 60) String displayName) {}
+
+  /** Edit profile: the name the seeker's specialist sees (D48). */
+  @PutMapping("/v1/me/profile")
+  @org.springframework.web.bind.annotation.ResponseStatus(
+      org.springframework.http.HttpStatus.NO_CONTENT)
+  void saveProfile(@AuthenticationPrincipal Jwt token, @Valid @RequestBody Profile body) {
+    Account account = members.require(token);
+    String name = body.displayName().strip();
+    if (name.isEmpty() || store.seekerProfile(account.id()).isEmpty()) {
+      throw new SolaceException(
+          name.isEmpty()
+              ? care.solace.errors.CommonError.REQUEST_INVALID
+              : IdentityError.NOT_A_MEMBER);
+    }
+    store.saveDisplayName(account.id(), name);
+  }
 }

@@ -325,4 +325,11 @@ class AccountStore {
         .param("v", version)
         .update();
   }
+
+  void saveDisplayName(UUID id, String name) {
+    db.sql("UPDATE seeker_profile SET display_name = :n WHERE account_id = :id")
+        .param("id", id)
+        .param("n", name)
+        .update();
+  }
 }
