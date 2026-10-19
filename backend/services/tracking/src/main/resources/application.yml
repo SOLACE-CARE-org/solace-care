@@ -27,6 +27,11 @@ spring:
           address: static://localhost:9101
           negotiation-type: plaintext
           default-load-balancing-policy: round_robin
+        # The AI service words recommendations (Phase 3, D56).
+        ai:
+          address: static://localhost:9103
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
   security:
     oauth2:
       client:

@@ -76,7 +76,8 @@ class RecommendationsController {
       JsonNode evidence,
       Instant createdAt,
       Instant snoozedUntil,
-      boolean dataChanged) {}
+      boolean dataChanged,
+      boolean aiWorded) {}
 
   record Snooze(Integer days) {}
 
@@ -104,6 +105,8 @@ class RecommendationsController {
                   Map<String, Object> values =
                       JSON.convertValue(evidence, new TypeReference<>() {});
                   Timestamp snoozed = rs.getTimestamp("snoozed_until");
+                  // The AI's plain wording, when it was made and passed its guardrails (D56).
+                  String worded = rs.getString(fr ? "wording_fr" : "wording_en");
                   return new Recommendation(
                       rs.getObject("id", UUID.class),
                       rs.getString("rule_code"),
@@ -111,12 +114,15 @@ class RecommendationsController {
                       rs.getString("outcome"),
                       Arrays.asList((String[]) rs.getArray("specialty_codes").getArray()),
                       rs.getString("status"),
-                      RuleRules.render(
-                          fr ? rs.getString("message_fr") : rs.getString("message_en"), values),
+                      worded != null
+                          ? worded
+                          : RuleRules.render(
+                              fr ? rs.getString("message_fr") : rs.getString("message_en"), values),
                       evidence,
                       rs.getTimestamp("created_at").toInstant(),
                       snoozed == null ? null : snoozed.toInstant(),
-                      rs.getString("status").equals("SUPERSEDED"));
+                      rs.getString("status").equals("SUPERSEDED"),
+                      worded != null);
                 })
             .list();
     audit.read("tracking.recommendations.read", "recommendations", null, user.toString());

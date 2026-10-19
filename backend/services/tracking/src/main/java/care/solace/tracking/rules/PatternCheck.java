@@ -57,6 +57,9 @@ public class PatternCheck implements PersonalData {
       String outcome,
       List<String> specialtyCodes) {}
 
+  /** A recommendation was stored; published inside the transaction (D56). */
+  public record Stored(UUID recommendationId) {}
+
   /** Payload of tracking.recommendation.resolved v1. */
   public record RecommendationResolved(UUID recommendationId, String ruleCode, String status) {}
 
@@ -212,6 +215,8 @@ public class PatternCheck implements PersonalData {
         .param("next", Timestamp.from(now.plus(Duration.ofDays(rule.cooldownDays()))))
         .update();
     log(user, rule, version, result, "FIRED", id, now);
+    // After commit, the AI service may word it plainly (D56).
+    events.publishEvent(new Stored(id));
     if (outcome.equals("INVITE")) {
       String moduleCode =
           modules.module(version.moduleId()).map(ModuleStore.Module::code).orElse("");
