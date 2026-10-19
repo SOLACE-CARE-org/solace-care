@@ -1,0 +1,13 @@
+{
+  "description": "Made-up staff questions for the admin copilot (D58). A case passes when the model maps the question to the expected metric of the catalogue; the answer itself is worded only from Core's table and checked by the guardrails at run time.",
+  "cases": [
+    { "id": "invites-en", "locale": "en", "input": { "question": "How many bookings came from tracking recommendations last month, by module?" }, "expect": { "metric": "INVITES_BY_MODULE" } },
+    { "id": "languages-en", "locale": "en", "input": { "question": "Which session languages were used most in the last 30 days?" }, "expect": { "metric": "SESSIONS_BY_LANGUAGE" } },
+    { "id": "payments-en", "locale": "en", "input": { "question": "How many mobile money payments failed this week?" }, "expect": { "metric": "PAYMENTS_BY_STATUS" } },
+    { "id": "sources-en", "locale": "en", "input": { "question": "Where did confirmed bookings come from this quarter?" }, "expect": { "metric": "BOOKINGS_BY_SOURCE" } },
+    { "id": "invites-fr", "locale": "fr", "input": { "question": "Combien de réservations sont venues des invitations du suivi le mois dernier, par module ?" }, "expect": { "metric": "INVITES_BY_MODULE" } },
+    { "id": "modality-fr", "locale": "fr", "input": { "question": "Combien de séances terminées en audio et en vidéo ces 30 derniers jours ?" }, "expect": { "metric": "SESSIONS_BY_MODALITY" } },
+    { "id": "ratings-fr", "locale": "fr", "input": { "question": "Quelle est la note moyenne des séances ce trimestre ?" }, "expect": { "metric": "RATINGS" } },
+    { "id": "status-fr", "locale": "fr", "input": { "question": "Combien de réservations annulées ou d'absences cette semaine ?" }, "expect": { "metric": "BOOKINGS_BY_STATUS" } }
+  ]
+}

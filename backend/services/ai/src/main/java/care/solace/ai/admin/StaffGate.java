@@ -30,7 +30,7 @@ public class StaffGate {
   }
 
   private final String staffIssuer;
-  private final JsonNode area;
+  private final JsonNode areas;
 
   StaffGate(
       @Value("${solace.security.service-issuer:http://localhost:8180/realms/solace-staff}")
@@ -40,7 +40,7 @@ public class StaffGate {
       if (in == null) {
         throw new IllegalStateException("Missing /admin-permissions.json (contracts/permissions)");
       }
-      this.area = new ObjectMapper().readTree(in).path("areas").path("aiControls");
+      this.areas = new ObjectMapper().readTree(in).path("areas");
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -50,6 +50,14 @@ public class StaffGate {
    * @param change true for F access, false for V or F
    */
   public Staff require(Jwt token, boolean change) {
+    return require(token, "aiControls", change);
+  }
+
+  /**
+   * @param areaName an area of the permission matrix, e.g. analytics for the copilot (D58)
+   */
+  public Staff require(Jwt token, String areaName, boolean change) {
+    JsonNode area = areas.path(areaName);
     if (token == null
         || token.getIssuer() == null
         || !staffIssuer.equals(token.getIssuer().toString())
