@@ -4645,6 +4645,41 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/bookings/{bookingId}/dial-in:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: getDialIn
+      summary: A phone number and PIN to join the session by phone, for the booked seeker (Phase 4; D59)
+      description: |
+        For seekers without mobile data. The PIN is for this booking only and works from 10
+        minutes before the start until 15 minutes after the end. Off while the phoneDialIn flag
+        is off or no number is set up.
+      tags: [sessions]
+      responses:
+        "200":
+          $ref: "#/components/responses/DialInResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/guest/booking/dial-in:
+    get:
+      operationId: getGuestDialIn
+      summary: The same for a guest, with the guest token
+      tags: [guests, sessions]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/GuestToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/DialInResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -4901,6 +4936,12 @@ components:
                 minLength: 1
                 maxLength: 1000
   responses:
+    DialInResponse:
+      description: How to join by phone
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DialIn"
     ScribeResponse:
       description: The scribe for this session
       content:
@@ -8098,3 +8139,21 @@ components:
         baseline:
           description: The daily average of the 7 days before, or their failed share in percent
           type: number
+    DialIn:
+      type: object
+      additionalProperties: false
+      required: [number, pin, opensAt, closesAt]
+      properties:
+        number:
+          description: The number to call, E.164
+          type: string
+        pin:
+          description: Six digits, entered after the call connects
+          type: string
+          pattern: "^[0-9]{6}$"
+        opensAt:
+          type: string
+          format: date-time
+        closesAt:
+          type: string
+          format: date-time
