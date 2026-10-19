@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/core/session.ended.v1.schema.json",
+  "title": "core.session.ended v1",
+  "description": "A session's call ended (System Design, Event catalog; D57). Starts the scribe when both people consented and the seeker did not refuse for this session. Ids and codes only.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "core.session.ended"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bookingId",
+        "specialistId",
+        "scribe",
+        "sessionLanguage"
+      ],
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "specialistId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The specialist's pseudonymous account id."
+        },
+        "scribe": {
+          "description": "True when audio was recorded for the scribe.",
+          "type": "boolean"
+        },
+        "audioKey": {
+          "description": "Object key of the session audio, present when scribe is true.",
+          "type": "string",
+          "pattern": "^scribe-audio/[0-9a-f-]{36}\\.ogg$"
+        },
+        "sessionLanguage": {
+          "description": "ISO 639 code of the session language.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

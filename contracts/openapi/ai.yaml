@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Solace Ai API
-  version: 0.2.0
+  version: 0.3.0
   description: |
     AI: the safety monitor, and from Phase 3 the assist features behind the model gateway (D56).
     Reached through the gateway at /api/ai. Every feature is off until its evaluation passes in
@@ -21,6 +21,10 @@ tags:
     description: The pre-session brief for the booking's specialist (Phase 3; D56)
   - name: admin-ai
     description: AI controls, admin screen 26 (D56)
+  - name: notes
+    description: Session scribe, the specialist's note drafts and signed notes (Phase 4; D57)
+  - name: homework
+    description: Homework set by the specialist and the companion that guides it (Phase 4; D57)
 paths:
   /v1/system/info:
     get:
@@ -213,6 +217,244 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/specialist/notes:
+    get:
+      operationId: listNotes
+      summary: The specialist's note drafts and signed notes, newest first
+      description: Every call is audited as a clinical read. Drafts not signed within 7 days are deleted, with the audio.
+      tags: [notes]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/NoteStatus"
+        - name: q
+          in: query
+          required: false
+          description: Words to find in the notes
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: The notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/specialist/notes/{noteId}:
+    parameters:
+      - $ref: "#/components/parameters/NoteId"
+    get:
+      operationId: getNote
+      summary: One note, for its specialist; audited
+      tags: [notes]
+      responses:
+        "200":
+          $ref: "#/components/responses/NoteResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: editNote
+      summary: Saves the specialist's edits to a draft
+      tags: [notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteEdit"
+      responses:
+        "200":
+          $ref: "#/components/responses/NoteResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: discardNote
+      summary: Discards a draft; its transcript and the session audio are deleted
+      tags: [notes]
+      responses:
+        "204":
+          description: Discarded
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/specialist/notes/{noteId}/redraft:
+    parameters:
+      - $ref: "#/components/parameters/NoteId"
+    post:
+      operationId: redraftNote
+      summary: Drafts the note again from the transcript in the other format (SOAP or DAP)
+      tags: [notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [format]
+              properties:
+                format:
+                  $ref: "#/components/schemas/NoteFormat"
+      responses:
+        "200":
+          $ref: "#/components/responses/NoteResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/specialist/notes/{noteId}/signature:
+    parameters:
+      - $ref: "#/components/parameters/NoteId"
+    post:
+      operationId: signNote
+      summary: Signs a draft once every section is filled; the transcript and the session audio are deleted
+      tags: [notes]
+      responses:
+        "200":
+          $ref: "#/components/responses/NoteResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/specialist/bookings/{bookingId}/homework:
+    parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listBookingHomework
+      summary: Homework the specialist set after this booking, with progress
+      tags: [homework]
+      responses:
+        "200":
+          description: The homework
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Homework"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: assignHomework
+      summary: Sets homework for the booking's seeker (AssignHomework.dc.html)
+      tags: [homework]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HomeworkAssignment"
+      responses:
+        "201":
+          description: Set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Homework"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/me/homework:
+    get:
+      operationId: myHomework
+      summary: The seeker's open and recent homework
+      tags: [homework]
+      responses:
+        "200":
+          description: The homework
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Homework"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /v1/me/homework/{homeworkId}/companion:
+    parameters:
+      - name: homeworkId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: companionState
+      summary: Where the seeker is in the current exercise, and the companion's next question
+      tags: [homework]
+      responses:
+        "200":
+          $ref: "#/components/responses/CompanionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: companionAnswer
+      summary: The seeker's answer to the current step
+      description: |
+        Every answer passes the safety monitor before the companion replies. On a risk signal the
+        companion stops, says so and hands off to urgent help (crisis true); the alert reaches the
+        on-call team. Answers are stored for the seeker only.
+      tags: [homework]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [answer]
+              properties:
+                answer:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+      responses:
+        "200":
+          $ref: "#/components/responses/CompanionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -235,7 +477,32 @@ components:
       schema:
         type: string
         format: uuid
+    NoteId:
+      name: noteId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
+    BadRequest:
+      description: The request is not valid; code says why
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NoteResponse:
+      description: The note
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Note"
+    CompanionResponse:
+      description: The companion's turn
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CompanionTurn"
     Unauthorized:
       description: Missing or invalid token
       content:
@@ -475,3 +742,195 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AiFeature"
+    NoteStatus:
+      type: string
+      enum: [DRAFT, SIGNED]
+    NoteFormat:
+      type: string
+      enum: [SOAP, DAP]
+    NoteSection:
+      type: object
+      additionalProperties: false
+      required: [key, text]
+      properties:
+        key:
+          description: S, O, A, P for SOAP; D, A, P for DAP. The AI leaves the assessment empty for the specialist.
+          type: string
+          enum: [S, O, D, A, P]
+        text:
+          type: string
+          maxLength: 4000
+    NoteSummary:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, status, format, preview, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/NoteStatus"
+        format:
+          $ref: "#/components/schemas/NoteFormat"
+        preview:
+          description: The start of the first section
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        signedAt:
+          type: string
+          format: date-time
+        deleteAt:
+          description: When an unsigned draft and the session audio are deleted
+          type: string
+          format: date-time
+    Note:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, status, format, sections, aiDrafted, riskSignals, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/NoteStatus"
+        format:
+          $ref: "#/components/schemas/NoteFormat"
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteSection"
+        aiDrafted:
+          type: boolean
+        riskSignals:
+          description: True when the safety monitor flagged the transcript, for the specialist to follow up
+          type: boolean
+        canRedraft:
+          description: True while the transcript is kept, so the other format can be drafted
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        signedAt:
+          type: string
+          format: date-time
+        deleteAt:
+          type: string
+          format: date-time
+    NoteEdit:
+      type: object
+      additionalProperties: false
+      required: [format, sections]
+      properties:
+        format:
+          $ref: "#/components/schemas/NoteFormat"
+        sections:
+          type: array
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/NoteSection"
+    Exercise:
+      type: string
+      enum: [THOUGHT_RECORD, SLEEP_DIARY, WORRY_TIME, CUSTOM]
+    HomeworkAssignment:
+      type: object
+      additionalProperties: false
+      required: [exercise, frequency, companionGuided]
+      properties:
+        exercise:
+          $ref: "#/components/schemas/Exercise"
+        customTask:
+          description: Required for CUSTOM
+          type: string
+          maxLength: 300
+        frequency:
+          type: string
+          enum: [TIMES, DAILY, ONCE]
+        times:
+          description: Required for TIMES; how many before the next session
+          type: integer
+          minimum: 1
+          maximum: 14
+        note:
+          description: A message to the seeker
+          type: string
+          maxLength: 500
+        companionGuided:
+          type: boolean
+        dueBy:
+          description: Defaults to the start of the next booking with this seeker, or [7] days
+          type: string
+          format: date-time
+    Homework:
+      type: object
+      additionalProperties: false
+      required: [id, bookingId, exercise, frequency, target, done, companionGuided, dueBy, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        bookingId:
+          type: string
+          format: uuid
+        specialistId:
+          type: string
+          format: uuid
+        exercise:
+          $ref: "#/components/schemas/Exercise"
+        customTask:
+          type: string
+        frequency:
+          type: string
+          enum: [TIMES, DAILY, ONCE]
+        target:
+          description: How many make it complete (days until due for DAILY)
+          type: integer
+        done:
+          type: integer
+        note:
+          type: string
+        companionGuided:
+          type: boolean
+        dueBy:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    CompanionTurn:
+      type: object
+      additionalProperties: false
+      required: [step, prompt, record, done, target, finished, crisis]
+      properties:
+        step:
+          description: The step the next answer fills
+          type: string
+          enum: [SITUATION, THOUGHT, FEELING, KINDER_VIEW, BEDTIME, WAKE_TIME, RESTED, WORRIES, TASK, DONE]
+        prompt:
+          description: The companion's next words, in the app language
+          type: string
+        aiWorded:
+          description: True when a model worded the reflection, only from vetted content
+          type: boolean
+        record:
+          description: The answers so far in the current record, by step
+          type: object
+          additionalProperties:
+            type: string
+        done:
+          type: integer
+        target:
+          type: integer
+        finished:
+          description: True when the homework is complete
+          type: boolean
+        crisis:
+          description: True when the safety monitor flagged the answer; the app opens urgent help
+          type: boolean

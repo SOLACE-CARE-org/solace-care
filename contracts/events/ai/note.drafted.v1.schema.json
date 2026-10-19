@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/ai/note.drafted.v1.schema.json",
+  "title": "ai.note.drafted v1",
+  "description": "A note draft awaits the specialist's review (System Design, Event catalog; D57). Ids only.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "ai.note.drafted"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "noteId",
+        "bookingId",
+        "specialistId"
+      ],
+      "properties": {
+        "noteId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bookingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "specialistId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The specialist's pseudonymous account id."
+        }
+      }
+    }
+  }
+}

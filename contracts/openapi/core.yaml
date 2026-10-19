@@ -76,6 +76,10 @@ tags:
     description: Writing, testing and approving health check versions (admin screens 28 to 31; D55)
   - name: assist
     description: AI drafts a person reviews before anything is published, and the specialist's prep notes (Phase 3; D56)
+  - name: scribe
+    description: The session scribe's consent for one session (Phase 4; D57)
+  - name: safety-plan
+    description: The seeker's safety plan (SafetyPlan.dc.html; Phase 4; D57)
 paths:
   /v1/signups:
     post:
@@ -4530,6 +4534,98 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/bookings/{bookingId}/scribe:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    get:
+      operationId: getSessionScribe
+      summary: Whether the scribe can record this session, and each person's choice
+      description: |
+        Audio is recorded only when both people consented to the scribe (AI_SCRIBE), neither refused
+        for this session, and the scribe is switched on. Nothing is recorded by default.
+      tags: [scribe]
+      responses:
+        "200":
+          $ref: "#/components/responses/ScribeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: setSessionScribe
+      summary: The caller allows or refuses the scribe for this session only
+      description: Refusing during a session stops the recording at once and deletes its audio.
+      tags: [scribe]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [on]
+              properties:
+                "on":
+                  type: boolean
+      responses:
+        "200":
+          $ref: "#/components/responses/ScribeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/safety-plan:
+    get:
+      operationId: getSafetyPlan
+      summary: The seeker's safety plan
+      tags: [safety-plan]
+      responses:
+        "200":
+          description: The plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyPlan"
+        "204":
+          description: "No plan yet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      operationId: saveSafetyPlan
+      summary: Saves the seeker's safety plan
+      tags: [safety-plan]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SafetyPlanEdit"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyPlan"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      operationId: deleteSafetyPlan
+      summary: Deletes the seeker's safety plan
+      tags: [safety-plan]
+      responses:
+        "204":
+          description: "Deleted"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 components:
   securitySchemes:
     bearerAuth:
@@ -4786,6 +4882,12 @@ components:
                 minLength: 1
                 maxLength: 1000
   responses:
+    ScribeResponse:
+      description: The scribe for this session
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SessionScribe"
     HealthCheckVersionResponse:
       description: The version after the change
       content:
@@ -7878,6 +7980,85 @@ components:
       properties:
         body:
           type: string
+        updatedAt:
+          type: string
+          format: date-time
+    SessionScribe:
+      type: object
+      additionalProperties: false
+      required: [available, seekerConsented, specialistConsented, refusedForSession, recording]
+      properties:
+        available:
+          description: The scribe is switched on and the booking is a registered seeker's
+          type: boolean
+        seekerConsented:
+          type: boolean
+        specialistConsented:
+          type: boolean
+        refusedForSession:
+          description: Either person refused for this session
+          type: boolean
+        recording:
+          type: boolean
+    SafetyPlanPerson:
+      type: object
+      additionalProperties: false
+      required: [relation, name]
+      properties:
+        relation:
+          type: string
+          minLength: 1
+          maxLength: 40
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        phone:
+          type: string
+          maxLength: 20
+    SafetyPlanEdit:
+      type: object
+      additionalProperties: false
+      required: [warningSigns, calming, people]
+      properties:
+        warningSigns:
+          type: string
+          maxLength: 500
+        calming:
+          type: string
+          maxLength: 500
+        people:
+          type: array
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/SafetyPlanPerson"
+        madeWithSpecialistId:
+          description: A specialist the seeker has had a session with
+          type: string
+          format: uuid
+    SafetyPlan:
+      type: object
+      additionalProperties: false
+      required: [warningSigns, calming, people, updatedAt]
+      properties:
+        warningSigns:
+          type: string
+        calming:
+          type: string
+        people:
+          type: array
+          items:
+            $ref: "#/components/schemas/SafetyPlanPerson"
+        madeWith:
+          type: object
+          additionalProperties: false
+          required: [id, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
         updatedAt:
           type: string
           format: date-time
