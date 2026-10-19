@@ -4680,6 +4680,70 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
+  /v1/me/accepting-bookings:
+    get:
+      operationId: getAcceptingBookings
+      summary: Whether the specialist takes new bookings (SpecialistToday.dc.html)
+      tags: [specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/AcceptingBookingsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: setAcceptingBookings
+      summary: Pause or resume new bookings; sessions already booked stay
+      description: While paused the profile stays visible but shows no free times, and no new booking can be made.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptingBookings"
+      responses:
+        "200":
+          $ref: "#/components/responses/AcceptingBookingsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/bookings/{bookingId}/safety-concern:
+    parameters:
+      - $ref: "#/components/parameters/BookingId"
+    post:
+      operationId: raiseSafetyConcern
+      summary: The booking's specialist raises a safety concern during or after a session (SpecCall.dc.html)
+      description: |
+        Raises a crisis alert at once (source SESSION), routed to the on-call responder like any
+        other. The responder sees the category, the specialist's short note and the booking.
+      tags: [sessions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [category]
+              properties:
+                category:
+                  type: string
+                  enum: [SUICIDAL_IDEATION, SELF_HARM, ACUTE_ANXIETY, VIOLENT_THOUGHTS, SUBSTANCE_CRISIS, RISK_TAKING, UNKNOWN]
+                note:
+                  type: string
+                  maxLength: 500
+      responses:
+        "202":
+          description: "Alert raised"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 components:
   securitySchemes:
     bearerAuth:
@@ -4936,6 +5000,12 @@ components:
                 minLength: 1
                 maxLength: 1000
   responses:
+    AcceptingBookingsResponse:
+      description: Whether new bookings are taken
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AcceptingBookings"
     DialInResponse:
       description: How to join by phone
       content:
@@ -8157,3 +8227,10 @@ components:
         closesAt:
           type: string
           format: date-time
+    AcceptingBookings:
+      type: object
+      additionalProperties: false
+      required: [accepting]
+      properties:
+        accepting:
+          type: boolean

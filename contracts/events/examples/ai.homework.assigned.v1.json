@@ -1,0 +1,13 @@
+{
+  "eventId": "7d0a4e32-5b6c-4f80-9c3d-4e5f6a7b8c9d",
+  "type": "ai.homework.assigned",
+  "version": 1,
+  "occurredAt": "2026-10-19T11:10:00Z",
+  "subjectId": "2c9b6f0e-8d41-4a7a-b3e5-5f0d9c1a7e64",
+  "locale": "en",
+  "traceId": "0af7651916cd43dd8448eb211c80319c",
+  "payload": {
+    "homeworkId": "8e1b5f43-6c7d-4a91-8d4e-5f6a7b8c9d0e",
+    "bookingId": "7f9d1c2e-1111-4a7a-b3e5-5f0d9c1a7e64"
+  }
+}

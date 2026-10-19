@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.solace.care/events/ai/homework.assigned.v1.schema.json",
+  "title": "ai.homework.assigned v1",
+  "description": "A specialist set homework for a seeker (D57). Core sends the seeker the neutral \"Task from the specialist\" push. Ids only.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../envelope.schema.json"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "ai.homework.assigned"
+    },
+    "version": {
+      "const": 1
+    },
+    "subjectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "homeworkId",
+        "bookingId"
+      ],
+      "properties": {
+        "homeworkId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bookingId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  }
+}
