@@ -469,7 +469,7 @@ components:
       required: true
       schema:
         type: string
-        enum: [TRACKING_INSIGHTS, PRE_SESSION_BRIEF, REVIEW_MODERATION, TRANSLATION]
+        enum: [TRACKING_INSIGHTS, PRE_SESSION_BRIEF, REVIEW_MODERATION, TRANSLATION, SESSION_SCRIBE, COMPANION, ADMIN_COPILOT]
     VersionId:
       name: versionId
       in: path

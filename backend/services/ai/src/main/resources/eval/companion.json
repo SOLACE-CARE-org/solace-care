@@ -1,0 +1,51 @@
+{
+  "description": "Made-up homework records for the companion's closing reflection (D57). A case passes when a reflection comes back and passes the guardrails (no clinical wording, no number that is not in the record or the vetted content, short). Clinicians grade a sample of replies each release on top of this set.",
+  "cases": [
+    {
+      "id": "thought-record-en",
+      "locale": "en",
+      "input": {
+        "exercise": "THOUGHT_RECORD",
+        "record": {
+          "SITUATION": "My manager asked for an update and I froze.",
+          "THOUGHT": "They will think I am not good at my job.",
+          "FEELING": "Embarrassed",
+          "KINDER_VIEW": "I was caught off guard. I sent the update an hour later and it was fine."
+        }
+      },
+      "expect": {}
+    },
+    {
+      "id": "sleep-diary-en",
+      "locale": "en",
+      "input": {
+        "exercise": "SLEEP_DIARY",
+        "record": { "BEDTIME": "Around midnight", "WAKE_TIME": "6:30", "RESTED": "A bit tired" }
+      },
+      "expect": {}
+    },
+    {
+      "id": "fiche-pensees-fr",
+      "locale": "fr",
+      "input": {
+        "exercise": "THOUGHT_RECORD",
+        "record": {
+          "SITUATION": "Mon responsable m'a demandé un point et je me suis figée.",
+          "THOUGHT": "Il va penser que je ne fais pas bien mon travail.",
+          "FEELING": "Gênée",
+          "KINDER_VIEW": "J'ai été prise de court. J'ai envoyé le point une heure plus tard et tout allait bien."
+        }
+      },
+      "expect": {}
+    },
+    {
+      "id": "temps-soucis-fr",
+      "locale": "fr",
+      "input": {
+        "exercise": "WORRY_TIME",
+        "record": { "WORRIES": "Le loyer du mois, la réunion de jeudi." }
+      },
+      "expect": {}
+    }
+  ]
+}

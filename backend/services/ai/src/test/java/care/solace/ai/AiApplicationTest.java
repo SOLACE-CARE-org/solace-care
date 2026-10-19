@@ -45,7 +45,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class AiApplicationTest {
 
   @Container @ServiceConnection
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
+  static final PostgreSQLContainer<?> POSTGRES =
+      new PostgreSQLContainer<>(
+          org.testcontainers.utility.DockerImageName.parse("pgvector/pgvector:0.8.0-pg16")
+              .asCompatibleSubstituteFor("postgres"));
 
   @Autowired MockMvc mvc;
   @Autowired JdbcTemplate jdbc;

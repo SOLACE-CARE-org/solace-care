@@ -41,6 +41,8 @@ public class ModelGateway {
 
   private final GatewaySettings settings;
   private final Map<String, ModelRoute> routes;
+  private final List<SpeechRoute> speech;
+  private final List<EmbeddingRoute> embeddings;
   private final JdbcClient db;
   private final Clock clock;
 
@@ -48,6 +50,8 @@ public class ModelGateway {
     this.settings = settings;
     this.routes = new LinkedHashMap<>();
     catalog.routes().forEach(r -> routes.put(r.name(), r));
+    this.speech = catalog.speech();
+    this.embeddings = catalog.embeddings();
     this.db = db;
     this.clock = clock;
   }
@@ -100,6 +104,55 @@ public class ModelGateway {
       }
     }
     log(request, "none", "FAILED", 0, 0, 0, user, null, now);
+    return Optional.empty();
+  }
+
+  /**
+   * Session audio to text (D57). Audio is health data: only local models until the transfer is
+   * authorised. The transcript is the caller's to seal; neither audio nor text is logged here.
+   */
+  public Optional<String> transcribe(
+      UUID subjectId, String promptVersion, byte[] audio, String filename, String language) {
+    Instant now = clock.instant();
+    var request = new Request(Feature.SESSION_SCRIBE, subjectId, promptVersion, "", "", true);
+    for (SpeechRoute route : speech) {
+      if (!route.local() && !settings.transferAuthorised()) {
+        continue;
+      }
+      long started = System.nanoTime();
+      try {
+        String text = route.transcribe(audio, filename, language);
+        int millis = (int) ((System.nanoTime() - started) / 1_000_000);
+        if (text.isBlank()) {
+          log(request, route.name(), "FALLBACK", 0, 0, millis, null, null, now);
+          continue;
+        }
+        log(request, route.name(), "OK", 0, 0, millis, null, null, now);
+        return Optional.of(text);
+      } catch (RuntimeException e) {
+        LOG.warn("Speech route {} failed; trying the next", route.name());
+        log(request, route.name(), "FALLBACK", 0, 0, 0, null, null, now);
+      }
+    }
+    log(request, "none", "FAILED", 0, 0, 0, null, null, now);
+    return Optional.empty();
+  }
+
+  /** An embedding of vetted content or of the seeker's words, from a local model; empty if none. */
+  public Optional<float[]> embed(String text) {
+    for (EmbeddingRoute route : embeddings) {
+      if (!route.local() && !settings.transferAuthorised()) {
+        continue;
+      }
+      try {
+        float[] vector = route.embed(Redactor.redact(text));
+        if (vector.length > 0) {
+          return Optional.of(vector);
+        }
+      } catch (RuntimeException e) {
+        LOG.warn("Embedding route {} failed; trying the next", route.name());
+      }
+    }
     return Optional.empty();
   }
 

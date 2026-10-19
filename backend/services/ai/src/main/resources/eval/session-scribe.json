@@ -1,0 +1,41 @@
+{
+  "description": "Made-up session transcripts for SOAP and DAP drafts (D57). A case passes when a draft comes back, passes the guardrails, leaves the assessment empty and mentions what it must. Clinicians grade a sample of real drafts each release on top of this set.",
+  "cases": [
+    {
+      "id": "soap-sleep-en",
+      "locale": "en",
+      "input": {
+        "format": "SOAP",
+        "transcript": "Specialist: How has the week been? Seeker: Better. I slept more since last time, maybe 6 hours most nights. I still get nervous before team meetings. I filled in 2 of the 3 thought records. Specialist: Let's keep going with one thought record before each team meeting, and we look at them next time."
+      },
+      "expect": { "mentions": ["meeting", "thought record"] }
+    },
+    {
+      "id": "dap-work-en",
+      "locale": "en",
+      "input": {
+        "format": "DAP",
+        "transcript": "Specialist: What would you like to start with? Seeker: Work. My manager asked for an update and I froze. Afterwards I went for a walk and felt calmer. Specialist: This week, try writing down what you thought in that moment, and we will talk it through."
+      },
+      "expect": { "mentions": ["walk"] }
+    },
+    {
+      "id": "soap-sommeil-fr",
+      "locale": "fr",
+      "input": {
+        "format": "SOAP",
+        "transcript": "Spécialiste : Comment s'est passée la semaine ? Usager : Mieux. Je dors davantage depuis la dernière fois, environ 6 heures la plupart des nuits. Je reste nerveux avant les réunions d'équipe. J'ai rempli 2 fiches de pensées sur 3. Spécialiste : Continuons avec une fiche avant chaque réunion d'équipe, et nous les regarderons la prochaine fois."
+      },
+      "expect": { "mentions": ["réunion"] }
+    },
+    {
+      "id": "dap-travail-fr",
+      "locale": "fr",
+      "input": {
+        "format": "DAP",
+        "transcript": "Spécialiste : Par quoi voulez-vous commencer ? Usager : Le travail. Mon responsable m'a demandé un point et je me suis figé. Ensuite je suis allé marcher et je me suis senti plus calme. Spécialiste : Cette semaine, essayez de noter ce que vous avez pensé à ce moment-là, et nous en reparlerons."
+      },
+      "expect": { "mentions": ["march"] }
+    }
+  ]
+}

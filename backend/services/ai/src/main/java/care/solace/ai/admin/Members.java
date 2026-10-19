@@ -25,10 +25,19 @@ public class Members {
   }
 
   public UUID specialist(Jwt token) {
+    return member(token, "SPECIALIST");
+  }
+
+  /** A registered seeker; guests have no members-realm token. */
+  public UUID seeker(Jwt token) {
+    return member(token, "SEEKER");
+  }
+
+  private UUID member(Jwt token, String role) {
     if (token == null
         || token.getIssuer() == null
         || !membersIssuer.equals(token.getIssuer().toString())
-        || !hasRole(token, "SPECIALIST")) {
+        || !hasRole(token, role)) {
       throw new SolaceException(CommonError.ACCESS_DENIED);
     }
     try {

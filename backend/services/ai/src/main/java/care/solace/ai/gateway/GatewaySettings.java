@@ -14,6 +14,11 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param transferAuthorised true once Cameroon's data-transfer authorisation covers the non-local
  *     models; until then health data stays on local models (open question)
  * @param retentionDays prompts and outputs are deleted after this ([30] days)
+ * @param speech speech-to-text models for the scribe, tried in order (OpenAI-compatible
+ *     /audio/transcriptions); session audio is health data, so only local ones are used until the
+ *     transfer is authorised (D57)
+ * @param embeddings embedding models for the companion's vetted corpus (OpenAI-compatible
+ *     /embeddings); without one the corpus is searched by words
  */
 @ConfigurationProperties("solace.ai")
 public record GatewaySettings(
@@ -21,7 +26,9 @@ public record GatewaySettings(
     @DefaultValue Map<Feature, List<String>> routes,
     @DefaultValue Map<Feature, Long> budgets,
     @DefaultValue("false") boolean transferAuthorised,
-    @DefaultValue("30") int retentionDays) {
+    @DefaultValue("30") int retentionDays,
+    @DefaultValue List<Model> speech,
+    @DefaultValue List<Model> embeddings) {
 
   /**
    * @param name used in routes

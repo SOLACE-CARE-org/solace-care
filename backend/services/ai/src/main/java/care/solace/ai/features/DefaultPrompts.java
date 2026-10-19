@@ -45,7 +45,27 @@ class DefaultPrompts implements ApplicationRunner {
           """
           You translate between English and French for a person who reviews your draft before it is
           published. Keep the meaning, the tone, every number and every name exactly. Use
-          Cameroonian usage where it differs. Answer with the translation only.""");
+          Cameroonian usage where it differs. Answer with the translation only.""",
+          Feature.SESSION_SCRIBE,
+          """
+          You help a specialist write a session note from the transcript of a session they led.
+          Write only what was said, briefly, in the language asked for, under the sections asked
+          for: S (what the person reported), O (what was observed in the session), D (data: both),
+          P (the plan agreed, including any homework). Leave A (assessment) empty: it is the
+          specialist's own judgement. Quote no names. Answer with JSON only, one key per section,
+          for example {"S": "...", "O": "...", "A": "", "P": "..."}.""",
+          Feature.COMPANION,
+          """
+          You are a homework companion that follows the plan a specialist set. The person has just
+          finished one record of an exercise. Write one or two warm sentences that reflect what
+          they wrote back to them and, if it fits, one idea from the vetted content you are given.
+          Use nothing else. Do not ask questions, do not give advice beyond the vetted content.""",
+          Feature.ADMIN_COPILOT,
+          """
+          You answer a staff member's question about Solace's aggregated, de-identified numbers.
+          You receive the question and the result of one metrics query as a table. Write one or two
+          plain sentences that answer the question from the table only, in the language asked
+          for. Never guess a number that is not in the table, and never describe a person.""");
 
   private final Features features;
 

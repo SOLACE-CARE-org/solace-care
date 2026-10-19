@@ -67,3 +67,19 @@ solace:
     routes: {}
     transfer-authorised: false
     retention-days: 30
+    # Speech-to-text for the scribe and embeddings for the companion's corpus (D57). None by
+    # default: session audio and answers go only to local models, once chosen and evaluated.
+    speech: []
+    embeddings: []
+    # Seals notes, transcripts and homework records (AES-256-GCM). Production sets
+    # SOLACE_AI_NOTES_KEY from the vault.
+    notes-key: ${SOLACE_AI_NOTES_KEY:LUEiwb8Kc+BMzRrsPliTQMNRCYRiZVBUKn6AhShVWC8=}
+    scribe:
+      # The private bucket the media server's egress writes session audio to (infra: scribe profile).
+      endpoint: ${SOLACE_SCRIBE_S3_ENDPOINT:http://localhost:9000}
+      bucket: solace-scribe-audio
+      access-key: ${SOLACE_SCRIBE_S3_ACCESS_KEY:solace}
+      secret-key: ${SOLACE_SCRIBE_S3_SECRET_KEY:solace-dev-only}
+    homework:
+      # Homework is due before the next session, or after [7] days.
+      default-due: P7D

@@ -1,5 +1,7 @@
 package care.solace.ai.privacy;
 
+import care.solace.ai.homework.Homeworks;
+import care.solace.ai.scribe.Notes;
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
 import java.util.UUID;
@@ -18,10 +20,14 @@ class ErasureListener {
 
   private final IdempotentConsumer once;
   private final JdbcClient db;
+  private final Notes notes;
+  private final Homeworks homeworks;
 
-  ErasureListener(IdempotentConsumer once, JdbcClient db) {
+  ErasureListener(IdempotentConsumer once, JdbcClient db, Notes notes, Homeworks homeworks) {
     this.once = once;
     this.db = db;
+    this.notes = notes;
+    this.homeworks = homeworks;
   }
 
   @KafkaListener(topics = "core.user")
@@ -38,6 +44,9 @@ class ErasureListener {
           // Model calls about them, with any kept text, and their consent mirror (D56).
           db.sql("DELETE FROM ai_call WHERE subject_id = :s").param("s", subject).update();
           db.sql("DELETE FROM ai_consent WHERE subject_id = :s").param("s", subject).update();
+          // Notes with their transcripts and audio, homework and its records (D57).
+          notes.erase(subject);
+          homeworks.erase(subject);
         });
   }
 }

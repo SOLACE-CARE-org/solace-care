@@ -12,6 +12,9 @@ dependencies {
     implementation(platform(libs.spring.ai.bom))
     implementation(libs.spring.ai.openai)
     implementation(libs.langgraph4j.core)
+    // The scribe reads session audio from the private bucket and deletes it (D57).
+    implementation(platform(libs.aws.sdk.bom))
+    implementation(libs.aws.sdk.s3)
 
     testImplementation("io.grpc:grpc-inprocess")
 }

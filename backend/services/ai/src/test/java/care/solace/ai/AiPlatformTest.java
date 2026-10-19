@@ -68,7 +68,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class AiPlatformTest {
 
   @Container @ServiceConnection
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
+  static final PostgreSQLContainer<?> POSTGRES =
+      new PostgreSQLContainer<>(
+          org.testcontainers.utility.DockerImageName.parse("pgvector/pgvector:0.8.0-pg16")
+              .asCompatibleSubstituteFor("postgres"));
 
   static final ObjectMapper JSON = new ObjectMapper();
   static final AtomicInteger REMOTE_CALLS = new AtomicInteger();
@@ -93,7 +96,7 @@ class AiPlatformTest {
   void aFeatureGoesLiveOnlyAfterABilingualEvaluationASignOffAndPromotion() throws Exception {
     var overview =
         json(mvc.perform(get("/admin/v1/ai/features").with(superAdmin)).andExpect(status().isOk()));
-    assertThat(overview.path("features")).hasSize(4);
+    assertThat(overview.path("features")).hasSize(7);
     // No safety set supplied yet: the monitor is not shown as passing.
     assertThat(overview.path("safetyMonitor").path("passing").asBoolean()).isFalse();
     JsonNode insights = feature(overview, "TRACKING_INSIGHTS");

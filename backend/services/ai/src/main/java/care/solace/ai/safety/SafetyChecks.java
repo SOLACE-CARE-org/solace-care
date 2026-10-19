@@ -31,6 +31,19 @@ public class SafetyChecks {
     return new Decision(d.id(), d.flagged());
   }
 
+  /**
+   * Risk signals in a session transcript, for the specialist who was in the session to follow up
+   * (D57). Nothing is recorded or raised: the specialist heard it and decides.
+   */
+  public boolean signals(String text, Locale locale) {
+    for (SafetyClassifier c : monitor.classifiers()) {
+      if (c.classify(text, locale).isPresent()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public Optional<Stored> decision(UUID id) {
     return monitor
         .decision(id)
