@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import care.solace.core.MemberStackTest;
+import care.solace.core.admin.FeatureFlags;
 import care.solace.core.notifications.Delivery;
 import care.solace.core.payments.PaymentReceived;
 import care.solace.core.payments.RefundSent;
@@ -57,6 +59,7 @@ class NotificationIntegrationTest extends MemberStackTest {
   @Autowired TransactionTemplate transactions;
   @Autowired Messages messages;
   @MockitoSpyBean Delivery delivery;
+  @MockitoSpyBean FeatureFlags flags;
 
   private String seeker;
   private String seekerId;
@@ -195,6 +198,19 @@ class NotificationIntegrationTest extends MemberStackTest {
                 booking))
         .isEqualTo(1);
     verify(delivery, never()).sms(anyString(), any());
+  }
+
+  @Test
+  void theBriefIsAnnouncedAnHourBeforeOnlyWhileAiAssistIsOn() throws Exception {
+    UUID booking = booking(seekerId, null, Duration.ofMinutes(60));
+    messages.remindNow(Instant.now());
+    String count =
+        "SELECT count(*) FROM notification WHERE kind = 'BRIEF_READY' AND booking_id = ?";
+    assertThat(jdbc.queryForObject(count, Integer.class, booking)).isZero();
+    doReturn(true).when(flags).enabled("aiAssist");
+    messages.remindNow(Instant.now());
+    messages.remindNow(Instant.now());
+    assertThat(jdbc.queryForObject(count, Integer.class, booking)).isEqualTo(1);
   }
 
   @Test

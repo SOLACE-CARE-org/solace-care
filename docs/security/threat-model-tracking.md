@@ -40,6 +40,8 @@
 | TR-14 | D | Core down blocks tracking | Seekers keep logging (offline-first, sync later); specialist reads fail closed; taxonomy from cache | Planned (Phase 2) |
 | TR-16 | I | A nudge reveals what someone tracks | `tracking.nudge.requested` carries the kind only; Core sends the neutral copy, push only, and pauses after `ai.risk.flagged` | In place (D52) |
 | TR-15 | I | Erasure misses Tracking | Consumes `core.user.erased`, deletes everything (grants, nudges and pauses too), confirms with `tracking.user.erased`, which Core writes to its audit log | In place (D40, D52) |
+| TR-17 | I | The trend summary for the brief leaks more than the seeker shared | `GetTrendSummary` checks the seeker's grant to that specialist, covers [14] days, returns rule-built lines only (no notes) and audits the read | In place (D56) |
+| TR-18 | T | An AI rewording changes what a recommendation says | AI only rewords from the stored evidence, through guardrails; the clinician-approved message stays when it fails or AI is down; the app says when wording is by AI | In place (D56, `RecommendationWording`) |
 
 ## Findings
 

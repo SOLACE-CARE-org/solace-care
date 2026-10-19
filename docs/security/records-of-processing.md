@@ -229,8 +229,8 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Tracking insights, pre-session brief, session scribe, between-session companion, translation of content, trust and safety |
 | Consent | Per feature; the scribe needs both people and can be refused per session |
-| Data | As each feature needs; pseudonymous ids only; no user data used for training |
-| Retention | Prompts and outputs 30 days; scribe audio deleted after the note is signed or within 7 days (System Design). Signed notes: **Open** (decisions.md: is Solace the record keeper?) |
+| Data | As each feature needs; pseudonymous ids only; no user data used for training. Phase 3: `ai_call` (feature, route, prompt version, tokens, outcome, redacted prompt and output text); AI consent mirrored from Core; specialists' private prep notes per booking, stored in Core (`session_prep_note`), read by that specialist only. Health check answers are never sent to a model (D8) |
+| Retention | Prompts and outputs `[30]` days (`ai_call` texts cleared by a job); prep notes with the booking, removed on erasure; scribe audio deleted after the note is signed or within 7 days (System Design). Signed notes: **Open** (decisions.md: is Solace the record keeper?) |
 | Transfers abroad | Only with authorisation, otherwise a self-hosted model (System Design; **Counsel**) |
 | Security | AI threat model |
 

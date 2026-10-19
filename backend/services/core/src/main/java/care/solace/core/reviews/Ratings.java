@@ -77,7 +77,9 @@ class Ratings implements SpecialistRatings, BookingRatings {
       String publishedText,
       String hiddenReason,
       String reply,
-      Instant createdAt) {
+      Instant createdAt,
+      String aiSuggestion,
+      List<String> aiReasons) {
 
     /** "#3907" for a member, "G-2170" for a guest: enough for staff to tell reviews apart. */
     String seekerRef() {
@@ -324,7 +326,9 @@ class Ratings implements SpecialistRatings, BookingRatings {
         rs.getString("published_text"),
         rs.getString("hidden_reason"),
         replied == null ? null : rs.getString("reply"),
-        rs.getTimestamp("created_at").toInstant());
+        rs.getTimestamp("created_at").toInstant(),
+        rs.getString("ai_suggestion"),
+        strings(rs.getArray("ai_reasons")));
   }
 
   private static List<String> strings(Array array) throws SQLException {

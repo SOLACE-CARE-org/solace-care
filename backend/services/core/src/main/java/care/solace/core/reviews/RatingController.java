@@ -112,7 +112,9 @@ class RatingController {
       String sessionLanguage,
       List<String> flags,
       String status,
-      String hiddenReason) {}
+      String hiddenReason,
+      String aiSuggestion,
+      List<String> aiReasons) {}
 
   // --- Seekers and guests -----------------------------------------------------------------------
 
@@ -241,6 +243,8 @@ class RatingController {
         r.sessionLanguage(),
         r.flags(),
         r.status(),
-        r.hiddenReason());
+        r.hiddenReason(),
+        r.aiSuggestion(),
+        r.aiReasons().isEmpty() ? null : r.aiReasons());
   }
 }

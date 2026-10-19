@@ -32,15 +32,21 @@ class ReviewSafety implements FlaggedReviews {
     }
     var r = review.get();
     moderation
-        .flagged(r.id(), r.subjectId(), r.text(), r.sessionLanguage())
+        .moderate(r.id(), r.subjectId(), r.text(), r.sessionLanguage())
         .ifPresent(
-            flagged -> {
-              if (flagged) {
+            verdict -> {
+              if (verdict.risk()) {
                 flag(r.id());
               } else {
+                // The moderator still decides; the AI's suggestion only sits beside the review.
                 db.sql(
-                        "UPDATE rating SET safety = 'CLEAR' WHERE id = :id AND safety = 'NOT_CHECKED'")
+                        """
+                        UPDATE rating SET safety = 'CLEAR', ai_suggestion = :s, ai_reasons = :r
+                         WHERE id = :id AND safety = 'NOT_CHECKED'
+                        """)
                     .param("id", r.id())
+                    .param("s", verdict.suggestion())
+                    .param("r", verdict.reasons().toArray(String[]::new))
                     .update();
               }
             });

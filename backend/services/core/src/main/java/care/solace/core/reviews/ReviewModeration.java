@@ -17,8 +17,15 @@ import org.springframework.stereotype.Component;
  */
 interface ReviewModeration {
 
-  /** True when flagged, false when clear, empty when AI could not answer. */
-  Optional<Boolean> flagged(UUID reviewId, UUID subjectId, String text, String language);
+  /**
+   * The safety verdict and, from Phase 3, the model's suggestion for the moderator (D56).
+   *
+   * @param suggestion PUBLISH or HOLD, null when the feature is off
+   */
+  record Verdict(boolean risk, String suggestion, java.util.List<String> reasons) {}
+
+  /** The verdict, or empty when AI could not answer. */
+  Optional<Verdict> moderate(UUID reviewId, UUID subjectId, String text, String language);
 
   @Component
   class Grpc implements ReviewModeration {
@@ -32,19 +39,32 @@ interface ReviewModeration {
     }
 
     @Override
-    public Optional<Boolean> flagged(UUID reviewId, UUID subjectId, String text, String language) {
+    public Optional<Verdict> moderate(UUID reviewId, UUID subjectId, String text, String language) {
       return calls.call(
           "ai",
-          () ->
-              Optional.of(
-                  stub.moderateReview(
-                          ModerateReviewRequest.newBuilder()
-                              .setReviewId(reviewId.toString())
-                              .setSubjectId(subjectId.toString())
-                              .setText(text)
-                              .setLocale(language)
-                              .build())
-                      .getRisk()),
+          () -> {
+            var answer =
+                stub.moderateReview(
+                    ModerateReviewRequest.newBuilder()
+                        .setReviewId(reviewId.toString())
+                        .setSubjectId(subjectId.toString())
+                        .setText(text)
+                        .setLocale(language)
+                        .build());
+            String suggestion =
+                switch (answer.getSuggestion()) {
+                  case DECISION_PUBLISH -> "PUBLISH";
+                  case DECISION_HOLD -> "HOLD";
+                  default -> null;
+                };
+            return Optional.of(
+                new Verdict(
+                    answer.getRisk(),
+                    suggestion,
+                    answer.getSuggestionReasonsList().stream()
+                        .filter(r -> !r.equals("CLEAN"))
+                        .toList()));
+          },
           failure -> Optional.empty());
     }
   }

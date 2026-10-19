@@ -63,10 +63,14 @@ class ReviewSafetyTest extends SpecialistFlowTest {
     UUID flagged = review("I keep cutting myself.");
     UUID clear = review("Patient and practical.");
     UUID unchecked = review("The call dropped once.");
-    when(moderation.flagged(eq(flagged), any(), any(), any())).thenReturn(Optional.of(true));
-    when(moderation.flagged(eq(clear), any(), any(), any())).thenReturn(Optional.of(false));
+    when(moderation.moderate(eq(flagged), any(), any(), any()))
+        .thenReturn(Optional.of(new ReviewModeration.Verdict(true, null, java.util.List.of())));
+    when(moderation.moderate(eq(clear), any(), any(), any()))
+        .thenReturn(
+            Optional.of(
+                new ReviewModeration.Verdict(false, "HOLD", java.util.List.of("CONTACT_DETAILS"))));
     // AI could not answer: the review waits for a person (AI-4).
-    when(moderation.flagged(eq(unchecked), any(), any(), any())).thenReturn(Optional.empty());
+    when(moderation.moderate(eq(unchecked), any(), any(), any())).thenReturn(Optional.empty());
 
     for (UUID id : new UUID[] {flagged, clear, unchecked}) {
       transactions.executeWithoutResult(s -> events.publishEvent(new ReviewSubmitted(id)));

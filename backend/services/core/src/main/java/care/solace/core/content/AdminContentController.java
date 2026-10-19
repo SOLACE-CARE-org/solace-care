@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,11 +39,49 @@ class AdminContentController {
   private final StaffAccess access;
   private final Contents contents;
   private final AuditLog audit;
+  private final care.solace.core.assist.TranslationDrafts drafts;
 
-  AdminContentController(StaffAccess access, Contents contents, AuditLog audit) {
+  AdminContentController(
+      StaffAccess access,
+      Contents contents,
+      AuditLog audit,
+      care.solace.core.assist.TranslationDrafts drafts) {
     this.access = access;
     this.contents = contents;
     this.audit = audit;
+    this.drafts = drafts;
+  }
+
+  record DraftRequest(@jakarta.validation.constraints.Pattern(regexp = "en|fr") String from) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record TranslationDraft(String title, String body) {}
+
+  /**
+   * An AI draft of the other language, for the editor to review (Phase 3; D56). Nothing is saved:
+   * the editor puts it in the draft, edits it and marks the translation done as usual.
+   */
+  @PostMapping("/admin/v1/content/{contentId}/translation-draft")
+  ResponseEntity<TranslationDraft> translationDraft(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID contentId,
+      @Valid @RequestBody DraftRequest body) {
+    var staff = access.require(token, AREA, Level.CHANGE);
+    var item = contents.item(contentId);
+    var text = item.draft();
+    boolean fromEn = !"fr".equals(body.from());
+    String to = fromEn ? "fr" : "en";
+    String from = fromEn ? "en" : "fr";
+    var title =
+        drafts.draft("ARTICLE", from, to, fromEn ? text.titleEn() : text.titleFr(), staff.id());
+    var draftBody =
+        drafts.draft("ARTICLE", from, to, fromEn ? text.bodyEn() : text.bodyFr(), staff.id());
+    audit.adminAction(
+        "content.translation-draft", "content", contentId.toString(), Map.of("to", to));
+    if (title.isEmpty() && draftBody.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(new TranslationDraft(title.orElse(null), draftBody.orElse(null)));
   }
 
   record Row(

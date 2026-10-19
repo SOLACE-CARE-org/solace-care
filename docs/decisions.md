@@ -334,6 +334,21 @@ Every pair now meets WCAG 2.1 AA.
 - **Price bands** `[band 1]` and `[band 2]` are settings, 15 000 and 25 000 FCFA by default.
 - **Sharing:** a booking made with source HEALTH_CHECK and "Share my answers" ticked records a share for that booking; the booked specialist reads the answers and the screener totals with their bands, and every read is audited. Guests cannot share until they have an account.
 
+**D56. The AI platform and AI assist (Phase 3).** Taken 19 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **One gateway:** every model call goes through `ModelGateway` in the AI service. Each feature has an ordered list of routes and falls back down it. Each route has a monthly token budget, `[1 000 000]` tokens by default. Names, phone numbers and emails are redacted before a prompt leaves the service. Spring AI's OpenAI-compatible client covers both hosted vendors and a model run in-house.
+- **Health data stays local:** a prompt that carries health data may only use a route marked local, until `solace.ai.transfer-authorised` is set. That setting waits on the open question about acceptable vendors. With no local route, the feature falls back to its rule-built text.
+- **Logging:** every call is logged in `ai_call` with its feature, route, prompt version, tokens and outcome. The prompt and output texts are deleted after `[30]` days. Erasure removes a person's calls and AI consent rows.
+- **Guardrails** run on every output. They refuse clinical labels and diagnosis wording, any number not found in the evidence, and outputs over the feature's length. A refused output falls back to the rule-built text.
+- **Features and promotion:** each feature (tracking insights, translation drafts, review moderation, pre-session brief) has versioned prompts. A version needs a passing evaluation (`[95]`% on its bilingual test set in `/eval/<feature>.json`) and then a Clinical reviewer's sign-off before Super admin can promote it. A feature can be switched on only while its live version has passed. v1.0 drafts are seeded but not switched on.
+- **Safety monitor evaluation:** its test set must come from clinicians. Until they supply `/eval/safety-monitor.json`, the monitor shows as "not evaluated" on admin screen 26.
+- **Health check answers are never sent to a model (D8):** the brief's health check summary is built by rules in Core from the shared answers. Only the tracking part may be worded by AI, from lines built by rules, and the specialist sees those lines under it.
+- **Recommendations:** after a pattern is stored, Tracking asks AI to reword the message from that evidence only, asynchronously and behind a circuit breaker. If the wording passes, the app shows it with "Wording by AI from these cycles only"; otherwise the clinician-approved message stays.
+- **Moderation:** for reviews that are not flagged, AI adds a suggestion with reasons. It only advises: a moderator still decides.
+- **Translation drafts:** content editors and application reviewers can ask for an AI draft of the missing language. It fills the field for a person to check; nothing is published or saved without that person.
+- **Prep notes:** the specialist's private notes on a booking, stored in Core. Only that specialist reads them; no rule and no model reads them.
+- **The mobile brief** is behind the `aiAssist` flag (off by default) and opens from Today's next session.
+- LangGraph4j is added to the build now for the Phase 4 scribe and companion graphs.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

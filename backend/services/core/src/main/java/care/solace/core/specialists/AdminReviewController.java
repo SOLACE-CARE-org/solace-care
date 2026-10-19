@@ -45,9 +45,36 @@ class AdminReviewController {
   private final StaffAccess access;
   private final Reviews reviews;
 
-  AdminReviewController(StaffAccess access, Reviews reviews) {
+  private final care.solace.core.assist.TranslationDrafts drafts;
+
+  AdminReviewController(
+      StaffAccess access, Reviews reviews, care.solace.core.assist.TranslationDrafts drafts) {
     this.access = access;
     this.reviews = reviews;
+    this.drafts = drafts;
+  }
+
+  record BioDraft(String language, String text) {}
+
+  /**
+   * An AI draft of the bio's missing language, for the reviewer to check and save with PUT bio; the
+   * specialist still confirms it before the profile is listed (D30, D56).
+   */
+  @PostMapping("/admin/v1/specialist-applications/{id}/bio-draft")
+  org.springframework.http.ResponseEntity<BioDraft> bioDraft(
+      @AuthenticationPrincipal Jwt token, @PathVariable UUID id, Locale locale) {
+    var staff = changer(token);
+    var p = reviews.review(id, locale).profile();
+    boolean hasEn = p.bioEn() != null && !p.bioEn().isBlank();
+    boolean hasFr = p.bioFr() != null && !p.bioFr().isBlank();
+    if (hasEn == hasFr) {
+      return org.springframework.http.ResponseEntity.noContent().build();
+    }
+    String to = hasEn ? "fr" : "en";
+    return drafts
+        .draft("BIO", hasEn ? "en" : "fr", to, hasEn ? p.bioEn() : p.bioFr(), staff.id())
+        .map(text -> org.springframework.http.ResponseEntity.ok(new BioDraft(to, text)))
+        .orElse(org.springframework.http.ResponseEntity.noContent().build());
   }
 
   // --- Bodies, as in the contract --------------------------------------------------------------

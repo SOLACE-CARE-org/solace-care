@@ -1,5 +1,6 @@
 package care.solace.core.messaging;
 
+import care.solace.core.admin.FeatureFlags;
 import care.solace.core.bookings.BookingCancelled;
 import care.solace.core.bookings.BookingCompleted;
 import care.solace.core.bookings.BookingRecords;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,12 +37,22 @@ class Messages {
   private final BookingRecords bookings;
   private final Catalogue catalogue;
   private final Delivery copy;
+  private final FeatureFlags flags;
+  private final Duration briefNotice;
 
-  Messages(Notifier notifier, BookingRecords bookings, Catalogue catalogue, Delivery copy) {
+  Messages(
+      Notifier notifier,
+      BookingRecords bookings,
+      Catalogue catalogue,
+      Delivery copy,
+      FeatureFlags flags,
+      @Value("${solace.brief.notice:PT60M}") Duration briefNotice) {
     this.notifier = notifier;
     this.bookings = bookings;
     this.catalogue = catalogue;
     this.copy = copy;
+    this.flags = flags;
+    this.briefNotice = briefNotice;
   }
 
   // --- Bookings and money -----------------------------------------------------------------------
@@ -308,6 +320,18 @@ class Messages {
           false,
           (l, z) ->
               new Object[] {languageName(b.sessionLanguage(), l), Formats.time(b.start(), z)});
+    }
+    // The pre-session brief, `[60]` minutes before, while AI assist is on (Phase 3, D56).
+    if (flags.enabled("aiAssist")) {
+      Instant at = now.plus(briefNotice);
+      for (var b : bookings.confirmedStartingBetween(at.minusSeconds(2 * 60), at.plusSeconds(60))) {
+        notifier.push(
+            b.specialistId(),
+            "BRIEF_READY",
+            b.id(),
+            false,
+            (l, z) -> new Object[] {Formats.time(b.start(), z)});
+      }
     }
   }
 

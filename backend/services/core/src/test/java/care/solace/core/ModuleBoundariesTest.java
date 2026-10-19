@@ -44,6 +44,8 @@ class ModuleBoundariesTest {
             "insight",
             // Tracking invites with matched specialists (Phase 2, epic 6, D52).
             "invites",
+            // AI drafts a person reviews before anything is published (Phase 3, D56).
+            "assist",
             "system");
   }
 }
