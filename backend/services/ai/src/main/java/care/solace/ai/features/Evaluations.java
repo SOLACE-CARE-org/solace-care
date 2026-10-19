@@ -1,0 +1,204 @@
+package care.solace.ai.features;
+
+import care.solace.ai.gateway.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Service;
+
+/**
+ * The bilingual evaluation harness (System Design, AI service, Evaluation; D56): every feature has
+ * made-up test cases in English and French under {@code /eval/<feature>.json}; a prompt version
+ * passes when at least the gate share of cases pass in each language. Failures name the case and
+ * the guardrail.
+ */
+@Service
+public class Evaluations {
+
+  /** One feature's way of running a test case with a given prompt version. */
+  public interface Runner {
+
+    Feature feature();
+
+    /** Why the case failed, or empty when it passed. */
+    Optional<String> run(
+        Features.PromptVersion version, JsonNode input, JsonNode expect, Locale locale);
+  }
+
+  public record Failure(String caseId, String locale, String reason) {}
+
+  public record Run(
+      UUID id,
+      Feature feature,
+      UUID promptVersionId,
+      int passedEn,
+      int totalEn,
+      int passedFr,
+      int totalFr,
+      BigDecimal gate,
+      boolean passed,
+      List<Failure> failures,
+      String ranBy,
+      Instant ranAt) {}
+
+  private final JdbcClient db;
+  private final ObjectMapper json;
+  private final Map<Feature, Runner> runners;
+  private final List<Runner> lazyRunners;
+  private final BigDecimal gate;
+  private final Clock clock;
+
+  Evaluations(
+      JdbcClient db,
+      ObjectMapper json,
+      @Lazy List<Runner> runners,
+      @Value("${solace.ai.eval-gate:95}") BigDecimal gate,
+      Clock clock) {
+    this.db = db;
+    this.json = json;
+    this.runners = new java.util.HashMap<>();
+    this.lazyRunners = runners;
+    this.gate = gate;
+    this.clock = clock;
+  }
+
+  private Runner runner(Feature feature) {
+    if (runners.isEmpty()) {
+      runners.putAll(
+          lazyRunners.stream().collect(Collectors.toMap(Runner::feature, Function.identity())));
+    }
+    return runners.get(feature);
+  }
+
+  /** Runs every test case of the version's feature with that version. */
+  public Run evaluate(Features.PromptVersion version, String by) {
+    Runner runner = runner(version.feature());
+    JsonNode cases = cases(version.feature());
+    int passedEn = 0;
+    int totalEn = 0;
+    int passedFr = 0;
+    int totalFr = 0;
+    List<Failure> failures = new ArrayList<>();
+    for (JsonNode c : cases) {
+      String locale = c.path("locale").asText("en");
+      Optional<String> failure =
+          runner == null
+              ? Optional.of("no-runner")
+              : runner.run(
+                  version, c.path("input"), c.path("expect"), Locale.forLanguageTag(locale));
+      boolean fr = locale.equals("fr");
+      if (fr) {
+        totalFr++;
+      } else {
+        totalEn++;
+      }
+      if (failure.isEmpty()) {
+        if (fr) {
+          passedFr++;
+        } else {
+          passedEn++;
+        }
+      } else {
+        failures.add(new Failure(c.path("id").asText(), locale, failure.get()));
+      }
+    }
+    boolean passed =
+        totalEn > 0 && totalFr > 0 && share(passedEn, totalEn) && share(passedFr, totalFr);
+    UUID id = UUID.randomUUID();
+    Instant now = clock.instant();
+    db.sql(
+            """
+            INSERT INTO eval_run (id, feature, prompt_version_id, passed_en, total_en, passed_fr, total_fr,
+                                  gate, passed, failures_json, ran_by, ran_at)
+            VALUES (:id, :f, :v, :pe, :te, :pf, :tf, :g, :p, CAST(:fail AS jsonb), :by, :now)
+            """)
+        .param("id", id)
+        .param("f", version.feature().name())
+        .param("v", version.id())
+        .param("pe", passedEn)
+        .param("te", totalEn)
+        .param("pf", passedFr)
+        .param("tf", totalFr)
+        .param("g", gate)
+        .param("p", passed)
+        .param("fail", write(failures))
+        .param("by", by)
+        .param("now", Timestamp.from(now))
+        .update();
+    return latest(version.id()).orElseThrow();
+  }
+
+  public boolean passed(UUID promptVersionId) {
+    return latest(promptVersionId).map(Run::passed).orElse(false);
+  }
+
+  public Optional<Run> latest(UUID promptVersionId) {
+    return db.sql(
+            "SELECT * FROM eval_run WHERE prompt_version_id = :v ORDER BY ran_at DESC LIMIT 1")
+        .param("v", promptVersionId)
+        .query(
+            (rs, n) -> {
+              try {
+                return new Run(
+                    rs.getObject("id", UUID.class),
+                    Feature.valueOf(rs.getString("feature")),
+                    rs.getObject("prompt_version_id", UUID.class),
+                    rs.getInt("passed_en"),
+                    rs.getInt("total_en"),
+                    rs.getInt("passed_fr"),
+                    rs.getInt("total_fr"),
+                    rs.getBigDecimal("gate"),
+                    rs.getBoolean("passed"),
+                    List.of(json.readValue(rs.getString("failures_json"), Failure[].class)),
+                    rs.getString("ran_by"),
+                    rs.getTimestamp("ran_at").toInstant());
+              } catch (JsonProcessingException e) {
+                throw new IllegalStateException(e);
+              }
+            })
+        .optional();
+  }
+
+  private boolean share(int passed, int total) {
+    return BigDecimal.valueOf(passed * 100L).compareTo(gate.multiply(BigDecimal.valueOf(total)))
+        >= 0;
+  }
+
+  JsonNode cases(Feature feature) {
+    String path = "/eval/" + feature.name().toLowerCase(Locale.ROOT).replace('_', '-') + ".json";
+    try (InputStream in = Evaluations.class.getResourceAsStream(path)) {
+      if (in == null) {
+        return json.createArrayNode();
+      }
+      return json.readTree(in).path("cases");
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private String write(Object value) {
+    try {
+      return json.writeValueAsString(value);
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+}

@@ -18,6 +18,8 @@ class GrpcConfiguration {
         Map.of(
             "solace.platform.v1.PingService/Ping", "ai:ping",
             "solace.ai.v1.ModerationService/ModerateReview", "ai:moderation.invoke",
-            "solace.ai.v1.RiskService/GetRiskDecision", "ai:risk.read"));
+            "solace.ai.v1.RiskService/GetRiskDecision", "ai:risk.read",
+            "solace.ai.v1.InsightService/ExplainRecommendation", "ai:insight.invoke",
+            "solace.ai.v1.TranslationService/DraftTranslation", "ai:translation.invoke"));
   }
 }

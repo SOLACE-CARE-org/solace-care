@@ -25,6 +25,9 @@ json-schema-validator = "1.5.9"
 otel-instrumentation = "2.15.0-alpha"
 # S3 client for object storage (MinIO locally): specialist credentials, content images.
 aws-sdk = "2.39.2"
+# AI service (D56): Spring AI 1.1 is the Spring Boot 3.5 line; LangGraph4j for multi-step flows.
+spring-ai = "1.1.8"
+langgraph4j = "1.9.3"
 
 [libraries]
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -50,6 +53,9 @@ otel-logback-appender = { module = "io.opentelemetry.instrumentation:opentelemet
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 aws-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-sdk" }
 aws-sdk-s3 = { module = "software.amazon.awssdk:s3" }
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
+spring-ai-openai = { module = "org.springframework.ai:spring-ai-openai" }
+langgraph4j-core = { module = "org.bsc.langgraph4j:langgraph4j-core", version.ref = "langgraph4j" }
 
 # Used by build-logic to apply plugins from convention scripts
 spring-boot-gradle-plugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "spring-boot" }

@@ -1,0 +1,49 @@
+{
+  "description": "Made-up recommendations for Tracking insights (D56). A case passes when the wording in its locale passes every guardrail (no condition named, no number outside the evidence, at most 320 characters) and mentions what it must. The clinical team extends this set before launch.",
+  "cases": [
+    {
+      "id": "long-cycles-en",
+      "locale": "en",
+      "input": {
+        "ruleCode": "pcos.long_cycles",
+        "evidence": { "n": 3, "threshold": 35, "cycles": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
+        "messageEn": "Each of your last 3 cycles ran longer than 35 days. Patterns like this are worth checking with a specialist. This is not a diagnosis.",
+        "messageFr": "Chacun de vos 3 derniers cycles a duré plus de 35 jours. Ce type de schéma mérite d'être vérifié avec un spécialiste. Ce n'est pas un diagnostic."
+      },
+      "expect": { "mentions": ["35"] }
+    },
+    {
+      "id": "long-cycles-fr",
+      "locale": "fr",
+      "input": {
+        "ruleCode": "pcos.long_cycles",
+        "evidence": { "n": 3, "threshold": 35, "cycles": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
+        "messageEn": "Each of your last 3 cycles ran longer than 35 days. Patterns like this are worth checking with a specialist. This is not a diagnosis.",
+        "messageFr": "Chacun de vos 3 derniers cycles a duré plus de 35 jours. Ce type de schéma mérite d'être vérifié avec un spécialiste. Ce n'est pas un diagnostic."
+      },
+      "expect": { "mentions": ["35"] }
+    },
+    {
+      "id": "short-sleep-en",
+      "locale": "en",
+      "input": {
+        "ruleCode": "checkin.short_sleep",
+        "evidence": { "average": 280, "window": 14, "logged": 12, "threshold": 300 },
+        "messageEn": "Over the last 14 days you slept 280 minutes a night on average, less than 300.",
+        "messageFr": "Sur les 14 derniers jours, vous avez dormi en moyenne 280 minutes par nuit, moins que 300."
+      },
+      "expect": { "mentions": ["14"] }
+    },
+    {
+      "id": "short-sleep-fr",
+      "locale": "fr",
+      "input": {
+        "ruleCode": "checkin.short_sleep",
+        "evidence": { "average": 280, "window": 14, "logged": 12, "threshold": 300 },
+        "messageEn": "Over the last 14 days you slept 280 minutes a night on average, less than 300.",
+        "messageFr": "Sur les 14 derniers jours, vous avez dormi en moyenne 280 minutes par nuit, moins que 300."
+      },
+      "expect": { "mentions": ["14"] }
+    }
+  ]
+}

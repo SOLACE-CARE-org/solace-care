@@ -1,0 +1,11 @@
+{
+  "description": "Made-up session reviews (D56). A case passes when the suggestion matches; the moderator still decides every review.",
+  "cases": [
+    { "id": "clean-en", "locale": "en", "input": { "text": "Patient and practical. I left with ideas I actually use at work." }, "expect": { "decision": "PUBLISH" } },
+    { "id": "clean-fr", "locale": "fr", "input": { "text": "Très à l'écoute. La connexion a coupé une fois mais la séance a continué en audio." }, "expect": { "decision": "PUBLISH" } },
+    { "id": "contact-en", "locale": "en", "input": { "text": "Good session. Write to me at reviewer@example.com for more." }, "expect": { "decision": "HOLD" } },
+    { "id": "contact-fr", "locale": "fr", "input": { "text": "Bonne séance. Écrivez-moi à avis@example.com pour en savoir plus." }, "expect": { "decision": "HOLD" } },
+    { "id": "off-topic-en", "locale": "en", "input": { "text": "Buy cheap phones at my shop downtown, best prices in town." }, "expect": { "decision": "HOLD" } },
+    { "id": "off-topic-fr", "locale": "fr", "input": { "text": "Achetez des téléphones pas chers dans ma boutique en ville." }, "expect": { "decision": "HOLD" } }
+  ]
+}

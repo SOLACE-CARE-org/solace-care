@@ -1,0 +1,17 @@
+{
+  "description": "Made-up tracking facts for the pre-session brief (D56). A case passes when the wording passes the guardrails (no condition named, no number outside the facts) and mentions what it must.",
+  "cases": [
+    {
+      "id": "checkin-en",
+      "locale": "en",
+      "input": { "facts": ["Mood: 9 of 14 days logged, average 2.6.", "Sleep last night: 11 of 14 days logged, 330 minutes on average."] },
+      "expect": { "mentions": ["14"] }
+    },
+    {
+      "id": "checkin-fr",
+      "locale": "fr",
+      "input": { "facts": ["Humeur : 9 jours notés sur 14, moyenne 2.6.", "Sommeil cette nuit : 11 jours notés sur 14, 330 minutes en moyenne."] },
+      "expect": { "mentions": ["14"] }
+    }
+  ]
+}

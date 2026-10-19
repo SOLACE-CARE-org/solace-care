@@ -1,0 +1,29 @@
+{
+  "description": "Made-up texts for EN/FR drafts (D56). The case's locale is the language drafted into; a case passes when every number survives, nothing is invented, and the draft mentions what it must.",
+  "cases": [
+    {
+      "id": "bio-en-to-fr",
+      "locale": "fr",
+      "input": { "kind": "BIO", "from": "en", "text": "I have worked with adults for 12 years, in English and French, on stress at work and sleep." },
+      "expect": { "mentions": ["12"] }
+    },
+    {
+      "id": "bio-fr-to-en",
+      "locale": "en",
+      "input": { "kind": "BIO", "from": "fr", "text": "J'accompagne des adultes depuis 12 ans, en français et en anglais, sur le stress au travail et le sommeil." },
+      "expect": { "mentions": ["12"] }
+    },
+    {
+      "id": "article-en-to-fr",
+      "locale": "fr",
+      "input": { "kind": "ARTICLE", "from": "en", "text": "A short walk of 10 minutes after lunch can help you feel more awake in the afternoon." },
+      "expect": { "mentions": ["10"] }
+    },
+    {
+      "id": "article-fr-to-en",
+      "locale": "en",
+      "input": { "kind": "ARTICLE", "from": "fr", "text": "Une courte marche de 10 minutes après le déjeuner peut aider à se sentir plus éveillé l'après-midi." },
+      "expect": { "mentions": ["10"] }
+    }
+  ]
+}

@@ -15,6 +15,31 @@ spring:
   grpc:
     server:
       port: 9103
+    client:
+      channels:
+        # The pre-session brief reads from Core and Tracking (Phase 3, D56). Plain text locally;
+        # mTLS in the cluster.
+        core:
+          address: static://localhost:9101
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+        tracking:
+          address: static://localhost:9102
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+  security:
+    oauth2:
+      client:
+        # AI's client-credentials token for its calls to Core and Tracking (infra/keycloak: ai-service).
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: ai-service
+            client-secret: ${SOLACE_AI_SERVICE_SECRET:ai-service-dev-secret}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: http://localhost:8180/realms/solace-staff/protocol/openid-connect/token
 
 server:
   port: 8103
@@ -32,3 +57,13 @@ management:
 solace:
   security:
     audience: ai
+  grpc:
+    client-registration: keycloak
+  ai:
+    # Models the gateway may use (D56). None by default: every feature stays off until a model is
+    # chosen, configured here and evaluated. Health data goes only to local models until the
+    # transfer authorisation is recorded (transfer-authorised).
+    models: []
+    routes: {}
+    transfer-authorised: false
+    retention-days: 30

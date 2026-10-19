@@ -33,9 +33,11 @@ class ErasureListener {
     once.handle(
         CONSUMER,
         event,
-        () ->
-            db.sql("DELETE FROM safety_decision WHERE subject_id = :s")
-                .param("s", subject)
-                .update());
+        () -> {
+          db.sql("DELETE FROM safety_decision WHERE subject_id = :s").param("s", subject).update();
+          // Model calls about them, with any kept text, and their consent mirror (D56).
+          db.sql("DELETE FROM ai_call WHERE subject_id = :s").param("s", subject).update();
+          db.sql("DELETE FROM ai_consent WHERE subject_id = :s").param("s", subject).update();
+        });
   }
 }

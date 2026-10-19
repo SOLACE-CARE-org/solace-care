@@ -1,5 +1,6 @@
 package care.solace.ai.grpc;
 
+import care.solace.ai.moderation.ReviewModeration;
 import care.solace.ai.safety.SafetyChecks;
 import care.solace.contracts.ai.v1.Decision;
 import care.solace.contracts.ai.v1.ModerateReviewRequest;
@@ -12,16 +13,19 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Review moderation for Core. Phase 1 holds every review for a person (human moderation until Phase
- * 3); the safety monitor's flag is what this adds (D37, D39). The text is never stored or logged.
+ * Review moderation for Core. Every review still waits for a person (D37); the safety monitor's
+ * flag, and from Phase 3 a model's suggestion for the moderator, are what this adds (D39, D56). The
+ * text is never logged; the gateway keeps it [30] days for the safety audit.
  */
 @Service
 class ModerationEndpoint extends ModerationServiceGrpc.ModerationServiceImplBase {
 
   private final SafetyChecks safety;
+  private final ReviewModeration moderation;
 
-  ModerationEndpoint(SafetyChecks safety) {
+  ModerationEndpoint(SafetyChecks safety, ReviewModeration moderation) {
     this.safety = safety;
+    this.moderation = moderation;
   }
 
   @Override
@@ -43,12 +47,26 @@ class ModerationEndpoint extends ModerationServiceGrpc.ModerationServiceImplBase
             subjectId,
             request.getText(),
             Locale.forLanguageTag(request.getLocale().isBlank() ? "en" : request.getLocale()));
-    responses.onNext(
+    var reply =
         ModerateReviewResponse.newBuilder()
             .setDecision(Decision.DECISION_HOLD)
             .setRisk(decision.flagged())
-            .setDecisionId(decision.id().toString())
-            .build());
+            .setDecisionId(decision.id().toString());
+    // Phase 3: a suggestion for the moderator, never for a review the safety monitor flagged.
+    if (!decision.flagged()) {
+      moderation
+          .suggest(subjectId, request.getText())
+          .ifPresent(
+              s ->
+                  reply
+                      .setSuggestion(
+                          s.decision().equals("PUBLISH")
+                              ? Decision.DECISION_PUBLISH
+                              : Decision.DECISION_HOLD)
+                      .addAllSuggestionReasons(
+                          s.reasons().isEmpty() ? java.util.List.of("CLEAN") : s.reasons()));
+    }
+    responses.onNext(reply.build());
     responses.onCompleted();
   }
 }

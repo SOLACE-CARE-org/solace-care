@@ -68,6 +68,11 @@ class SafetyMonitor {
       String classifierVersion,
       String policyVersion) {}
 
+  /** The classifiers in use, for the release gate on admin screen 26 (D56). */
+  List<SafetyClassifier> classifiers() {
+    return classifiers;
+  }
+
   /** Checks one text; flagged if any classifier flags it. */
   Decision check(String source, UUID sourceId, UUID subjectId, String text, Locale locale) {
     SafetyClassifier.Category category = null;
