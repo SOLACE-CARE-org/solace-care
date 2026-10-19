@@ -231,7 +231,8 @@
         "proposedByYou": "You proposed approval, {{date}}. Another person with access to Specialists confirms it.",
         "kind_APPROVAL_PROPOSED": "Approval proposed",
         "kind_APPROVAL_WITHDRAWN": "Approval proposal withdrawn",
-        "draftedBySolace": "Drafted by Solace; the specialist checks it before going live"
+        "draftedBySolace": "Drafted by Solace; the specialist checks it before going live",
+        "aiDraftBio": "Draft the missing language with AI"
       },
       "record": {
         "search": "Find a specialist by name or licence number",
@@ -344,7 +345,13 @@
       "confirmHide": "Hide review",
       "empty": "No reviews waiting. New written reviews appear here after the safety check.",
       "done_PUBLISHED": "Published.",
-      "done_HIDDEN": "Hidden."
+      "done_HIDDEN": "Hidden.",
+      "ai_PUBLISH": "AI suggests: publish",
+      "ai_HOLD": "AI suggests: hold",
+      "aiReason_CONTACT_DETAILS": "Contact details",
+      "aiReason_OFFENSIVE": "Offensive",
+      "aiReason_NOT_ABOUT_SESSION": "Not about the session",
+      "aiReason_LOOKS_FAKE": "Looks fake"
     },
     "payments": {
       "title": "Payments",
@@ -859,7 +866,11 @@
       "sendCheck": "Send for clinical check",
       "approveCheck": "Approve clinical check",
       "publish": "Publish",
-      "confirmPublish": "Publish version {{version}}?"
+      "confirmPublish": "Publish version {{version}}?",
+      "aiDraft_en": "Draft the English from the French with AI",
+      "aiDraft_fr": "Draft the French from the English with AI",
+      "aiDraftNone": "No AI draft right now. Write this language yourself.",
+      "aiDraftNote": "AI draft added. Check every word before you mark the translation done."
     },
     "people": {
       "title": "People",
@@ -1469,6 +1480,78 @@
           "specialtyOrder": "Every scored specialty in the specialty order"
         }
       }
+    },
+    "ai": {
+      "title": "AI controls",
+      "subtitle": "A feature can be switched on only when its latest evaluation passes in both English and French.",
+      "col": {
+        "feature": "Feature",
+        "route": "Model route",
+        "prompt": "Prompt and policy",
+        "evaluation": "Last evaluation",
+        "status": "Status",
+        "on": "On"
+      },
+      "feature": {
+        "SAFETY_MONITOR": "Safety monitor",
+        "TRACKING_INSIGHTS": "Tracking insights",
+        "PRE_SESSION_BRIEF": "Pre-session brief",
+        "REVIEW_MODERATION": "Review moderation",
+        "TRANSLATION": "Content and bio translation",
+        "SESSION_SCRIBE": "Session scribe"
+      },
+      "selfHosted": "Self-hosted classifier",
+      "noRoute": "No model configured",
+      "scribeRoute": "[speech-to-text] + [approved LLM]",
+      "notApplicable": "n/a",
+      "policy": "policy {{v}}",
+      "prompt": "prompt v{{v}}",
+      "new": "(new)",
+      "recall": "Crisis recall EN {{en}}% · FR {{fr}}% · gate {{gate}}%",
+      "noSafetySet": "Waiting for the clinical team's safety set",
+      "notRun": "Not yet run",
+      "passedLine": "EN {{pe}} of {{te}} · FR {{pf}} of {{tf}}",
+      "failedLine": "{{locale}} sample failed: {{reason}}",
+      "phase4": "Phase 4",
+      "status": {
+        "PASSING": "Passing",
+        "BLOCKED": "Blocked",
+        "NOT_EVALUATED": "Not evaluated",
+        "NOT_BUILT": "Not built",
+        "LIVE": "Live"
+      },
+      "switchOn": "Switch {{feature}} on",
+      "switchOff": "Switch {{feature}} off",
+      "reason": "Reason",
+      "reasonHint": "Say why. It goes to the audit log.",
+      "panel": "{{feature}} · prompt v{{v}}",
+      "panelNote": "v{{live}} stays live until v{{v}} passes. Promote needs a clinical reviewer's sign-off on the graded sample.",
+      "panelNoteFirst": "Nothing is live yet. Promote needs a passing evaluation and a clinical reviewer's sign-off on the graded sample.",
+      "evaluate": "Run evaluation",
+      "viewFailures": "View failed samples",
+      "hideFailures": "Hide failed samples",
+      "signOff": "Sign off the graded sample",
+      "signedOff": "Signed off by {{who}}",
+      "promote": "Promote v{{v}}",
+      "system": "Instructions",
+      "policyText": "Policy",
+      "failure": {
+        "clinical-wording": "named a condition or a diagnosis",
+        "number-not-in-evidence": "added a finding not in the evidence",
+        "length": "too long or empty",
+        "no-answer": "the model did not answer",
+        "not-json": "answered in the wrong form",
+        "no-draft": "no draft came back",
+        "no-suggestion": "no suggestion came back",
+        "no-wording": "no wording came back",
+        "no-runner": "the feature cannot be evaluated yet",
+        "missing": "left out what it had to say",
+        "expected": "suggested the wrong decision"
+      },
+      "locale": {
+        "en": "EN",
+        "fr": "FR"
+      }
     }
   },
   "roleChoice": {
@@ -1973,7 +2056,8 @@
     "quietTitle": "No sessions today",
     "quietNext": "Your next session is {{when}}. Seekers can book you while you're accepting new bookings.",
     "quietNone": "Seekers can book you while you're accepting new bookings.",
-    "openCalendar": "Open my calendar"
+    "openCalendar": "Open my calendar",
+    "brief": "Open the brief"
   },
   "rate": {
     "skip": "Skip",
@@ -2246,7 +2330,8 @@
       "dismiss": "Not now",
       "noMatches": "No specialist is free for this yet. Search all specialists.",
       "searchAll": "Search all specialists",
-      "next": "{{specialty}} · next {{slot}}"
+      "next": "{{specialty}} · next {{slot}}",
+      "aiWorded": "Wording by AI from these cycles only · rule reviewed by Solace clinicians"
     },
     "signup": {
       "title": "What would you like to track?",
@@ -2348,5 +2433,28 @@
       "notSure": "Not sure who to see?",
       "take": "Take the 3-minute health check"
     }
+  },
+  "brief": {
+    "title": "Pre-session brief",
+    "when": "{{when}} · {{modality}} · {{language}}",
+    "guest": "Guest",
+    "registered": "Registered",
+    "firstSession": "First session",
+    "noSafetyFlags": "No safety flags in the health check",
+    "safetyStop": "The health check stopped at the safety question",
+    "scribeYes": "AI scribe: consented",
+    "scribeNo": "AI scribe: not consented",
+    "healthCheck": "Health check",
+    "sharedOn": "Shared by the seeker · {{date}}",
+    "notShared": "Not shared",
+    "tracking": "Tracking data",
+    "trackingGuest": "None (guest)",
+    "trackingNone": "Not shared",
+    "aiWorded": "Summary worded by AI from these lines only",
+    "prepNotes": "Your private prep notes",
+    "prepHelp": "Only you can see these",
+    "saveNotes": "Save notes",
+    "join": "Join session",
+    "opensAt": "Opens at {{time}}"
   }
 }

@@ -21,6 +21,8 @@ const defaults = {
   onCallSpecialistCall: false,
   /** The health check, Phase 2. */
   healthCheck: false,
+  /** AI assist, Phase 3: the pre-session brief for specialists (D56). */
+  aiAssist: false,
 };
 
 export type Flags = typeof defaults;

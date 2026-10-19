@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSessionLanguages } from '@/api/account';
 import { type Booking, useMyBookings } from '@/api/bookings';
 import { useApplication } from '@/api/specialist';
+import { useFlags } from '@/config/flags';
 import i18n from '@/i18n';
 import { joinOpensAt, longWhen, toneOf } from '@/state/bookingView';
 import { capitalised, timeOf } from '@/state/format';
@@ -28,8 +29,8 @@ function sameDay(iso: string, now: number): boolean {
 
 /**
  * Today (SpecialistToday.dc.html, StateSpecialistQuietDay.dc.html), Phase 1: the next session with
- * Join from 10 minutes before, then the rest of the day. The pre-session brief (Phase 3) and note
- * drafts (Phase 4) join this screen later.
+ * Join from 10 minutes before, then the rest of the day. The pre-session brief (Phase 3) opens from
+ * the next session while AI assist is on; note drafts (Phase 4) join this screen later.
  */
 export default function SpecialistToday() {
   const { t } = useTranslation();
@@ -148,6 +149,7 @@ function UpNext({
   const opens = joinOpensAt(b);
   const open = now >= opens.getTime();
   const who = b.seeker?.label ?? '';
+  const aiAssist = useFlags((f) => f.aiAssist);
   return (
     <View style={styles.next}>
       <Text variant="meta" color={colors.brandTintStrong} style={styles.bold}>
@@ -171,6 +173,13 @@ function UpNext({
         accessibilityState={{ disabled: !open }}
         onPress={() => router.push({ pathname: '/call/[id]', params: { id: b.id } })}
       />
+      {aiAssist ? (
+        <Button
+          variant="secondary"
+          label={t('today.brief')}
+          onPress={() => router.push({ pathname: '/brief/[id]', params: { id: b.id } })}
+        />
+      ) : null}
     </View>
   );
 }

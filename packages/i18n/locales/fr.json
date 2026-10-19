@@ -231,7 +231,8 @@
         "proposedByYou": "Vous avez proposé l'approbation le {{date}}. Une autre personne ayant accès aux spécialistes la confirme.",
         "kind_APPROVAL_PROPOSED": "Approbation proposée",
         "kind_APPROVAL_WITHDRAWN": "Proposition d'approbation retirée",
-        "draftedBySolace": "Rédigée par Solace ; le spécialiste la vérifie avant la mise en ligne"
+        "draftedBySolace": "Rédigée par Solace ; le spécialiste la vérifie avant la mise en ligne",
+        "aiDraftBio": "Rédiger la langue manquante avec l'IA"
       },
       "record": {
         "search": "Trouver un spécialiste par nom ou numéro d'autorisation",
@@ -344,7 +345,13 @@
       "confirmHide": "Masquer l'avis",
       "empty": "Aucun avis en attente. Les nouveaux avis écrits apparaissent ici après le contrôle de sécurité.",
       "done_PUBLISHED": "Publié.",
-      "done_HIDDEN": "Masqué."
+      "done_HIDDEN": "Masqué.",
+      "ai_PUBLISH": "Suggestion IA : publier",
+      "ai_HOLD": "Suggestion IA : retenir",
+      "aiReason_CONTACT_DETAILS": "Coordonnées",
+      "aiReason_OFFENSIVE": "Offensant",
+      "aiReason_NOT_ABOUT_SESSION": "Sans rapport avec la séance",
+      "aiReason_LOOKS_FAKE": "Semble faux"
     },
     "payments": {
       "title": "Paiements",
@@ -859,7 +866,11 @@
       "sendCheck": "Envoyer au contrôle clinique",
       "approveCheck": "Approuver le contrôle clinique",
       "publish": "Publier",
-      "confirmPublish": "Publier la version {{version}} ?"
+      "confirmPublish": "Publier la version {{version}} ?",
+      "aiDraft_en": "Rédiger l'anglais depuis le français avec l'IA",
+      "aiDraft_fr": "Rédiger le français depuis l'anglais avec l'IA",
+      "aiDraftNone": "Pas d'ébauche IA pour le moment. Rédigez cette langue vous-même.",
+      "aiDraftNote": "Ébauche IA ajoutée. Vérifiez chaque mot avant de marquer la traduction comme faite."
     },
     "people": {
       "title": "Personnes",
@@ -1469,6 +1480,78 @@
           "specialtyOrder": "Chaque spécialité notée dans l'ordre des spécialités"
         }
       }
+    },
+    "ai": {
+      "title": "Contrôles IA",
+      "subtitle": "Une fonctionnalité ne s'active que si sa dernière évaluation est réussie en anglais et en français.",
+      "col": {
+        "feature": "Fonctionnalité",
+        "route": "Modèle utilisé",
+        "prompt": "Prompt et politique",
+        "evaluation": "Dernière évaluation",
+        "status": "Statut",
+        "on": "Actif"
+      },
+      "feature": {
+        "SAFETY_MONITOR": "Veille de sécurité",
+        "TRACKING_INSIGHTS": "Explications du suivi",
+        "PRE_SESSION_BRIEF": "Fiche avant séance",
+        "REVIEW_MODERATION": "Modération des avis",
+        "TRANSLATION": "Traduction des contenus et des bios",
+        "SESSION_SCRIBE": "Prise de notes IA"
+      },
+      "selfHosted": "Classifieur auto-hébergé",
+      "noRoute": "Aucun modèle configuré",
+      "scribeRoute": "[transcription] + [LLM approuvé]",
+      "notApplicable": "s.o.",
+      "policy": "politique {{v}}",
+      "prompt": "prompt v{{v}}",
+      "new": "(nouveau)",
+      "recall": "Rappel des crises EN {{en}} % · FR {{fr}} % · seuil {{gate}} %",
+      "noSafetySet": "En attente du jeu de sécurité de l'équipe clinique",
+      "notRun": "Pas encore lancé",
+      "passedLine": "EN {{pe}} sur {{te}} · FR {{pf}} sur {{tf}}",
+      "failedLine": "Échantillon {{locale}} échoué : {{reason}}",
+      "phase4": "Phase 4",
+      "status": {
+        "PASSING": "Réussi",
+        "BLOCKED": "Bloqué",
+        "NOT_EVALUATED": "Non évalué",
+        "NOT_BUILT": "Pas développé",
+        "LIVE": "En ligne"
+      },
+      "switchOn": "Activer {{feature}}",
+      "switchOff": "Désactiver {{feature}}",
+      "reason": "Raison",
+      "reasonHint": "Dites pourquoi. Elle est inscrite au journal d'audit.",
+      "panel": "{{feature}} · prompt v{{v}}",
+      "panelNote": "La v{{live}} reste en ligne tant que la v{{v}} n'a pas réussi. La promotion exige la validation de l'échantillon noté par un réviseur clinique.",
+      "panelNoteFirst": "Rien n'est encore en ligne. La promotion exige une évaluation réussie et la validation de l'échantillon noté par un réviseur clinique.",
+      "evaluate": "Lancer l'évaluation",
+      "viewFailures": "Voir les échecs",
+      "hideFailures": "Masquer les échecs",
+      "signOff": "Valider l'échantillon noté",
+      "signedOff": "Validé par {{who}}",
+      "promote": "Promouvoir v{{v}}",
+      "system": "Instructions",
+      "policyText": "Politique",
+      "failure": {
+        "clinical-wording": "a nommé une maladie ou un diagnostic",
+        "number-not-in-evidence": "ajout d'un constat absent des données",
+        "length": "trop long ou vide",
+        "no-answer": "le modèle n'a pas répondu",
+        "not-json": "réponse dans la mauvaise forme",
+        "no-draft": "aucune ébauche reçue",
+        "no-suggestion": "aucune suggestion reçue",
+        "no-wording": "aucun texte reçu",
+        "no-runner": "la fonctionnalité ne peut pas encore être évaluée",
+        "missing": "a omis ce qu'il fallait dire",
+        "expected": "a suggéré la mauvaise décision"
+      },
+      "locale": {
+        "en": "EN",
+        "fr": "FR"
+      }
     }
   },
   "roleChoice": {
@@ -1973,7 +2056,8 @@
     "quietTitle": "Aucune séance aujourd'hui",
     "quietNext": "Votre prochaine séance est {{when}}. Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
     "quietNone": "Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
-    "openCalendar": "Ouvrir mon agenda"
+    "openCalendar": "Ouvrir mon agenda",
+    "brief": "Ouvrir la fiche"
   },
   "rate": {
     "skip": "Passer",
@@ -2246,7 +2330,8 @@
       "dismiss": "Pas maintenant",
       "noMatches": "Aucun spécialiste n'est encore disponible pour cela. Cherchez parmi tous les spécialistes.",
       "searchAll": "Chercher parmi tous les spécialistes",
-      "next": "{{specialty}} · prochain créneau {{slot}}"
+      "next": "{{specialty}} · prochain créneau {{slot}}",
+      "aiWorded": "Texte rédigé par l'IA à partir de ces cycles uniquement · règle validée par les cliniciens Solace"
     },
     "signup": {
       "title": "Que voulez-vous suivre ?",
@@ -2348,5 +2433,28 @@
       "notSure": "Vous ne savez pas qui consulter ?",
       "take": "Faire le bilan de santé en 3 minutes"
     }
+  },
+  "brief": {
+    "title": "Fiche avant séance",
+    "when": "{{when}} · {{modality}} · {{language}}",
+    "guest": "Invité",
+    "registered": "Inscrit",
+    "firstSession": "Première séance",
+    "noSafetyFlags": "Aucune alerte dans le bilan de santé",
+    "safetyStop": "Le bilan de santé s'est arrêté à la question de sécurité",
+    "scribeYes": "Prise de notes IA : consentement donné",
+    "scribeNo": "Prise de notes IA : pas de consentement",
+    "healthCheck": "Bilan de santé",
+    "sharedOn": "Partagé par l'usager · {{date}}",
+    "notShared": "Non partagé",
+    "tracking": "Données de suivi",
+    "trackingGuest": "Aucune (invité)",
+    "trackingNone": "Non partagées",
+    "aiWorded": "Résumé rédigé par l'IA à partir de ces lignes uniquement",
+    "prepNotes": "Vos notes de préparation privées",
+    "prepHelp": "Vous seul pouvez les voir",
+    "saveNotes": "Enregistrer les notes",
+    "join": "Rejoindre la séance",
+    "opensAt": "Ouverture à {{time}}"
   }
 }

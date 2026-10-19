@@ -132,7 +132,7 @@ export default function RecommendationScreen() {
           <Text variant="titleSm">{t('track.recommendation.why')}</Text>
           <Text variant="body">{r.message}</Text>
           <Text variant="meta" color={colors.inkMuted}>
-            {t('track.recommendation.reviewed')}
+            {r.aiWorded ? t('track.recommendation.aiWorded') : t('track.recommendation.reviewed')}
           </Text>
         </View>
 
