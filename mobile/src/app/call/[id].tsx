@@ -14,13 +14,13 @@ import {
 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSessionLanguages } from '@/api/account';
 import { type Booking, useBooking, useGuestToken } from '@/api/bookings';
 import { ApiProblem } from '@/api/core';
-import { joinSession, type JoinToken } from '@/api/sessions';
+import { joinSession, type JoinToken, useDialIn } from '@/api/sessions';
 import { callEnded, callStarted, setUpCallKeep } from '@/call/callkeep';
 import { checkMicrophone, useCall } from '@/call/engine';
 import i18n from '@/i18n';
@@ -209,6 +209,7 @@ function WaitingRoom({
           }
           icon={weak ? WifiOff : Wifi}
         />
+        {!forSpecialist ? <DialInCard access={access} /> : null}
         <ScribeChoice
           bookingId={b.id}
           guest={Boolean(access.guestToken)}
@@ -234,6 +235,33 @@ function WaitingRoom({
         ) : null}
       </View>
     </SafeAreaView>
+  );
+}
+
+/** Joining by phone for seekers without data (Phase 4, D59), when it is offered. */
+function DialInCard({ access }: { access: { bookingId: string; guestToken?: string } }) {
+  const { t } = useTranslation();
+  const enabled = useFlags((f) => f.phoneDialIn);
+  const dialIn = useDialIn(access, enabled);
+  if (!enabled || !dialIn.data) return null;
+  const { number, pin } = dialIn.data;
+  return (
+    <View style={styles.card}>
+      <View style={styles.flex}>
+        <Text variant="label" style={styles.bold}>
+          {t('call.dialInTitle')}
+        </Text>
+        <Text variant="meta" color={colors.inkMuted}>
+          {t('call.dialInBody', { number, pin })}
+        </Text>
+      </View>
+      <Button
+        variant="secondary"
+        label={t('call.dialInCall')}
+        accessibilityLabel={t('call.dialInCallLabel', { number })}
+        onPress={() => void Linking.openURL(`tel:${number},,${pin}%23`)}
+      />
+    </View>
   );
 }
 

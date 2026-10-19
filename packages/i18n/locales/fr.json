@@ -2067,7 +2067,11 @@
     "preview": "Aperçu de votre caméra",
     "ended": "Séance terminée",
     "endedBody": "Merci. Vous pouvez fermer cet écran.",
-    "back": "Retour aux séances"
+    "back": "Retour aux séances",
+    "dialInTitle": "Pas de données ? Rejoignez par téléphone",
+    "dialInBody": "Appelez le {{number}}, puis saisissez le code {{pin}}. Prix d'un appel normal.",
+    "dialInCall": "Appeler",
+    "dialInCallLabel": "Appeler le {{number}} pour rejoindre par téléphone"
   },
   "today": {
     "greeting": "Aujourd'hui, {{name}}",

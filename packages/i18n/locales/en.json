@@ -2067,7 +2067,11 @@
     "preview": "Your camera preview",
     "ended": "Session ended",
     "endedBody": "Thank you. You can close this screen.",
-    "back": "Back to sessions"
+    "back": "Back to sessions",
+    "dialInTitle": "No data? Join by phone",
+    "dialInBody": "Call {{number}}, then enter the PIN {{pin}}. Normal call rates apply.",
+    "dialInCall": "Call",
+    "dialInCallLabel": "Call {{number}} to join by phone"
   },
   "today": {
     "greeting": "Today, {{name}}",
