@@ -634,6 +634,69 @@
           }
         }
       ]
+    },
+    {
+      "name": "ai:insight.invoke",
+      "description": "Tracking asks AI to word a recommendation from its evidence (Phase 3, D56)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience ai",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "ai",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai:translation.invoke",
+      "description": "Core asks AI for an EN/FR draft a person approves (Phase 3, D56)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience ai",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "ai",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "core:brief-sources.read",
+      "description": "AI reads what a seeker shared for a booking, for the pre-session brief (Phase 3, D56)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "clients": [
@@ -703,7 +766,8 @@
         "ai:moderation.invoke",
         "ai:risk.read",
         "tracking:ping",
-        "ai:ping"
+        "ai:ping",
+        "ai:translation.invoke"
       ]
     },
     {
@@ -723,7 +787,8 @@
         "service_account",
         "core:booking-access.read",
         "core:taxonomy.read",
-        "core:profile-age.read"
+        "core:profile-age.read",
+        "ai:insight.invoke"
       ]
     },
     {
@@ -741,7 +806,8 @@
       "defaultClientScopes": [
         "basic",
         "service_account",
-        "tracking:summary.read"
+        "tracking:summary.read",
+        "core:brief-sources.read"
       ]
     },
     {

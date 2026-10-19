@@ -1337,6 +1337,9 @@ components:
         dataChanged:
           description: The data changed after it was seen and the pattern no longer holds.
           type: boolean
+        aiWorded:
+          description: The message is the AI service's plain wording of the evidence, not the rule's template (D56).
+          type: boolean
     ModuleRow:
       type: object
       properties:

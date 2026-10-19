@@ -14,13 +14,32 @@ service TrendSummaryService {
 
 message GetTrendSummaryRequest {
   string seeker_subject_id = 1;
-  // The booking the brief is for; Tracking checks consent against it.
+  // The booking the brief is for.
   string booking_id = 2;
+  // The booking's specialist: Tracking answers only when the seeker shared with them.
+  string specialist_subject_id = 3;
+  // "en" or "fr", for element names.
+  string locale = 4;
+}
+
+message TrendLine {
+  string element_code = 1;
+  // The element's name in the requested language.
+  string element_name = 2;
+  // Days with an entry in the window.
+  int32 days_logged = 3;
+  int32 window_days = 4;
+  // For numbers and durations: the average over logged days. Absent for choices.
+  optional double average = 5;
+  // For choices: the most frequent value's label.
+  string most_often = 6;
+  // MINUTES, SCALE, CHOICE or YES_NO.
+  string unit = 7;
 }
 
 message GetTrendSummaryResponse {
-  // False when the seeker has not shared tracking data for this booking.
+  // False when the seeker has not shared tracking data with this booking's specialist.
   bool shared = 1;
-  // Phase 0 stub: the summary fields are defined with the pre-session brief
-  // epic in Phase 3.
+  // The last 14 days, oldest first; never notes.
+  repeated TrendLine lines = 2;
 }

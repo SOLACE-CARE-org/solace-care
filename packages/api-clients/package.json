@@ -6,11 +6,12 @@
   "type": "module",
   "exports": {
     "./core": "./src/core.ts",
-    "./tracking": "./src/tracking.ts"
+    "./tracking": "./src/tracking.ts",
+    "./ai": "./src/ai.ts"
   },
   "scripts": {
-    "build": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts",
-    "prepare": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts"
+    "build": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts && openapi-typescript ../../contracts/openapi/ai.yaml -o dist/ai.ts",
+    "prepare": "openapi-typescript ../../contracts/openapi/core.yaml -o dist/core.ts && openapi-typescript ../../contracts/openapi/tracking.yaml -o dist/tracking.ts && openapi-typescript ../../contracts/openapi/ai.yaml -o dist/ai.ts"
   },
   "dependencies": {
     "openapi-fetch": "0.17.0"

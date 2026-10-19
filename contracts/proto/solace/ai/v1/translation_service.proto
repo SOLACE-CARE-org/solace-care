@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package solace.ai.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.ai.v1";
+
+// Core -> AI. A draft in the other language of an article, a bio or a notification, which a
+// person reviews and approves before anything is published (Phase 3, Content & bio translation;
+// D56). 2-second deadline. Fallback: no draft; the person writes it.
+service TranslationService {
+  rpc DraftTranslation(DraftTranslationRequest) returns (DraftTranslationResponse);
+}
+
+message DraftTranslationRequest {
+  // ARTICLE, BIO or NOTIFICATION.
+  string kind = 1;
+  // "en" or "fr".
+  string source_locale = 2;
+  string target_locale = 3;
+  // The text to translate. Travels only over this scoped call, never in events or logs.
+  string text = 4;
+  // Who asked: a staff id or a specialist's subject id, for budgets.
+  string requested_by = 5;
+}
+
+message DraftTranslationResponse {
+  bool drafted = 1;
+  string text = 2;
+  string prompt_version = 3;
+}

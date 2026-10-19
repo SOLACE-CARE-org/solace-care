@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package solace.ai.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.ai.v1";
+
+// Tracking -> AI. Words a recommendation plainly from its evidence only (Phase 3, Tracking
+// insights; D56). Rules decide; AI only explains, and adds no finding of its own. 2-second deadline.
+// Fallback: the app shows the rule's reviewed message.
+service InsightService {
+  rpc ExplainRecommendation(ExplainRecommendationRequest) returns (ExplainRecommendationResponse);
+}
+
+message ExplainRecommendationRequest {
+  string recommendation_id = 1;
+  // The seeker's pseudonymous subject id, for budgets and the AI_ASSIST consent.
+  string subject_id = 2;
+  string rule_code = 3;
+  string module_code = 4;
+  // The rule's evidence as JSON: thresholds, counts and the cycles or days used. Never notes,
+  // never free text.
+  string evidence_json = 5;
+  // The rule's clinician-reviewed message, already filled, in both languages.
+  string message_en = 6;
+  string message_fr = 7;
+}
+
+message ExplainRecommendationResponse {
+  // False when the feature is off, the person did not consent, the budget ran out or the wording
+  // failed a guardrail: the caller keeps the rule's message.
+  bool worded = 1;
+  string text_en = 2;
+  string text_fr = 3;
+  // The prompt version that produced it, for audit and evaluation.
+  string prompt_version = 4;
+}

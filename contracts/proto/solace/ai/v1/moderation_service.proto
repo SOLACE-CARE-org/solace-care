@@ -29,6 +29,11 @@ message ModerateReviewResponse {
   bool risk = 2;
   // The safety decision, for GetRiskDecision.
   string decision_id = 3;
+  // Phase 3: the model's suggestion for the moderator, who still decides (D56). UNSPECIFIED
+  // when the feature is off or the model did not answer.
+  Decision suggestion = 4;
+  // Why, as codes: CONTACT_DETAILS, OFFENSIVE, NOT_ABOUT_SESSION, LOOKS_FAKE, CLEAN.
+  repeated string suggestion_reasons = 5;
 }
 
 enum Decision {

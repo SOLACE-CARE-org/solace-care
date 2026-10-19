@@ -74,6 +74,8 @@ tags:
     description: The health check for seekers and guests (System Design, Health check; D55). No AI reads the answers
   - name: admin-health-check
     description: Writing, testing and approving health check versions (admin screens 28 to 31; D55)
+  - name: assist
+    description: AI drafts a person reviews before anything is published, and the specialist's prep notes (Phase 3; D56)
 paths:
   /v1/signups:
     post:
@@ -4398,6 +4400,136 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/content/{contentId}/translation-draft:
+    parameters:
+      - name: contentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: draftContentTranslation
+      summary: An AI draft of the other language of an item, for the editor to review; nothing is saved
+      tags: [assist]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                from:
+                  type: string
+                  enum: [en, fr]
+      responses:
+        "200":
+          description: The draft
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  title:
+                    type: string
+                  body:
+                    type: string
+        "204":
+          description: "No draft: the feature is off or the draft failed a check"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/specialist-applications/{id}/bio-draft:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: draftApplicationBio
+      summary: An AI draft of the bio's missing language, for the reviewer to check and save (D30)
+      tags: [assist]
+      responses:
+        "200":
+          description: The draft
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [language, text]
+                properties:
+                  language:
+                    type: string
+                  text:
+                    type: string
+        "204":
+          description: "No draft: both languages exist, the feature is off, or the draft failed a check"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/specialist/bookings/{bookingId}/prep-note:
+    parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getPrepNote
+      summary: The specialist's private prep notes for a booking; each read is audited
+      tags: [assist]
+      responses:
+        "200":
+          description: The note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrepNote"
+        "204":
+          description: No note yet
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: savePrepNote
+      summary: Save the prep notes; only the booking's specialist
+      tags: [assist]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [body]
+              properties:
+                body:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrepNote"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   securitySchemes:
     bearerAuth:
@@ -6414,6 +6546,15 @@ components:
           x-extensible-enum: [PENDING, PUBLISHED, HIDDEN, FLAGGED]
         hiddenReason:
           type: string
+        aiSuggestion:
+          description: The AI's suggestion for the moderator, who still decides (Phase 3; D56).
+          type: string
+          enum: [PUBLISH, HOLD]
+        aiReasons:
+          type: array
+          items:
+            type: string
+            x-extensible-enum: [CONTACT_DETAILS, OFFENSIVE, NOT_ABOUT_SESSION, LOOKS_FAKE]
     NotificationSettings:
       type: object
       additionalProperties: false
@@ -7730,3 +7871,13 @@ components:
           type: string
         publishedSafetyStop:
           type: boolean
+    PrepNote:
+      type: object
+      additionalProperties: false
+      required: [body, updatedAt]
+      properties:
+        body:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time

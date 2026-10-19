@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// AI -> Core. What the pre-session brief may show for one booking (Phase 3, Pre-session brief;
+// D56): the booking's facts, the health check answers only when the seeker shared them for this
+// booking, and the seeker's consents. Core checks that the specialist is the booking's.
+// 2-second deadline. Fallback: no brief; the specialist sees the booking only.
+service BriefSourceService {
+  rpc GetBriefSources(GetBriefSourcesRequest) returns (GetBriefSourcesResponse);
+}
+
+message GetBriefSourcesRequest {
+  string booking_id = 1;
+  string specialist_subject_id = 2;
+  // "en" or "fr": the specialist's app language.
+  string locale = 3;
+}
+
+message ScreenerScore {
+  // PHQ9 or GAD7.
+  string screener = 1;
+  int32 total = 2;
+  // The published band, e.g. MODERATE.
+  string band = 3;
+}
+
+message GetBriefSourcesResponse {
+  // False when the specialist is not the booking's: nothing else is filled.
+  bool allowed = 1;
+  string seeker_subject_id = 2;
+  bool guest = 3;
+  bool first_session = 4;
+  // RFC 3339.
+  string starts_at = 5;
+  string modality = 6;
+  string session_language = 7;
+  bool health_check_shared = 8;
+  string health_check_shared_at = 9;
+  // A plain summary of the shared answers, built by rules in the requested language. No AI reads
+  // the answers (D8).
+  string health_check_summary = 10;
+  repeated ScreenerScore scores = 11;
+  bool health_check_safety_stop = 12;
+  // SPECIALIST_SHARING and AI_SCRIBE.
+  bool tracking_sharing_consent = 13;
+  bool scribe_consent = 14;
+}
