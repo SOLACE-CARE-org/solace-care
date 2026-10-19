@@ -17,6 +17,7 @@ The register of every way Solace processes personal data, for Cameroon's Law No.
 | Push notifications | Expo's push service (D38), delivering through Apple (APNs) and Google (FCM). Receives the device token and the message text (neutral copy, or "you have a reminder" in discreet mode) | Chosen; data-processing terms and transfer authorisation open (**Counsel**) |
 | Mobile-money aggregator | Notch Pay (D35): MTN MoMo and Orange Money charges; refunds and payouts as transfers. Receives the payer's or specialist's phone, the amount and Solace's reference | Chosen; contract and data-processing terms open (**Counsel**), and whether it processes in Cameroon |
 | Media server | LiveKit, self-hosted or LiveKit Cloud | Open, follows hosting |
+| Phone dial-in | A SIP trunk with a Cameroonian number, into LiveKit SIP (D59). Carries the caller's phone number and the call audio; the PIN routes the call to one booking | Open (contract outside engineering); off until contracted |
 | AI model vendors | Safety monitor classifier (Phase 1); later AI features (Phase 3, 4) | Open (decisions.md); see AI-1 in the AI threat model |
 
 Every processor needs a contract that forbids other use and, for AI vendors, training on Solace data. Any processor outside Cameroon needs the Authority's transfer authorisation (**Counsel**).
@@ -229,8 +230,8 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Tracking insights, pre-session brief, session scribe, between-session companion, translation of content, trust and safety |
 | Consent | Per feature; the scribe needs both people and can be refused per session |
-| Data | As each feature needs; pseudonymous ids only; no user data used for training. Phase 3: `ai_call` (feature, route, prompt version, tokens, outcome, redacted prompt and output text); AI consent mirrored from Core; specialists' private prep notes per booking, stored in Core (`session_prep_note`), read by that specialist only. Health check answers are never sent to a model (D8) |
-| Retention | Prompts and outputs `[30]` days (`ai_call` texts cleared by a job); prep notes with the booking, removed on erasure; scribe audio deleted after the note is signed or within 7 days (System Design). Signed notes: **Open** (decisions.md: is Solace the record keeper?) |
+| Data | As each feature needs; pseudonymous ids only; no user data used for training. Phase 3: `ai_call` (feature, route, prompt version, tokens, outcome, redacted prompt and output text); AI consent mirrored from Core; specialists' private prep notes per booking, stored in Core (`session_prep_note`), read by that specialist only. Health check answers are never sent to a model (D8). Phase 4: session audio (private bucket, 7 days at most), sealed transcripts and notes (SOAP/DAP) for the booking's specialist, homework and the seeker's sealed records, companion answers checked by the safety monitor; the seeker's sealed safety plan in Core; phone dial-in PINs per booking; copilot metrics are aggregates only |
+| Retention | Prompts and outputs `[30]` days (`ai_call` texts cleared by a job); prep notes with the booking, removed on erasure; scribe audio deleted after the note is signed or within 7 days (System Design). Signed notes: **Open** (decisions.md: is Solace the record keeper?). Transcripts deleted at signing; unsigned drafts after 7 days; signed notes **Open** (record keeper); homework records with the account |
 | Transfers abroad | Only with authorisation, otherwise a self-hosted model (System Design; **Counsel**) |
 | Security | AI threat model |
 

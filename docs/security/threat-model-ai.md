@@ -1,6 +1,6 @@
 # Threat model: AI
 
-**Scope:** the AI service, its database (with pgvector), its model gateway and the model vendors behind it. The safety monitor is the only AI feature at public launch (D12); tracking insights and the pre-session brief come in Phase 3, the scribe and companion in Phase 4, each behind a feature flag. Status as of Phase 3: the safety monitor, the model gateway, prompt versions with evaluation and sign-off, tracking insights, translation drafts, moderation suggestions and the pre-session brief (D56).
+**Scope:** the AI service, its database (with pgvector), its model gateway and the model vendors behind it. The safety monitor is the only AI feature at public launch (D12); tracking insights and the pre-session brief come in Phase 3, the scribe and companion in Phase 4, each behind a feature flag. Status as of Phase 4: the safety monitor, the model gateway, prompt versions with evaluation and sign-off, tracking insights, translation drafts, moderation suggestions and the pre-session brief (D56); the session scribe, homework and the companion (D57); the admin copilot (D58).
 
 ## What is protected
 
@@ -36,14 +36,17 @@
 | AI-5 | T | A model output gives a diagnosis, a severity label or medical advice | Input and output guardrails; a system policy that refuses to diagnose or prescribe; tracking insights only reword a rule's evidence | In place: `Guardrails` refuse clinical wording, numbers not in the evidence and long outputs, and the clinician-approved text is used instead; health check answers never reach a model (D8, D56) |
 | AI-6 | I | Prompts and outputs kept longer than 30 days | In place: `ai_call` texts are cleared after `[30]` days by a scheduled job; erasure deletes the person's calls |
 | AI-7 | E | The AI service reads more tracking data than the summary | Its client may only request `tracking:summary.read` | In place (`RealmsIntegrationTest.aiServiceCanOnlyReadTrackingSummaries`) |
-| AI-8 | I | Scribe audio or transcripts kept or leaked | Recorded only when both people consent; encrypted storage; audio deleted after the note is signed or within 7 days | Planned (Phase 4) |
+| AI-8 | I | Scribe audio or transcripts kept or leaked | Recorded only when both people consent and neither refused for the session; transcripts sealed; audio and transcript deleted when the note is signed, unsigned drafts with both after 7 days; bucket expiry as a backstop | In place (`ScribeAndHomeworkTest`, D57) |
 | AI-9 | R | Nobody can tell why a review was held or a flag raised | Each decision stores the model, prompt and policy version and is published as an event; prompts and outputs kept 30 days | In place for the safety monitor: each decision keeps the classifier and policy version and is published as `ai.risk.flagged`, ids and versions only; the text is never stored (`AiApplicationTest`) |
-| AI-10 | I | Personal data ends up in the embeddings store | pgvector holds only vetted, bilingual content; the companion answers only from it | Planned (Phase 4) |
+| AI-10 | I | Personal data ends up in the embeddings store | pgvector holds only vetted, bilingual passages; seekers' words are embedded only as a query and never stored | In place (`companion_passage`, D57) |
 | AI-11 | D | Model costs run away | In place: monthly token budgets per route (`[1 000 000]` by default), fallback down the route list, `aiAssist` flag off by default |
 | AI-12 | T | A prompt or policy changed without review | Versioned prompts and policies; changes evaluated on the bilingual sets before release; admin AI screen is Phase 3 | In place: a version is promoted only after a passing evaluation (`[95]`%) and a Clinical reviewer's sign-off, and a feature is switched on only while its live version passed; every step is audited (admin screen 26). The safety monitor's set waits for clinicians |
-| AI-13 | I | Notes reach AI | Never, except through the seeker's separate D1 opt-in | Planned (Phase 4) |
+| AI-13 | I | Notes reach AI | Never, except through the seeker's separate D1 opt-in; tracking notes are not part of the scribe or the companion | In place |
 | AI-14 | E | A specialist reads another booking's brief | The brief checks the booking belongs to the caller through Core, which audits each health check read; tracking lines need the seeker's sharing grant | In place (`AiPlatformTest`, `TrendSummaryEndpoint`) |
 | AI-15 | T | An AI draft (translation, bio, moderation suggestion) goes live unchecked | Drafts only fill a field or add an advisory pill; a person saves, publishes or decides | In place (D56) |
+| AI-16 | T | A model writes the clinical assessment of a note | The assessment is always left empty for the specialist; a note cannot be signed until every section is written (D57) | In place (`ScribeAndHomeworkTest`) |
+| AI-17 | S | A risk signal in a companion answer is missed or answered by the model | Every answer passes the safety monitor before any reply; a flag raises an alert, stops the companion and opens urgent help, and the answer is not stored (D57) | In place (`ScribeAndHomeworkTest`) |
+| AI-18 | I | The copilot reveals a person or changes something | Read-only; the model only picks a metric from Core's catalogue and words the answer from its table; numbers outside it are refused (D58) | In place (`CopilotTest`) |
 
 ## Findings
 

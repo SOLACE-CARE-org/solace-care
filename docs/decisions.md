@@ -349,6 +349,42 @@ Every pair now meets WCAG 2.1 AA.
 - **The mobile brief** is behind the `aiAssist` flag (off by default) and opens from Today's next session.
 - LangGraph4j is added to the build now for the Phase 4 scribe and companion graphs.
 
+**D57. Session scribe, notes, homework, the companion and the safety plan (Phase 4).** Taken 19 Oct 2026 on the owner's instruction to choose where the specs are open.
+- **When audio is recorded:** only when all of these hold: the `sessionScribe` flag is on, the seeker is registered (not a guest), both people have AI_SCRIBE consent, and neither turned the scribe off for this session in the waiting room. Core starts an audio-only LiveKit egress once both people are in the room. If either person turns it off during the session, the egress stops at once.
+- **Audio storage:** audio goes to the private `solace-scribe-audio` bucket, which also expires files after 7 days. `core.session.ended` carries the object key. Audio refused during the session is deleted as soon as the AI service hears the session ended.
+- **The pipeline** is a LangGraph4j graph: transcribe on a local speech model only, screen for risk signals, draft SOAP, store. A worker picks up audio that has no note yet, so a restart loses nothing. When transcription or drafting fails, or SESSION_SCRIBE is not live, the specialist gets an empty draft to write themselves.
+- **Risk signals in a transcript** are shown to the specialist on the note. They do not raise a crisis alert: the specialist was in the session and decides what to do.
+- **The assessment is never written by a model.** It always reaches the specialist empty, and a note cannot be signed until every section, the assessment included, is filled.
+- **Drafts:** the specialist can redraft in DAP from the transcript while it is kept.
+- **Signing** deletes the transcript and the audio. A draft not signed within 7 days is deleted together with both.
+- **Storage and reads:** notes, transcripts and homework records are sealed with AES-256-GCM (`SOLACE_AI_NOTES_KEY`) until Vault envelope keys exist. Every note read is audited.
+- **Who keeps signed notes is still open** (see Still open). Safest default for now: a signed note stays with its specialist in the AI service, and erasure of either person deletes it.
+- **Homework** is set only for a booking whose session ended, and only for a registered seeker. It is due before the next session, or after `[7]` days.
+- **The companion** walks the seeker through each exercise using bilingual scripted questions. Every answer goes to the safety monitor first. A flag sends `ai.risk.flagged` with source COMPANION (one alert in the crisis queue), stops the companion and opens urgent help, and the answer is not stored.
+- **Reflections:** when COMPANION is live, a model may write a short reflection after each finished record. It works only from that record and passages of the vetted pgvector corpus, through the guardrails.
+- **The corpus** is seeded with the exercise descriptions from AssignHomework.dc.html. Clinicians extend it, and it goes live with the COMPANION prompt's sign-off. Published articles join it when Content publishes an event for them.
+- **What the specialist sees:** the count of records done, never the seeker's words.
+- **The safety plan:** stored in Core, sealed, and readable and editable only by the seeker. It may name a specialist the seeker has booked.
+- **The safety plan offline:** the phone keeps a copy so it opens with no connection, from Home and from Urgent help. The professional help step always lists the bundled emergency numbers.
+- **Flags:** the companion and the safety plan sit behind `companion`, the scribe behind `sessionScribe`. Both are off by default.
+
+**D58. The admin copilot and anomaly alerts (Phase 4, admin screen 27).** Taken 19 Oct 2026.
+- **The metric catalogue:** Core offers a fixed set of seven grouped counts over four periods through `MetricsService`. Rows are always groups (source, module, language, format, status), never a person. A count under `[5]` shows as "<5".
+- **Suggested questions** go straight to a metric and need no model.
+- **Questions in words** need ADMIN_COPILOT live. The model only picks a metric and a period from the catalogue, then words the answer from the table. Numbers not in the table, apart from column totals, are refused, and the plain sentence is shown instead.
+- **Access:** staff with Analytics access (the permission matrix). Each question is audited by metric and period, not by its words.
+- **Anomaly alerts:** Core checks every hour.
+  - A booking drop is `[50]`% or more below the daily average of the 7 days before. A failed-payment share counts when it reaches `[2]` times its usual level.
+  - The check needs at least `[5]` cases, and raises at most one alert per kind per day.
+  - Alerts show on the copilot screen.
+
+**D59. Joining by phone (Phase 4, reach and range).** Taken 19 Oct 2026.
+- **The PIN:** a seeker or guest gets a six-digit PIN for each booking, plus the number to call. This is behind `phoneDialIn`, and only once a number and LiveKit SIP trunks are configured.
+- **When the PIN works:** Core creates a SIP dispatch rule only while joining is open, from 10 minutes before the start to 15 minutes after the end, and removes it afterwards.
+- **Attendance:** a caller through SIP counts as the seeker. Calls are audio only.
+- **The number and the SIP trunk:** contracting a Cameroonian number and a SIP trunk is outside engineering. Until then the app does not show the option.
+- **"More tracking modules"** in this epic are built by staff in the module builder (Phase 2), so they need no code.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

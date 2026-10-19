@@ -63,8 +63,12 @@
 | CO-25 | I | A data export reaches the wrong person | Exports are prepared for the signed-in member only, stored in a private bucket, downloaded only through Core with their token (404 for anyone else), served `no-store`, audited on every download, and deleted after [7] days. Erasure needs an explicit confirmation, waits for upcoming paid sessions and open refunds, and signs the person out everywhere by deleting their sign-in (D40) | In place (`DataRightsIntegrationTest`) |
 | CO-26 | D | Tracking or AI down makes Core hang | 2-second deadline, circuit breaker and a defined fallback for every call | In place (`libs/grpc-client`, `GrpcClientDefaultsTest`, `SystemPingTest`) |
 | CO-27 | E | Core's service account used to call Tracking or AI methods it should not | Narrow scopes per gRPC method; callee checks audience and scope | In place (`GrpcSecurityTest`) |
-| CO-28 | I | Health check answers sent to AI for the brief | Core builds the summary by rules and sends only that, totals and bands to AI's `GetBriefSources`, for the booking's own specialist; each read is audited (D8, D56) | In place |
-| CO-29 | I | Prep notes read by someone other than their author | Stored per booking and specialist; only that specialist's token reads or writes them; nothing else reads them | In place (D56) |
+| CO-33 | I | Health check answers sent to AI for the brief | Core builds the summary by rules and sends only that, totals and bands to AI's `GetBriefSources`, for the booking's own specialist; each read is audited (D8, D56) | In place |
+| CO-34 | I | Prep notes read by someone other than their author | Stored per booking and specialist; only that specialist's token reads or writes them; nothing else reads them | In place (D56) |
+| CO-35 | I | A session recorded without both people's consent | Egress starts only with the sessionScribe flag, a registered seeker, both AI_SCRIBE consents and no refusal for the session; refusing stops it at once; audio to a private bucket that expires in 7 days (D57) | In place (`SessionIntegrationTest`) |
+| CO-36 | I | The safety plan read by someone else | Sealed with AES-256-GCM, read and changed only with the seeker's own token; exported and erased with the account (D57) | In place (`SafetyPlanIntegrationTest`) |
+| CO-37 | I | The copilot's metrics single a person out | Fixed catalogue of grouped counts; cells under [5] shown as <5; scope core:metrics.read for AI only (D58) | In place (`CopilotMetricsTest`) |
+| CO-38 | S | A stranger joins a session by phone | A PIN per booking; the SIP rule exists only while joining is open; audio only; the caller counts as the seeker (D59) | In place (`SessionIntegrationTest`) |
 
 ## Findings
 
