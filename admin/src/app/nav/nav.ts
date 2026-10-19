@@ -87,7 +87,7 @@ export const NAV: NavGroup[] = [
       { key: 'analytics', path: 'analytics', area: 'analytics', icon: LucideChartLine, enabled: on },
       { key: 'ai', path: 'ai', area: 'aiControls', icon: LucideSparkles, enabled: environment.flags.aiControls },
       // Copilot (Phase 4) is not in the permission matrix yet; it follows AI controls until it is.
-      { key: 'copilot', path: 'copilot', area: 'aiControls', icon: LucideMessageSquare, enabled: environment.flags.copilot },
+      { key: 'copilot', path: 'copilot', area: 'analytics', icon: LucideMessageSquare, enabled: environment.flags.copilot },
     ],
   },
   {

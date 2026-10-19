@@ -6,6 +6,7 @@ import { areaGuard } from './auth/area.guard';
 import { AuditLogPage } from './audit/audit-log.page';
 import { CataloguePage } from './catalogue/catalogue.page';
 import { ContentEditorPage } from './content/content-editor.page';
+import { CopilotPage } from './copilot/copilot.page';
 import { ContentPage } from './content/content.page';
 import { PeoplePage } from './people/people.page';
 import { PersonRecordPage } from './people/person-record.page';
@@ -54,6 +55,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   modules: ModulesPage,
   'health-check': HealthCheckPage,
   ai: AiControlsPage,
+  copilot: CopilotPage,
 };
 
 /**

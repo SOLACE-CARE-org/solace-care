@@ -1558,6 +1558,26 @@
         "en": "EN",
         "fr": "FR"
       }
+    },
+    "copilot": {
+      "title": "Copilote admin",
+      "notice": "Les réponses viennent uniquement de chiffres agrégés et anonymisés. Il ne peut pas rechercher une personne ni rien modifier.",
+      "alerts": "Alertes",
+      "alert_BOOKING_DROP": "Baisse des réservations",
+      "alert_PAYMENT_FAILURE_SPIKE": "Paiements échoués",
+      "alertLine_BOOKING_DROP": "{{value}} réservations ces dernières 24 heures, contre {{baseline}} par jour avant · {{when}}",
+      "alertLine_PAYMENT_FAILURE_SPIKE": "{{value}} % des paiements ont échoué ces dernières 24 heures, contre {{baseline}} % avant · {{when}}",
+      "suggested": "Questions proposées",
+      "q_INVITES_BY_MODULE": "Combien de réservations sont venues des recommandations de suivi le mois dernier, par module ?",
+      "q_BOOKINGS_BY_SOURCE": "D'où venaient les réservations confirmées ces 30 derniers jours ?",
+      "q_SESSIONS_BY_LANGUAGE": "Quelles langues de séance ont été utilisées ces 30 derniers jours ?",
+      "q_PAYMENTS_BY_STATUS": "Comment se sont passés les paiements ces 7 derniers jours ?",
+      "q_RATINGS": "Comment les séances ont-elles été notées ce trimestre ?",
+      "aiWorded": "Rédigé par l'IA à partir de ce tableau uniquement",
+      "suppressed": "les nombres inférieurs à 5 sont masqués",
+      "openAnalytics": "Ouvrir dans Statistiques",
+      "ask": "Poser une question",
+      "askButton": "Demander"
     }
   },
   "roleChoice": {

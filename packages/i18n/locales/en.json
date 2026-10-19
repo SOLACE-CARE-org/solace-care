@@ -1558,6 +1558,26 @@
         "en": "EN",
         "fr": "FR"
       }
+    },
+    "copilot": {
+      "title": "Admin copilot",
+      "notice": "Answers come only from aggregated, de-identified numbers. It cannot look up a person and cannot change anything.",
+      "alerts": "Alerts",
+      "alert_BOOKING_DROP": "Booking drop",
+      "alert_PAYMENT_FAILURE_SPIKE": "Failed payments",
+      "alertLine_BOOKING_DROP": "{{value}} bookings in the last 24 hours, against {{baseline}} a day before · {{when}}",
+      "alertLine_PAYMENT_FAILURE_SPIKE": "{{value}}% of payments failed in the last 24 hours, against {{baseline}}% before · {{when}}",
+      "suggested": "Suggested questions",
+      "q_INVITES_BY_MODULE": "How many bookings came from tracking recommendations last month, by module?",
+      "q_BOOKINGS_BY_SOURCE": "Where did confirmed bookings come from in the last 30 days?",
+      "q_SESSIONS_BY_LANGUAGE": "Which session languages were used in the last 30 days?",
+      "q_PAYMENTS_BY_STATUS": "How did payments go in the last 7 days?",
+      "q_RATINGS": "How were sessions rated this quarter?",
+      "aiWorded": "Worded by AI from this table only",
+      "suppressed": "counts under 5 are hidden",
+      "openAnalytics": "Open in Analytics",
+      "ask": "Ask a question",
+      "askButton": "Ask"
     }
   },
   "roleChoice": {
