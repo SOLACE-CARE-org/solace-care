@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// AI -> Core. One aggregated, de-identified metric for the admin copilot (admin screen 27;
+// Phase 4; D58). Counts and averages only, never a person; cells under the minimum size are
+// suppressed. 2-second deadline. Fallback: the copilot says the numbers are not available.
+service MetricsService {
+  rpc QueryMetric(QueryMetricRequest) returns (QueryMetricResponse);
+}
+
+enum Metric {
+  METRIC_UNSPECIFIED = 0;
+  // Confirmed bookings by where they came from: search, health check, tracking invite.
+  METRIC_BOOKINGS_BY_SOURCE = 1;
+  // Tracking invites shown and the bookings that answered them, by module.
+  METRIC_INVITES_BY_MODULE = 2;
+  // Completed sessions by session language.
+  METRIC_SESSIONS_BY_LANGUAGE = 3;
+  // Completed sessions by audio or video.
+  METRIC_SESSIONS_BY_MODALITY = 4;
+  // Payments by status: complete, failed, pending.
+  METRIC_PAYMENTS_BY_STATUS = 5;
+  // Ratings given and their average.
+  METRIC_RATINGS = 6;
+  // Bookings by status, including no-shows and cancellations.
+  METRIC_BOOKINGS_BY_STATUS = 7;
+}
+
+enum Period {
+  PERIOD_UNSPECIFIED = 0;
+  PERIOD_LAST_7_DAYS = 1;
+  PERIOD_LAST_30_DAYS = 2;
+  PERIOD_LAST_MONTH = 3;
+  PERIOD_THIS_QUARTER = 4;
+}
+
+message QueryMetricRequest {
+  Metric metric = 1;
+  Period period = 2;
+  // "en" or "fr", for the column and row labels.
+  string locale = 3;
+}
+
+message MetricRow {
+  // Cells in column order; a suppressed count reads "<5".
+  repeated string cells = 1;
+}
+
+message QueryMetricResponse {
+  repeated string columns = 1;
+  repeated MetricRow rows = 2;
+  // Where the numbers come from, in the asked language, e.g. bookings with source "tracking invite".
+  string source = 3;
+  // The period's first instant and the instant after its last, ISO 8601.
+  string from = 4;
+  string to = 5;
+  // True when at least one cell was under the minimum size and is not shown.
+  bool suppressed = 6;
+}

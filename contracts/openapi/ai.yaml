@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Solace Ai API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     AI: the safety monitor, and from Phase 3 the assist features behind the model gateway (D56).
     Reached through the gateway at /api/ai. Every feature is off until its evaluation passes in
@@ -25,6 +25,8 @@ tags:
     description: Session scribe, the specialist's note drafts and signed notes (Phase 4; D57)
   - name: homework
     description: Homework set by the specialist and the companion that guides it (Phase 4; D57)
+  - name: admin-copilot
+    description: Admin copilot, screen 27 (Phase 4; D58). Aggregated, de-identified numbers only
 paths:
   /v1/system/info:
     get:
@@ -453,6 +455,37 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/copilot/questions:
+    post:
+      operationId: askCopilot
+      summary: Answers a question with one aggregated metric and the table behind it
+      description: |
+        Staff with Analytics access. Either a metric from the catalogue (always answered, no model
+        needed) or a question in words, which a model maps to one metric while the copilot is on.
+        The answer is worded only from the table; it cannot look up a person or change anything.
+        Every question is audited.
+      tags: [admin-copilot]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CopilotQuestion"
+      responses:
+        "200":
+          description: The answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CopilotAnswer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
 components:
@@ -933,4 +966,55 @@ components:
           type: boolean
         crisis:
           description: True when the safety monitor flagged the answer; the app opens urgent help
+          type: boolean
+    CopilotMetric:
+      type: string
+      enum: [BOOKINGS_BY_SOURCE, INVITES_BY_MODULE, SESSIONS_BY_LANGUAGE, SESSIONS_BY_MODALITY, PAYMENTS_BY_STATUS, RATINGS, BOOKINGS_BY_STATUS]
+    CopilotPeriod:
+      type: string
+      enum: [LAST_7_DAYS, LAST_30_DAYS, LAST_MONTH, THIS_QUARTER]
+    CopilotQuestion:
+      type: object
+      additionalProperties: false
+      properties:
+        question:
+          type: string
+          maxLength: 300
+        metric:
+          $ref: "#/components/schemas/CopilotMetric"
+        period:
+          $ref: "#/components/schemas/CopilotPeriod"
+    CopilotAnswer:
+      type: object
+      additionalProperties: false
+      required: [answer, aiWorded, metric, period, columns, rows, source, from, to, suppressed]
+      properties:
+        answer:
+          type: string
+        aiWorded:
+          type: boolean
+        metric:
+          $ref: "#/components/schemas/CopilotMetric"
+        period:
+          $ref: "#/components/schemas/CopilotPeriod"
+        columns:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        source:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        suppressed:
+          description: Some counts were under the minimum size and show as "<5"
           type: boolean

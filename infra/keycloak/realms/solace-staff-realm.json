@@ -697,6 +697,27 @@
           }
         }
       ]
+    },
+    {
+      "name": "core:metrics.read",
+      "description": "AI reads aggregated, de-identified metrics for the admin copilot (Phase 4, D58)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "clients": [
@@ -807,7 +828,8 @@
         "basic",
         "service_account",
         "tracking:summary.read",
-        "core:brief-sources.read"
+        "core:brief-sources.read",
+        "core:metrics.read"
       ]
     },
     {
