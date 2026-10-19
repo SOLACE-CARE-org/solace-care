@@ -1,0 +1,142 @@
+<h1 class="sl-title">{{ 'admin.ai.title' | transloco }}</h1>
+<p class="sl-muted subtitle">{{ 'admin.ai.subtitle' | transloco }}</p>
+@if (failure(); as f) {
+<p class="error" role="alert">{{ f }}</p>
+} @if (error()) {
+<div class="sl-card">
+  <p>{{ 'common.checkConnection' | transloco }}</p>
+  <button class="sl-button" type="button" (click)="load()">
+    {{ 'common.tryAgain' | transloco }}
+  </button>
+</div>
+} @else if (overview(); as o) {
+<section class="sl-card table-card">
+  <table class="sl-table">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'admin.ai.col.feature' | transloco }}</th>
+        <th scope="col">{{ 'admin.ai.col.route' | transloco }}</th>
+        <th scope="col">{{ 'admin.ai.col.prompt' | transloco }}</th>
+        <th scope="col">{{ 'admin.ai.col.evaluation' | transloco }}</th>
+        <th scope="col">{{ 'admin.ai.col.status' | transloco }}</th>
+        <th scope="col">{{ 'admin.ai.col.on' | transloco }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="strong">{{ 'admin.ai.feature.SAFETY_MONITOR' | transloco }}</td>
+        <td>{{ 'admin.ai.selfHosted' | transloco }}</td>
+        <td>{{ 'admin.ai.policy' | transloco: { v: o.safetyMonitor.policy } }}</td>
+        <td>{{ safetyLine(o) }}</td>
+        <td>
+          <span class="sl-pill" [class.sl-pill--brand]="o.safetyMonitor.passing">
+            {{ 'admin.ai.status.' + (o.safetyMonitor.passing ? 'PASSING' : 'NOT_EVALUATED') |
+            transloco }}
+          </span>
+        </td>
+        <td>{{ 'admin.ai.notApplicable' | transloco }}</td>
+      </tr>
+      @for (f of o.features; track f.feature) {
+      <tr [class.selected]="f.feature === selected()">
+        <td>
+          <button type="button" class="link" (click)="selected.set(f.feature)">
+            {{ 'admin.ai.feature.' + f.feature | transloco }}
+          </button>
+        </td>
+        <td>{{ routeLine(f) }}</td>
+        <td>{{ promptLine(f) }}</td>
+        <td>{{ evalLine(f.candidate ?? f.live) }}</td>
+        <td>
+          <span
+            class="sl-pill"
+            [class.sl-pill--brand]="status(f) === 'LIVE' || status(f) === 'PASSING'"
+            [class.sl-pill--danger]="status(f) === 'BLOCKED'"
+          >
+            {{ 'admin.ai.status.' + status(f) | transloco }}
+          </span>
+        </td>
+        <td>
+          <input
+            type="checkbox"
+            role="switch"
+            [checked]="f.enabled"
+            [disabled]="!mayChange() || busy()"
+            [attr.aria-label]="switchLabel(f)"
+            (change)="toggle(f)"
+          />
+        </td>
+      </tr>
+      }
+      <tr>
+        <td class="strong">{{ 'admin.ai.feature.SESSION_SCRIBE' | transloco }}</td>
+        <td>{{ 'admin.ai.scribeRoute' | transloco }}</td>
+        <td>{{ 'admin.ai.notApplicable' | transloco }}</td>
+        <td>{{ 'admin.ai.phase4' | transloco }}</td>
+        <td><span class="sl-pill">{{ 'admin.ai.status.NOT_BUILT' | transloco }}</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+@if (mayChange()) {
+<label class="sl-field reason">
+  <span>{{ 'admin.ai.reason' | transloco }}</span>
+  <input class="sl-input" maxlength="1000" [(ngModel)]="reason" />
+  <span class="sl-meta">{{ 'admin.ai.reasonHint' | transloco }}</span>
+</label>
+} @if (current(); as f) { @if (f.candidate; as c) {
+<section class="sl-card panel" aria-labelledby="panel-title">
+  <h2 id="panel-title" class="section">
+    {{ 'admin.ai.panel' | transloco: { feature: name(f.feature), v: c.version } }}
+  </h2>
+  <p class="sl-meta">{{ panelNote(f, c) }}</p>
+  <details>
+    <summary>{{ 'admin.ai.system' | transloco }}</summary>
+    <pre class="prompt">{{ c.system }}</pre>
+  </details>
+  <details>
+    <summary>{{ 'admin.ai.policyText' | transloco }}</summary>
+    <pre class="prompt">{{ c.policy }}</pre>
+  </details>
+  @if (c.evaluation?.failures?.length) {
+  <button
+    type="button"
+    class="sl-button sl-button--quiet"
+    (click)="showFailures.set(!showFailures())"
+  >
+    {{ (showFailures() ? 'admin.ai.hideFailures' : 'admin.ai.viewFailures') | transloco }}
+  </button>
+  @if (showFailures()) {
+  <ul class="failures">
+    @for (x of c.evaluation?.failures ?? []; track x.caseId + x.locale) {
+    <li>{{ x.caseId }} · {{ x.locale.toUpperCase() }} · {{ failureText(x.reason) }}</li>
+    }
+  </ul>
+  } } @if (c.signedOffBy) {
+  <p class="sl-meta">{{ 'admin.ai.signedOff' | transloco: { who: c.signedOffBy } }}</p>
+  }
+  <div class="actions">
+    @if (mayChange()) {
+    <button type="button" class="sl-button" [disabled]="busy()" (click)="evaluate(c)">
+      {{ 'admin.ai.evaluate' | transloco }}
+    </button>
+    } @if (isReviewer() && c.evaluation?.passed && !c.signedOffBy) {
+    <button type="button" class="sl-button" [disabled]="busy()" (click)="signOff(c)">
+      {{ 'admin.ai.signOff' | transloco }}
+    </button>
+    } @if (mayChange()) {
+    <button
+      type="button"
+      class="sl-button sl-button--primary"
+      [disabled]="busy() || !c.evaluation?.passed || !c.signedOffBy"
+      (click)="promote(c)"
+    >
+      {{ 'admin.ai.promote' | transloco: { v: c.version } }}
+    </button>
+    }
+  </div>
+</section>
+} } } @else {
+<p class="sl-muted">{{ 'common.loading' | transloco }}</p>
+}

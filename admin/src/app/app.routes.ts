@@ -1,6 +1,7 @@
 import type { Type } from '@angular/core';
 import type { Routes } from '@angular/router';
 
+import { AiControlsPage } from './ai/ai-controls.page';
 import { areaGuard } from './auth/area.guard';
 import { AuditLogPage } from './audit/audit-log.page';
 import { CataloguePage } from './catalogue/catalogue.page';
@@ -52,6 +53,7 @@ const SCREENS: Record<string, Type<unknown>> = {
   settings: SettingsPage,
   modules: ModulesPage,
   'health-check': HealthCheckPage,
+  ai: AiControlsPage,
 };
 
 /**

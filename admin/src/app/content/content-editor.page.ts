@@ -82,9 +82,22 @@ const SERVICES: Dial['service'][] = ['police', 'ambulance', 'fire', 'helpline'];
         }
       </div>
 
+      @if (aiNote(); as note) {
+        <p class="sl-meta ai-note" role="status">{{ note | transloco }}</p>
+      }
       <div class="columns">
         <section class="sl-card" aria-labelledby="en-title" lang="en">
           <h2 id="en-title" class="section">{{ 'admin.content.englishCaps' | transloco }}</h2>
+          @if (canChange()) {
+            <button
+              type="button"
+              class="sl-button sl-button--quiet"
+              [disabled]="drafting()"
+              (click)="aiDraft('fr')"
+            >
+              {{ 'admin.content.aiDraft_en' | transloco }}
+            </button>
+          }
           <label class="sl-field">
             <span>{{ 'admin.content.fieldTitle' | transloco }}</span>
             <input
@@ -108,6 +121,16 @@ const SERVICES: Dial['service'][] = ['police', 'ambulance', 'fire', 'helpline'];
         </section>
         <section class="sl-card" aria-labelledby="fr-title" lang="fr">
           <h2 id="fr-title" class="section">{{ 'admin.content.frenchCaps' | transloco }}</h2>
+          @if (canChange()) {
+            <button
+              type="button"
+              class="sl-button sl-button--quiet"
+              [disabled]="drafting()"
+              (click)="aiDraft('en')"
+            >
+              {{ 'admin.content.aiDraft_fr' | transloco }}
+            </button>
+          }
           <label class="sl-field">
             <span>{{ 'admin.content.fieldTitle' | transloco }}</span>
             <input
@@ -353,6 +376,37 @@ export class ContentEditorPage {
     this.item.set(item);
     this.draft.set({ ...item.draft, numbers: [...(item.draft.numbers ?? [])] });
     this.dirty.set(false);
+  }
+
+  readonly drafting = signal(false);
+  readonly aiNote = signal<string | null>(null);
+
+  /**
+   * Fills the other language with an AI draft for the editor to check (Phase 3; D56). Nothing is
+   * saved until the editor saves, and the translation is marked done by a person as before.
+   */
+  async aiDraft(from: 'en' | 'fr') {
+    this.drafting.set(true);
+    this.aiNote.set(null);
+    try {
+      const result = await this.api.client.POST('/admin/v1/content/{contentId}/translation-draft', {
+        params: { path: { contentId: this.id() } },
+        body: { from },
+      });
+      const draft = result.data;
+      if (!result.response.ok || !draft) {
+        this.aiNote.set('admin.content.aiDraftNone');
+        return;
+      }
+      const to = from === 'en' ? 'Fr' : 'En';
+      if (draft.title) this.edit(`title${to}` as 'titleFr' | 'titleEn', draft.title);
+      if (draft.body) this.edit(`body${to}` as 'bodyFr' | 'bodyEn', draft.body);
+      this.aiNote.set('admin.content.aiDraftNote');
+    } catch {
+      this.aiNote.set('admin.content.aiDraftNone');
+    } finally {
+      this.drafting.set(false);
+    }
   }
 
   edit(field: 'titleEn' | 'bodyEn' | 'titleFr' | 'bodyFr', value: string) {

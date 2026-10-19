@@ -7,6 +7,7 @@ import fr from '@solace/i18n/fr.json';
 import { vi } from 'vitest';
 
 import { CoreApi } from '../api/core-api';
+import { AiApi } from '../api/ai-api';
 import { TrackingApi } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
 
@@ -38,7 +39,13 @@ export function route(answers: Record<string, AnyFn>): AnyFn {
 export function setUp(
   roles: string[],
   client: Client,
-  options: { sub?: string; routes?: Routes; extra?: Partial<CoreApi>; tracking?: Client } = {},
+  options: {
+    sub?: string;
+    routes?: Routes;
+    extra?: Partial<CoreApi>;
+    tracking?: Client;
+    ai?: Client;
+  } = {},
 ) {
   TestBed.configureTestingModule({
     imports: [
@@ -51,6 +58,7 @@ export function setUp(
       provideZonelessChangeDetection(),
       provideRouter(options.routes ?? []),
       { provide: CoreApi, useValue: { client, ...options.extra } },
+      { provide: AiApi, useValue: { client: options.ai ?? {} } },
       {
         provide: TrackingApi,
         useValue: { client: options.tracking ?? {}, imageUrl: (id: string) => `/images/${id}` },

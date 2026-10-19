@@ -225,6 +225,24 @@ export class ApplicationReviewPage {
     this.bioDraft.update((d) => ({ ...d, [language]: text }));
   }
 
+  /** An AI draft of the missing language, for the reviewer to check and save (D30, D56). */
+  async aiBio() {
+    try {
+      const result = await this.api.client.POST(
+        '/admin/v1/specialist-applications/{id}/bio-draft',
+        {
+          params: { path: { id: this.id() } },
+        },
+      );
+      const draft = result.data;
+      if (result.response.ok && draft) {
+        this.draftBio(draft.language as 'en' | 'fr', draft.text);
+      }
+    } catch {
+      // No draft: the reviewer writes it, as before.
+    }
+  }
+
   saveBio(language: 'en' | 'fr') {
     const text = (this.bioDraft()[language] ?? '').trim();
     if (!text) return;

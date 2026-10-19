@@ -260,6 +260,11 @@
           {{ 'admin.specialists.review.missingLanguage' | transloco: { language:
           missing.toUpperCase() } }}
         </span>
+        @if (underReview() && canChange()) {
+        <button class="sl-button sl-button--quiet" type="button" [disabled]="busy()" (click)="aiBio()">
+          {{ 'admin.specialists.review.aiDraftBio' | transloco }}
+        </button>
+        }
         } @else if (r.profile.verification) {
         <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.profile.verification }" />
         } @else {

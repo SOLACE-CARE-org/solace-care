@@ -59,6 +59,14 @@ type Item = CoreSchemas['ModerationItem'];
                   'admin.reviews.flag_' + flag | transloco
                 }}</span>
               }
+              @if (item.aiSuggestion) {
+                <span class="sl-pill" [class.sl-pill--brand]="item.aiSuggestion === 'PUBLISH'">{{
+                  'admin.reviews.ai_' + item.aiSuggestion | transloco
+                }}</span>
+                @for (reason of item.aiReasons ?? []; track reason) {
+                  <span class="sl-pill">{{ 'admin.reviews.aiReason_' + reason | transloco }}</span>
+                }
+              }
               @if (canChange()) {
                 <div class="actions">
                   <button
