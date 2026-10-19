@@ -129,9 +129,10 @@ function timeline(application: SpecialistApplication): {
 /** "Today, 16:52", or the date and time in the viewer's language and time zone. */
 function when(iso: string, t: TFunction): string {
   const date = new Date(iso);
-  const time = new Intl.DateTimeFormat(i18n.language, { hour: '2-digit', minute: '2-digit' }).format(
-    date,
-  );
+  const time = new Intl.DateTimeFormat(i18n.language, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
   if (date.toDateString() === new Date().toDateString()) {
     return t('specialistSignup.review.today', { time });
   }
@@ -156,7 +157,11 @@ function Step({
   last?: boolean;
 }) {
   return (
-    <View style={styles.step} accessibilityRole="text" accessibilityLabel={meta ? `${title}. ${meta}` : title}>
+    <View
+      style={styles.step}
+      accessibilityRole="text"
+      accessibilityLabel={meta ? `${title}. ${meta}` : title}
+    >
       <View style={styles.rail} aria-hidden>
         <View
           style={[

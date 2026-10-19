@@ -110,7 +110,9 @@ export default function SpecialistLanguages() {
               }))}
               value={choice.proficiency}
               onChange={(proficiency) =>
-                setEdited(languages.map((c) => (c.code === choice.code ? { ...c, proficiency } : c)))
+                setEdited(
+                  languages.map((c) => (c.code === choice.code ? { ...c, proficiency } : c)),
+                )
               }
             />
           </View>

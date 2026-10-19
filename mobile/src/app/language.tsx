@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { deviceLanguage } from '@/i18n';
-import i18n from '@/i18n';
+import i18n, { deviceLanguage } from '@/i18n';
 import { type AppLanguage, useSession } from '@/state/session';
 import { Button } from '@/ui/Button';
 import { spokenIn } from '@/ui/lang';

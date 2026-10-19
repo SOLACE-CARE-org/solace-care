@@ -48,7 +48,8 @@ export default function SpecialistPractice() {
   const licensingBody = edits.licensingBody ?? saved?.licensingBody ?? '';
   const focusAreas = edits.focusAreas ?? saved?.focusAreas ?? [];
   const bio = edits.bio ?? saved?.bio ?? '';
-  const edit = (patch: Partial<Practice & { years: string }>) => setEdits((e) => ({ ...e, ...patch }));
+  const edit = (patch: Partial<Practice & { years: string }>) =>
+    setEdits((e) => ({ ...e, ...patch }));
 
   const yearsNumber = /^\d{1,2}$/.test(years) ? Number(years) : null;
   const ready =

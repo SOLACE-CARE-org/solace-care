@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { flags } from '@/config/flags';
 import { useEmergencyNumbers } from '@/content/crisis';
+import { useSafetyPlan } from '@/state/safetyPlan';
 import { Button } from '@/ui/Button';
 import { Text } from '@/ui/Text';
 
@@ -25,6 +26,8 @@ export default function UrgentHelp() {
   const { t } = useTranslation();
   const [breathing, setBreathing] = useState(false);
   const numbers = useEmergencyNumbers((s) => s.numbers);
+  // The seeker's own plan, kept on the phone so it opens offline too (D57).
+  const hasPlan = useSafetyPlan((s) => Boolean(s.plan));
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -101,6 +104,14 @@ export default function UrgentHelp() {
           </View>
           {breathing ? <Breathing /> : null}
         </View>
+
+        {flags.companion && hasPlan ? (
+          <Button
+            variant="secondary"
+            label={t('safetyPlan.title')}
+            onPress={() => router.push('/safety-plan')}
+          />
+        ) : null}
 
         <Text variant="meta" color={colors.inkMuted} style={styles.offline}>
           {t('crisis.offline')}

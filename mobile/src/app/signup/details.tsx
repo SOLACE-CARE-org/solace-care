@@ -18,7 +18,6 @@ import { ProgressSteps } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
 import { spacedLocalNumber, TextField } from '@/ui/TextField';
 
-
 const MINIMUM_AGE = 18;
 
 /** Seeker sign-up, step 1 (SeekerSignup.dc.html). */

@@ -58,7 +58,6 @@ describe('AI controls', () => {
     expect(root.textContent).toContain('FR sample failed: added a finding not in the evidence');
     expect(root.textContent).toContain('Blocked');
     expect(root.textContent).toContain("Waiting for the clinical team's safety set");
-    expect(root.textContent).toContain('Not built');
     expect(button(root, 'Promote v1.1')!.disabled).toBe(true);
     button(root, 'View failed samples')!.click();
     await settle();

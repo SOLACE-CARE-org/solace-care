@@ -4,13 +4,15 @@ import { router } from 'expo-router';
 import { CloudOff, Search } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { useMe, useSessionLanguages } from '@/api/account';
 import { type Booking, useMyBookings } from '@/api/bookings';
+import { useMyHomework } from '@/api/care';
+import { useFlags } from '@/config/flags';
 import i18n from '@/i18n';
 import { joinOpensAt, longWhen } from '@/state/bookingView';
 import { timeOf } from '@/state/format';
@@ -45,8 +47,8 @@ function greetingKey(now: Date): string {
 
 /**
  * Seeker home (Home.dc.html, StateOfflineHome.dc.html). Phase 1 shows sessions only: the next one,
- * with joining and rescheduling, and the way to book. Tracking, the daily check-in and homework
- * arrive with their phases.
+ * with joining and rescheduling, and the way to book. Phase 4 adds the homework the specialist set
+ * and the safety plan, behind the companion flag (D57).
  */
 export default function Home() {
   const { t } = useTranslation();
@@ -56,6 +58,7 @@ export default function Home() {
   const upcoming = useMyBookings('UPCOMING');
   const languages = useSessionLanguages(lang);
   const snapshot = useHomeSnapshot();
+  const companion = useFlags((f) => f.companion);
 
   const live = upcoming.data?.find((b) => b.status === 'CONFIRMED' || b.status === 'IN_PROGRESS');
   useEffect(() => {
@@ -77,7 +80,10 @@ export default function Home() {
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={upcoming.isRefetching} onRefresh={() => void upcoming.refetch()} />
+          <RefreshControl
+            refreshing={upcoming.isRefetching}
+            onRefresh={() => void upcoming.refetch()}
+          />
         }
       >
         {offline ? (
@@ -128,6 +134,8 @@ export default function Home() {
             />
           </View>
         )}
+
+        {companion ? <BetweenSessions lang={lang} /> : null}
 
         {offline ? (
           <Text variant="meta" color={colors.inkMuted} style={styles.center}>
@@ -206,6 +214,17 @@ function NextSession({
 }
 
 const styles = StyleSheet.create({
+  between: { gap: space.space8 },
+  homework: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.space12,
+    padding: space.space14,
+    borderRadius: radius.radius14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surfaceCard,
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.surfacePage,
@@ -241,3 +260,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+/** Homework from the specialist and the safety plan, between sessions (Phase 4, D57). */
+function BetweenSessions({ lang }: { lang: string }) {
+  const { t } = useTranslation();
+  const homework = useMyHomework(true);
+  const open = (homework.data ?? []).filter((h) => h.done < h.target);
+  return (
+    <View style={styles.between}>
+      {open.length > 0 ? (
+        <Text variant="label" color={colors.inkMuted} accessibilityRole="header">
+          {t('homework.homeTitle')}
+        </Text>
+      ) : null}
+      {open.map((h) => (
+        <Pressable
+          key={h.id}
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/homework/[id]', params: { id: h.id } })}
+          style={styles.homework}
+        >
+          <View style={styles.flex}>
+            <Text variant="label" style={styles.bold}>
+              {t('homework.progress', {
+                exercise:
+                  h.exercise === 'CUSTOM' ? (h.customTask ?? '') : t(`homework.${h.exercise}`),
+                done: h.done,
+                target: h.target,
+              })}
+            </Text>
+            <Text variant="meta" color={colors.inkMuted}>
+              {new Intl.DateTimeFormat(lang, {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+              }).format(new Date(h.dueBy))}
+            </Text>
+          </View>
+          <Text variant="label" color={colors.brand}>
+            {t('homework.open')}
+          </Text>
+        </Pressable>
+      ))}
+      <Button
+        variant="secondary"
+        label={t('safetyPlan.title')}
+        onPress={() => router.push('/safety-plan')}
+      />
+    </View>
+  );
+}

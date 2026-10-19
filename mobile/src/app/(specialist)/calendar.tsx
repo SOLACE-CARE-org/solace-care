@@ -57,9 +57,13 @@ export default function SpecialistCalendar() {
   const rows: Row[] = chosen
     ? [
         ...chosen.openStarts.map((at): Row => ({ kind: 'open', at })),
-        ...chosen.timeOff.map(
-          (o): Row => ({ kind: 'off', at: o.start, id: o.id, end: o.end, reason: o.reason }),
-        ),
+        ...chosen.timeOff.map((o): Row => ({
+          kind: 'off',
+          at: o.start,
+          id: o.id,
+          end: o.end,
+          reason: o.reason,
+        })),
       ].sort((a, b) => a.at.localeCompare(b.at))
     : [];
 
@@ -86,14 +90,20 @@ export default function SpecialistCalendar() {
                 key={d.date}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={new Intl.DateTimeFormat(lang, { dateStyle: 'full' }).format(date)}
+                accessibilityLabel={new Intl.DateTimeFormat(lang, { dateStyle: 'full' }).format(
+                  date,
+                )}
                 onPress={() => setSelected(d.date)}
                 style={[styles.day, on && styles.dayOn]}
               >
                 <Text variant="meta" color={on ? colors.onBrand : colors.inkMuted}>
                   {new Intl.DateTimeFormat(lang, { weekday: 'narrow' }).format(date)}
                 </Text>
-                <Text variant="label" color={on ? colors.onBrand : colors.ink} style={styles.dayNumber}>
+                <Text
+                  variant="label"
+                  color={on ? colors.onBrand : colors.ink}
+                  style={styles.dayNumber}
+                >
                   {date.getDate()}
                 </Text>
               </Pressable>
@@ -230,7 +240,10 @@ function BlockTimeOff({ date, onClose }: { date: string; onClose: () => void }) 
             </Text>
             <Segmented
               label={t('calendar.reasonLabel')}
-              options={REASONS.map((r) => ({ value: r, label: capitalised(t(`calendar.reason_${r}`)) }))}
+              options={REASONS.map((r) => ({
+                value: r,
+                label: capitalised(t(`calendar.reason_${r}`)),
+              }))}
               value={reason}
               onChange={setReason}
             />

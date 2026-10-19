@@ -60,7 +60,11 @@ export default function SpecialistPayout() {
     if (!ready || busy) return;
     setProblem(null);
     savePayout.mutate(
-      { method, phone: mobileMoney ? (e164 ?? undefined) : undefined, holderName: holderName.trim() },
+      {
+        method,
+        phone: mobileMoney ? (e164 ?? undefined) : undefined,
+        holderName: holderName.trim(),
+      },
       {
         onSuccess: (next) => {
           if (next.status === 'DRAFT' && stepRoute(next) !== '/specialist-signup/payout') {

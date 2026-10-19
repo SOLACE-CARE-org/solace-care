@@ -27,7 +27,15 @@ import { TextField } from '@/ui/TextField';
 type Weekday = WeeklyHours['days'][number]['weekday'];
 type Range = { start: string; end: string };
 
-const WEEK: Weekday[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+const WEEK: Weekday[] = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+];
 const BREAKS = [10, 15, 0] as const;
 const NOTICES = [2, 12, 24] as const;
 const HHMM = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -116,7 +124,11 @@ export default function SpecialistHours() {
                   {on ? <Check size={16} strokeWidth={3} color={colors.onBrand} /> : null}
                 </View>
               </Pressable>
-              <Text variant="label" color={on ? colors.ink : colors.inkMuted} style={styles.dayName}>
+              <Text
+                variant="label"
+                color={on ? colors.ink : colors.inkMuted}
+                style={styles.dayName}
+              >
                 {dayName}
               </Text>
               <View style={styles.ranges}>
@@ -163,7 +175,10 @@ export default function SpecialistHours() {
             </Text>
             <Segmented
               label={t('specialistSignup.hours.breakLabel')}
-              options={BREAKS.map((b) => ({ value: String(b), label: t(`specialistSignup.hours.break_${b}`) }))}
+              options={BREAKS.map((b) => ({
+                value: String(b),
+                label: t(`specialistSignup.hours.break_${b}`),
+              }))}
               value={String(current.breakMinutes)}
               onChange={(v) => update({ breakMinutes: Number(v) as WeeklyHours['breakMinutes'] })}
             />
@@ -174,7 +189,10 @@ export default function SpecialistHours() {
             </Text>
             <Segmented
               label={t('specialistSignup.hours.noticeLabel')}
-              options={NOTICES.map((n) => ({ value: String(n), label: t(`specialistSignup.hours.notice_${n}`) }))}
+              options={NOTICES.map((n) => ({
+                value: String(n),
+                label: t(`specialistSignup.hours.notice_${n}`),
+              }))}
               value={String(current.minimumNoticeHours)}
               onChange={(v) =>
                 update({ minimumNoticeHours: Number(v) as WeeklyHours['minimumNoticeHours'] })

@@ -42,7 +42,11 @@ export default function SpecialistServices() {
     if (edits[modality]) return edits[modality];
     const saved = application.data?.offerings.find((o) => o.modality === modality);
     return saved
-      ? { enabled: saved.enabled, durationMinutes: saved.durationMinutes, price: saved.enabled ? String(saved.price) : '' }
+      ? {
+          enabled: saved.enabled,
+          durationMinutes: saved.durationMinutes,
+          price: saved.enabled ? String(saved.price) : '',
+        }
       : { enabled: true, durationMinutes: defaultDuration, price: '' };
   };
   const edit = (modality: Modality, patch: Partial<Draft>) =>

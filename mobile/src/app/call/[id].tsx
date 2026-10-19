@@ -27,7 +27,10 @@ import i18n from '@/i18n';
 import { joinOpensAt, minutesOf } from '@/state/bookingView';
 import { timeOf } from '@/state/format';
 import { useNow } from '@/state/useNow';
+import { useChooseScribe, useSessionScribe } from '@/api/care';
+import { useFlags } from '@/config/flags';
 import { Avatar } from '@/ui/Avatar';
+import { SwitchRow } from '@/ui/SwitchRow';
 import { Button } from '@/ui/Button';
 import { BackButton } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
@@ -206,9 +209,11 @@ function WaitingRoom({
           }
           icon={weak ? WifiOff : Wifi}
         />
-        <Text variant="meta" color={colors.inkMuted}>
-          {t('call.notRecorded')}
-        </Text>
+        <ScribeChoice
+          bookingId={b.id}
+          guest={Boolean(access.guestToken)}
+          forSpecialist={forSpecialist}
+        />
         {problem ? (
           <Text variant="meta" color={colors.danger} accessibilityLiveRegion="polite">
             {problem}
@@ -229,6 +234,42 @@ function WaitingRoom({
         ) : null}
       </View>
     </SafeAreaView>
+  );
+}
+
+/**
+ * The session scribe for this session (D57): shown only when the scribe is on and both people
+ * consented; either can turn it off for this session, and then nothing is recorded.
+ */
+function ScribeChoice({
+  bookingId,
+  guest,
+  forSpecialist,
+}: {
+  bookingId: string;
+  guest: boolean;
+  forSpecialist: boolean;
+}) {
+  const { t } = useTranslation();
+  const enabled = useFlags((f) => f.sessionScribe) && !guest;
+  const state = useSessionScribe(bookingId, enabled);
+  const choose = useChooseScribe(bookingId);
+  const s = state.data;
+  if (!enabled || !s || !s.available || !s.seekerConsented || !s.specialistConsented) {
+    return (
+      <Text variant="meta" color={colors.inkMuted}>
+        {t('call.notRecorded')}
+      </Text>
+    );
+  }
+  const on = !s.refusedForSession;
+  return (
+    <SwitchRow
+      title={t('scribe.title')}
+      meta={on ? t(forSpecialist ? 'scribe.metaSpecialist' : 'scribe.meta') : t('scribe.off')}
+      on={on}
+      onToggle={() => choose.mutate(!on)}
+    />
   );
 }
 

@@ -8,6 +8,7 @@ import { queryClient } from '@/api/query-client';
 import { type PushEntry, tracking, trackingKeys } from '@/api/tracking';
 
 import { cacheStore, pendingStore } from './store';
+import { useSafetyPlan } from '@/state/safetyPlan';
 
 /** At most this many entries per push (contracts: PushRequest). */
 const BATCH = 500;
@@ -136,4 +137,6 @@ export async function forgetOnSignOut(): Promise<void> {
   await pendingStore.clear();
   await cacheStore.clear();
   useOutbox.setState({ pending: [] });
+  // The safety plan kept for offline use goes too (D57).
+  useSafetyPlan.getState().set(null);
 }

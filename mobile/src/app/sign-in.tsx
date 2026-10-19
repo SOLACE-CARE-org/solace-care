@@ -13,7 +13,6 @@ import { Segmented } from '@/ui/Segmented';
 import { Text } from '@/ui/Text';
 import { spacedLocalNumber, TextField } from '@/ui/TextField';
 
-
 type Channel = 'phone' | 'email';
 
 /** Sign in (SignIn.dc.html): phone or email, then a code. */
@@ -26,7 +25,8 @@ export default function SignIn() {
   const [failed, setFailed] = useState(false);
 
   const contact = channel === 'phone' ? toE164(phone) : email.trim().toLowerCase();
-  const valid = channel === 'phone' ? contact !== null : /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const valid =
+    channel === 'phone' ? contact !== null : /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
 
   const send = async () => {
     if (!valid || contact === null) return;
