@@ -19,6 +19,7 @@ class GrpcConfiguration {
             "solace.core.v1.BookingAccessService/CheckLiveBooking", "core:booking-access.read",
             "solace.core.v1.TaxonomyService/ListSpecialties", "core:taxonomy.read",
             "solace.core.v1.ProfileService/GetAge", "core:profile-age.read",
-            "solace.core.v1.BriefSourceService/GetBriefSources", "core:brief-sources.read"));
+            "solace.core.v1.BriefSourceService/GetBriefSources", "core:brief-sources.read",
+            "solace.core.v1.MetricsService/QueryMetric", "core:metrics.read"));
   }
 }
