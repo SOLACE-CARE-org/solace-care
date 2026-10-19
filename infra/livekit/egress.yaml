@@ -1,0 +1,16 @@
+# LiveKit Egress for local development only (D57). Records audio-only session files for the scribe
+# into the private solace-scribe-audio bucket; the AI service deletes each file once the note is
+# signed or discarded, and the bucket expires anything older than 7 days.
+api_key: devkey
+api_secret: solace-local-livekit-secret-0123456789
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+log_level: info
+s3:
+  access_key: solace
+  secret: solace-dev-only
+  region: us-east-1
+  endpoint: http://minio:9000
+  bucket: solace-scribe-audio
+  force_path_style: true

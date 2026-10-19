@@ -117,9 +117,11 @@ services:
     command:
       - |
         until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" > /dev/null 2>&1; do sleep 1; done &&
-        mc mb --ignore-existing local/solace-credentials local/solace-content local/solace-exports &&
+        mc mb --ignore-existing local/solace-credentials local/solace-content local/solace-exports local/solace-scribe-audio &&
         mc anonymous set none local/solace-credentials &&
         mc anonymous set none local/solace-exports &&
+        mc anonymous set none local/solace-scribe-audio &&
+        mc ilm rule add --expire-days 7 local/solace-scribe-audio > /dev/null 2>&1 || true &&
         echo buckets ready
 
   # Identity provider. Admin console on http://localhost:8180.
@@ -175,6 +177,20 @@ services:
     # Webhooks go to the gateway running on the host (D36).
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on: [redis]
+
+  # Audio-only recording for the session scribe (D57), only when both people consented. Start it with
+  #   docker compose --profile scribe up -d
+  # It writes to the private solace-scribe-audio bucket, which also expires objects after 7 days.
+  egress:
+    <<: *restart
+    profiles: [scribe]
+    image: livekit/egress:v1.9.0
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+    volumes:
+      - ./livekit/egress.yaml:/etc/egress.yaml:ro
+    depends_on: [livekit, redis, minio]
 
   # Observability: services send OTLP to the collector, which fans out to Tempo, Prometheus and Loki.
   otel-collector:

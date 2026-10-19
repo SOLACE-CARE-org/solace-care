@@ -5,13 +5,17 @@ import care.solace.core.guests.GuestAccess;
 import care.solace.core.identity.Accounts;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.Clock;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -29,6 +33,7 @@ class SessionController {
   private final Accounts accounts;
   private final GuestAccess guests;
   private final Clock clock;
+  private final Scribe scribe;
 
   SessionController(
       Sessions sessions,
@@ -36,13 +41,15 @@ class SessionController {
       BookingRecords bookings,
       Accounts accounts,
       GuestAccess guests,
-      Clock clock) {
+      Clock clock,
+      Scribe scribe) {
     this.sessions = sessions;
     this.liveKit = liveKit;
     this.bookings = bookings;
     this.accounts = accounts;
     this.guests = guests;
     this.clock = clock;
+    this.scribe = scribe;
   }
 
   /** Only the booked seeker and the specialist may join; anyone else gets 404 (CO-18). */
@@ -56,6 +63,40 @@ class SessionController {
     }
     if (account.id().equals(booking.seekerAccountId())) {
       return sessions.join(booking, Sessions.Role.SEEKER);
+    }
+    throw new SolaceException(CommonError.NOT_FOUND);
+  }
+
+  record ScribeChoice(@NotNull Boolean on) {}
+
+  @GetMapping("/v1/bookings/{bookingId}/scribe")
+  Scribe.State scribe(@AuthenticationPrincipal Jwt token, @PathVariable UUID bookingId) {
+    var booking = booking(token, bookingId);
+    return scribe.state(booking.info());
+  }
+
+  /** Allows or refuses the scribe for this session only (D57). */
+  @PutMapping("/v1/bookings/{bookingId}/scribe")
+  Scribe.State chooseScribe(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID bookingId,
+      @Valid @RequestBody ScribeChoice choice) {
+    var booking = booking(token, bookingId);
+    return scribe.choose(booking.info(), booking.role(), choice.on());
+  }
+
+  private record Booked(BookingRecords.Info info, Sessions.Role role) {}
+
+  /** The booking and the caller's part in it; anyone else gets 404 (CO-18). */
+  private Booked booking(Jwt token, UUID bookingId) {
+    var account = accounts.require(token);
+    var booking =
+        bookings.find(bookingId).orElseThrow(() -> new SolaceException(CommonError.NOT_FOUND));
+    if (account.id().equals(booking.specialistId())) {
+      return new Booked(booking, Sessions.Role.SPECIALIST);
+    }
+    if (account.id().equals(booking.seekerAccountId())) {
+      return new Booked(booking, Sessions.Role.SEEKER);
     }
     throw new SolaceException(CommonError.NOT_FOUND);
   }

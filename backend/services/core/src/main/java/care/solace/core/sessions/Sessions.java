@@ -53,6 +53,7 @@ class Sessions {
   private final SessionSettings settings;
   private final care.solace.core.admin.PlatformSettings platform;
   private final Clock clock;
+  private final Scribe scribe;
   private final Set<String> rooms = ConcurrentHashMap.newKeySet();
 
   Sessions(
@@ -61,13 +62,15 @@ class Sessions {
       JdbcClient db,
       SessionSettings settings,
       care.solace.core.admin.PlatformSettings platform,
-      Clock clock) {
+      Clock clock,
+      Scribe scribe) {
     this.liveKit = liveKit;
     this.bookings = bookings;
     this.db = db;
     this.settings = settings;
     this.platform = platform;
     this.clock = clock;
+    this.scribe = scribe;
   }
 
   /** A token for the booking's room; the caller has already been checked as {@code role}. */
@@ -151,12 +154,14 @@ class Sessions {
     List<String> joined = joined(id);
     if (kind.equals("JOINED") && joined.size() == 2) {
       bookings.start(id, at);
+      bookings.find(id).ifPresent(scribe::bothJoined);
     } else if (kind.equals("ROOM_FINISHED") && joined.size() == 2) {
       bookings
           .find(id)
           .filter(b -> b.status().equals("CONFIRMED"))
           .ifPresent(b -> bookings.start(id, at));
       bookings.complete(id, at);
+      bookings.find(id).ifPresent(scribe::ended);
     }
   }
 
@@ -199,6 +204,7 @@ class Sessions {
             now.minus(
                 platform.duration("solace.sessions.complete-after", settings.completeAfter())))) {
       bookings.complete(b.id(), now);
+      bookings.find(b.id()).ifPresent(scribe::ended);
     }
   }
 

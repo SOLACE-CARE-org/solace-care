@@ -270,6 +270,8 @@
       "seeker": "Utilisateur {{ref}}",
       "guest": "Invité {{ref}}",
       "from_REVIEW": "Depuis un avis de séance",
+      "from_HEALTH_CHECK": "Depuis le bilan de santé",
+      "from_COMPANION": "Depuis le compagnon d'exercices",
       "category": {
         "SUICIDAL_IDEATION": "Idées suicidaires",
         "SELF_HARM": "Automutilation",
@@ -631,6 +633,8 @@
         "healthCheck": "Bilan de santé",
         "aiAssist": "Assistance IA",
         "sessionScribe": "Scribe de séance",
+        "companion": "Compagnon d'exercices et plan de sécurité",
+        "adminCopilot": "Copilote admin",
         "phoneDialIn": "Accès par téléphone"
       },
       "value": {

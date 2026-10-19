@@ -104,6 +104,12 @@ solace:
   health-check:
     # Seals answers (AES-256-GCM). Production sets SOLACE_HEALTH_CHECK_KEY from the vault (D55).
     answers-key: ${SOLACE_HEALTH_CHECK_KEY:zXkjKmXrFytJmhcpmOSzDroSNvI57XY+AVR+rMCTVXU=}
+  safety-plan:
+    # Seals safety plans (AES-256-GCM). Production sets SOLACE_SAFETY_PLAN_KEY from the vault (D57).
+    key: ${SOLACE_SAFETY_PLAN_KEY:OXslxJM7sM42Gr+XhUxrso9f/MBBNGBAcqew+KAVwsE=}
+  brief:
+    # The Brief ready push, [60] minutes before a session (D56).
+    notice: PT60M
   identity:
     members-issuer: http://localhost:8180/realms/solace-members
     keycloak:

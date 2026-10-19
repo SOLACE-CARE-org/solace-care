@@ -199,6 +199,8 @@ class SettingCatalogue {
           new Flag("healthCheck", 2, false, false, true),
           new Flag("aiAssist", 3, false, false, true),
           new Flag("sessionScribe", 4, false, false, true),
+          new Flag("companion", 4, false, false, true),
+          new Flag("adminCopilot", 4, false, false, false),
           new Flag("phoneDialIn", 4, false, false, true));
 
   private final Map<String, Definition> settings = new LinkedHashMap<>();

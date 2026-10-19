@@ -86,6 +86,56 @@ class LiveKit {
     }
   }
 
+  /**
+   * Starts an audio-only recording of the room to {@code filepath} in the egress service's own
+   * encrypted bucket (infra: the scribe-audio bucket, never public). Null when it could not start:
+   * the session goes on unrecorded.
+   */
+  String startAudioEgress(String room, String filepath, Instant now) {
+    String admin = sign("solace-core", Map.of("roomRecord", true), now, now.plusSeconds(60));
+    try {
+      Map<?, ?> info =
+          http.post()
+              .uri("/twirp/livekit.Egress/StartRoomCompositeEgress")
+              .header("Authorization", "Bearer " + admin)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(
+                  Map.of(
+                      "room_name",
+                      room,
+                      "audio_only",
+                      true,
+                      "file_outputs",
+                      List.of(Map.of("file_type", "OGG", "filepath", filepath))))
+              .retrieve()
+              .body(Map.class);
+      Object id = info == null ? null : info.get("egress_id");
+      return id == null ? null : id.toString();
+    } catch (RestClientException e) {
+      LOG.warn("Could not start the scribe recording for room {}", room, e);
+      return null;
+    }
+  }
+
+  /** Stops a recording; a failure is logged, the egress ends with the room anyway. */
+  void stopEgress(String egressId, Instant now) {
+    if (egressId == null) {
+      return;
+    }
+    String admin = sign("solace-core", Map.of("roomRecord", true), now, now.plusSeconds(60));
+    try {
+      http.post()
+          .uri("/twirp/livekit.Egress/StopEgress")
+          .header("Authorization", "Bearer " + admin)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("egress_id", egressId))
+          .retrieve()
+          .toBodilessEntity();
+    } catch (RestClientException e) {
+      LOG.warn("Could not stop recording {}", egressId, e);
+    }
+  }
+
   /** True when the Authorization token is ours and carries the body's SHA-256. */
   boolean verifyWebhook(String authorization, byte[] body) {
     if (authorization == null || authorization.isBlank()) {

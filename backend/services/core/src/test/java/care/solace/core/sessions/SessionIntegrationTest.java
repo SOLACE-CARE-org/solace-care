@@ -1,11 +1,19 @@
 package care.solace.core.sessions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import care.solace.core.admin.FeatureFlags;
 import care.solace.core.bookings.BookingRecords;
 import care.solace.core.specialists.SpecialistFlowTest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
@@ -44,6 +53,8 @@ class SessionIntegrationTest extends SpecialistFlowTest {
 
   @Autowired BookingRecords bookings;
   @Autowired Sessions sessions;
+  @MockitoSpyBean LiveKit liveKit;
+  @MockitoSpyBean FeatureFlags flags;
 
   private Applicant specialist;
   private String seeker;
@@ -152,7 +163,83 @@ class SessionIntegrationTest extends SpecialistFlowTest {
     assertThat(stateOf(overran)).isEqualTo("COMPLETED");
   }
 
+  @Test
+  void theScribeRecordsOnlyWhenBothConsentedAndStopsWhenEitherRefuses() throws Exception {
+    String id = booking("CONFIRMED", "AUDIO", Duration.ofMinutes(-1));
+    doReturn("EG_1").when(liveKit).startAudioEgress(anyString(), anyString(), any());
+
+    // Off by default: nothing is recorded and no one is asked.
+    mvc.perform(get("/v1/bookings/" + id + "/scribe").headers(bearer(seeker)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.available").value(false))
+        .andExpect(jsonPath("$.recording").value(false));
+
+    doReturn(true).when(flags).enabled("sessionScribe");
+    scribeConsent(seeker, true);
+    scribeConsent(specialist.token(), true);
+    mvc.perform(get("/v1/bookings/" + id + "/scribe").headers(bearer(specialist.token())))
+        .andExpect(jsonPath("$.available").value(true))
+        .andExpect(jsonPath("$.seekerConsented").value(true))
+        .andExpect(jsonPath("$.specialistConsented").value(true));
+    // Someone else's booking is not found.
+    mvc.perform(get("/v1/bookings/" + id + "/scribe").headers(bearer(seeker())))
+        .andExpect(status().isNotFound());
+
+    joinBoth(id);
+    verify(liveKit).startAudioEgress(eq(id), eq("scribe-audio/" + id + ".ogg"), any());
+    mvc.perform(get("/v1/bookings/" + id + "/scribe").headers(bearer(seeker)))
+        .andExpect(jsonPath("$.recording").value(true));
+
+    // The seeker changes their mind during the session: the recording stops at once.
+    mvc.perform(
+            put("/v1/bookings/" + id + "/scribe")
+                .headers(bearer(seeker))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"on\":false}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.refusedForSession").value(true))
+        .andExpect(jsonPath("$.recording").value(false));
+    verify(liveKit).stopEgress(eq("EG_1"), any());
+
+    byte[] finished = event("room_finished", id, null);
+    webhook(finished, sign(finished, SECRET)).andExpect(status().isNoContent());
+    webhook(finished, sign(finished, SECRET)).andExpect(status().isNoContent());
+    // The AI service hears the session ended and only deletes the audio.
+    assertThat(firstEventOn("core.session", seekerId, id))
+        .contains("\"type\":\"core.session.ended\"")
+        .contains("\"scribe\":false")
+        .contains("\"audioKey\":\"scribe-audio/" + id + ".ogg\"")
+        .doesNotContain("Caller");
+  }
+
+  @Test
+  void aSessionWithoutConsentIsNeverRecorded() throws Exception {
+    String id = booking("CONFIRMED", "VIDEO", Duration.ofMinutes(-1));
+    doReturn(true).when(flags).enabled("sessionScribe");
+    String other = seeker();
+    String otherId = json(mvc.perform(get("/v1/me").headers(bearer(other)))).path("id").asText();
+    jdbc.update("UPDATE booking SET seeker_account_id = ?::uuid WHERE id = ?::uuid", otherId, id);
+    joinBoth(id);
+    verify(liveKit, never()).startAudioEgress(eq(id), anyString(), any());
+  }
+
   // --- Helpers ---------------------------------------------------------------------------------
+
+  private void joinBoth(String id) throws Exception {
+    for (String who : List.of("seeker", "specialist")) {
+      byte[] joined = event("participant_joined", id, who);
+      webhook(joined, sign(joined, SECRET)).andExpect(status().isNoContent());
+    }
+  }
+
+  private void scribeConsent(String token, boolean granted) throws Exception {
+    mvc.perform(
+            put("/v1/me/consents")
+                .headers(bearer(token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"choices\":[{\"purpose\":\"AI_SCRIBE\",\"granted\":" + granted + "}]}"))
+        .andExpect(status().isOk());
+  }
 
   private String seeker() throws Exception {
     String phone = "+2376703" + String.format("%05d", PHONES.incrementAndGet());

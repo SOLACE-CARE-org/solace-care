@@ -270,6 +270,8 @@
       "seeker": "Seeker {{ref}}",
       "guest": "Guest {{ref}}",
       "from_REVIEW": "From a session review",
+      "from_HEALTH_CHECK": "From the health check",
+      "from_COMPANION": "From the homework companion",
       "category": {
         "SUICIDAL_IDEATION": "Suicidal ideation",
         "SELF_HARM": "Self-harm",
@@ -631,6 +633,8 @@
         "healthCheck": "Health check",
         "aiAssist": "AI assist",
         "sessionScribe": "Session scribe",
+        "companion": "Homework companion and safety plan",
+        "adminCopilot": "Admin copilot",
         "phoneDialIn": "Phone dial-in"
       },
       "value": {

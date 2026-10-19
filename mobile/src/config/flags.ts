@@ -23,6 +23,12 @@ const defaults = {
   healthCheck: false,
   /** AI assist, Phase 3: the pre-session brief for specialists (D56). */
   aiAssist: false,
+  /** The session scribe, Phase 4: per-session consent, note drafts for specialists (D57). */
+  sessionScribe: false,
+  /** The homework companion and the safety plan, Phase 4 (D57). */
+  companion: false,
+  /** Phone dial-in for sessions, Phase 4. */
+  phoneDialIn: false,
 };
 
 export type Flags = typeof defaults;

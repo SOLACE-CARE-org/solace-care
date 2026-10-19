@@ -46,6 +46,8 @@ class ModuleBoundariesTest {
             "invites",
             // AI drafts a person reviews before anything is published (Phase 3, D56).
             "assist",
+            // The seeker's safety plan (Phase 4, D57).
+            "safetyplan",
             "system");
   }
 }

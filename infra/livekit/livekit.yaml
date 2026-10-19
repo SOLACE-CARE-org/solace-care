@@ -12,5 +12,8 @@ webhook:
   api_key: devkey
   urls:
     - http://host.docker.internal:8080/api/core/v1/webhooks/livekit
+# Egress (the scribe's audio recording, D57) talks to the server through Redis.
+redis:
+  address: redis:6379
 logging:
   level: info
