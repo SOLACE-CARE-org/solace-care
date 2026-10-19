@@ -11,6 +11,7 @@
     "specialistId": "9a1b2c3d-4e5f-4a7a-b3e5-5f0d9c1a7e64",
     "scribe": true,
     "audioKey": "scribe-audio/7f9d1c2e-1111-4a7a-b3e5-5f0d9c1a7e64.ogg",
-    "sessionLanguage": "en"
+    "sessionLanguage": "en",
+    "guest": false
   }
 }

@@ -44,13 +44,17 @@
           "type": "boolean"
         },
         "audioKey": {
-          "description": "Object key of the session audio, present when scribe is true.",
+          "description": "Object key of the session audio, present whenever audio was recorded. With scribe false (refused during the session), the AI service only deletes it.",
           "type": "string",
           "pattern": "^scribe-audio/[0-9a-f-]{36}\\.ogg$"
         },
         "sessionLanguage": {
           "description": "ISO 639 code of the session language.",
           "type": "string"
+        },
+        "guest": {
+          "description": "True when the seeker booked as a guest; subjectId is then the guest contact's id.",
+          "type": "boolean"
         }
       }
     }

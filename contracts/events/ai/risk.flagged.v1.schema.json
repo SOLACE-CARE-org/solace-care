@@ -31,8 +31,8 @@
           "format": "uuid"
         },
         "source": {
-          "description": "What was checked.",
-          "enum": ["REVIEW"]
+          "description": "What was checked: a review, or a seeker's answer to the homework companion (Phase 4, D57).",
+          "enum": ["REVIEW", "COMPANION"]
         },
         "sourceId": {
           "type": "string",
