@@ -1,6 +1,6 @@
 import { colors, fontFamily, radius, size, space } from '@solace/tokens/native';
 import { router } from 'expo-router';
-import { Mic, Search as SearchIcon, ShieldCheck, Video } from 'lucide-react-native';
+import { Mic, Search as SearchIcon, ShieldCheck, Stethoscope, Video } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSessionLanguages } from '@/api/account';
 import { type Modality, type SpecialistCard, useSpecialistSearch } from '@/api/catalogue';
+import { flags } from '@/config/flags';
 import i18n from '@/i18n';
 import { initials, money, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
@@ -111,6 +112,23 @@ export default function Search() {
           </View>
         </View>
       </View>
+
+      {flags.healthCheck ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('healthCheck.search.notSure')} ${t('healthCheck.search.take')}`}
+          onPress={() => router.push('/health-check')}
+          style={styles.healthCheck}
+        >
+          <Stethoscope size={22} strokeWidth={1.8} color={colors.brand} aria-hidden />
+          <View style={styles.flexOne}>
+            <Text variant="label">{t('healthCheck.search.notSure')}</Text>
+            <Text variant="label" color={colors.brand}>
+              {t('healthCheck.search.take')}
+            </Text>
+          </View>
+        </Pressable>
+      ) : null}
     </View>
   );
 
@@ -272,6 +290,18 @@ function Card({
 }
 
 const styles = StyleSheet.create({
+  healthCheck: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.space12,
+    padding: space.space16,
+    borderRadius: radius.radius16,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.surfaceCard,
+    minHeight: 44,
+  },
+  flexOne: { flex: 1 },
   screen: {
     flex: 1,
     backgroundColor: colors.surfacePage,

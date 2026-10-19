@@ -55,6 +55,7 @@ class HealthCheckController {
   private final Catalogue catalogue;
   private final SpecialistOffers specialists;
   private final MessageSource messages;
+  private final care.solace.core.admin.PlatformSettings settings;
 
   HealthCheckController(
       Versions versions,
@@ -62,7 +63,9 @@ class HealthCheckController {
       Accounts accounts,
       Catalogue catalogue,
       SpecialistOffers specialists,
-      MessageSource messages) {
+      MessageSource messages,
+      care.solace.core.admin.PlatformSettings settings) {
+    this.settings = settings;
     this.versions = versions;
     this.responses = responses;
     this.accounts = accounts;
@@ -87,7 +90,7 @@ class HealthCheckController {
       List<FormOption> options,
       Definition.ShowIf showIf) {}
 
-  record Form(String version, List<FormQuestion> questions) {}
+  record Form(String version, List<FormQuestion> questions, List<Long> priceBands) {}
 
   record Start(@NotBlank @Size(max = 20) String consentVersion) {}
 
@@ -152,7 +155,10 @@ class HealthCheckController {
                             .map(o -> new FormOption(o.code(), fr ? o.labelFr() : o.labelEn()))
                             .toList(),
                         q.showIf()))
-            .toList());
+            .toList(),
+        List.of(
+            settings.number("solace.health-check.price-band-1", 15000),
+            settings.number("solace.health-check.price-band-2", 25000)));
   }
 
   @PostMapping("/v1/health-check/responses")

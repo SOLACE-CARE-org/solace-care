@@ -2256,5 +2256,97 @@
       "startOne": "Suivre 1 module",
       "skip": "Passer pour l'instant"
     }
+  },
+  "healthCheck": {
+    "title": "Bilan de santé",
+    "intro": {
+      "heading": "Trouver le bon type de spécialiste",
+      "body": "Répondez à quelques questions courtes sur ce que vous vivez. Nous vous suggérons le type de spécialiste adapté, puis ceux qui sont disponibles.",
+      "time": "Environ 3 minutes · aucun compte requis",
+      "clinical": "Rédigé et vérifié par notre équipe clinique",
+      "notDiagnosis": "Ce n'est pas un diagnostic. Vous choisissez qui réserver",
+      "private": "Confidentiel. Un spécialiste ne voit vos réponses que si vous les partagez",
+      "consent": "J'accepte que Solace conserve mes réponses pour me suggérer des spécialistes. Je peux les supprimer à tout moment dans Confidentialité et données.",
+      "start": "Commencer",
+      "tickFirst": "Cochez la case ci-dessus pour commencer.",
+      "unavailable": "Le bilan de santé n'est pas encore disponible. Vous pouvez chercher parmi tous les spécialistes."
+    },
+    "step": {
+      "1": "Étape 1 sur 4 · Ce qui se passe",
+      "2": "Étape 2 sur 4 · Comment vous vous sentez",
+      "3": "Étape 3 sur 4 · Vos préférences",
+      "4": "Étape 4 sur 4 · Notre suggestion"
+    },
+    "chooseAll": "Choisissez tout ce qui s'applique.",
+    "source": {
+      "PHQ-9": "Issu du PHQ-9, un questionnaire standard utilisé par les cliniciens du monde entier.",
+      "GAD-7": "Issu du GAD-7, un questionnaire standard utilisé par les cliniciens du monde entier."
+    },
+    "next": "Suivant",
+    "urgent": {
+      "title": "Merci de nous l'avoir dit. Vous n'avez pas à attendre.",
+      "body": "Vous avez indiqué avoir pensé qu'il vaudrait mieux mourir ou vouloir vous faire du mal. Parlez à quelqu'un dès maintenant.",
+      "call": "Appeler le {{number}}",
+      "callMeta": "Services d'urgence, à toute heure",
+      "onCall": "Parler à un spécialiste d'astreinte",
+      "onCallMeta": "Appel audio gratuit · English ou Français",
+      "leaveNumber": "Ou laissez votre numéro et nous vous rappelons",
+      "phone": "Numéro de téléphone",
+      "callMe": "Me rappeler",
+      "called": "Merci. Un spécialiste Solace d'astreinte va vous rappeler.",
+      "note": "Un spécialiste Solace d'astreinte le voit tout de suite. Connecté ? Nous le prévenons sans vous demander votre numéro.",
+      "offline": "Les numéros d'urgence fonctionnent même sans internet.",
+      "continue": "Reprendre le bilan"
+    },
+    "prefs": {
+      "title": "Quelques préférences",
+      "subtitle": "Elles affinent la liste, sans changer notre suggestion.",
+      "language": "Langue de la séance",
+      "either": "Indifférent",
+      "format": "Comment vous préférez échanger",
+      "audio": "Audio",
+      "video": "Vidéo",
+      "price": "Prix par séance",
+      "upTo": "Jusqu'à {{amount}} FCFA",
+      "anyPrice": "Tous les prix",
+      "gender": "Spécialiste (facultatif)",
+      "noPreference": "Sans préférence",
+      "woman": "Une femme",
+      "man": "Un homme",
+      "see": "Voir notre suggestion"
+    },
+    "result": {
+      "title": "Notre suggestion",
+      "fitA": "{{person}} : ce profil vous convient",
+      "fitAn": "{{person}} : ce profil vous convient",
+      "why": "Pourquoi cette suggestion",
+      "alsoFit": "Convient aussi",
+      "notDiagnosis": "Ce n'est pas un diagnostic. Le spécialiste que vous réservez en parlera avec vous.",
+      "see": "Voir les spécialistes suggérés",
+      "keep": "Garder mes réponses : créer un compte gratuit",
+      "retake": "Refaites-le quand vous voulez depuis votre profil.",
+      "stale": "Vos réponses datent un peu. Refaites le bilan pour voir qui vous convient aujourd'hui.",
+      "retakeNow": "Le refaire"
+    },
+    "matches": {
+      "title": "Vos suggestions",
+      "from": "Selon votre bilan de santé",
+      "edit": "Modifier",
+      "also": "aussi {{person}}",
+      "summary": "{{language}} · {{format}} · {{price}}",
+      "share": "Partager mes réponses avec le spécialiste que je réserve",
+      "worksWith": "Accompagne {{topics}}",
+      "slot": "prochain créneau {{when}}",
+      "alsoFit": "Convient aussi",
+      "footer": "Suggestions selon votre bilan et vos préférences. C'est vous qui choisissez.",
+      "browse": "Voir tous les spécialistes",
+      "none": "Aucun spécialiste ne correspond encore à ces préférences. Modifiez-les, ou voyez tout le monde.",
+      "anyLanguage": "Toutes les langues",
+      "anyFormat": "Audio ou vidéo"
+    },
+    "search": {
+      "notSure": "Vous ne savez pas qui consulter ?",
+      "take": "Faire le bilan de santé en 3 minutes"
+    }
   }
 }

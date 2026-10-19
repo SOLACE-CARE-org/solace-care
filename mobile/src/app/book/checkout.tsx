@@ -34,6 +34,8 @@ type Params = {
   modality: Modality;
   language: string;
   recommendationId?: string;
+  healthCheckResponseId?: string;
+  shareHealthCheck?: string;
 };
 
 /**
@@ -41,6 +43,27 @@ type Params = {
  * their phone with a 6-digit code (D34). Paying books the held time, then asks the chosen wallet for
  * the price and opens Approve payment; the booking keeps the time until the hold window ends.
  */
+/** Where the booking came from: a tracking invite, the health check, or search (D52, D55). */
+function bookingRequest(params: Params) {
+  const base = { holdId: params.holdId, sessionLanguage: params.language };
+  if (params.recommendationId) {
+    return {
+      ...base,
+      source: 'TRACKING_RECOMMENDATION' as const,
+      recommendationId: params.recommendationId,
+    };
+  }
+  if (params.healthCheckResponseId) {
+    return {
+      ...base,
+      source: 'HEALTH_CHECK' as const,
+      healthCheckResponseId: params.healthCheckResponseId,
+      shareHealthCheck: params.shareHealthCheck === '1',
+    };
+  }
+  return { ...base, source: 'SEARCH' as const };
+}
+
 export default function Checkout() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<Params>();
@@ -94,17 +117,7 @@ export default function Checkout() {
       router.replace({ pathname: '/book/pay', params: { id: bookingId } });
     };
     if (member) {
-      book.mutate(
-        params.recommendationId
-          ? {
-              holdId: params.holdId,
-              sessionLanguage: params.language,
-              source: 'TRACKING_RECOMMENDATION',
-              recommendationId: params.recommendationId,
-            }
-          : { holdId: params.holdId, sessionLanguage: params.language, source: 'SEARCH' },
-        { onSuccess: (b) => opened(b.id), onError: say },
-      );
+      book.mutate(bookingRequest(params), { onSuccess: (b) => opened(b.id), onError: say });
     } else {
       guestBook.mutate(
         {

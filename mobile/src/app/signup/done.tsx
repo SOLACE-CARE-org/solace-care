@@ -1,11 +1,13 @@
 import { colors, radius, space } from '@solace/tokens/native';
 import { router } from 'expo-router';
 import { Check } from 'lucide-react-native';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useMe } from '@/api/account';
+import { claimGuestResponse } from '@/api/healthCheck';
 import { Button } from '@/ui/Button';
 import { Text } from '@/ui/Text';
 
@@ -16,6 +18,10 @@ import { Text } from '@/ui/Text';
 export default function SignupDone() {
   const { t } = useTranslation();
   const me = useMe();
+  // Answers given as a guest become the new account's (D55).
+  useEffect(() => {
+    void claimGuestResponse().catch(() => undefined);
+  }, []);
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.hero} aria-hidden>

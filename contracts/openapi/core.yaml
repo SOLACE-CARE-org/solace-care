@@ -7280,10 +7280,15 @@ components:
     HealthCheckForm:
       type: object
       additionalProperties: false
-      required: [version, questions]
+      required: [version, questions, priceBands]
       properties:
         version:
           type: string
+        priceBands:
+          description: The upper bounds in FCFA the preferences screen offers, lowest first (settings).
+          type: array
+          items:
+            type: integer
         questions:
           type: array
           items:

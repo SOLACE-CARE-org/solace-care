@@ -35,12 +35,17 @@ export default function ChooseSession() {
     reschedule,
     modality: fixedModality,
     recommendationId,
+    healthCheckResponseId,
+    shareHealthCheck,
   } = useLocalSearchParams<{
     id: string;
     reschedule?: string;
     modality?: Modality;
     /** Set when the booking answers a tracking invite (D52). */
     recommendationId?: string;
+    /** Set when the booking comes from the health check's matches (D55). */
+    healthCheckResponseId?: string;
+    shareHealthCheck?: string;
   }>();
   const moving = Boolean(reschedule);
   const guestToken = useGuestToken(reschedule ?? '');
@@ -102,6 +107,8 @@ export default function ChooseSession() {
                   holdId: held.holdId,
                   specialistId: id,
                   ...(recommendationId ? { recommendationId } : {}),
+                  ...(healthCheckResponseId ? { healthCheckResponseId } : {}),
+                  ...(shareHealthCheck ? { shareHealthCheck } : {}),
                   start: held.start,
                   end: held.end,
                   expiresAt: held.expiresAt,

@@ -2256,5 +2256,97 @@
       "startOne": "Start tracking 1 module",
       "skip": "Skip for now"
     }
+  },
+  "healthCheck": {
+    "title": "Health check",
+    "intro": {
+      "heading": "Find the right kind of specialist",
+      "body": "Answer a few short questions about what you're going through. We'll suggest the type of specialist who fits, then show you who's free.",
+      "time": "About 3 minutes · no account needed",
+      "clinical": "Written and checked by our clinical team",
+      "notDiagnosis": "Not a diagnosis. You choose who to book",
+      "private": "Private. A specialist sees your answers only if you share them",
+      "consent": "I agree that Solace stores my answers to suggest specialists. I can delete them at any time in Privacy & data.",
+      "start": "Start",
+      "tickFirst": "Tick the box above to start.",
+      "unavailable": "The health check is not available yet. You can still search all specialists."
+    },
+    "step": {
+      "1": "Step 1 of 4 · What's going on",
+      "2": "Step 2 of 4 · How you've been feeling",
+      "3": "Step 3 of 4 · What you prefer",
+      "4": "Step 4 of 4 · Your suggestion"
+    },
+    "chooseAll": "Choose all that apply.",
+    "source": {
+      "PHQ-9": "From PHQ-9, a standard questionnaire clinicians use worldwide.",
+      "GAD-7": "From GAD-7, a standard questionnaire clinicians use worldwide."
+    },
+    "next": "Next",
+    "urgent": {
+      "title": "Thank you for telling us. You don't have to wait.",
+      "body": "You said you've had thoughts of being better off dead or of hurting yourself. Please talk to someone now.",
+      "call": "Call {{number}}",
+      "callMeta": "Emergency services, any time",
+      "onCall": "Talk to an on-call specialist",
+      "onCallMeta": "Free audio call · English or Français",
+      "leaveNumber": "Or leave your number and we'll call you back",
+      "phone": "Phone number",
+      "callMe": "Call me back",
+      "called": "Thank you. A Solace specialist on call will call you back.",
+      "note": "A Solace specialist on call sees this straight away. Signed in? We alert them without asking for your number.",
+      "offline": "Emergency numbers here work even without internet.",
+      "continue": "Continue the health check"
+    },
+    "prefs": {
+      "title": "A few preferences",
+      "subtitle": "These narrow the list. They never change your suggestion.",
+      "language": "Session language",
+      "either": "Either",
+      "format": "How you'd like to talk",
+      "audio": "Audio",
+      "video": "Video",
+      "price": "Price per session",
+      "upTo": "Up to {{amount}} FCFA",
+      "anyPrice": "Any price",
+      "gender": "Specialist (optional)",
+      "noPreference": "No preference",
+      "woman": "A woman",
+      "man": "A man",
+      "see": "See my suggestion"
+    },
+    "result": {
+      "title": "Your suggestion",
+      "fitA": "A {{person}} is a good fit",
+      "fitAn": "An {{person}} is a good fit",
+      "why": "Why we suggest this",
+      "alsoFit": "Also a good fit",
+      "notDiagnosis": "This is not a diagnosis. The specialist you book will talk it through with you.",
+      "see": "See matching specialists",
+      "keep": "Keep my answers: create a free account",
+      "retake": "Retake it any time from your profile.",
+      "stale": "Your answers are a while old. Take the health check again to see who fits now.",
+      "retakeNow": "Take it again"
+    },
+    "matches": {
+      "title": "Your matches",
+      "from": "From your health check",
+      "edit": "Edit answers",
+      "also": "also {{person}}",
+      "summary": "{{language}} · {{format}} · {{price}}",
+      "share": "Share my answers with the specialist I book",
+      "worksWith": "Works with {{topics}}",
+      "slot": "next {{when}}",
+      "alsoFit": "Also a good fit",
+      "footer": "Matched on your health check and preferences. You choose who to book.",
+      "browse": "Browse all specialists",
+      "none": "No specialist matches these preferences yet. Try changing them, or browse everyone.",
+      "anyLanguage": "Any language",
+      "anyFormat": "Audio or video"
+    },
+    "search": {
+      "notSure": "Not sure who to see?",
+      "take": "Take the 3-minute health check"
+    }
   }
 }
