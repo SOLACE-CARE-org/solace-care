@@ -120,12 +120,15 @@ class Sessions {
     Role role = null;
     if (!kind.equals("ROOM_FINISHED")) {
       String identity = event.path("participant").path("identity").asText();
+      // A phone caller comes through SIP with the booking's PIN: that is the seeker (D59).
       role =
-          switch (identity) {
-            case "seeker" -> Role.SEEKER;
-            case "specialist" -> Role.SPECIALIST;
-            default -> null;
-          };
+          identity.startsWith("sip_")
+              ? Role.SEEKER
+              : switch (identity) {
+                case "seeker" -> Role.SEEKER;
+                case "specialist" -> Role.SPECIALIST;
+                default -> null;
+              };
       if (role == null) {
         return;
       }

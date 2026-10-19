@@ -143,6 +143,11 @@ solace:
     api-url: ${SOLACE_SESSIONS_API_URL:http://localhost:7880}
     api-key: ${SOLACE_SESSIONS_API_KEY:devkey}
     api-secret: ${SOLACE_SESSIONS_API_SECRET:solace-local-livekit-secret-0123456789}
+    # Joining by phone through LiveKit SIP (D59): the number seekers call and the inbound trunks.
+    # Empty until a Cameroonian number and a SIP trunk are contracted; the app then hides it.
+    dial-in:
+      number: ${SOLACE_DIAL_IN_NUMBER:}
+      trunks: ${SOLACE_DIAL_IN_TRUNKS:}
   specialists:
     pricing:
       # SpecServices' [Min] and [Max]: 5,000 to 20,000 FCFA per session (D27). Settings, not constants.

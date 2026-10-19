@@ -34,6 +34,7 @@ class SessionController {
   private final GuestAccess guests;
   private final Clock clock;
   private final Scribe scribe;
+  private final DialIns dialIns;
 
   SessionController(
       Sessions sessions,
@@ -42,7 +43,8 @@ class SessionController {
       Accounts accounts,
       GuestAccess guests,
       Clock clock,
-      Scribe scribe) {
+      Scribe scribe,
+      DialIns dialIns) {
     this.sessions = sessions;
     this.liveKit = liveKit;
     this.bookings = bookings;
@@ -50,6 +52,7 @@ class SessionController {
     this.guests = guests;
     this.clock = clock;
     this.scribe = scribe;
+    this.dialIns = dialIns;
   }
 
   /** Only the booked seeker and the specialist may join; anyone else gets 404 (CO-18). */
@@ -83,6 +86,26 @@ class SessionController {
       @Valid @RequestBody ScribeChoice choice) {
     var booking = booking(token, bookingId);
     return scribe.choose(booking.info(), booking.role(), choice.on());
+  }
+
+  /** Joining by phone, for the booked seeker only (D59). */
+  @GetMapping("/v1/bookings/{bookingId}/dial-in")
+  DialIns.DialIn dialIn(@AuthenticationPrincipal Jwt token, @PathVariable UUID bookingId) {
+    var booking = booking(token, bookingId);
+    if (booking.role() != Sessions.Role.SEEKER) {
+      throw new SolaceException(CommonError.NOT_FOUND);
+    }
+    return dialIns.dialIn(booking.info());
+  }
+
+  @GetMapping("/v1/guest/booking/dial-in")
+  DialIns.DialIn dialInAsGuest(@RequestHeader("X-Guest-Token") String token) {
+    var pass = guests.require(token, clock.instant());
+    var booking =
+        bookings
+            .find(pass.bookingId())
+            .orElseThrow(() -> new SolaceException(CommonError.NOT_FOUND));
+    return dialIns.dialIn(booking);
   }
 
   private record Booked(BookingRecords.Info info, Sessions.Role role) {}

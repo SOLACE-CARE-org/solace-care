@@ -136,6 +136,70 @@ class LiveKit {
     }
   }
 
+  /**
+   * A SIP dispatch rule that sends a caller who enters {@code pin} to {@code room} (D59). Null when
+   * the media server refused: the app then offers joining by data only.
+   */
+  String createDialInRule(String room, String pin, List<String> trunks, Instant now) {
+    try {
+      Map<?, ?> info =
+          http.post()
+              .uri("/twirp/livekit.SIP/CreateSIPDispatchRule")
+              .header("Authorization", "Bearer " + sipAdmin(now))
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(
+                  Map.of(
+                      "rule",
+                      Map.of("dispatch_rule_direct", Map.of("room_name", room, "pin", pin)),
+                      "trunk_ids",
+                      trunks,
+                      "name",
+                      "booking-" + room))
+              .retrieve()
+              .body(Map.class);
+      Object id = info == null ? null : info.get("sip_dispatch_rule_id");
+      return id == null ? null : id.toString();
+    } catch (RestClientException e) {
+      LOG.warn("Could not create the dial-in rule for room {}", room, e);
+      return null;
+    }
+  }
+
+  /** Removes a dial-in rule; a failure is logged and tried again on the next sweep. */
+  boolean deleteDialInRule(String ruleId, Instant now) {
+    try {
+      http.post()
+          .uri("/twirp/livekit.SIP/DeleteSIPDispatchRule")
+          .header("Authorization", "Bearer " + sipAdmin(now))
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(Map.of("sip_dispatch_rule_id", ruleId))
+          .retrieve()
+          .toBodilessEntity();
+      return true;
+    } catch (RestClientException e) {
+      LOG.warn("Could not delete dial-in rule {}", ruleId, e);
+      return false;
+    }
+  }
+
+  private String sipAdmin(Instant now) {
+    try {
+      var claims =
+          new JWTClaimsSet.Builder()
+              .issuer(settings.apiKey())
+              .subject("solace-core")
+              .notBeforeTime(Date.from(now.minusSeconds(10)))
+              .expirationTime(Date.from(now.plusSeconds(60)))
+              .claim("sip", Map.of("admin", true, "call", true))
+              .build();
+      var jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
+      jwt.sign(new MACSigner(secret()));
+      return jwt.serialize();
+    } catch (JOSEException e) {
+      throw new IllegalStateException("LiveKit SIP token", e);
+    }
+  }
+
   /** True when the Authorization token is ours and carries the body's SHA-256. */
   boolean verifyWebhook(String authorization, byte[] body) {
     if (authorization == null || authorization.isBlank()) {

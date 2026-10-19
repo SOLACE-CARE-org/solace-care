@@ -55,6 +55,7 @@ class SessionIntegrationTest extends SpecialistFlowTest {
   @Autowired Sessions sessions;
   @MockitoSpyBean LiveKit liveKit;
   @MockitoSpyBean FeatureFlags flags;
+  @Autowired DialIns dialIns;
 
   private Applicant specialist;
   private String seeker;
@@ -221,6 +222,47 @@ class SessionIntegrationTest extends SpecialistFlowTest {
     jdbc.update("UPDATE booking SET seeker_account_id = ?::uuid WHERE id = ?::uuid", otherId, id);
     joinBoth(id);
     verify(liveKit, never()).startAudioEgress(eq(id), anyString(), any());
+  }
+
+  @Test
+  void aSeekerJoinsByPhoneWithTheBookingsPinWhileJoiningIsOpen() throws Exception {
+    String id = booking("CONFIRMED", "AUDIO", Duration.ofMinutes(-1));
+    mvc.perform(get("/v1/bookings/" + id + "/dial-in").headers(bearer(seeker)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("session.no-dial-in"));
+
+    doReturn(true).when(flags).enabled("phoneDialIn");
+    org.springframework.test.util.ReflectionTestUtils.setField(dialIns, "number", "+237222000111");
+    org.springframework.test.util.ReflectionTestUtils.setField(dialIns, "trunks", List.of("ST_1"));
+    doReturn("SDR_1").when(liveKit).createDialInRule(anyString(), anyString(), any(), any());
+    doReturn(true).when(liveKit).deleteDialInRule(anyString(), any());
+
+    var first = json(mvc.perform(get("/v1/bookings/" + id + "/dial-in").headers(bearer(seeker))));
+    assertThat(first.path("number").asText()).isEqualTo("+237222000111");
+    assertThat(first.path("pin").asText()).matches("[0-9]{6}");
+    mvc.perform(get("/v1/bookings/" + id + "/dial-in").headers(bearer(seeker)))
+        .andExpect(jsonPath("$.pin").value(first.path("pin").asText()));
+    // The specialist does not dial in.
+    mvc.perform(get("/v1/bookings/" + id + "/dial-in").headers(bearer(specialist.token())))
+        .andExpect(status().isNotFound());
+
+    // Joining is open: the media server gets a rule for this PIN and room.
+    dialIns.sweepNow();
+    verify(liveKit)
+        .createDialInRule(eq(id), eq(first.path("pin").asText()), eq(List.of("ST_1")), any());
+
+    // The caller counts as the seeker for attendance.
+    for (String who : List.of("sip_caller", "specialist")) {
+      byte[] joined = event("participant_joined", id, who);
+      webhook(joined, sign(joined, SECRET)).andExpect(status().isNoContent());
+    }
+    assertThat(stateOf(id)).isEqualTo("IN_PROGRESS");
+
+    // When it is over the rule goes.
+    byte[] finished = event("room_finished", id, null);
+    webhook(finished, sign(finished, SECRET)).andExpect(status().isNoContent());
+    dialIns.sweepNow();
+    verify(liveKit).deleteDialInRule(eq("SDR_1"), any());
   }
 
   // --- Helpers ---------------------------------------------------------------------------------
