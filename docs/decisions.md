@@ -385,6 +385,18 @@ Every pair now meets WCAG 2.1 AA.
 - **The number and the SIP trunk:** contracting a Cameroonian number and a SIP trunk is outside engineering. Until then the app does not show the option.
 - **"More tracking modules"** in this epic are built by staff in the module builder (Phase 2), so they need no code.
 
+**D60. Designed features that were missing, built 21 Oct 2026.** Found when writing the flow guides (docs/guides).
+- **Accepting new bookings:** a switch on Today, stored with the weekly hours. Off means no free times are offered or held, so search shows no next slot and nothing new can be booked or rescheduled into. Sessions already booked stay.
+- **Raise safety concern:** a specialist raises it from the in-session screen with a category and a short note. Core raises a crisis alert with source SESSION, and the responder reads the note as the alert's text.
+- **Pushes now sent:**
+  - Seeker waiting: once per booking, when the seeker is in the room before the specialist.
+  - Licence renewal: push and email 60 days before the licence date recorded at review, once per date.
+  - Task from the specialist: AI publishes `ai.homework.assigned`. The push carries the booking, so a tap opens that session.
+- **Share my tracking summary:** on Session details for registered seekers with tracking on. It creates or revokes a sharing grant for that specialist, without notes (notes need their own yes, D52).
+- **Home with tracking:** the newest pattern, a one-tap mood check-in when the Daily check-in is tracked, and the tracked modules, all logged offline like the Track tab.
+- **App lock:** a device-local setting that uses the phone's own lock (PIN, fingerprint or face). Turning it on or off needs that lock. The lock screen keeps Urgent help one tap away and never covers the crisis screen. Signing out turns it off.
+- **Message someone you trust:** Urgent help lists the safety plan's people who have a number. Each button opens a text message with no prefilled words, since the copy has none.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
