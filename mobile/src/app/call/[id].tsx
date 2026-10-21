@@ -20,7 +20,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSessionLanguages } from '@/api/account';
 import { type Booking, useBooking, useGuestToken } from '@/api/bookings';
 import { ApiProblem } from '@/api/core';
-import { joinSession, type JoinToken, useDialIn } from '@/api/sessions';
+import {
+  joinSession,
+  type JoinToken,
+  raiseSafetyConcern,
+  type SafetyCategory,
+  useDialIn,
+} from '@/api/sessions';
+import { Chip } from '@/ui/Chip';
+import { TextField } from '@/ui/TextField';
+import { useAuth } from '@/auth/auth';
 import { callEnded, callStarted, setUpCallKeep } from '@/call/callkeep';
 import { checkMicrophone, useCall } from '@/call/engine';
 import i18n from '@/i18n';
@@ -362,6 +371,11 @@ function InCall({
   const clock = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
   const forSpecialist = Boolean(b.seeker);
   const showVideo = call.video && !call.audioOnly;
+  const scribeOn = useFlags((f) => f.sessionScribe);
+  // Guests have no member token and are never recorded.
+  const signedIn = useAuth((s) => s.status === 'signedIn');
+  const scribe = useSessionScribe(b.id, scribeOn && signedIn);
+  const recording = Boolean(scribe.data?.recording);
 
   const end = async () => {
     callEnded(b.id);
@@ -412,14 +426,14 @@ function InCall({
                 : ''}
             </Text>
             <Text variant="meta" color={colors.onBrandNight}>
-              {t('call.private')}
+              {recording ? t('scribe.on') : t('call.private')}
             </Text>
           </View>
         </View>
       ) : (
         <View style={styles.audioStage}>
           <Text variant="meta" color={colors.onBrandNight}>
-            {t('call.privateNotRecorded')}
+            {recording ? t('scribe.on') : t('call.privateNotRecorded')}
           </Text>
           <Text style={styles.clock}>{clock}</Text>
           <Avatar name={other} size={104} />
@@ -449,6 +463,7 @@ function InCall({
             onPress={() => call.goAudioOnly()}
           />
         ) : null}
+        {forSpecialist ? <SafetyConcern bookingId={b.id} /> : null}
         <View style={styles.controls}>
           <Control
             label={call.micOn ? t('call.mute') : t('call.unmute')}
@@ -482,6 +497,86 @@ function InCall({
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+const CATEGORIES: SafetyCategory[] = [
+  'SUICIDAL_IDEATION',
+  'SELF_HARM',
+  'ACUTE_ANXIETY',
+  'VIOLENT_THOUGHTS',
+  'SUBSTANCE_CRISIS',
+  'RISK_TAKING',
+  'UNKNOWN',
+];
+
+/**
+ * Raise safety concern (SpecCall.dc.html): the specialist alerts Solace's on-call team from the
+ * session. The alert reaches the crisis queue at once with the category and their short note.
+ */
+function SafetyConcern({ bookingId }: { bookingId: string }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState<SafetyCategory | null>(null);
+  const [note, setNote] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+
+  const send = async () => {
+    if (!category) return;
+    setState('sending');
+    try {
+      await raiseSafetyConcern(bookingId, category, note);
+      setState('sent');
+      setOpen(false);
+    } catch {
+      setState('failed');
+    }
+  };
+
+  if (state === 'sent') return <Notice text={t('call.concernSent')} />;
+  if (!open) {
+    return (
+      <Button variant="secondary" label={t('call.raiseConcern')} onPress={() => setOpen(true)} />
+    );
+  }
+  return (
+    <View style={styles.concern}>
+      <Text variant="label" style={styles.bold} accessibilityRole="header">
+        {t('call.raiseConcern')}
+      </Text>
+      <Text variant="meta" color={colors.inkMuted}>
+        {t('call.concernBody')}
+      </Text>
+      <View style={styles.concernChips}>
+        {CATEGORIES.map((c) => (
+          <Chip
+            key={c}
+            role="radio"
+            label={t(`call.concern_${c}`)}
+            on={category === c}
+            onToggle={() => setCategory(c)}
+          />
+        ))}
+      </View>
+      <TextField
+        label={t('call.concernNote')}
+        value={note}
+        onChangeText={setNote}
+        maxLength={500}
+        multiline
+        error={state === 'failed' ? t('common.checkConnection') : undefined}
+      />
+      <Button
+        label={t('call.concernSend')}
+        disabled={!category || state === 'sending'}
+        accessibilityState={{
+          disabled: !category || state === 'sending',
+          busy: state === 'sending',
+        }}
+        onPress={() => void send()}
+      />
+      <Button variant="quiet" label={t('call.concernCancel')} onPress={() => setOpen(false)} />
+    </View>
   );
 }
 
@@ -522,6 +617,13 @@ function Control({
 }
 
 const styles = StyleSheet.create({
+  concern: {
+    gap: space.space8,
+    padding: space.space14,
+    borderRadius: radius.radius14,
+    backgroundColor: colors.surfaceCard,
+  },
+  concernChips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.space8 },
   screen: {
     flex: 1,
     backgroundColor: colors.surfacePage,

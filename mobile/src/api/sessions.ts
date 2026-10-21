@@ -38,3 +38,25 @@ export function useDialIn({ bookingId, guestToken }: Access, enabled: boolean) {
     retry: false,
   });
 }
+
+export type SafetyCategory =
+  | 'SUICIDAL_IDEATION'
+  | 'SELF_HARM'
+  | 'ACUTE_ANXIETY'
+  | 'VIOLENT_THOUGHTS'
+  | 'SUBSTANCE_CRISIS'
+  | 'RISK_TAKING'
+  | 'UNKNOWN';
+
+/** The booking's specialist raises a safety concern: a crisis alert for the on-call team. */
+export async function raiseSafetyConcern(
+  bookingId: string,
+  category: SafetyCategory,
+  note: string,
+): Promise<void> {
+  const result = await core.POST('/v1/bookings/{bookingId}/safety-concern', {
+    params: { path: { bookingId } },
+    body: { category, ...(note.trim() ? { note: note.trim() } : {}) },
+  });
+  if (!result.response.ok) orThrow(result);
+}

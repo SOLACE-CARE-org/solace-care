@@ -18,8 +18,11 @@ type SessionState = {
   remindersAsked: boolean;
   /** Data saver: video calls start with the camera off (Settings). */
   dataSaver: boolean;
+  /** App lock: PIN or fingerprint to open Solace (Settings). Device-local. */
+  appLock: boolean;
   askedReminders: () => void;
   setDataSaver: (on: boolean) => void;
+  setAppLock: (on: boolean) => void;
   chooseLanguage: (language: AppLanguage) => void;
   signedInAs: (role: Role) => void;
   signedOut: () => void;
@@ -33,11 +36,13 @@ export const useSession = create<SessionState>()(
       role: null,
       remindersAsked: false,
       dataSaver: false,
+      appLock: false,
       askedReminders: () => set({ remindersAsked: true }),
       setDataSaver: (dataSaver) => set({ dataSaver }),
+      setAppLock: (appLock) => set({ appLock }),
       chooseLanguage: (language) => set({ language }),
       signedInAs: (role) => set({ role }),
-      signedOut: () => set({ role: null }),
+      signedOut: () => set({ role: null, appLock: false }),
     }),
     {
       name: 'solace.session',
@@ -47,6 +52,7 @@ export const useSession = create<SessionState>()(
         role: state.role,
         remindersAsked: state.remindersAsked,
         dataSaver: state.dataSaver,
+        appLock: state.appLock,
       }),
     },
   ),

@@ -211,3 +211,46 @@ export async function pullAll(): Promise<Observation[]> {
 export function useObservations(enabled = true) {
   return useQuery({ queryKey: trackingKeys.observations, queryFn: pullAll, enabled });
 }
+
+// --- Sharing with a specialist (D52) -------------------------------------------------------------
+
+export type ShareGrant = TrackingSchemas['ShareGrant'];
+
+/** The seeker's sharing grants, active and revoked. */
+export function useShares(enabled: boolean) {
+  return useQuery({
+    queryKey: [...trackingKeys.all, 'shares'],
+    queryFn: async () => orThrow(await tracking.GET('/v1/tracking/shares')),
+    enabled,
+  });
+}
+
+/** Shares what is logged from now on with the specialist, or stops sharing at once. */
+export function useSetSharing() {
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      specialistId,
+      share,
+      grantId,
+    }: {
+      specialistId: string;
+      share: boolean;
+      grantId?: string;
+    }) => {
+      if (share) {
+        orThrow(
+          await tracking.POST('/v1/tracking/shares', {
+            body: { specialistId, includesNotes: false },
+          }),
+        );
+      } else if (grantId) {
+        const result = await tracking.DELETE('/v1/tracking/shares/{grantId}', {
+          params: { path: { grantId } },
+        });
+        if (!result.response.ok) orThrow(result);
+      }
+    },
+    onSettled: () => void queries.invalidateQueries({ queryKey: [...trackingKeys.all, 'shares'] }),
+  });
+}

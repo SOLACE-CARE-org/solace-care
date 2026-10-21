@@ -46,8 +46,9 @@ export function useChooseScribe(bookingId: string) {
 
 // --- Notes -----------------------------------------------------------------------------------------
 
-export function useNotes(status: 'DRAFT' | 'SIGNED', q: string) {
+export function useNotes(status: 'DRAFT' | 'SIGNED', q: string, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: ['notes', status, q],
     queryFn: async () =>
       orThrow(

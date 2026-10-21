@@ -5,12 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useSessionLanguages } from '@/api/account';
+import { useConsents, useSessionLanguages } from '@/api/account';
 import { useBooking, useGuestToken } from '@/api/bookings';
 import i18n from '@/i18n';
 import { changeable, joinOpensAt, longWhen, minutesOf, toneOf } from '@/state/bookingView';
 import { money, timeOf } from '@/state/format';
+import { useSetSharing, useShares } from '@/api/tracking';
+import { useFlags } from '@/config/flags';
 import { Avatar } from '@/ui/Avatar';
+import { SwitchRow } from '@/ui/SwitchRow';
 import { Button } from '@/ui/Button';
 import { Pill } from '@/ui/Pill';
 import { BackButton } from '@/ui/ProgressSteps';
@@ -19,8 +22,8 @@ import { Text } from '@/ui/Text';
 
 /**
  * Session details (SessionDetail.dc.html), for a member's booking or one this device booked as a
- * guest. Joining opens 10 minutes before the start (epic 7); the tracking summary switch arrives
- * with Tracking (Phase 2) and the receipt with payments (epic 6).
+ * guest. Joining opens 10 minutes before the start (epic 7). With tracking on, a registered seeker
+ * shares what they log with this specialist from now on, or stops at once (D52).
  */
 export default function SessionDetail() {
   const { t } = useTranslation();
@@ -123,6 +126,10 @@ export default function SessionDetail() {
               {t('session.refunded', { amount: money(b.refundAmount, lang) })}
             </Text>
           </View>
+        ) : null}
+
+        {live && !access.guestToken ? (
+          <ShareTracking specialistId={b.specialist.id} name={b.specialist.fullName} />
         ) : null}
 
         {live ? (
@@ -244,3 +251,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+/** "Share my tracking summary": a grant to this specialist, forward-only and revocable (D52). */
+function ShareTracking({ specialistId, name }: { specialistId: string; name: string }) {
+  const { t } = useTranslation();
+  const trackTab = useFlags((f) => f.trackTab);
+  const consents = useConsents();
+  const consented =
+    consents.data?.consents.some((c) => c.purpose === 'TRACKING' && c.granted) === true;
+  const shares = useShares(trackTab && consented);
+  const setSharing = useSetSharing();
+  if (!trackTab || !consented || !shares.data) return null;
+  const active = shares.data.find((g) => g.specialistId === specialistId && !g.revokedAt);
+  return (
+    <SwitchRow
+      title={t('session.shareTracking')}
+      meta={t('session.shareTrackingMeta', { name })}
+      on={Boolean(active)}
+      onToggle={() => setSharing.mutate({ specialistId, share: !active, grantId: active?.id })}
+    />
+  );
+}

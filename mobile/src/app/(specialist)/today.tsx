@@ -1,13 +1,21 @@
 import { colors, fontFamily, radius, space } from '@solace/tokens/native';
 import { router } from 'expo-router';
-import { CalendarDays } from 'lucide-react-native';
+import { CalendarDays, FileText } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useSessionLanguages } from '@/api/account';
 import { type Booking, useMyBookings } from '@/api/bookings';
-import { useApplication } from '@/api/specialist';
+import { useNotes } from '@/api/care';
+import { useAcceptingBookings, useApplication, useSetAcceptingBookings } from '@/api/specialist';
 import { useFlags } from '@/config/flags';
 import i18n from '@/i18n';
 import { joinOpensAt, longWhen, toneOf } from '@/state/bookingView';
@@ -15,6 +23,7 @@ import { capitalised, timeOf } from '@/state/format';
 import { useNow } from '@/state/useNow';
 import { Button } from '@/ui/Button';
 import { Pill } from '@/ui/Pill';
+import { SwitchRow } from '@/ui/SwitchRow';
 import { Text } from '@/ui/Text';
 
 function sameDay(iso: string, now: number): boolean {
@@ -41,6 +50,8 @@ export default function SpecialistToday() {
   const past = useMyBookings('PAST');
   const languages = useSessionLanguages(lang);
   const nameOf = (code: string) => languages.data?.find((l) => l.code === code)?.name ?? code;
+  const scribeOn = useFlags((f) => f.sessionScribe);
+  const drafts = useNotes('DRAFT', '', scribeOn);
 
   if (upcoming.isPending || past.isPending) {
     return (
@@ -100,6 +111,8 @@ export default function SpecialistToday() {
           </Text>
         </View>
 
+        <Accepting />
+
         {next ? (
           <UpNext booking={next} language={nameOf(next.sessionLanguage)} lang={lang} now={now} />
         ) : (
@@ -123,11 +136,19 @@ export default function SpecialistToday() {
           </View>
         )}
 
+        {scribeOn ? <NotesWaiting count={drafts.data?.length ?? 0} /> : null}
+
         {later.length > 0 ? (
           <Section title={t('today.later')} items={later} nameOf={nameOf} lang={lang} />
         ) : null}
         {earlier.length > 0 ? (
-          <Section title={t('today.earlier')} items={earlier} nameOf={nameOf} lang={lang} />
+          <Section
+            title={t('today.earlier')}
+            items={earlier}
+            nameOf={nameOf}
+            lang={lang}
+            drafts={new Set((drafts.data ?? []).map((d) => d.bookingId))}
+          />
         ) : null}
       </ScrollView>
     </SafeAreaView>
@@ -184,16 +205,54 @@ function UpNext({
   );
 }
 
+/** Accepting new bookings: off pauses new bookings; sessions already booked stay. */
+function Accepting() {
+  const { t } = useTranslation();
+  const accepting = useAcceptingBookings();
+  const set = useSetAcceptingBookings();
+  if (!accepting.data) return null;
+  const on = accepting.data.accepting;
+  return (
+    <SwitchRow
+      title={t('today.accepting')}
+      meta={on ? t('today.acceptingOn') : t('today.acceptingOff')}
+      on={on}
+      onToggle={() => set.mutate(!on)}
+    />
+  );
+}
+
+/** Drafts from the scribe waiting for the specialist (SpecialistToday.dc.html). */
+function NotesWaiting({ count }: { count: number }) {
+  const { t } = useTranslation();
+  if (count === 0) return null;
+  return (
+    <Pressable accessibilityRole="button" onPress={() => router.push('/notes')} style={styles.row}>
+      <FileText size={20} strokeWidth={1.8} color={colors.brand} aria-hidden />
+      <View style={styles.flex}>
+        <Text variant="label" style={styles.bold}>
+          {t('today.notesWaiting', { count })}
+        </Text>
+        <Text variant="meta" color={colors.inkMuted}>
+          {t('today.notesPrivate')}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
 function Section({
   title,
   items,
   nameOf,
   lang,
+  drafts,
 }: {
   title: string;
   items: Booking[];
   nameOf: (code: string) => string;
   lang: string;
+  drafts?: Set<string>;
 }) {
   const { t } = useTranslation();
   return (
@@ -217,7 +276,9 @@ function Section({
               })}
             </Text>
           </View>
-          {b.status !== 'CONFIRMED' ? (
+          {drafts?.has(b.id) ? (
+            <Pill label={t('today.noteDraft')} tone="warning" />
+          ) : b.status !== 'CONFIRMED' ? (
             <Pill label={t(`status.${b.status}`)} tone={toneOf(b.status)} />
           ) : null}
         </View>

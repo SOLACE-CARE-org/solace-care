@@ -38,7 +38,6 @@ export default function CompanionScreen() {
   const [text, setText] = useState('');
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
-
   const h = homework.data?.find((x) => x.id === id);
   const specialist = past.data?.find((b) => b.id === h?.bookingId)?.specialist.fullName;
   const current = answer.data ?? turn.data;

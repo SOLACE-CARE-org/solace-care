@@ -14,6 +14,7 @@ import { type Booking, useMyBookings } from '@/api/bookings';
 import { useMyHomework } from '@/api/care';
 import { useFlags } from '@/config/flags';
 import i18n from '@/i18n';
+import { HomeTracking } from '@/tracking/HomeTracking';
 import { joinOpensAt, longWhen } from '@/state/bookingView';
 import { timeOf } from '@/state/format';
 import { useNow } from '@/state/useNow';
@@ -47,8 +48,9 @@ function greetingKey(now: Date): string {
 
 /**
  * Seeker home (Home.dc.html, StateOfflineHome.dc.html). Phase 1 shows sessions only: the next one,
- * with joining and rescheduling, and the way to book. Phase 4 adds the homework the specialist set
- * and the safety plan, behind the companion flag (D57).
+ * with joining and rescheduling, and the way to book. With tracking on (Phase 2) the newest
+ * pattern, a one-tap mood check-in and the tracked modules follow; Phase 4 adds the homework the
+ * specialist set and the safety plan, behind the companion flag (D57).
  */
 export default function Home() {
   const { t } = useTranslation();
@@ -59,6 +61,7 @@ export default function Home() {
   const languages = useSessionLanguages(lang);
   const snapshot = useHomeSnapshot();
   const companion = useFlags((f) => f.companion);
+  const trackTab = useFlags((f) => f.trackTab);
 
   const live = upcoming.data?.find((b) => b.status === 'CONFIRMED' || b.status === 'IN_PROGRESS');
   useEffect(() => {
@@ -134,6 +137,8 @@ export default function Home() {
             />
           </View>
         )}
+
+        {trackTab ? <HomeTracking lang={lang} /> : null}
 
         {companion ? <BetweenSessions lang={lang} /> : null}
 

@@ -63,8 +63,9 @@ export function useSavePractice() {
 }
 
 export function useSaveLanguages() {
-  return useStep(async (languages: { code: string; proficiency: SpecialistLanguage['proficiency'] }[]) =>
-    orThrow(await core.PUT('/v1/me/specialist-application/languages', { body: { languages } })),
+  return useStep(
+    async (languages: { code: string; proficiency: SpecialistLanguage['proficiency'] }[]) =>
+      orThrow(await core.PUT('/v1/me/specialist-application/languages', { body: { languages } })),
   );
 }
 
@@ -116,16 +117,22 @@ export function useUploadDocument() {
       } as unknown as Blob);
     }
     const token = await accessToken();
-    const response = await fetch(`${env.apiUrl}/core/v1/me/specialist-application/documents/${kind}`, {
-      method: 'PUT',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        'Accept-Language': i18n.language || 'en',
+    const response = await fetch(
+      `${env.apiUrl}/core/v1/me/specialist-application/documents/${kind}`,
+      {
+        method: 'PUT',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Accept-Language': i18n.language || 'en',
+        },
+        body: form,
       },
-      body: form,
-    });
+    );
     if (!response.ok) {
-      const problem = (await response.json().catch(() => ({}))) as { code?: string; title?: string };
+      const problem = (await response.json().catch(() => ({}))) as {
+        code?: string;
+        title?: string;
+      };
       throw new ApiProblem(response.status, problem.code, problem.title);
     }
     return (await response.json()) as SpecialistApplication;
@@ -142,7 +149,8 @@ export function useWeeklyHours() {
 export function useSaveWeeklyHours() {
   const queries = useQueryClient();
   return useMutation({
-    mutationFn: async (body: WeeklyHours) => orThrow(await core.PUT('/v1/me/weekly-hours', { body })),
+    mutationFn: async (body: WeeklyHours) =>
+      orThrow(await core.PUT('/v1/me/weekly-hours', { body })),
     onSuccess: (saved) => {
       queries.setQueryData(specialistKeys.weeklyHours, saved);
       queries.invalidateQueries({ queryKey: specialistKeys.application });
@@ -177,4 +185,21 @@ export function stepRoute(application: SpecialistApplication): SpecialistRoute {
 export function resumeRoute(application: SpecialistApplication): SpecialistRoute {
   if (application.status !== 'DRAFT' || application.reviewNote) return '/specialist-signup/review';
   return stepRoute(application);
+}
+
+/** Whether the specialist takes new bookings (SpecialistToday.dc.html). */
+export function useAcceptingBookings() {
+  return useQuery({
+    queryKey: ['accepting-bookings'],
+    queryFn: async () => orThrow(await core.GET('/v1/me/accepting-bookings')),
+  });
+}
+
+export function useSetAcceptingBookings() {
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: async (accepting: boolean) =>
+      orThrow(await core.PUT('/v1/me/accepting-bookings', { body: { accepting } })),
+    onSuccess: (data) => queries.setQueryData(['accepting-bookings'], data),
+  });
 }

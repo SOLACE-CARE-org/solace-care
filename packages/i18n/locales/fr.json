@@ -309,7 +309,8 @@
       "emptyClosed": "Aucune alerte clôturée pour l'instant.",
       "select": "Choisissez une alerte pour l'afficher.",
       "viewOnly": "Vous pouvez consulter cette file. Seuls les intervenants de crise et les Super admins agissent sur les alertes.",
-      "back": "Toutes les alertes"
+      "back": "Toutes les alertes",
+      "from_SESSION": "Signalé par le spécialiste pendant une séance"
     },
     "modality": {
       "AUDIO": "audio",
@@ -1939,7 +1940,9 @@
     "joinOpens": "Ouverture à {{time}}",
     "payBy": "Payez avant {{time}} pour garder ce créneau.",
     "refunded": "Remboursement : {{amount}} FCFA",
-    "pay": "Payer maintenant"
+    "pay": "Payer maintenant",
+    "shareTracking": "Partager mon résumé de suivi",
+    "shareTrackingMeta": "Ce que vous notez à partir de maintenant, montré à {{name}} avant le rendez-vous. Les notes restent privées."
   },
   "change": {
     "title": "Modifier votre séance ?",
@@ -2071,7 +2074,20 @@
     "dialInTitle": "Pas de données ? Rejoignez par téléphone",
     "dialInBody": "Appelez le {{number}}, puis saisissez le code {{pin}}. Prix d'un appel normal.",
     "dialInCall": "Appeler",
-    "dialInCallLabel": "Appeler le {{number}} pour rejoindre par téléphone"
+    "dialInCallLabel": "Appeler le {{number}} pour rejoindre par téléphone",
+    "raiseConcern": "Signaler un risque",
+    "concernBody": "L'équipe de garde de Solace est alertée tout de suite. Restez avec la personne si vous le pouvez.",
+    "concern_SUICIDAL_IDEATION": "Idées suicidaires",
+    "concern_SELF_HARM": "Automutilation",
+    "concern_ACUTE_ANXIETY": "Anxiété aiguë",
+    "concern_VIOLENT_THOUGHTS": "Pensées violentes",
+    "concern_SUBSTANCE_CRISIS": "Crise liée à une substance",
+    "concern_RISK_TAKING": "Prise de risque",
+    "concern_UNKNOWN": "Autre chose",
+    "concernNote": "Ce que l'équipe doit savoir (facultatif)",
+    "concernSend": "Alerter l'équipe de garde",
+    "concernCancel": "Annuler",
+    "concernSent": "L'équipe de garde a été alertée."
   },
   "today": {
     "greeting": "Aujourd'hui, {{name}}",
@@ -2087,7 +2103,14 @@
     "quietNext": "Votre prochaine séance est {{when}}. Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
     "quietNone": "Les usagers peuvent vous réserver tant que vous acceptez de nouvelles réservations.",
     "openCalendar": "Ouvrir mon agenda",
-    "brief": "Ouvrir la fiche"
+    "brief": "Ouvrir la fiche",
+    "accepting": "Accepte de nouvelles réservations",
+    "acceptingOn": "Les usagers peuvent réserver vos créneaux libres.",
+    "acceptingOff": "Les nouvelles réservations sont en pause. Les séances déjà réservées restent.",
+    "notesWaiting_one": "{{count}} note à relire",
+    "notesWaiting_other": "{{count}} notes à relire",
+    "notesPrivate": "Les brouillons IA restent privés jusqu'à votre signature",
+    "noteDraft": "Brouillon de note"
   },
   "rate": {
     "skip": "Passer",
@@ -2169,7 +2192,10 @@
     "dataSaver": "Économie de données",
     "dataSaverMeta": "Démarrer les appels vidéo caméra éteinte",
     "version": "Solace {{version}}",
-    "pushOff": "Les notifications de Solace sont désactivées sur ce téléphone. Activez-les dans les réglages du téléphone."
+    "pushOff": "Les notifications de Solace sont désactivées sur ce téléphone. Activez-les dans les réglages du téléphone.",
+    "appLock": "Verrouillage",
+    "appLockMeta": "Code ou empreinte pour ouvrir Solace",
+    "appLockUnavailable": "Activez d'abord un verrouillage d'écran sur votre téléphone, puis revenez ici."
   },
   "crisis": {
     "button": "Aide urgente",
@@ -2192,7 +2218,10 @@
     "again": "Recommencer",
     "offline": "Les numéros d'urgence fonctionnent même sans internet.",
     "close": "Fermer",
-    "helpline": "Ligne d'écoute"
+    "helpline": "Ligne d'écoute",
+    "trusted": "Écrire à une personne de confiance",
+    "trustedMeta": "Tiré de votre plan de sécurité",
+    "messagePerson": "Écrire à {{name}}"
   },
   "privacy": {
     "title": "Confidentialité et données",
@@ -2240,7 +2269,9 @@
     "rescheduleOffline": "Le report demande une connexion",
     "offlineTitle": "Vous êtes hors ligne.",
     "offlineBody": "Réservation, paiement et appels demandent une connexion.",
-    "emergencyOffline": "Les numéros d'urgence fonctionnent hors ligne"
+    "emergencyOffline": "Les numéros d'urgence fonctionnent hors ligne",
+    "feeling": "Comment vous sentez-vous aujourd'hui ?",
+    "feelingSaved": "Enregistré pour aujourd'hui. Vous pouvez le changer dans la journée."
   },
   "intro": {
     "skip": "Passer",
@@ -2603,5 +2634,10 @@
     "emptyBody": "Notez vos signaux d'alerte, ce qui vous apaise et qui vous pouvez joindre. Vous pouvez le préparer avec votre spécialiste.",
     "start": "Préparer mon plan",
     "call": "Appeler {{name}}"
+  },
+  "appLock": {
+    "title": "Solace est verrouillé",
+    "unlock": "Déverrouiller",
+    "prompt": "Déverrouiller Solace"
   }
 }

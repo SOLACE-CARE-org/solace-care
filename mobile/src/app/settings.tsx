@@ -10,6 +10,7 @@ import { useNotificationSettings, useSaveNotificationSettings } from '@/api/mess
 import i18n from '@/i18n';
 import { pushAllowed } from '@/notifications/push';
 import { type AppLanguage, useSession } from '@/state/session';
+import { deviceCanLock, unlockWithDevice } from '@/ui/AppLockGate';
 import { BackButton } from '@/ui/ProgressSteps';
 import { Segmented } from '@/ui/Segmented';
 import { SwitchRow } from '@/ui/SwitchRow';
@@ -24,6 +25,20 @@ export default function Settings() {
   const { t } = useTranslation();
   const language = useSession((s) => s.language) ?? 'en';
   const dataSaver = useSession((s) => s.dataSaver);
+  const appLock = useSession((s) => s.appLock);
+  const [lockProblem, setLockProblem] = useState<string | null>(null);
+
+  // Turning the lock on or off is confirmed with the phone's own lock, so nobody else can change it.
+  const toggleLock = async () => {
+    setLockProblem(null);
+    if (!appLock && !(await deviceCanLock())) {
+      setLockProblem(t('settings.appLockUnavailable'));
+      return;
+    }
+    if (await unlockWithDevice(t('appLock.prompt'))) {
+      useSession.getState().setAppLock(!appLock);
+    }
+  };
   const settings = useNotificationSettings();
   const save = useSaveNotificationSettings();
   const preferences = usePreferences();
@@ -105,6 +120,12 @@ export default function Settings() {
           {t('settings.security').toUpperCase()}
         </Text>
         <View style={styles.card}>
+          <SwitchRow
+            title={t('settings.appLock')}
+            meta={lockProblem ?? t('settings.appLockMeta')}
+            on={appLock}
+            onToggle={() => void toggleLock()}
+          />
           <SwitchRow
             title={t('settings.dataSaver')}
             meta={t('settings.dataSaverMeta')}

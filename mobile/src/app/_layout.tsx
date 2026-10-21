@@ -27,6 +27,7 @@ import { useSession } from '@/state/session';
 import { core } from '@/api/core';
 import { refreshFlags } from '@/config/flags';
 import { CRISIS_COUNTRY, refreshEmergencyNumbers } from '@/content/crisis';
+import { AppLockGate } from '@/ui/AppLockGate';
 
 // Keep the native splash (brand-splash with the lockup) up until fonts, strings and the saved
 // session are ready, so the first frame is already in the right language and typefaces.
@@ -106,6 +107,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
+        <AppLockGate />
       </QueryClientProvider>
     </SafeAreaProvider>
   );

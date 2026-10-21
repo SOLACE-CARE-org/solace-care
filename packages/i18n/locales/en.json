@@ -309,7 +309,8 @@
       "emptyClosed": "No closed alerts yet.",
       "select": "Choose an alert to see it.",
       "viewOnly": "You can see this queue. Only crisis responders and Super admins act on alerts.",
-      "back": "All alerts"
+      "back": "All alerts",
+      "from_SESSION": "Raised by the specialist in a session"
     },
     "modality": {
       "AUDIO": "audio",
@@ -1939,7 +1940,9 @@
     "joinOpens": "Joining opens at {{time}}",
     "payBy": "Pay by {{time}} to keep this time.",
     "refunded": "Refund: {{amount}} FCFA",
-    "pay": "Pay now"
+    "pay": "Pay now",
+    "shareTracking": "Share my tracking summary",
+    "shareTrackingMeta": "What you log from now on, shown to {{name}} before you meet. Notes stay private."
   },
   "change": {
     "title": "Change your session?",
@@ -2071,7 +2074,20 @@
     "dialInTitle": "No data? Join by phone",
     "dialInBody": "Call {{number}}, then enter the PIN {{pin}}. Normal call rates apply.",
     "dialInCall": "Call",
-    "dialInCallLabel": "Call {{number}} to join by phone"
+    "dialInCallLabel": "Call {{number}} to join by phone",
+    "raiseConcern": "Raise safety concern",
+    "concernBody": "Solace's on-call team is alerted at once. Stay with the person if you can.",
+    "concern_SUICIDAL_IDEATION": "Suicidal thoughts",
+    "concern_SELF_HARM": "Self-harm",
+    "concern_ACUTE_ANXIETY": "Acute anxiety",
+    "concern_VIOLENT_THOUGHTS": "Violent thoughts",
+    "concern_SUBSTANCE_CRISIS": "Substance crisis",
+    "concern_RISK_TAKING": "Risk-taking",
+    "concern_UNKNOWN": "Something else",
+    "concernNote": "What the team should know (optional)",
+    "concernSend": "Alert the on-call team",
+    "concernCancel": "Cancel",
+    "concernSent": "The on-call team has been alerted."
   },
   "today": {
     "greeting": "Today, {{name}}",
@@ -2087,7 +2103,14 @@
     "quietNext": "Your next session is {{when}}. Seekers can book you while you're accepting new bookings.",
     "quietNone": "Seekers can book you while you're accepting new bookings.",
     "openCalendar": "Open my calendar",
-    "brief": "Open the brief"
+    "brief": "Open the brief",
+    "accepting": "Accepting new bookings",
+    "acceptingOn": "Seekers can book your free times.",
+    "acceptingOff": "New bookings are paused. Sessions already booked stay.",
+    "notesWaiting_one": "{{count}} note waiting for review",
+    "notesWaiting_other": "{{count}} notes waiting for review",
+    "notesPrivate": "AI drafts stay private until you sign",
+    "noteDraft": "Note draft"
   },
   "rate": {
     "skip": "Skip",
@@ -2169,7 +2192,10 @@
     "dataSaver": "Data saver",
     "dataSaverMeta": "Start video calls with my camera off",
     "version": "Solace {{version}}",
-    "pushOff": "Notifications are off for Solace on this phone. Turn them on in your phone's settings."
+    "pushOff": "Notifications are off for Solace on this phone. Turn them on in your phone's settings.",
+    "appLock": "App lock",
+    "appLockMeta": "PIN or fingerprint to open Solace",
+    "appLockUnavailable": "Set a screen lock on your phone first, then turn this on."
   },
   "crisis": {
     "button": "Urgent help",
@@ -2192,7 +2218,10 @@
     "again": "Again",
     "offline": "Emergency numbers here work even without internet.",
     "close": "Close",
-    "helpline": "Helpline"
+    "helpline": "Helpline",
+    "trusted": "Message someone you trust",
+    "trustedMeta": "From your safety plan",
+    "messagePerson": "Message {{name}}"
   },
   "privacy": {
     "title": "Privacy & data",
@@ -2240,7 +2269,9 @@
     "rescheduleOffline": "Reschedule needs a connection",
     "offlineTitle": "You're offline.",
     "offlineBody": "Booking, payments and calls need a connection.",
-    "emergencyOffline": "Emergency numbers work offline"
+    "emergencyOffline": "Emergency numbers work offline",
+    "feeling": "How are you feeling today?",
+    "feelingSaved": "Saved for today. Change it any time today."
   },
   "intro": {
     "skip": "Skip",
@@ -2603,5 +2634,10 @@
     "emptyBody": "Write down your warning signs, what calms you and who you can reach. You can make it with your specialist.",
     "start": "Make my plan",
     "call": "Call {{name}}"
+  },
+  "appLock": {
+    "title": "Solace is locked",
+    "unlock": "Unlock",
+    "prompt": "Unlock Solace"
   }
 }

@@ -1,6 +1,6 @@
 import { colors, fontFamily, radius, size, space } from '@solace/tokens/native';
 import { router } from 'expo-router';
-import { Phone, Wind, X } from 'lucide-react-native';
+import { MessageCircle, Phone, Wind, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -28,6 +28,9 @@ export default function UrgentHelp() {
   const numbers = useEmergencyNumbers((s) => s.numbers);
   // The seeker's own plan, kept on the phone so it opens offline too (D57).
   const hasPlan = useSafetyPlan((s) => Boolean(s.plan));
+  // People from the safety plan who have a number: a text can be started straight away.
+  const plan = useSafetyPlan((s) => s.plan);
+  const trusted = (plan?.people ?? []).filter((p) => p.phone && p.phone.trim().length > 0);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -104,6 +107,30 @@ export default function UrgentHelp() {
           </View>
           {breathing ? <Breathing /> : null}
         </View>
+
+        {flags.companion && trusted.length > 0 ? (
+          <View style={[styles.option, styles.column]}>
+            <View style={styles.row}>
+              <MessageCircle size={22} strokeWidth={1.8} color={colors.brand} aria-hidden />
+              <View style={styles.flex}>
+                <Text variant="label" style={styles.bold}>
+                  {t('crisis.trusted')}
+                </Text>
+                <Text variant="meta" color={colors.inkMuted}>
+                  {t('crisis.trustedMeta')}
+                </Text>
+              </View>
+            </View>
+            {trusted.map((p) => (
+              <Button
+                key={`${p.name}-${p.phone}`}
+                variant="secondary"
+                label={t('crisis.messagePerson', { name: p.name })}
+                onPress={() => void Linking.openURL(`sms:${p.phone}`)}
+              />
+            ))}
+          </View>
+        ) : null}
 
         {flags.companion && hasPlan ? (
           <Button

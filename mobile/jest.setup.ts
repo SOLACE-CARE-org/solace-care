@@ -112,3 +112,10 @@ jest.mock('expo-crypto', () => {
     getRandomBytesAsync: async (n: number) => new Uint8Array(node.randomBytes(n)),
   };
 });
+
+// App lock (Settings): tests unlock by default; a test can change the answer.
+jest.mock('expo-local-authentication', () => ({
+  SecurityLevel: { NONE: 0, SECRET: 1, BIOMETRIC_WEAK: 2, BIOMETRIC_STRONG: 3 },
+  getEnrolledLevelAsync: jest.fn(async () => 1),
+  authenticateAsync: jest.fn(async () => ({ success: true })),
+}));

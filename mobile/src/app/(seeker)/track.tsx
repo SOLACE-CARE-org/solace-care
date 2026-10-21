@@ -178,7 +178,7 @@ export default function Track() {
   );
 }
 
-function ModuleCard({
+export function ModuleCard({
   module: m,
   lang,
   logged,
