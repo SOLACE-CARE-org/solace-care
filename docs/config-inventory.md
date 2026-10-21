@@ -159,6 +159,47 @@ These are infrastructure, identity or secrets. They change with a deployment, an
 
 If AI models become editable in the portal, a model's API key should still live in the vault. The portal would only refer to it by name.
 
+## 6. Scheduled jobs (triggers)
+
+Every job today is a Spring `@Scheduled` method: the schedule is in code or in `application.yml`, it always runs, and changing it needs a restart or a rebuild. The proposal is a **trigger table in each service's database**:
+
+| Column | Meaning |
+| --- | --- |
+| name | Stable code, for example `core.bookings.expire-unpaid` |
+| description | What the job does, in plain words (EN and FR for the portal) |
+| status | `ACTIVE` or `PAUSED`; plus **locked**, meaning staff cannot pause it (safety, money or fixed decisions) |
+| schedule | A cron expression with its time zone, or a fixed interval (`PT1M`) |
+| last run, last outcome, next run | Shown in the portal so staff see that a job runs |
+
+Each service reads its trigger rows and reschedules a job within a minute of a change, so no restart is needed. A locked trigger shows in the portal but cannot be paused, and its schedule can be changed only within safe limits.
+
+| Service | Trigger name | What it does | Schedule today | Can be paused? |
+| --- | --- | --- | --- | --- |
+| Core | `core.crisis.escalate` | Escalates unacknowledged crisis alerts to the backup at 5 min and Super admins at 10 min | every 30 s | **No, locked** (D11) |
+| Core | `core.bookings.expire-unpaid` | Expires bookings not paid within the 10-minute hold and frees the time | every 30 s (`solace.bookings.expiry-interval`) | **No, locked** |
+| Core | `core.payments.poll` | Asks the mobile money provider about payments still pending | every 20 s (`solace.payments.poll-interval`) | **No, locked** |
+| Core | `core.payments.draft-payout-runs` | Drafts the twice-monthly payout run when its period closes | hourly | Yes |
+| Core | `core.payments.reconcile` | Compares yesterday's ledger with the provider's records | 03:00 daily (`solace.payments.reconciliation-cron`) | Yes |
+| Core | `core.sessions.settle` | Marks no-shows and completes sessions the media server did not report | every minute | **No, locked** (money follows it) |
+| Core | `core.sessions.dial-in-rules` | Opens and closes phone dial-in rules as joining opens and ends | every minute | Yes |
+| Core | `core.messaging.reminders` | Day-before, joining-opens, 10-minutes-before and Brief ready pushes | every minute | **No, locked** (joining-opens is required) |
+| Core | `core.messaging.deliver-waiting` | Sends pushes held back by quiet hours once they end | every minute | Yes |
+| Core | `core.messaging.licence-renewals` | Reminds specialists 60 days before their licence ends | 09:00 daily | Yes |
+| Core | `core.messaging.forget-old-messages` | Deletes delivered messages past their retention | 02:30 daily | Yes |
+| Core | `core.privacy.prepare-exports` | Builds requested data exports | every 30 s | Yes |
+| Core | `core.privacy.expire-exports` | Deletes export files past their lifetime | 02:15 daily | Yes |
+| Core | `core.privacy.data-request-reminders` | Emails Operations about data requests due this week | 08:00 daily | Yes |
+| Core | `core.identity.remove-unverified` | Removes sign-ups never verified within 24 h | every 15 min (`solace.identity.unverified-cleanup-interval`) | Yes |
+| Core | `core.health-check.forget-unclaimed` | Deletes guest health check answers never claimed | 03:15 daily | Yes |
+| Core | `core.insight.anomalies` | Checks for booking drops and failed-payment spikes for the copilot | hourly | Yes |
+| Core | `core.admin.settings-reload` | Reloads platform settings and flags | every 30 s (`solace.admin.settings-refresh`) | **No, internal**: not listed in the portal |
+| Core | `core.guests.purge-contacts` | Removes guest phone numbers `[12]` months after their last booking | 02:45 daily | Yes |
+| AI | `ai.gateway.forget-texts` | Clears prompt and output texts older than `[30]` days | 02:30 daily | **No, locked** (data rule) |
+| AI | `ai.scribe.sweep` | Deletes unsigned drafts and session audio after 7 days | hourly | **No, locked** (System Design, Recording) |
+| AI | `ai.scribe.draft-waiting` | Transcribes and drafts notes for waiting session audio | every minute | Yes |
+| Tracking | `tracking.nudges.reminders` | Daily tracking reminders and invite pushes | every minute (`solace.tracking.nudges.every`) | Yes |
+| Tracking | `tracking.rules.nightly` | Runs the pattern check for everyone enrolled | 02:30 daily (`solace.tracking.pattern-check-cron`) | Yes |
+
 ## Summary
 
 | | Live today | Needs a restart | Needs a rebuild |
