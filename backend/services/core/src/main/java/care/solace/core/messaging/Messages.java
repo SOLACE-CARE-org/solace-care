@@ -12,7 +12,9 @@ import care.solace.core.payments.PaymentReceived;
 import care.solace.core.payments.PayoutSettled;
 import care.solace.core.payments.RefundSent;
 import care.solace.core.reviews.ReviewPublished;
+import care.solace.core.sessions.SeekerWaiting;
 import care.solace.core.specialists.ApplicationUpdated;
+import care.solace.core.specialists.LicenceRenewals;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +41,7 @@ class Messages {
   private final Delivery copy;
   private final FeatureFlags flags;
   private final Duration briefNotice;
+  private final LicenceRenewals licences;
 
   Messages(
       Notifier notifier,
@@ -46,13 +49,15 @@ class Messages {
       Catalogue catalogue,
       Delivery copy,
       FeatureFlags flags,
-      @Value("${solace.brief.notice:PT60M}") Duration briefNotice) {
+      @Value("${solace.brief.notice:PT60M}") Duration briefNotice,
+      LicenceRenewals licences) {
     this.notifier = notifier;
     this.bookings = bookings;
     this.catalogue = catalogue;
     this.copy = copy;
     this.flags = flags;
     this.briefNotice = briefNotice;
+    this.licences = licences;
   }
 
   // --- Bookings and money -----------------------------------------------------------------------
@@ -332,6 +337,35 @@ class Messages {
             false,
             (l, z) -> new Object[] {Formats.time(b.start(), z)});
       }
+    }
+  }
+
+  // --- Sessions and licences ---------------------------------------------------------------------
+
+  /** The seeker is in the waiting room before the specialist: once per booking. */
+  @ApplicationModuleListener
+  void on(SeekerWaiting e) {
+    notifier.push(
+        e.specialistId(), "SEEKER_WAITING", e.bookingId(), false, (l, z) -> new Object[0]);
+  }
+
+  /** Every morning: licences that end within 60 days, once per licence date. */
+  @Scheduled(cron = "0 0 9 * * *", zone = "Africa/Douala")
+  void licenceRenewals() {
+    licenceRenewalsNow(Instant.now());
+  }
+
+  void licenceRenewalsNow(Instant now) {
+    for (var due :
+        licences.due(java.time.LocalDate.ofInstant(now, java.time.ZoneId.of("Africa/Douala")))) {
+      if (!licences.markSent(due, now)) {
+        continue;
+      }
+      Notifier.Args args =
+          (l, z) ->
+              new Object[] {DateTimeFormatter.ofPattern("d MMMM yyyy", l).format(due.validUntil())};
+      notifier.push(due.specialistId(), "LICENCE_RENEWAL", null, false, args);
+      notifier.email(due.specialistId(), "LICENCE_RENEWAL", "licence-" + due.validUntil(), args);
     }
   }
 

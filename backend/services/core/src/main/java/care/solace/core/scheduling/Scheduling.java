@@ -166,7 +166,8 @@ class Scheduling implements Availability {
       int minutes,
       Instant now) {
     var starts = Slots.starts(schedule, from, days, minutes, now);
-    if (starts.isEmpty()) {
+    // Paused: no new times are offered or held; sessions already booked stay.
+    if (starts.isEmpty() || !hours.accepting(specialistId)) {
       return new Week(schedule.timeZone(), List.of());
     }
     Duration breakAfter = Duration.ofMinutes(schedule.breakMinutes());

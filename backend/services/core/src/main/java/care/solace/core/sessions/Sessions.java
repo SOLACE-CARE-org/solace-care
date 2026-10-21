@@ -54,6 +54,8 @@ class Sessions {
   private final care.solace.core.admin.PlatformSettings platform;
   private final Clock clock;
   private final Scribe scribe;
+  private final org.springframework.context.ApplicationEventPublisher events;
+  private final org.springframework.transaction.support.TransactionTemplate transactions;
   private final Set<String> rooms = ConcurrentHashMap.newKeySet();
 
   Sessions(
@@ -63,7 +65,9 @@ class Sessions {
       SessionSettings settings,
       care.solace.core.admin.PlatformSettings platform,
       Clock clock,
-      Scribe scribe) {
+      Scribe scribe,
+      org.springframework.context.ApplicationEventPublisher events,
+      org.springframework.transaction.support.TransactionTemplate transactions) {
     this.liveKit = liveKit;
     this.bookings = bookings;
     this.db = db;
@@ -71,6 +75,8 @@ class Sessions {
     this.platform = platform;
     this.clock = clock;
     this.scribe = scribe;
+    this.events = events;
+    this.transactions = transactions;
   }
 
   /** A token for the booking's room; the caller has already been checked as {@code role}. */
@@ -155,6 +161,15 @@ class Sessions {
     }
     UUID id = bookingId.get();
     List<String> joined = joined(id);
+    if (kind.equals("JOINED") && role == Role.SEEKER && joined.equals(List.of("SEEKER"))) {
+      // Module listeners run after a commit, so the event goes out in its own transaction.
+      bookings
+          .find(id)
+          .ifPresent(
+              b ->
+                  transactions.executeWithoutResult(
+                      tx -> events.publishEvent(new SeekerWaiting(id, b.specialistId()))));
+    }
     if (kind.equals("JOINED") && joined.size() == 2) {
       bookings.start(id, at);
       bookings.find(id).ifPresent(scribe::bothJoined);

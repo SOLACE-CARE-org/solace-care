@@ -213,6 +213,13 @@ class ScribeAndHomeworkTest {
                 .andExpect(status().isCreated()));
     String id = homework.path("id").asText();
     assertThat(homework.path("target").asInt()).isEqualTo(2);
+    // Core hears it through the outbox and sends the seeker the neutral task push.
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM event_publication WHERE serialized_event LIKE ?",
+                Integer.class,
+                "%ai.homework.assigned%" + id + "%"))
+        .isEqualTo(1);
 
     var mine = json(mvc.perform(get("/v1/me/homework").with(member(seeker, "SEEKER"))));
     assertThat(mine).hasSize(1);

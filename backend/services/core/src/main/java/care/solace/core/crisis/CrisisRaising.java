@@ -16,4 +16,17 @@ public interface CrisisRaising {
       boolean guest,
       String category,
       String language);
+
+  /**
+   * The same, with a short note the responder reads as the alert's text: a specialist's safety
+   * concern from a session (source SESSION).
+   */
+  void raise(
+      String source,
+      UUID sourceId,
+      UUID subjectId,
+      boolean guest,
+      String category,
+      String language,
+      String note);
 }

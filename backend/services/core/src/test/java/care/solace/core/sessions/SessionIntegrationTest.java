@@ -56,6 +56,7 @@ class SessionIntegrationTest extends SpecialistFlowTest {
   @MockitoSpyBean LiveKit liveKit;
   @MockitoSpyBean FeatureFlags flags;
   @Autowired DialIns dialIns;
+  @Autowired care.solace.core.scheduling.Availability availability;
 
   private Applicant specialist;
   private String seeker;
@@ -263,6 +264,77 @@ class SessionIntegrationTest extends SpecialistFlowTest {
     webhook(finished, sign(finished, SECRET)).andExpect(status().isNoContent());
     dialIns.sweepNow();
     verify(liveKit).deleteDialInRule(eq("SDR_1"), any());
+  }
+
+  @Test
+  void theSpecialistHearsTheSeekerIsWaitingOnce() throws Exception {
+    String id = booking("CONFIRMED", "AUDIO", Duration.ofMinutes(5));
+    byte[] joined = event("participant_joined", id, "seeker");
+    webhook(joined, sign(joined, SECRET)).andExpect(status().isNoContent());
+    byte[] again = event("participant_joined", id, "seeker");
+    webhook(again, sign(again, SECRET)).andExpect(status().isNoContent());
+    org.awaitility.Awaitility.await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () ->
+                assertThat(
+                        jdbc.queryForObject(
+                            "SELECT count(*) FROM notification WHERE kind = 'SEEKER_WAITING'"
+                                + " AND booking_id = ?::uuid",
+                            Integer.class,
+                            id))
+                    .isEqualTo(1));
+  }
+
+  @Test
+  void aSpecialistRaisesASafetyConcernThatReachesTheCrisisQueue() throws Exception {
+    String id = booking("IN_PROGRESS", "VIDEO", Duration.ofMinutes(-10));
+    String body = "{\"category\":\"SELF_HARM\",\"note\":\"Spoke of a plan; staying on the line.\"}";
+    mvc.perform(
+            post("/v1/bookings/" + id + "/safety-concern")
+                .headers(bearer(seeker))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isNotFound());
+    mvc.perform(
+            post("/v1/bookings/" + id + "/safety-concern")
+                .headers(bearer(specialist.token()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isAccepted());
+    var alert =
+        jdbc.queryForMap(
+            "SELECT category, concern_note AS note, subject_id::text AS subject FROM crisis_alert"
+                + " WHERE source = 'SESSION' ORDER BY raised_at DESC LIMIT 1");
+    assertThat(alert.get("category")).isEqualTo("SELF_HARM");
+    assertThat(alert.get("note")).isEqualTo("Spoke of a plan; staying on the line.");
+    assertThat(alert.get("subject")).isEqualTo(seekerId);
+  }
+
+  @Test
+  void pausingNewBookingsHidesFreeTimesAndKeepsBookedSessions() throws Exception {
+    String booked = booking("CONFIRMED", "AUDIO", Duration.ofDays(1));
+    mvc.perform(get("/v1/me/accepting-bookings").headers(bearer(specialist.token())))
+        .andExpect(jsonPath("$.accepting").value(true));
+    mvc.perform(
+            put("/v1/me/accepting-bookings")
+                .headers(bearer(specialist.token()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"accepting\":false}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accepting").value(false));
+    assertThat(availability.nextAvailable(UUID.fromString(specialist.id()), Instant.now(), 50))
+        .isEmpty();
+    assertThat(stateOf(booked)).isEqualTo("CONFIRMED");
+    // Seekers cannot pause anything.
+    mvc.perform(get("/v1/me/accepting-bookings").headers(bearer(seeker)))
+        .andExpect(status().is4xxClientError());
+    mvc.perform(
+            put("/v1/me/accepting-bookings")
+                .headers(bearer(specialist.token()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"accepting\":true}"))
+        .andExpect(jsonPath("$.accepting").value(true));
   }
 
   // --- Helpers ---------------------------------------------------------------------------------

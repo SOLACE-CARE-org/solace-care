@@ -123,6 +123,24 @@ class WeeklyHoursController {
     return get(token);
   }
 
+  record AcceptingBookings(@NotNull Boolean accepting) {}
+
+  @GetMapping("/v1/me/accepting-bookings")
+  AcceptingBookings accepting(@AuthenticationPrincipal Jwt token) {
+    return new AcceptingBookings(store.accepting(specialist(token).id()));
+  }
+
+  /** Pauses or resumes new bookings; needs weekly hours first. */
+  @PutMapping("/v1/me/accepting-bookings")
+  AcceptingBookings setAccepting(
+      @AuthenticationPrincipal Jwt token, @Valid @RequestBody AcceptingBookings body) {
+    Account specialist = specialist(token);
+    if (!store.setAccepting(specialist.id(), body.accepting())) {
+      throw new SolaceException(CommonError.CONFLICT);
+    }
+    return accepting(token);
+  }
+
   private Account specialist(Jwt token) {
     Account account = accounts.require(token);
     if (account.type() != Account.Type.SPECIALIST) {

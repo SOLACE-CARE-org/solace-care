@@ -249,6 +249,9 @@ class CrisisController {
       if ("REVIEW".equals(a.source())) {
         text = reviews.find(a.sourceId()).map(FlaggedReviews.Flagged::text).orElse(null);
       }
+      if ("SESSION".equals(a.source())) {
+        text = alerts.note(a.id()).orElse(null);
+      }
       contact = phone(a).map(CrisisController::mask).orElse(null);
       next =
           bookings

@@ -1,6 +1,7 @@
 package care.solace.core.sessions;
 
 import care.solace.core.bookings.BookingRecords;
+import care.solace.core.crisis.CrisisRaising;
 import care.solace.core.guests.GuestAccess;
 import care.solace.core.identity.Accounts;
 import care.solace.errors.CommonError;
@@ -35,6 +36,7 @@ class SessionController {
   private final Clock clock;
   private final Scribe scribe;
   private final DialIns dialIns;
+  private final CrisisRaising crisis;
 
   SessionController(
       Sessions sessions,
@@ -44,7 +46,8 @@ class SessionController {
       GuestAccess guests,
       Clock clock,
       Scribe scribe,
-      DialIns dialIns) {
+      DialIns dialIns,
+      CrisisRaising crisis) {
     this.sessions = sessions;
     this.liveKit = liveKit;
     this.bookings = bookings;
@@ -53,6 +56,7 @@ class SessionController {
     this.clock = clock;
     this.scribe = scribe;
     this.dialIns = dialIns;
+    this.crisis = crisis;
   }
 
   /** Only the booked seeker and the specialist may join; anyone else gets 404 (CO-18). */
@@ -86,6 +90,42 @@ class SessionController {
       @Valid @RequestBody ScribeChoice choice) {
     var booking = booking(token, bookingId);
     return scribe.choose(booking.info(), booking.role(), choice.on());
+  }
+
+  record SafetyConcern(
+      @NotNull
+          @jakarta.validation.constraints.Pattern(
+              regexp =
+                  "SUICIDAL_IDEATION|SELF_HARM|ACUTE_ANXIETY|VIOLENT_THOUGHTS|SUBSTANCE_CRISIS|RISK_TAKING|UNKNOWN")
+          String category,
+      @jakarta.validation.constraints.Size(max = 500) String note) {}
+
+  /**
+   * The booking's specialist raises a safety concern from a session (SpecCall.dc.html): a crisis
+   * alert at once, source SESSION, routed to the on-call responder like any other.
+   */
+  @PostMapping("/v1/bookings/{bookingId}/safety-concern")
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  void safetyConcern(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID bookingId,
+      @Valid @RequestBody SafetyConcern concern) {
+    var booking = booking(token, bookingId);
+    if (booking.role() != Sessions.Role.SPECIALIST) {
+      throw new SolaceException(CommonError.NOT_FOUND);
+    }
+    var b = booking.info();
+    if (b.status().equals("CANCELLED") || b.status().equals("EXPIRED")) {
+      throw new SolaceException(SessionError.NOT_JOINABLE);
+    }
+    crisis.raise(
+        "SESSION",
+        UUID.randomUUID(),
+        b.subjectId(),
+        b.seekerAccountId() == null,
+        concern.category(),
+        b.sessionLanguage(),
+        concern.note());
   }
 
   /** Joining by phone, for the booked seeker only (D59). */

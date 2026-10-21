@@ -49,6 +49,25 @@ class WeeklyHoursStore {
         .optional();
   }
 
+  /** False while the specialist has paused new bookings; true without a schedule yet. */
+  boolean accepting(UUID specialistId) {
+    return db.sql("SELECT accepting_bookings FROM specialist_schedule WHERE specialist_id = :id")
+        .param("id", specialistId)
+        .query(Boolean.class)
+        .optional()
+        .orElse(true);
+  }
+
+  /** False when there is no schedule to pause yet. */
+  boolean setAccepting(UUID specialistId, boolean accepting) {
+    return db.sql(
+                "UPDATE specialist_schedule SET accepting_bookings = :a WHERE specialist_id = :id")
+            .param("id", specialistId)
+            .param("a", accepting)
+            .update()
+        == 1;
+  }
+
   /** Replaces the schedule and every rule; the caller holds the transaction. */
   void save(UUID specialistId, Schedule schedule, Instant now) {
     db.sql(

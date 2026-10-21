@@ -3,6 +3,8 @@ package care.solace.ai.homework;
 import care.solace.ai.scribe.ScribeError;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import care.solace.events.Events;
+import care.solace.events.Topics;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,9 +16,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Homework a specialist sets after a session (AssignHomework.dc.html; System Design, AI feature 5;
@@ -57,19 +64,36 @@ public class Homeworks {
 
   record Owned(Homework homework, UUID seekerSubjectId) {}
 
+  static final String TOPIC = "ai.homework";
+
   private final JdbcClient db;
   private final Duration defaultDue;
+  private final ApplicationEventPublisher events;
   private final Clock clock;
 
   Homeworks(
       JdbcClient db,
       @Value("${solace.ai.homework.default-due:P7D}") Duration defaultDue,
+      ApplicationEventPublisher events,
       Clock clock) {
     this.db = db;
     this.defaultDue = defaultDue;
+    this.events = events;
     this.clock = clock;
   }
 
+  @Bean
+  static KafkaAdmin.NewTopics homeworkTopics(
+      @Value("${solace.events.partitions:3}") int partitions,
+      @Value("${solace.events.replicas:1}") int replicas) {
+    return new KafkaAdmin.NewTopics(
+        Topics.withDeadLetter(TOPIC, partitions, replicas).toArray(NewTopic[]::new));
+  }
+
+  /** ai.homework.assigned v1: ids only. Core sends the seeker the neutral push. */
+  record Assigned(UUID homeworkId, UUID bookingId) {}
+
+  @Transactional
   public Homework assign(UUID bookingId, UUID specialist, Assignment a) {
     if (!EXERCISES.contains(a.exercise())
         || !FREQUENCIES.contains(a.frequency())
@@ -124,6 +148,9 @@ public class Homeworks {
         .param("due", Timestamp.from(due))
         .param("now", Timestamp.from(now))
         .update();
+    events.publishEvent(
+        Events.envelope(
+            "ai.homework.assigned", 1, seeker.toString(), "en", new Assigned(id, bookingId)));
     return find(id).orElseThrow().homework();
   }
 

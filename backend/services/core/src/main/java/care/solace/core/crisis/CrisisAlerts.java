@@ -158,6 +158,35 @@ class CrisisAlerts implements CrisisSummaries, CrisisRaising {
     insert(sourceId, source, sourceId, subjectId, guest, category, language, clock.instant());
   }
 
+  @Override
+  public void raise(
+      String source,
+      UUID sourceId,
+      UUID subjectId,
+      boolean guest,
+      String category,
+      String language,
+      String note) {
+    raise(source, sourceId, subjectId, guest, category, language);
+    if (note != null && !note.isBlank()) {
+      db.sql(
+              "UPDATE crisis_alert SET concern_note = :n WHERE decision_id = :d"
+                  + " AND concern_note IS NULL")
+          .param("n", note.strip())
+          .param("d", sourceId)
+          .update();
+    }
+  }
+
+  /** The note a specialist gave with a session safety concern. */
+  java.util.Optional<String> note(UUID alertId) {
+    return db.sql(
+            "SELECT concern_note FROM crisis_alert WHERE id = :id AND concern_note IS NOT NULL")
+        .param("id", alertId)
+        .query(String.class)
+        .optional();
+  }
+
   private void insert(
       UUID decisionId,
       String source,
