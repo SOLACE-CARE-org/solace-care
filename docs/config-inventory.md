@@ -1,6 +1,6 @@
 # Configuration inventory
 
-Every value that changes how Solace behaves, where it lives today, and how it changes. Gathered from the code on 21 October 2026, as the first step towards one way of setting values from the admin portal without a rebuild or restart. The strategy comes after this list.
+Every value that changes how Solace behaves, where it lives today, and how it changes. Gathered from the code on 21 October 2026, as the first step towards one way of setting values from the admin portal without a rebuild or restart. The strategy is section 7; it was added on 25 October 2026 and is a proposal until confirmed.
 
 **How a value changes today**
 
@@ -139,7 +139,7 @@ So min and max price and the commission **are already live**: the values in `app
 | Contact-detail patterns | `Redactor` (AI), review contact check (Core) | Rebuild | No | Safety code, tested. |
 | Safety monitor phrases | `PhraseClassifier` (AI) | Rebuild | **Yes, Clinical reviewer, with evaluation** | Every change must pass the 99% safety set. |
 | Companion questions and closing lines | AI `messages.properties` | Rebuild | **Yes, Content editor** | EN and FR. |
-| Notification copy | Core `notifications/copy*.properties` | Rebuild | **Yes, Content editor** | Must keep the SMS 160-character rule. |
+| Notification copy | Core `notification_copy` rows over `notifications/copy*.properties` | **Live (D61)**: edited on the portal by Super admins and Content editors, both languages at once, rules checked on save | Built | The SMS rule holds: GSM-7, the French accent rule, and no longer than the approved text outside its placeholders. |
 | Error titles and brief or metric labels | `messages*.properties` in each service | Rebuild | Maybe | |
 | App and portal text | `packages/i18n` | Rebuild of the apps | No | Released with the apps. |
 | Evaluation sets | AI `resources/eval/*.json` | Rebuild | **Yes, Clinical reviewer** | |
@@ -161,7 +161,7 @@ If AI models become editable in the portal, a model's API key should still live 
 
 ## 6. Scheduled jobs (triggers)
 
-Every job today is a Spring `@Scheduled` method: the schedule is in code or in `application.yml`, it always runs, and changing it needs a restart or a rebuild. The proposal is a **trigger table in each service's database**:
+Built (D61). Every job was a Spring `@Scheduled` method that always ran, with its schedule in code or in `application.yml`. Each one is now a `@Job` (`backend/libs/jobs`) with a row in a **trigger table in its service's database**:
 
 | Column | Meaning |
 | --- | --- |
@@ -171,13 +171,13 @@ Every job today is a Spring `@Scheduled` method: the schedule is in code or in `
 | schedule | A cron expression with its time zone, or a fixed interval (`PT1M`) |
 | last run, last outcome, next run | Shown in the portal so staff see that a job runs |
 
-Each service reads its trigger rows and reschedules a job within a minute of a change, so no restart is needed. A locked trigger shows in the portal but cannot be paused, and its schedule can be changed only within safe limits.
+Each service reads its trigger rows when it starts and registers only the jobs whose row is ACTIVE (D61). Pausing, resuming or rescheduling a job takes effect at the service's next restart, with no code change. A locked trigger shows in the portal but cannot be paused, and its schedule can be changed only within safe limits.
 
 | Service | Trigger name | What it does | Schedule today | Can be paused? |
 | --- | --- | --- | --- | --- |
 | Core | `core.crisis.escalate` | Escalates unacknowledged crisis alerts to the backup at 5 min and Super admins at 10 min | every 30 s | **No, locked** (D11) |
 | Core | `core.bookings.expire-unpaid` | Expires bookings not paid within the 10-minute hold and frees the time | every 30 s (`solace.bookings.expiry-interval`) | **No, locked** |
-| Core | `core.payments.poll` | Asks the mobile money provider about payments still pending | every 20 s (`solace.payments.poll-interval`) | **No, locked** |
+| Core | `core.payments.poll` | Asks the payment providers about payments, refunds and payouts still on their way | every 20 s (`solace.payments.poll-interval`) | **No, locked** |
 | Core | `core.payments.draft-payout-runs` | Drafts the twice-monthly payout run when its period closes | hourly | Yes |
 | Core | `core.payments.reconcile` | Compares yesterday's ledger with the provider's records | 03:00 daily (`solace.payments.reconciliation-cron`) | Yes |
 | Core | `core.sessions.settle` | Marks no-shows and completes sessions the media server did not report | every minute | **No, locked** (money follows it) |
@@ -192,7 +192,9 @@ Each service reads its trigger rows and reschedules a job within a minute of a c
 | Core | `core.identity.remove-unverified` | Removes sign-ups never verified within 24 h | every 15 min (`solace.identity.unverified-cleanup-interval`) | Yes |
 | Core | `core.health-check.forget-unclaimed` | Deletes guest health check answers never claimed | 03:15 daily | Yes |
 | Core | `core.insight.anomalies` | Checks for booking drops and failed-payment spikes for the copilot | hourly | Yes |
-| Core | `core.admin.settings-reload` | Reloads platform settings and flags | every 30 s (`solace.admin.settings-refresh`) | **No, internal**: not listed in the portal |
+| Core | `core.admin.settings-reload` | Reloads platform settings and flags | every 30 s (`solace.admin.settings-refresh`) | **No, locked** (internal) |
+| Core | `core.payments.providers-reload` | Reloads payment providers and routes (D61) | every 30 s | **No, locked** (internal) |
+| Core | `core.notifications.copy-reload` | Reloads notification copy edited on the portal (D61) | every 30 s | **No, locked** (internal) |
 | Core | `core.guests.purge-contacts` | Removes guest phone numbers `[12]` months after their last booking | 02:45 daily | Yes |
 | AI | `ai.gateway.forget-texts` | Clears prompt and output texts older than `[30]` days | 02:30 daily | **No, locked** (data rule) |
 | AI | `ai.scribe.sweep` | Deletes unsigned drafts and session audio after 7 days | hourly | **No, locked** (System Design, Recording) |
@@ -208,3 +210,123 @@ Each service reads its trigger rows and reschedules a job within a minute of a c
 | Content | policies, catalogue, content, modules, health check, prompts, rota | none | guardrail and rule word lists, safety phrases, notification and companion copy, evaluation sets |
 
 Main gaps: **Tracking and AI have no settings table**; **AI models are config-only**; **notification copy and the clinical word lists are in code**.
+
+## 7. Strategy
+
+**Status:** accepted as D61 on 25 October 2026; the answers to the open questions are at the end of this section.
+
+- **Built:** payment providers and routes (tranche 4), the trigger table for every job (tranche 3), and editable notification copy (part of tranche 5). Each has its API, contract, tests, EN and FR texts and audit.
+- **Not built yet:** their admin screens, which need a design first.
+- **Still to do:** tranches 1 and 2, AI models, SMS and email senders, the clinical word lists, the evaluation sets and the corpus screen.
+
+### Principles
+
+1. **Each business value has one place to change it: the admin portal.** There is one mechanism for each kind of value:
+   - settings
+   - flags
+   - triggers
+   - content with review
+   - provider registries
+
+   A value that is not a candidate (sections 2 to 5, "No") stays in deployment config or code.
+2. **Core owns every platform setting and flag, including those Tracking and AI use.**
+   - This is what the System Design already says. Admin & config: "Versioned settings with audit trail; changes publish a config-changed event". Event catalog: `core.config.changed` lets Tracking and AI "refresh cached settings, feature flags, specialties".
+   - Today Core publishes the event, but no service consumes it.
+   - Tracking and AI therefore get **no settings tables of their own**. This also keeps "no service reads another's tables": they ask Core.
+3. **The definition lives in code, the value in data.**
+   - Every setting has a definition in Core's catalogue (`SettingCatalogue`): key, owning service, group, unit, the spec's bracketed default, minimum and maximum, who may change it, and whether a second person must approve.
+   - Its label and help text are in `packages/i18n` in EN and FR.
+   - A value without a definition cannot be set. The `application.yml` value stays as the fallback, as now.
+4. **Fixed decisions are shown, never stored.**
+   - Values without brackets stay constants in code. The catalogue lists them as not editable.
+   - A unit test checks that each listed value equals its constant, so the screen can never show a number the code does not use.
+5. **Every change follows the same path.**
+   - It is a new version with a reason, written to the audit log.
+   - It takes effect within a minute, with no restart. The screen shows "in force since".
+   - The previous version can be restored in one step, which is itself a new version.
+6. **Riskier values get stronger checks.** The rules mirror ones that already exist:
+
+   | Kind of value | Check | Existing rule it copies |
+   | --- | --- | --- |
+   | Money or legal: fee, transfer authorisation, small-cell size, payment routes | A second person who did not propose it | D14 |
+   | Changes what a clinical value means: cycle gap, clinical word lists | A Clinical reviewer proposes; a different one approves | Tracking modules |
+   | Safety phrases and evaluation sets | Must pass the evaluation gate before promotion | Prompts, screen 26 |
+   | Notification copy | Validated for both languages, 160 GSM-7 characters with placeholders filled, and the French accent rule | notification-copy.md rules |
+
+7. **Read values when they are used, not at startup.**
+   - Code reads a live value at the moment of use, as `LivePricing` does, not through a field bound once.
+   - A schedule that depends on a value is rescheduled when the value changes (see triggers).
+8. **External providers are registries.**
+   - The adapter type is code; each account is a row; keys stay in Vault, referenced by name.
+   - Keys are mounted as files, so a new key needs no restart.
+   - This covers payment providers (designed in `docs/proposals/payment-providers.md`), AI models and their routes, and the SMS and email senders, for which no real adapter exists yet.
+
+### How Tracking and AI read Core's settings
+
+Contract first: a new gRPC call on Core, `ConfigService.GetSettings(service)`. It returns the values in force for that service's keys, plus the flags. It has the standard 2-second deadline and a circuit breaker.
+
+| Step | What happens |
+| --- | --- |
+| Start | The service loads its settings from Core. If Core does not answer, it starts with its own `application.yml` fallbacks and retries. |
+| Change | Core publishes `core.config.changed` (already in the contract). The service reloads that key from Core, idempotently on `eventId`. |
+| Safety net | The service also reloads every `[5]` minutes, in case an event is missed. |
+| Fallback | If Core is unavailable, the service keeps the last values it loaded and logs it. It never falls back silently to a default that differs from what staff set while it still has a cached value. |
+
+### Where each value goes
+
+**Tranche 1: Core values into the existing catalogue.** No new mechanism.
+
+- **Editable:**
+  - `solace.brief.notice`, `solace.insight.*` (`min-cell` with a second approver), `solace.specialists.pricing.durations`, `solace.bookings.guest-token-after-end`, `solace.identity.unverified-signup-ttl`, `solace.privacy.offered-purposes`, `solace.sessions.dial-in.number`.
+  - From code: `Slots.HORIZON_DAYS`, `TimeOffController.LONGEST`, the `WeeklyHoursController` choices, `Applications.MAX_FOCUS_AREAS`, `Messages.LINK_AFTER_END`, `OverviewController.SLOW_PAYMENT`, and the two `MATCHES` counts.
+  - Check whether `guest-token-after-end` and `Messages.LINK_AFTER_END` are the same rule (both 1 day). If so, they become one setting.
+- **Shown, not editable:** crisis escalation 5 and 10 minutes, the 72-hour temporary password, joining 10 minutes before, the token 15 minutes after the end, 2-minute reconnection, minimum age 18, licence reminder 60 days, bookable language levels, the safety recall gate of 99%, and the pending timeout equal to the hold.
+
+**Tranche 2: Tracking and AI values through Core.** This needs the gRPC call above and a consumer of `core.config.changed` in each service.
+
+- **Tracking:**
+  - Snooze days, the reminder window, the risk pause, `Nudges.IGNORED_LIMIT`, `TrendSummaryEndpoint.WINDOW`.
+  - `solace.tracking.cycle.new-period-gap-days`, which needs Clinical reviewer approval by two different people.
+- **AI:**
+  - `retention-days`, `eval-gate`, the default homework due date and homework limits, and budgets for each feature.
+  - `transfer-authorised`: Super admin, with a second Super admin, because it is a legal decision.
+  - Output length limits stay with each prompt version on screen 26, not here.
+
+**Tranche 3: triggers (section 6).**
+
+- Schedules are runtime state (last run, next run, outcome) owned by the service that runs them. So each service keeps a `job_trigger` table, as section 6 proposes.
+- The portal shows all of them on one screen through each service's admin API, the way it already reaches Tracking for modules and AI for prompts.
+- Locked triggers are shown and cannot be paused.
+
+**Tranche 4: registries.**
+
+- **Payment providers:** per the proposal document.
+- **AI models, routes, speech and embedding models:** move into AI's database as `ai_model` and `ai_route`, with keys referenced in Vault. A new route takes effect only after the feature's evaluation set passes on it.
+- **SMS and email senders:** the same pattern. This is also needed before the pilot, because only the logging sender exists.
+
+**Tranche 5: content written in code.**
+
+- **Notification copy:** becomes versioned templates in Core, with both languages required and the SMS checks above.
+- **Clinical word lists and safety phrases** (`Guardrails.CLINICAL`, `RuleRules`, `PhraseClassifier`): move into AI and Tracking tables, behind clinical review and the evaluation gate.
+- **Evaluation sets:** move into AI's database, so clinicians can add cases.
+- **Companion questions and closing lines:** these are content, edited by a Content editor in EN and FR.
+- **Companion corpus:** needs its admin screen.
+
+**Stays where it is:** section 5, and every "No" in sections 2 to 4.
+
+- Contact-detail patterns stay as tested safety code.
+- App and portal text is released with the apps.
+- Prompt input layouts stay in code, because the output parsing depends on them.
+
+Every new screen or screen change needs a design first: settings for Tracking and AI on screen 20, triggers, payment providers and routes, model routes, notification templates, word lists and the corpus.
+
+### Decided (D61)
+
+1. **Clinical settings:** settings stay Super admin only. Clinical reviewers do not change settings, so the cycle gap is a Super admin setting and the clinical word lists stay with clinical review through their own screens, not screen 20.
+2. **Notification copy:** editable in the portal, in EN and FR, with the SMS rules checked on save. The database becomes the source; `notification-copy.md` is the first version.
+3. **Member sign-in codes:** stay in the Keycloak authenticator's configuration. They are not settings in Solace.
+4. **Second person:** not needed for payment providers and routes; a Super admin alone changes them. Refunds and payout runs keep their second approver (D14).
+5. **Scheduled jobs:**
+   - Every job has a row in its service's trigger table.
+   - A job whose row is PAUSED is not registered when the service starts, so it does not run. Pausing or resuming takes effect at the next restart, with no code change.
+   - The jobs marked locked in section 6 cannot be paused.

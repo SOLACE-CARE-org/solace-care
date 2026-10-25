@@ -397,6 +397,31 @@ Every pair now meets WCAG 2.1 AA.
 - **App lock:** a device-local setting that uses the phone's own lock (PIN, fingerprint or face). Turning it on or off needs that lock. The lock screen keeps Urgent help one tap away and never covers the crisis screen. Signing out turns it off.
 - **Message someone you trust:** Urgent help lists the safety plan's people who have a number. Each button opens a text message with no prefilled words, since the copy has none.
 
+**D61. Payment providers as rows, and how values change without a deploy.** Taken 25 Oct 2026 with the owner, from `docs/proposals/payment-providers.md` and section 7 of `docs/config-inventory.md`. This replaces "`solace.payments.provider` picks one" in D35.
+- **Payment providers:**
+  - Each account with an aggregator is a `payment_provider` row with an adapter (code), TEST or LIVE, a status (DRAFT, ACTIVE, DRAINING, DISABLED) and a reference to its keys in Vault. Keys are never in the database.
+  - `payment_route` says which providers collect, refund and pay out for each method, in order.
+  - Every payment, refund and payout item records its provider, and checks, webhooks and reconciliation go back to that provider.
+  - `solace.payments.provider` now only sets up the first provider when no route exists.
+- **Who:** only a Super admin adds, changes, activates, drains or disables a provider, or changes routes, each time with a reason. No second approver.
+  - A LIVE provider becomes ACTIVE only after its keys are found, a connection test passes, and the Super admin confirms four activation checks (records of processing, threat model, contract, test transactions).
+  - A provider is DISABLED only when nothing is in flight at it.
+- **Refunds:** a refund goes back through the provider that took the payment while that provider is ACTIVE. Otherwise it goes through the first ACTIVE provider on the REFUND route for the method the seeker is repaid in.
+  - The refund keeps its own method and phone, both starting as the payment's. Letting a seeker choose another wallet needs a screen and a check of the new number, so it is not built.
+- **Fallback:** behind the `paymentRouting` flag, off by default. A provider whose circuit is open is skipped, and a charge that certainly never reached a provider is tried at the next one. A transfer is never retried at another provider.
+- **Settings:** Core owns every platform setting, including those of Tracking and AI, which read them from Core (System Design, Admin & config). Settings stay Super admin only; Clinical reviewers do not change settings.
+- **Notification copy:** becomes editable in the portal by Super admins and Content editors (the content area), in EN and FR at once. The database becomes the source; `notification-copy.md` is the first version, shown beside any edit. Each save is checked:
+  - the same placeholders as the approved wording;
+  - no exclamation mark or emoji;
+  - neutral wording, except staff crisis messages;
+  - for an SMS: GSM-7, the French accent rule, and no more text outside its placeholders than the approved wording, so it still fits 160 characters once filled.
+- **Member sign-in codes:** length, lifetime, tries and resend delay stay in the Keycloak authenticator's configuration.
+- **Scheduled jobs:**
+  - Every job has a row in its service's trigger table.
+  - A job whose row is PAUSED is not registered when the service starts, so it does not run. Pausing or resuming takes effect at the next restart, with no code change.
+  - Jobs that safety or money depend on stay locked and cannot be paused: crisis escalation, expiring unpaid bookings, checking payments, settling sessions, reminders, clearing AI texts and the scribe sweep. So do the internal reloads of settings, payment providers and copy.
+  - Each job is a `@Job` in `backend/libs/jobs`, which also serves `/admin/v1/jobs` in Core, Tracking and AI: Super admins change rows, Operations look.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

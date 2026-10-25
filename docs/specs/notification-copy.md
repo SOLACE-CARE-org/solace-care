@@ -4,6 +4,8 @@ Oct 16, 2026 · @Banseka
 
 This is every message Solace sends, in English and French. None of them says anything about a person's health, and every SMS fits in one standard message.
 
+> Since D61 (25 Oct 2026), Super admins and Content editors can edit this copy on the portal, in both languages, with the rules below checked on save. The wording here is the approved first version, and the portal shows it beside any edit.
+
 ## Rules
 
 - **Neutral wording:** no message names a condition, a module, a mood, a specialty or the words therapy or mental health. "Appointment" and "specialist" are the most a lock screen ever shows.
