@@ -2,9 +2,12 @@
 // origin/main, or main when there is no remote), using oasdiff in Docker so local runs and CI use
 // the same binary. A spec that is new on this branch has nothing to break.
 //
+// A deliberate break that harms no client is listed in openapi/breaking-ignore.txt, one oasdiff
+// finding per line ("METHOD /path description"), with the decision that allows it in the commit.
+//
 // Usage: node scripts/check-openapi-breaking.mjs [baseRef]
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,6 +23,9 @@ const baseRef = process.argv[2] ?? (refExists("origin/main") ? "origin/main" : "
 
 const baseDir = mkdtempSync(join(tmpdir(), "openapi-base-"));
 const headDir = join(contracts, "openapi");
+const ignore = existsSync(join(headDir, "breaking-ignore.txt"))
+  ? ["--err-ignore", "/head/breaking-ignore.txt"]
+  : [];
 let failures = 0;
 let compared = 0;
 
@@ -36,7 +42,8 @@ for (const file of readdirSync(headDir).filter((f) => f.endsWith(".yaml"))) {
   const result = spawnSync(
     "docker",
     ["run", "--rm", "-v", `${baseDir}:/base:ro`, "-v", `${headDir}:/head:ro`, OASDIFF,
-      "breaking", `/base/${file}`, `/head/${file}`, "--fail-on", "ERR", "--format", "text"],
+      "breaking", `/base/${file}`, `/head/${file}`, "--fail-on", "ERR", "--format", "text",
+      ...ignore],
     { encoding: "utf8", env: { ...process.env, MSYS_NO_PATHCONV: "1" } },
   );
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();

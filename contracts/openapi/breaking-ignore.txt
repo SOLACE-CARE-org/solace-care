@@ -1,0 +1,3 @@
+POST /v1/webhooks/payments/{provider} removed the enum value `notchpay` from the `path` request parameter `provider`
+POST /v1/webhooks/payments/{provider} removed the enum value `sandbox` from the `path` request parameter `provider`
+POST /v1/webhooks/payments/{provider} added the pattern `^[a-z][a-z0-9-]{1,30}$` to the `path` request parameter `provider`

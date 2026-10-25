@@ -80,6 +80,8 @@ tags:
     description: The session scribe's consent for one session (Phase 4; D57)
   - name: safety-plan
     description: The seeker's safety plan (SafetyPlan.dc.html; Phase 4; D57)
+  - name: admin-jobs
+    description: This service's scheduled jobs and their trigger rows, for staff (D61). A change takes effect at the service's next restart.
 paths:
   /v1/signups:
     post:
@@ -1625,9 +1627,9 @@ paths:
         - name: provider
           in: path
           required: true
+          description: A payment provider's code (D61); only a provider that still serves takes webhooks.
           schema:
-            type: string
-            enum: [notchpay, sandbox]
+            $ref: "#/components/schemas/PaymentProviderCode"
       requestBody:
         required: true
         content:
@@ -2014,6 +2016,168 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/payment-providers:
+    get:
+      operationId: listPaymentProviders
+      summary: Payment providers, with their keys, circuit and what they still hold (D61)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Every provider
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentProviderAccount"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createPaymentProvider
+      summary: Add a provider as a DRAFT (Super admin only, D61)
+      description: Its keys must already be in Vault under secretRef. It takes no traffic until it is ACTIVE and a route names it.
+      tags: [admin-payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderDraft"
+      responses:
+        "201":
+          description: The new provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderAccount"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/payment-providers/{code}:
+    parameters:
+      - $ref: "#/components/parameters/PaymentProviderCode"
+    put:
+      operationId: changePaymentProvider
+      summary: Change a provider or its status, with a reason (Super admin only, D61)
+      description: >
+        ACTIVE needs the keys found and a passing connection test; a LIVE provider also needs the
+        four activation checks confirmed. DISABLED needs nothing in flight at the provider. The
+        adapter cannot change.
+      tags: [admin-payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderChange"
+      responses:
+        "200":
+          description: The provider after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderAccount"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/payment-providers/{code}/test:
+    parameters:
+      - $ref: "#/components/parameters/PaymentProviderCode"
+    post:
+      operationId: testPaymentProvider
+      summary: A call that moves no money, to check the keys and the address (Super admin only)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: The outcome; a failed test is still 200
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderTest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/payment-providers/{code}/history:
+    parameters:
+      - $ref: "#/components/parameters/PaymentProviderCode"
+    get:
+      operationId: getPaymentProviderHistory
+      summary: Every version of a provider, newest first
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentProviderVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/payment-routes:
+    get:
+      operationId: getPaymentRoutes
+      summary: Which provider collects, refunds and pays out for each method, in order (D61)
+      tags: [admin-payments]
+      responses:
+        "200":
+          description: The routes in force
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRoutes"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      operationId: changePaymentRoutes
+      summary: Replace every route at once, with a reason (Super admin only, D61)
+      description: Every purpose and method keeps at least one route to an ACTIVE provider. version must be the version read.
+      tags: [admin-payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRoutesChange"
+      responses:
+        "200":
+          description: The routes after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRoutes"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/payout-runs:
     get:
       operationId: listPayoutRuns
@@ -4744,6 +4908,152 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/notification-copy:
+    get:
+      operationId: listNotificationCopy
+      summary: Every push, SMS and email in EN and FR, with the approved wording beside any edit (D61)
+      tags: [admin-content]
+      responses:
+        "200":
+          description: Every message, in the order of notification-copy.md
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationCopy"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/notification-copy/{key}:
+    parameters:
+      - $ref: "#/components/parameters/NotificationCopyKey"
+    put:
+      operationId: changeNotificationCopy
+      summary: Change a message in both languages with a reason (Super admins and Content editors, D61)
+      description: >
+        Checked first: the approved wording's placeholders, no exclamation mark or emoji, neutral
+        wording outside staff messages, and for an SMS the GSM-7 alphabet, the French accent rule
+        and no more text outside its placeholders than the approved wording. In force on every
+        instance within a minute. Restoring the approved wording is a change like any other.
+      tags: [admin-content]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationCopyChange"
+      responses:
+        "200":
+          description: The message after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationCopy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/notification-copy/{key}/history:
+    parameters:
+      - $ref: "#/components/parameters/NotificationCopyKey"
+    get:
+      operationId: getNotificationCopyHistory
+      summary: Every edit of a message, newest first
+      tags: [admin-content]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationCopyVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/jobs:
+    get:
+      operationId: listJobs
+      summary: This service's scheduled jobs, their rows and their last runs (D61)
+      tags: [admin-jobs]
+      responses:
+        "200":
+          description: Every job
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobTrigger"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/jobs/{name}:
+    parameters:
+      - $ref: "#/components/parameters/JobName"
+    put:
+      operationId: changeJob
+      summary: Pause, resume or reschedule a job with a reason (Super admin only, D61)
+      description: Saved at once; the running service follows it from its next restart. A paused job is not registered, so it does not run. Locked jobs answer 409.
+      tags: [admin-jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobTriggerChange"
+      responses:
+        "200":
+          description: The job after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobTrigger"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/jobs/{name}/history:
+    parameters:
+      - $ref: "#/components/parameters/JobName"
+    get:
+      operationId: getJobHistory
+      summary: Every version of a job's row, newest first
+      tags: [admin-jobs]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobTriggerVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     bearerAuth:
@@ -4752,6 +5062,21 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    NotificationCopyKey:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-zA-Z0-9._-]*$"
+        maxLength: 100
+    JobName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9.-]{2,80}$"
     AdminBookingStatus:
       name: status
       in: query
@@ -4847,6 +5172,12 @@ components:
         type: string
         pattern: "^[a-z][a-z0-9.-]*$"
         maxLength: 100
+    PaymentProviderCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/PaymentProviderCode"
     StaffId:
       name: staffId
       in: path
@@ -5073,6 +5404,173 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
   schemas:
+    NotificationCopy:
+      type: object
+      additionalProperties: false
+      required: [key, channel, forStaff, en, fr, approvedEn, approvedFr, version]
+      properties:
+        key:
+          description: e.g. sms.booking-confirmed
+          type: string
+        channel:
+          type: string
+          x-extensible-enum: [sms, push, email, word, category]
+        forStaff:
+          description: Staff messages name a crisis category on purpose and skip the wording check.
+          type: boolean
+        en:
+          description: The wording in force, with {0}, {1}... where the code fills details.
+          type: string
+        fr:
+          type: string
+        approvedEn:
+          description: The approved wording from notification-copy.md.
+          type: string
+        approvedFr:
+          type: string
+        version:
+          description: 0 while the approved wording is in force.
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    NotificationCopyChange:
+      type: object
+      additionalProperties: false
+      required: [version, en, fr, reason]
+      properties:
+        version:
+          description: The version read (0 when never edited); a change made meanwhile answers 409.
+          type: integer
+          minimum: 0
+        en:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        fr:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    NotificationCopyVersion:
+      type: object
+      additionalProperties: false
+      required: [version, en, fr, reason, by, at]
+      properties:
+        version:
+          type: integer
+        en:
+          type: string
+        fr:
+          type: string
+        reason:
+          type: string
+        by:
+          type: string
+        at:
+          type: string
+          format: date-time
+    JobTriggerStatus:
+      description: ACTIVE jobs are registered when the service starts; PAUSED ones are not, so they do not run.
+      type: string
+      x-extensible-enum: [ACTIVE, PAUSED]
+    JobTriggerKind:
+      type: string
+      x-extensible-enum: [CRON, INTERVAL]
+    JobTrigger:
+      type: object
+      additionalProperties: false
+      required: [name, description, status, locked, kind, schedule, version, updatedBy, updatedAt, pendingRestart]
+      properties:
+        name:
+          type: string
+        description:
+          description: What the job does, from the code.
+          type: string
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        locked:
+          description: Safety, money or a fixed decision depends on it; it always runs and cannot be changed.
+          type: boolean
+        kind:
+          $ref: "#/components/schemas/JobTriggerKind"
+        schedule:
+          description: A six-field cron for CRON, an ISO-8601 duration for INTERVAL.
+          type: string
+        zone:
+          description: The cron's time zone.
+          type: string
+        version:
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        pendingRestart:
+          description: The row was changed since the service started; it follows the row from its next restart.
+          type: boolean
+        lastStartedAt:
+          type: string
+          format: date-time
+        lastFinishedAt:
+          type: string
+          format: date-time
+        lastOutcome:
+          type: string
+          x-extensible-enum: [OK, FAILED]
+        nextRunAt:
+          type: string
+          format: date-time
+    JobTriggerChange:
+      type: object
+      additionalProperties: false
+      required: [version, status, schedule, reason]
+      properties:
+        version:
+          description: The version read; a change made meanwhile answers 409.
+          type: integer
+          minimum: 1
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        schedule:
+          description: Of the job's kind; an interval is at least 5 seconds.
+          type: string
+          maxLength: 120
+        zone:
+          type: string
+          maxLength: 60
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    JobTriggerVersion:
+      type: object
+      additionalProperties: false
+      required: [version, status, kind, schedule, reason, changedBy, changedAt]
+      properties:
+        version:
+          type: integer
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        kind:
+          $ref: "#/components/schemas/JobTriggerKind"
+        schedule:
+          type: string
+        zone:
+          type: string
+        reason:
+          type: string
+        changedBy:
+          type: string
+        changedAt:
+          type: string
+          format: date-time
     Problem:
       description: RFC 9457 problem details. title and detail are localised to the caller's language.
       type: object
@@ -6514,6 +7012,9 @@ components:
         completedAt:
           type: string
           format: date-time
+        provider:
+          description: The provider the payment was asked at (D61).
+          type: string
     RefundStatus:
       description: PROPOSED → APPROVED → SENT → PAID, or DECLINED; FAILED when the transfer fails.
       type: string
@@ -6559,6 +7060,9 @@ components:
         createdAt:
           type: string
           format: date-time
+        provider:
+          description: The provider the refund was sent through, once sent (D61).
+          type: string
         canDecide:
           description: False for the person who proposed it (D14).
           type: boolean
@@ -6598,7 +7102,226 @@ components:
               ours:
                 type: string
               theirs:
+                description: The provider's status, UNREACHABLE, or PROVIDER_DISABLED.
                 type: string
+              provider:
+                description: The provider that handled the item, where it was checked (D61).
+                type: string
+    PaymentProviderCode:
+      description: The provider's code, in webhook paths and on every payment, refund and payout it handles (D61).
+      type: string
+      pattern: "^[a-z][a-z0-9-]{1,30}$"
+    PaymentProviderStatus:
+      description: DRAFT takes nothing; ACTIVE takes new work where a route names it; DRAINING takes no new work but finishes what it holds; DISABLED does nothing.
+      type: string
+      x-extensible-enum: [DRAFT, ACTIVE, DRAINING, DISABLED]
+    PaymentProviderAdapter:
+      description: The code adapter the provider runs on.
+      type: string
+      x-extensible-enum: [NOTCHPAY, SANDBOX]
+    PaymentProviderMode:
+      description: TEST moves no real money; a SANDBOX provider is always TEST.
+      type: string
+      x-extensible-enum: [TEST, LIVE]
+    PaymentProviderAccount:
+      type: object
+      additionalProperties: false
+      required: [code, adapter, displayName, mode, status, secretRef, version, updatedBy, updatedAt, keysFound, inFlight, clearing, webhookPath]
+      properties:
+        code:
+          $ref: "#/components/schemas/PaymentProviderCode"
+        adapter:
+          $ref: "#/components/schemas/PaymentProviderAdapter"
+        displayName:
+          type: string
+        mode:
+          $ref: "#/components/schemas/PaymentProviderMode"
+        status:
+          $ref: "#/components/schemas/PaymentProviderStatus"
+        baseUrl:
+          description: Absent when the adapter's default address is used.
+          type: string
+          format: uri
+        secretRef:
+          description: Where the keys are in Vault ("config" for the deployment's own variables). Never a key.
+          type: string
+        version:
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        keysFound:
+          description: Whether every key the adapter needs is present. The keys themselves are never shown.
+          type: boolean
+        circuit:
+          description: CLOSED, OPEN or HALF_OPEN while the provider serves.
+          type: string
+        inFlight:
+          description: Payments pending, refunds and payouts sent at this provider; DISABLED needs 0.
+          type: integer
+        clearing:
+          description: Money the ledger says is at this provider, in FCFA.
+          type: integer
+        webhookPath:
+          description: The path to register at the provider for its notifications.
+          type: string
+    PaymentProviderDraft:
+      type: object
+      additionalProperties: false
+      required: [code, adapter, displayName, mode, secretRef, reason]
+      properties:
+        code:
+          $ref: "#/components/schemas/PaymentProviderCode"
+        adapter:
+          $ref: "#/components/schemas/PaymentProviderAdapter"
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        mode:
+          $ref: "#/components/schemas/PaymentProviderMode"
+        baseUrl:
+          type: string
+          format: uri
+          maxLength: 200
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    PaymentProviderChange:
+      type: object
+      additionalProperties: false
+      required: [version, displayName, mode, status, secretRef, reason]
+      properties:
+        version:
+          description: The version read; a change made meanwhile answers 409.
+          type: integer
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        mode:
+          $ref: "#/components/schemas/PaymentProviderMode"
+        status:
+          $ref: "#/components/schemas/PaymentProviderStatus"
+        baseUrl:
+          type: string
+          format: uri
+          maxLength: 200
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        checks:
+          $ref: "#/components/schemas/PaymentProviderChecks"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    PaymentProviderChecks:
+      description: What a Super admin confirms before a LIVE provider becomes ACTIVE; kept with the version.
+      type: object
+      additionalProperties: false
+      required: [recordsOfProcessing, threatModel, contract, testTransactions]
+      properties:
+        recordsOfProcessing:
+          description: The provider is in docs/security/records-of-processing.md.
+          type: boolean
+        threatModel:
+          description: Its API and webhooks are in docs/security/threat-model-core.md.
+          type: boolean
+        contract:
+          description: A contract is signed and the webhook URL is registered at the provider.
+          type: boolean
+        testTransactions:
+          description: A test payment and a test transfer succeeded in TEST mode on the same adapter.
+          type: boolean
+    PaymentProviderTest:
+      type: object
+      additionalProperties: false
+      required: [ok, keysFound]
+      properties:
+        ok:
+          type: boolean
+        keysFound:
+          type: boolean
+        problem:
+          description: What went wrong, without any key.
+          type: string
+    PaymentProviderVersion:
+      type: object
+      additionalProperties: false
+      required: [version, snapshot, reason, changedBy, changedAt]
+      properties:
+        version:
+          type: integer
+        snapshot:
+          description: The provider as it was after this change, with any activation checks.
+          type: object
+        reason:
+          type: string
+        changedBy:
+          type: string
+        changedAt:
+          type: string
+          format: date-time
+    PaymentRoutePurpose:
+      type: string
+      x-extensible-enum: [COLLECT, REFUND, PAYOUT]
+    PaymentRoute:
+      description: One step of a route. A refund first goes back through the provider that took the payment while it is ACTIVE; the REFUND route is for when it is not.
+      type: object
+      additionalProperties: false
+      required: [purpose, method, priority, providerCode]
+      properties:
+        purpose:
+          $ref: "#/components/schemas/PaymentRoutePurpose"
+        method:
+          $ref: "#/components/schemas/PayMethod"
+        priority:
+          description: 1 first; the next one is used when an earlier one is not ACTIVE or, with paymentRouting on, its circuit is open.
+          type: integer
+          minimum: 1
+          maximum: 10
+        providerCode:
+          $ref: "#/components/schemas/PaymentProviderCode"
+        minAmount:
+          type: integer
+          minimum: 1
+        maxAmount:
+          type: integer
+          minimum: 1
+    PaymentRoutes:
+      type: object
+      additionalProperties: false
+      required: [version, routes]
+      properties:
+        version:
+          type: integer
+        routes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentRoute"
+    PaymentRoutesChange:
+      type: object
+      additionalProperties: false
+      required: [version, routes, reason]
+      properties:
+        version:
+          type: integer
+        routes:
+          type: array
+          maxItems: 60
+          items:
+            $ref: "#/components/schemas/PaymentRoute"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
     PayoutRun:
       type: object
       additionalProperties: false

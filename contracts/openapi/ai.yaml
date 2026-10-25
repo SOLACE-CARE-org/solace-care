@@ -27,6 +27,8 @@ tags:
     description: Homework set by the specialist and the companion that guides it (Phase 4; D57)
   - name: admin-copilot
     description: Admin copilot, screen 27 (Phase 4; D58). Aggregated, de-identified numbers only
+  - name: admin-jobs
+    description: This service's scheduled jobs and their trigger rows, for staff (D61). A change takes effect at the service's next restart.
 paths:
   /v1/system/info:
     get:
@@ -488,6 +490,77 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/jobs:
+    get:
+      operationId: listJobs
+      summary: This service's scheduled jobs, their rows and their last runs (D61)
+      tags: [admin-jobs]
+      responses:
+        "200":
+          description: Every job
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobTrigger"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/jobs/{name}:
+    parameters:
+      - $ref: "#/components/parameters/JobName"
+    put:
+      operationId: changeJob
+      summary: Pause, resume or reschedule a job with a reason (Super admin only, D61)
+      description: Saved at once; the running service follows it from its next restart. A paused job is not registered, so it does not run. Locked jobs answer 409.
+      tags: [admin-jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobTriggerChange"
+      responses:
+        "200":
+          description: The job after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobTrigger"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/jobs/{name}/history:
+    parameters:
+      - $ref: "#/components/parameters/JobName"
+    get:
+      operationId: getJobHistory
+      summary: Every version of a job's row, newest first
+      tags: [admin-jobs]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobTriggerVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     bearerAuth:
@@ -496,6 +569,13 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    JobName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9.-]{2,80}$"
     Feature:
       name: feature
       in: path
@@ -573,6 +653,102 @@ components:
           schema:
             $ref: "#/components/schemas/PromptVersion"
   schemas:
+    JobTriggerStatus:
+      description: ACTIVE jobs are registered when the service starts; PAUSED ones are not, so they do not run.
+      type: string
+      x-extensible-enum: [ACTIVE, PAUSED]
+    JobTriggerKind:
+      type: string
+      x-extensible-enum: [CRON, INTERVAL]
+    JobTrigger:
+      type: object
+      additionalProperties: false
+      required: [name, description, status, locked, kind, schedule, version, updatedBy, updatedAt, pendingRestart]
+      properties:
+        name:
+          type: string
+        description:
+          description: What the job does, from the code.
+          type: string
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        locked:
+          description: Safety, money or a fixed decision depends on it; it always runs and cannot be changed.
+          type: boolean
+        kind:
+          $ref: "#/components/schemas/JobTriggerKind"
+        schedule:
+          description: A six-field cron for CRON, an ISO-8601 duration for INTERVAL.
+          type: string
+        zone:
+          description: The cron's time zone.
+          type: string
+        version:
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        pendingRestart:
+          description: The row was changed since the service started; it follows the row from its next restart.
+          type: boolean
+        lastStartedAt:
+          type: string
+          format: date-time
+        lastFinishedAt:
+          type: string
+          format: date-time
+        lastOutcome:
+          type: string
+          x-extensible-enum: [OK, FAILED]
+        nextRunAt:
+          type: string
+          format: date-time
+    JobTriggerChange:
+      type: object
+      additionalProperties: false
+      required: [version, status, schedule, reason]
+      properties:
+        version:
+          description: The version read; a change made meanwhile answers 409.
+          type: integer
+          minimum: 1
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        schedule:
+          description: Of the job's kind; an interval is at least 5 seconds.
+          type: string
+          maxLength: 120
+        zone:
+          type: string
+          maxLength: 60
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    JobTriggerVersion:
+      type: object
+      additionalProperties: false
+      required: [version, status, kind, schedule, reason, changedBy, changedAt]
+      properties:
+        version:
+          type: integer
+        status:
+          $ref: "#/components/schemas/JobTriggerStatus"
+        kind:
+          $ref: "#/components/schemas/JobTriggerKind"
+        schedule:
+          type: string
+        zone:
+          type: string
+        reason:
+          type: string
+        changedBy:
+          type: string
+        changedAt:
+          type: string
+          format: date-time
     Problem:
       description: RFC 9457 problem details. title and detail are localised to the caller's language.
       type: object
