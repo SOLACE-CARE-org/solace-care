@@ -58,7 +58,8 @@ class SettingsController {
       boolean editable,
       int version,
       String updatedBy,
-      Instant updatedAt) {}
+      Instant updatedAt,
+      List<String> allowed) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record FlagView(
@@ -144,7 +145,10 @@ class SettingsController {
   private SettingView view(SettingCatalogue.Definition d) {
     String fallback = catalogue.defaultValue(d);
     var current = settings.current(d.key());
-    boolean ranged = d.type() != SettingCatalogue.Type.TIME;
+    boolean ranged =
+        d.type() != SettingCatalogue.Type.TIME
+            && d.type() != SettingCatalogue.Type.PHONE
+            && d.type() != SettingCatalogue.Type.CODES;
     return new SettingView(
         d.key(),
         d.group().name(),
@@ -156,7 +160,8 @@ class SettingsController {
         d.editable(),
         current.map(Settings.Current::version).orElse(0),
         current.map(Settings.Current::updatedBy).orElse(null),
-        current.map(Settings.Current::updatedAt).orElse(null));
+        current.map(Settings.Current::updatedAt).orElse(null),
+        d.allowed().isEmpty() ? null : d.allowed());
   }
 
   private FlagView view(SettingCatalogue.Flag f) {

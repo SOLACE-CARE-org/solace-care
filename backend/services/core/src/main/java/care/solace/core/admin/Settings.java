@@ -116,6 +116,30 @@ class Settings implements PlatformSettings, FeatureFlags {
   }
 
   @Override
+  public List<Long> numbers(String key, List<Long> fallback) {
+    var c = values.get(key);
+    if (c == null) {
+      return fallback;
+    }
+    return java.util.Arrays.stream(c.value().split(",")).map(Long::parseLong).toList();
+  }
+
+  @Override
+  public String text(String key, String fallback) {
+    var c = values.get(key);
+    return c == null ? fallback : c.value();
+  }
+
+  @Override
+  public List<String> codes(String key, List<String> fallback) {
+    var c = values.get(key);
+    if (c == null) {
+      return fallback;
+    }
+    return c.value().isEmpty() ? List.of() : List.of(c.value().split(","));
+  }
+
+  @Override
   public LocalTime time(String key, LocalTime fallback) {
     var c = values.get(key);
     return c == null ? fallback : LocalTime.parse(c.value());
@@ -170,6 +194,40 @@ class Settings implements PlatformSettings, FeatureFlags {
   /** Checks the value against the setting's type and range; returns it as stored. */
   static String normalise(Definition d, String raw) {
     String value = raw == null ? "" : raw.trim();
+    if (d.type().isList()) {
+      var parts = value.isEmpty() ? new String[0] : value.split("\\s*,\\s*");
+      var numbers = new java.util.TreeSet<Long>();
+      for (String part : parts) {
+        long n;
+        try {
+          n = Long.parseLong(part);
+        } catch (NumberFormatException e) {
+          throw new SolaceException(AdminError.SETTING_INVALID);
+        }
+        if (n < d.min() || n > d.max() || !numbers.add(n)) {
+          throw new SolaceException(AdminError.SETTING_INVALID);
+        }
+      }
+      if (numbers.isEmpty() || numbers.size() > 6) {
+        throw new SolaceException(AdminError.SETTING_INVALID);
+      }
+      return String.join(",", numbers.stream().map(String::valueOf).toList());
+    }
+    if (d.type() == Type.CODES) {
+      var codes = new java.util.LinkedHashSet<String>();
+      for (String part : value.isEmpty() ? new String[0] : value.split("\\s*,\\s*")) {
+        if (!d.allowed().contains(part) || !codes.add(part)) {
+          throw new SolaceException(AdminError.SETTING_INVALID);
+        }
+      }
+      return String.join(",", codes);
+    }
+    if (d.type() == Type.PHONE) {
+      if (!value.isEmpty() && !value.matches("^\\+[1-9][0-9]{7,14}$")) {
+        throw new SolaceException(AdminError.SETTING_INVALID);
+      }
+      return value;
+    }
     if (d.type() == Type.TIME) {
       try {
         return LocalTime.parse(value).toString();

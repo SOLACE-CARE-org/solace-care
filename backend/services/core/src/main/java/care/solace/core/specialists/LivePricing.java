@@ -21,6 +21,12 @@ class LivePricing {
         platform.number("solace.specialists.pricing.min-price", configured.minPrice()),
         platform.number("solace.specialists.pricing.max-price", configured.maxPrice()),
         platform.decimal("solace.specialists.pricing.fee-percent", configured.feePercent()),
-        configured.durations());
+        platform
+            .numbers(
+                "solace.specialists.pricing.durations",
+                configured.durations().stream().map(Integer::longValue).toList())
+            .stream()
+            .map(Long::intValue)
+            .toList());
   }
 }

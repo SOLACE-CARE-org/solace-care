@@ -652,7 +652,10 @@
         "solace_tracking_cycle_new-period-gap-days": "Days without flow before a new period starts a cycle",
         "solace_ai_retention-days": "AI prompts and outputs are kept for audit for",
         "solace_ai_eval-gate": "An AI prompt version passes its evaluation at",
-        "solace_ai_homework_default-due": "Homework is due after, unless the specialist sets a date"
+        "solace_ai_homework_default-due": "Homework is due after, unless the specialist sets a date",
+        "solace_specialists_pricing_durations": "Session lengths specialists can offer",
+        "solace_privacy_offered-purposes": "Consents the app asks about (besides tracking and the health check)",
+        "solace_sessions_dial-in_number": "The number seekers call to join by phone"
       },
       "flag": {
         "safetyMonitor": "Safety monitor",
@@ -676,7 +679,11 @@
         "MINUTES": "{{value}} min",
         "HOURS": "{{value}} h",
         "DAYS": "{{value}} days",
-        "COUNT": "{{value}}"
+        "COUNT": "{{value}}",
+        "MINUTES_LIST": "{{value}} min",
+        "HOURS_LIST": "{{value}} h",
+        "PHONE": "{{value}}",
+        "CODES": "{{value}}"
       },
       "unit": {
         "PERCENT": "Percent",
@@ -685,7 +692,11 @@
         "HOURS": "Hours",
         "DAYS": "Days",
         "COUNT": "Number",
-        "TIME": "Time"
+        "TIME": "Time",
+        "MINUTES_LIST": "Minutes, separated by commas",
+        "HOURS_LIST": "Hours, separated by commas",
+        "PHONE": "Phone number (+237…), or empty for none",
+        "CODES": "Codes, separated by commas"
       },
       "fixed": "Fixed",
       "change": "Change",
@@ -699,7 +710,9 @@
       "turnOn": "Turn on",
       "turnOff": "Turn off",
       "confirmOn": "Turn on {{name}}?",
-      "confirmOff": "Turn off {{name}}?"
+      "confirmOff": "Turn off {{name}}?",
+      "none": "None",
+      "allowed": "Allowed: {{codes}}"
     },
     "team": {
       "title": "Team and roles",

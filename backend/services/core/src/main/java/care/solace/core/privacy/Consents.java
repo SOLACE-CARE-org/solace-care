@@ -30,13 +30,16 @@ class Consents implements ConsentProgress, ConsentCheck {
   private final ApplicationEventPublisher events;
   private final Clock clock;
   private final FeatureFlags flags;
+  private final care.solace.core.admin.PlatformSettings platform;
 
   Consents(
+      care.solace.core.admin.PlatformSettings platform,
       JdbcClient db,
       PrivacySettings settings,
       ApplicationEventPublisher events,
       Clock clock,
       FeatureFlags flags) {
+    this.platform = platform;
     this.flags = flags;
     this.db = db;
     this.settings = settings;
@@ -66,7 +69,16 @@ class Consents implements ConsentProgress, ConsentCheck {
    * while their Phase 2 flags are on, so the switch appears with the feature it allows (D52).
    */
   List<Purpose> offered() {
-    List<Purpose> offered = new ArrayList<>(settings.offeredPurposes());
+    // Which consents the app asks about is a Super admin setting (D61).
+    List<Purpose> offered =
+        new ArrayList<>(
+            platform
+                .codes(
+                    "solace.privacy.offered-purposes",
+                    settings.offeredPurposes().stream().map(Purpose::name).toList())
+                .stream()
+                .map(Purpose::valueOf)
+                .toList());
     if (flags.enabled("trackTab") && !offered.contains(Purpose.TRACKING)) {
       offered.add(0, Purpose.TRACKING);
     }

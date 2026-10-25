@@ -90,13 +90,16 @@ class AdminCatalogueController {
   private final AuditLog audit;
   private final ApplicationEventPublisher events;
   private final List<Integer> durations;
+  private final care.solace.core.admin.PlatformSettings platform;
 
   AdminCatalogueController(
       StaffAccess access,
       JdbcClient db,
       AuditLog audit,
       ApplicationEventPublisher events,
-      @Value("${solace.specialists.pricing.durations:30,50,80}") List<Integer> durations) {
+      @Value("${solace.specialists.pricing.durations:30,50,80}") List<Integer> durations,
+      care.solace.core.admin.PlatformSettings platform) {
+    this.platform = platform;
     this.access = access;
     this.db = db;
     this.audit = audit;
@@ -111,7 +114,13 @@ class AdminCatalogueController {
         entries(Kind.SPECIALTIES),
         entries(Kind.SESSION_LANGUAGES),
         entries(Kind.HELP_TOPICS),
-        durations);
+        platform
+            .numbers(
+                "solace.specialists.pricing.durations",
+                durations.stream().map(Integer::longValue).toList())
+            .stream()
+            .map(Long::intValue)
+            .toList());
   }
 
   @PutMapping("/admin/v1/catalogue/{kind}/{code}")

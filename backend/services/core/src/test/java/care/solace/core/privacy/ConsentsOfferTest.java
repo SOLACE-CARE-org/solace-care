@@ -2,8 +2,11 @@ package care.solace.core.privacy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import care.solace.core.admin.PlatformSettings;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -22,7 +25,58 @@ class ConsentsOfferTest {
           Duration.ofDays(180));
 
   private static Consents with(Set<String> on) {
-    return new Consents(null, SETTINGS, event -> {}, Clock.systemUTC(), on::contains);
+    return with(on, null);
+  }
+
+  /** {@code offered}: the setting as staff set it on screen 20 (D61), or null for the default. */
+  private static Consents with(Set<String> on, List<String> offered) {
+    return new Consents(
+        settings(offered), null, SETTINGS, event -> {}, Clock.systemUTC(), on::contains);
+  }
+
+  private static PlatformSettings settings(List<String> offered) {
+    return new PlatformSettings() {
+      @Override
+      public Duration duration(String key, Duration fallback) {
+        return fallback;
+      }
+
+      @Override
+      public long number(String key, long fallback) {
+        return fallback;
+      }
+
+      @Override
+      public BigDecimal decimal(String key, BigDecimal fallback) {
+        return fallback;
+      }
+
+      @Override
+      public LocalTime time(String key, LocalTime fallback) {
+        return fallback;
+      }
+
+      @Override
+      public List<Long> numbers(String key, List<Long> fallback) {
+        return fallback;
+      }
+
+      @Override
+      public String text(String key, String fallback) {
+        return fallback;
+      }
+
+      @Override
+      public List<String> codes(String key, List<String> fallback) {
+        return offered == null ? fallback : offered;
+      }
+    };
+  }
+
+  @Test
+  void staffChooseWhichAiConsentsTheAppAsksAbout() {
+    assertThat(with(Set.of("trackTab"), List.of("AI_SCRIBE")).offered())
+        .containsExactly(Purpose.TRACKING, Purpose.AI_SCRIBE);
   }
 
   @Test

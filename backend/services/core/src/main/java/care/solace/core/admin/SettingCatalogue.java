@@ -40,7 +40,19 @@ class SettingCatalogue {
     HOURS,
     DAYS,
     COUNT,
-    TIME;
+    TIME,
+    /** Whole minutes, comma-separated, each within min and max: "30,50,80" (D61). */
+    MINUTES_LIST,
+    /** Whole hours, likewise. */
+    HOURS_LIST,
+    /** A phone number in international form, or empty for none. */
+    PHONE,
+    /** Codes from the definition's allowed list, comma-separated; may be empty. */
+    CODES;
+
+    boolean isList() {
+      return this == MINUTES_LIST || this == HOURS_LIST;
+    }
 
     boolean isDuration() {
       return this == MINUTES || this == HOURS || this == DAYS;
@@ -71,7 +83,20 @@ class SettingCatalogue {
    * @param editable false for fixed decisions and values the identity service holds
    */
   record Definition(
-      String key, Group group, Type type, String fallback, long min, long max, boolean editable) {}
+      String key,
+      Group group,
+      Type type,
+      String fallback,
+      long min,
+      long max,
+      boolean editable,
+      List<String> allowed) {
+
+    Definition(
+        String key, Group group, Type type, String fallback, long min, long max, boolean editable) {
+      this(key, group, type, fallback, min, max, editable, List.of());
+    }
+  }
 
   /**
    * @param phase the phase the feature ships in
@@ -243,6 +268,29 @@ class SettingCatalogue {
           new Definition("solace.ai.retention-days", Group.AI, Type.DAYS, "30", 1, 365, true),
           new Definition("solace.ai.eval-gate", Group.AI, Type.PERCENT, "95", 50, 100, true),
           new Definition("solace.ai.homework.default-due", Group.AI, Type.DAYS, "7", 1, 60, true),
+          // Lists and text (D61, tranche 1): session lengths a specialist offers (D43 left them
+          // in config until a spec said who changes them), the consents the app asks about, and
+          // the number seekers call to join by phone. The weekly-hours break and notice choices
+          // stay in code: the availability screen is designed with those three options each.
+          new Definition(
+              "solace.specialists.pricing.durations",
+              Group.SESSIONS,
+              Type.MINUTES_LIST,
+              "30,50,80",
+              15,
+              120,
+              true),
+          new Definition(
+              "solace.privacy.offered-purposes",
+              Group.PRIVACY,
+              Type.CODES,
+              "AI_ASSIST,AI_SCRIBE",
+              0,
+              0,
+              true,
+              List.of("AI_ASSIST", "SPECIALIST_SHARING", "AI_SCRIBE")),
+          new Definition(
+              "solace.sessions.dial-in.number", Group.SESSIONS, Type.PHONE, "", 0, 0, true),
           // Fixed decisions, shown and not changed (CLAUDE.md, numbers without brackets);
           // FixedSettingsTest checks each one against the constant the code uses.
           new Definition(
@@ -323,9 +371,20 @@ class SettingCatalogue {
     return Optional.ofNullable(flags.get(key));
   }
 
-  /** The configured default, written as the screen writes it (15, 21:00). */
+  /** The configured default, written as the screen writes it (15, 21:00, 30,50,80). */
   String defaultValue(Definition d) {
     var binder = Binder.get(environment);
+    if (d.type().isList() || d.type() == Type.CODES) {
+      return binder
+          .bind(
+              d.key(),
+              org.springframework.boot.context.properties.bind.Bindable.listOf(String.class))
+          .map(v -> String.join(",", v.stream().map(String::strip).toList()))
+          .orElse(d.fallback());
+    }
+    if (d.type() == Type.PHONE) {
+      return binder.bind(d.key(), String.class).map(String::strip).orElse(d.fallback());
+    }
     if (d.type().isDuration()) {
       return binder
           .bind(d.key(), Duration.class)

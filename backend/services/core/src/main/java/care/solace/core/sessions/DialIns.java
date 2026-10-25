@@ -36,6 +36,7 @@ class DialIns {
   private final BookingRecords bookings;
   private final FeatureFlags flags;
   private final String number;
+  private final care.solace.core.admin.PlatformSettings platform;
   private final List<String> trunks;
   private final Clock clock;
   private final SecureRandom random = new SecureRandom();
@@ -47,7 +48,9 @@ class DialIns {
       FeatureFlags flags,
       @Value("${solace.sessions.dial-in.number:}") String number,
       @Value("${solace.sessions.dial-in.trunks:}") String trunks,
-      Clock clock) {
+      Clock clock,
+      care.solace.core.admin.PlatformSettings platform) {
+    this.platform = platform;
     this.db = db;
     this.liveKit = liveKit;
     this.bookings = bookings;
@@ -60,6 +63,7 @@ class DialIns {
 
   /** The number and the booking's PIN; refused when the flag is off or no number is set up. */
   DialIn dialIn(BookingRecords.Info b) {
+    String number = platform.text("solace.sessions.dial-in.number", this.number).strip();
     if (!flags.enabled("phoneDialIn") || number.isEmpty()) {
       throw new SolaceException(SessionError.NO_DIAL_IN);
     }

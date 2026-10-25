@@ -136,12 +136,17 @@ export const labelKey = (key: string) => key.replaceAll('.', '_');
           <span>{{ 'admin.settings.unit.' + s.type | transloco }}</span>
           <input
             class="sl-input"
-            [type]="s.type === 'TIME' ? 'time' : 'number'"
-            [min]="s.min ?? null"
-            [max]="s.max ?? null"
+            [type]="s.type === 'TIME' ? 'time' : isText(s) ? 'text' : 'number'"
+            [attr.min]="isText(s) ? null : (s.min ?? null)"
+            [attr.max]="isText(s) ? null : (s.max ?? null)"
             [(ngModel)]="value"
           />
         </label>
+        @if (s.allowed?.length) {
+          <p class="sl-meta">
+            {{ 'admin.settings.allowed' | transloco: { codes: s.allowed!.join(', ') } }}
+          </p>
+        }
         <label class="sl-field">
           <span>{{ 'admin.bookings.reasonRequired' | transloco }}</span>
           <textarea class="sl-textarea" rows="3" maxlength="500" [(ngModel)]="reason"></textarea>
@@ -291,10 +296,21 @@ export class SettingsPage {
     return settings.filter((s) => s.group === group);
   }
 
-  /** "20 %", "15 min", "5 000 XAF", "21:00". */
+  /** Lists, a phone number and codes are typed as text: "30,50,80", "+237…" (D61). */
+  isText(s: Setting): boolean {
+    return ['MINUTES_LIST', 'HOURS_LIST', 'PHONE', 'CODES'].includes(s.type);
+  }
+
+  /** "20 %", "15 min", "5 000 XAF", "21:00", "30, 50, 80 min". */
   show(s: Setting, value: string): string {
     if (s.type === 'FCFA') return fcfa(Number(value), this.lang());
     if (s.type === 'TIME') return value;
+    if ((s.type === 'PHONE' || s.type === 'CODES') && !value) {
+      return this.transloco.translate('admin.settings.none');
+    }
+    if (this.isText(s)) {
+      value = value.split(',').join(', ');
+    }
     return this.transloco.translate(`admin.settings.value.${s.type}`, { value });
   }
 

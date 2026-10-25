@@ -18,4 +18,13 @@ public interface PlatformSettings {
   BigDecimal decimal(String key, BigDecimal fallback);
 
   LocalTime time(String key, LocalTime fallback);
+
+  /** A list of whole minutes or hours (D61). */
+  java.util.List<Long> numbers(String key, java.util.List<Long> fallback);
+
+  /** A phone number, or empty when staff cleared it. */
+  String text(String key, String fallback);
+
+  /** Codes from the setting's allowed list. */
+  java.util.List<String> codes(String key, java.util.List<String> fallback);
 }

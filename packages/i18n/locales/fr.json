@@ -652,7 +652,10 @@
         "solace_tracking_cycle_new-period-gap-days": "Jours sans saignement avant que de nouvelles règles ouvrent un cycle",
         "solace_ai_retention-days": "Les requêtes et réponses de l'IA sont gardées pour l'audit pendant",
         "solace_ai_eval-gate": "Une version de requête IA réussit son évaluation à partir de",
-        "solace_ai_homework_default-due": "Un exercice est à rendre après ce délai, sauf date choisie par le spécialiste"
+        "solace_ai_homework_default-due": "Un exercice est à rendre après ce délai, sauf date choisie par le spécialiste",
+        "solace_specialists_pricing_durations": "Durées de séance que les spécialistes peuvent proposer",
+        "solace_privacy_offered-purposes": "Consentements demandés par l'application (en plus du suivi et du bilan)",
+        "solace_sessions_dial-in_number": "Le numéro que les personnes appellent pour rejoindre par téléphone"
       },
       "flag": {
         "safetyMonitor": "Veille de sécurité",
@@ -676,7 +679,11 @@
         "MINUTES": "{{value}} min",
         "HOURS": "{{value}} h",
         "DAYS": "{{value}} jours",
-        "COUNT": "{{value}}"
+        "COUNT": "{{value}}",
+        "MINUTES_LIST": "{{value}} min",
+        "HOURS_LIST": "{{value}} h",
+        "PHONE": "{{value}}",
+        "CODES": "{{value}}"
       },
       "unit": {
         "PERCENT": "Pourcentage",
@@ -685,7 +692,11 @@
         "HOURS": "Heures",
         "DAYS": "Jours",
         "COUNT": "Nombre",
-        "TIME": "Heure"
+        "TIME": "Heure",
+        "MINUTES_LIST": "Minutes, séparées par des virgules",
+        "HOURS_LIST": "Heures, séparées par des virgules",
+        "PHONE": "Numéro de téléphone (+237…), ou vide pour aucun",
+        "CODES": "Codes, séparés par des virgules"
       },
       "fixed": "Fixe",
       "change": "Modifier",
@@ -699,7 +710,9 @@
       "turnOn": "Activer",
       "turnOff": "Désactiver",
       "confirmOn": "Activer : {{name}} ?",
-      "confirmOff": "Désactiver : {{name}} ?"
+      "confirmOff": "Désactiver : {{name}} ?",
+      "none": "Aucun",
+      "allowed": "Autorisés : {{codes}}"
     },
     "team": {
       "title": "Équipe et rôles",

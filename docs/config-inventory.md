@@ -217,7 +217,9 @@ Main gaps: **Tracking and AI have no settings table**; **AI models are config-on
 
 - **Built:** the Core values of tranche 1 (live on screen 20, with the fixed decisions shown beside them), payment providers and routes, and SMS and email senders (tranche 4), the trigger table for every job (tranche 3), and editable notification copy (part of tranche 5). Each has its API, contract, tests, EN and FR texts and audit.
 - **Built since:** tranche 2 (Tracking and AI settings from Core), AI models, routes and budgets, and the reviewed lists of tranche 5.
-- **Still to do:** in tranche 1, the lists (session lengths, weekly-hours choices, offered consents) and the dial-in number, which need list and text setting types; and the admin screens.
+- **Also built:** session lengths, the consents the app offers and the dial-in number, with list, code and phone setting types.
+- **Kept in code:** the weekly-hours break and notice choices. The designed availability screen offers exactly three of each.
+- **Still to do:** the admin screens for the registries, jobs, copy and lists.
 
 ### Principles
 
