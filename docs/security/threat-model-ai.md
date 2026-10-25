@@ -47,6 +47,8 @@
 | AI-16 | T | A model writes the clinical assessment of a note | The assessment is always left empty for the specialist; a note cannot be signed until every section is written (D57) | In place (`ScribeAndHomeworkTest`) |
 | AI-17 | S | A risk signal in a companion answer is missed or answered by the model | Every answer passes the safety monitor before any reply; a flag raises an alert, stops the companion and opens urgent help, and the answer is not stored (D57) | In place (`ScribeAndHomeworkTest`) |
 | AI-18 | I | The copilot reveals a person or changes something | Read-only; the model only picks a metric from Core's catalogue and words the answer from its table; numbers outside it are refused (D58) | In place (`CopilotTest`) |
+| AI-19 | T | A model or route is changed so health data reaches an unvetted model, or a weaker model goes live unnoticed | Models and routes are rows only a Super admin changes, with a reason, versioned and audited (D61). Keys stay in Vault as files. A model Solace does not host must use https and have its key. A changed route goes live only after the feature's evaluation set passes on it with the live prompt version. Non-local models get health data only while Core's `aiTransferAuthorised` flag is on | In place (`AiModelsTest`) |
+| AI-20 | T | A clinician weakens the safety phrases or the guardrail wording, alone or by mistake | Reviewed lists (D61): a different Clinical reviewer signs each version off; the drafter cannot. Safety phrases go live only once the safety set reaches 99% recall in EN and FR on them, and the recall is kept with the version. The guardrail list always keeps "triage". Every draft and decision is audited | In place (`AiModelsTest`, `ReviewedListsIntegrationTest`) |
 
 ## Findings
 

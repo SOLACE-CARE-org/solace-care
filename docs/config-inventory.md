@@ -134,16 +134,16 @@ So min and max price and the commission **are already live**: the values in `app
 | --- | --- | --- | --- | --- |
 | AI prompts and the shared policy | `DefaultPrompts` (code) seeds v1.0 into `prompt_version` | **Live**: new versions are created, evaluated, signed off and promoted on AI controls (screen 26) | Already live | The code text is only the first draft. |
 | How each prompt's input is laid out | `NoteDrafter`, `Companion`, `Copilot`, `Translations`, `Insights`, `Briefs` | Rebuild | Maybe | Tied to how the output is parsed. |
-| Guardrail word lists | `Guardrails.CLINICAL` (AI) | Rebuild | **Yes, Clinical reviewer** | |
-| Rule message word list | `RuleRules` (Tracking) | Rebuild | **Yes, Clinical reviewer** | |
+| Guardrail word lists | Reviewed list `ai.guardrails.clinical` (AI) | **Live (D61)**: drafted and signed off by two clinicians | Built | Always keeps "triage". |
+| Rule message word list | Reviewed list `tracking.rules.wording` (Tracking) | **Live (D61)** | Built | Blocked patterns and allowed phrases. |
 | Contact-detail patterns | `Redactor` (AI), review contact check (Core) | Rebuild | No | Safety code, tested. |
-| Safety monitor phrases | `PhraseClassifier` (AI) | Rebuild | **Yes, Clinical reviewer, with evaluation** | Every change must pass the 99% safety set. |
-| Companion questions and closing lines | AI `messages.properties` | Rebuild | **Yes, Content editor** | EN and FR. |
+| Safety monitor phrases | Reviewed list `ai.safety.phrases` (AI) | **Live (D61)**: signed off only once the safety set reaches 99% in EN and FR | Built | The classifier version records the list version. |
+| Companion questions and closing lines | Reviewed list `ai.companion.copy` (AI) | **Live (D61)**, by clinicians | Built | EN and FR, same placeholders, no exclamation marks. |
 | Notification copy | Core `notification_copy` rows over `notifications/copy*.properties` | **Live (D61)**: edited on the portal by Super admins and Content editors, both languages at once, rules checked on save | Built | The SMS rule holds: GSM-7, the French accent rule, and no longer than the approved text outside its placeholders. |
 | Error titles and brief or metric labels | `messages*.properties` in each service | Rebuild | Maybe | |
 | App and portal text | `packages/i18n` | Rebuild of the apps | No | Released with the apps. |
-| Evaluation sets | AI `resources/eval/*.json` | Rebuild | **Yes, Clinical reviewer** | |
-| Companion corpus | AI `companion_passage` | Live in the database, no admin screen yet | **Yes, Clinical reviewer** | Needs a screen. |
+| Evaluation sets | Reviewed lists `ai.eval.<feature>` and `ai.eval.safety-monitor` (AI) | **Live (D61)** | Built | The files are version 0. |
+| Companion corpus | Reviewed list `ai.companion.corpus` over `companion_passage` (AI) | **Live (D61)** | Built | A changed passage is embedded again. |
 
 ## 5. Must stay in deployment config (not admin-editable)
 
@@ -216,7 +216,8 @@ Main gaps: **Tracking and AI have no settings table**; **AI models are config-on
 **Status:** accepted as D61 on 25 October 2026; the answers to the open questions are at the end of this section.
 
 - **Built:** the Core values of tranche 1 (live on screen 20, with the fixed decisions shown beside them), payment providers and routes, and SMS and email senders (tranche 4), the trigger table for every job (tranche 3), and editable notification copy (part of tranche 5). Each has its API, contract, tests, EN and FR texts and audit.
-- **Still to do:** in tranche 1, the lists (session lengths, weekly-hours choices, offered consents) and the dial-in number, which need list and text setting types; tranche 2, AI models, the clinical word lists, the evaluation sets, the corpus screen, and the admin screens for all of this.
+- **Built since:** tranche 2 (Tracking and AI settings from Core), AI models, routes and budgets, and the reviewed lists of tranche 5.
+- **Still to do:** in tranche 1, the lists (session lengths, weekly-hours choices, offered consents) and the dial-in number, which need list and text setting types; and the admin screens.
 
 ### Principles
 

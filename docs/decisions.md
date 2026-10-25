@@ -414,6 +414,17 @@ Every pair now meets WCAG 2.1 AA.
   - `SMTP` speaks to any mail server;
   - `LOGGING` is for local runs only.
   A message goes to the active sender of its channel with the lowest priority number, and to the next one when that fails. Only a Super admin changes senders, and a channel never loses its last active sender.
+- **AI models:** models, routes and monthly budgets are rows in AI's database, with keys in Vault, and only a Super admin changes them.
+  - A changed route waits as pending until the feature's evaluation set passes on it with the live prompt version.
+  - The evaluation run on a pending route is kept apart from the prompt version's own evaluations.
+  - Core's `aiTransferAuthorised` flag decides whether health data may reach a non-local model.
+- **Reviewed lists:** these lists are versioned in their service, with the code's list as version 0:
+  - the guardrail's clinical wording;
+  - the safety monitor's phrases;
+  - every evaluation set, including the safety set;
+  - the companion's corpus and wording;
+  - Tracking's rule wording.
+  A Clinical reviewer or a Super admin drafts a version, and a different Clinical reviewer signs it off. Safety phrases go live only once the safety set reaches 99% in EN and FR on them. The guardrail and rule lists always keep "triage".
 - **Settings:** Core owns every platform setting, including those of Tracking and AI, which read them from Core (System Design, Admin & config). Settings stay Super admin only; Clinical reviewers do not change settings.
 - **Notification copy:** becomes editable in the portal by Super admins and Content editors (the content area), in EN and FR at once. The database becomes the source; `notification-copy.md` is the first version, shown beside any edit. Each save is checked:
   - the same placeholders as the approved wording;
