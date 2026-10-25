@@ -31,7 +31,7 @@ public class JobTriggerStore {
       String name,
       String description,
       Status status,
-      boolean locked,
+      boolean caution,
       Kind kind,
       String schedule,
       String zone,
@@ -47,7 +47,7 @@ public class JobTriggerStore {
     /** Saved, but not what the running service does until it restarts. */
     public boolean pendingRestart() {
       boolean registered = registeredVersion != null;
-      return registered != (status == Status.ACTIVE || locked)
+      return registered != (status == Status.ACTIVE)
           || (registered && registeredVersion != version);
     }
   }
@@ -69,13 +69,13 @@ public class JobTriggerStore {
   }
 
   /**
-   * Adds the row with the code's defaults if it is missing, and keeps the description and the lock
-   * in step with the code, which decides both.
+   * Adds the row with the code's defaults if it is missing, and keeps the description and the
+   * caution in step with the code, which decides both.
    */
   void ensure(
       String name,
       String description,
-      boolean locked,
+      boolean caution,
       Kind kind,
       String schedule,
       String zone,
@@ -83,14 +83,14 @@ public class JobTriggerStore {
     int added =
         jdbc.update(
             """
-            INSERT INTO job_trigger (name, description, status, locked, kind, schedule, zone, version,
-                                     updated_by, updated_by_name, updated_at)
+            INSERT INTO job_trigger (name, description, status, caution, kind, schedule, zone,
+                                     version, updated_by, updated_by_name, updated_at)
             VALUES (?, ?, 'ACTIVE', ?, ?, ?, ?, 1, 'system', 'System', ?)
             ON CONFLICT (name) DO NOTHING
             """,
             name,
             description,
-            locked,
+            caution,
             kind.name(),
             schedule,
             zone,
@@ -109,9 +109,9 @@ public class JobTriggerStore {
           Timestamp.from(now));
     } else {
       jdbc.update(
-          "UPDATE job_trigger SET description = ?, locked = ? WHERE name = ?",
+          "UPDATE job_trigger SET description = ?, caution = ? WHERE name = ?",
           description,
-          locked,
+          caution,
           name);
     }
   }
@@ -219,7 +219,7 @@ public class JobTriggerStore {
         rs.getString("name"),
         rs.getString("description"),
         Status.valueOf(rs.getString("status")),
-        rs.getBoolean("locked"),
+        rs.getBoolean("caution"),
         Kind.valueOf(rs.getString("kind")),
         rs.getString("schedule"),
         rs.getString("zone"),

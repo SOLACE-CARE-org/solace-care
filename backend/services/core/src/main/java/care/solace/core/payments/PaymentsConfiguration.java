@@ -38,7 +38,7 @@ class PaymentsConfiguration {
             "Asks the payment providers about payments, refunds and payouts still on their way",
         every = "${solace.payments.poll-interval:PT20S}",
         initialDelay = "PT20S",
-        locked = true)
+        caution = true)
     void poll() {
       try {
         payments.poll();

@@ -351,7 +351,7 @@ class Bookings implements BookingRecords {
       description = "Expires bookings not paid within the 10-minute hold and frees the time",
       every = "${solace.bookings.expiry-interval:PT30S}",
       initialDelay = "PT30S",
-      locked = true)
+      caution = true)
   void expireUnpaid() {
     Instant now = clock.instant();
     for (UUID id : store.unpaidBefore(now, 100)) {

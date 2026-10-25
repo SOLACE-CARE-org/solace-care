@@ -1,11 +1,12 @@
 -- Scheduled jobs as rows (D61): every @Job has a row here, added with the code's defaults.
 -- A PAUSED job is not registered when the service starts; a change takes effect at the next
--- restart. Locked jobs always run. Staff change rows on the portal with a reason.
+-- restart. Any job can be paused or rescheduled; staff change rows on the portal with a reason.
 CREATE TABLE job_trigger (
     name               TEXT PRIMARY KEY CHECK (name ~ '^[a-z][a-z0-9.-]{2,80}$'),
     description        TEXT        NOT NULL,
     status             TEXT        NOT NULL CHECK (status IN ('ACTIVE', 'PAUSED')),
-    locked             BOOLEAN     NOT NULL,
+    -- Safety or money depends on it: the portal warns before it is paused or slowed.
+    caution            BOOLEAN     NOT NULL,
     kind               TEXT        NOT NULL CHECK (kind IN ('CRON', 'INTERVAL')),
     schedule           TEXT        NOT NULL,
     zone               TEXT,

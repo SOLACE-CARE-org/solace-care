@@ -28,9 +28,10 @@ import org.springframework.util.StringValueResolver;
 
 /**
  * Registers every {@link Job} from its {@code job_trigger} row when the service starts (D61): the
- * row is added with the code's defaults if missing; an ACTIVE row, or a locked job, is scheduled as
- * the row says; a PAUSED row is not registered, so the job does not run until a restart after it is
- * resumed. Each run records when it started, how it ended and when it runs next.
+ * row is added with the code's defaults if missing; an ACTIVE row is scheduled as the row says; a
+ * PAUSED row is not registered, so the job does not run until a restart after it is resumed. Any
+ * job can be paused, crisis escalation included (D61). Each run records when it started, how it
+ * ended and when it runs next.
  */
 public class JobTriggers implements SchedulingConfigurer {
 
@@ -70,19 +71,16 @@ public class JobTriggers implements SchedulingConfigurer {
       store.ensure(
           f.job().name(),
           f.job().description(),
-          f.job().locked(),
+          f.job().caution(),
           f.kind(),
           f.schedule(),
           f.zone(),
           now);
       var row = store.find(f.job().name()).orElseThrow();
-      if (row.status() == JobTriggerStore.Status.PAUSED && !f.job().locked()) {
-        store.registered(row.name(), null);
-        LOG.info("Job {} is paused: not registered", row.name());
-        continue;
-      }
       if (row.status() == JobTriggerStore.Status.PAUSED) {
-        LOG.warn("Job {} is locked: registered although its row says PAUSED", row.name());
+        store.registered(row.name(), null);
+        LOG.warn("Job {} is paused: not registered", row.name());
+        continue;
       }
       var kind = scheduleFromCode ? f.kind() : row.kind();
       var schedule = scheduleFromCode ? f.schedule() : row.schedule();

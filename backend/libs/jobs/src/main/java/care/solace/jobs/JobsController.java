@@ -46,7 +46,7 @@ class JobsController {
       String name,
       String description,
       JobTriggerStore.Status status,
-      boolean locked,
+      boolean caution,
       JobTriggerStore.Kind kind,
       String schedule,
       String zone,
@@ -64,7 +64,7 @@ class JobsController {
           t.name(),
           t.description(),
           t.status(),
-          t.locked(),
+          t.caution(),
           t.kind(),
           t.schedule(),
           t.zone(),
@@ -99,9 +99,6 @@ class JobsController {
       @Valid @RequestBody Change body) {
     var staff = access.require(token, true);
     var row = store.find(name).orElseThrow(() -> new SolaceException(CommonError.NOT_FOUND));
-    if (row.locked()) {
-      throw new SolaceException(JobError.LOCKED);
-    }
     String zone = body.zone() == null || body.zone().isBlank() ? null : body.zone().strip();
     String schedule = body.schedule().strip();
     if (!Schedules.valid(row.kind(), schedule, zone)) {

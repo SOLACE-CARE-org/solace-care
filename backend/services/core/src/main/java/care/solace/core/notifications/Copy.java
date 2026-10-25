@@ -81,7 +81,7 @@ class Copy {
       description = "Reloads the notification copy edited on the portal",
       every = "${solace.admin.settings-refresh:PT30S}",
       initialDelay = "${solace.admin.settings-refresh:PT30S}",
-      locked = true)
+      caution = true)
   void reload() {
     if (store == null) {
       return;

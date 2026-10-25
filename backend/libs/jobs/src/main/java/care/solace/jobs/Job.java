@@ -38,8 +38,8 @@ public @interface Job {
   String zone() default "";
 
   /**
-   * Safety, money or a fixed decision depends on it: always registered, and its status and schedule
-   * cannot be changed from the portal.
+   * Safety, money or a fixed decision depends on it. It can still be paused or rescheduled; the
+   * portal warns first.
    */
-  boolean locked() default false;
+  boolean caution() default false;
 }

@@ -282,7 +282,7 @@ class Messages {
       description = "Sends the day-before, joining-opens, 10-minutes-before and Brief ready pushes",
       every = "PT1M",
       initialDelay = "PT1M",
-      locked = true)
+      caution = true)
   void reminders() {
     remindNow(Instant.now());
   }

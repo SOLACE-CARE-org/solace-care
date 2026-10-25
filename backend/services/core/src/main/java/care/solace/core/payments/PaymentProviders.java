@@ -159,7 +159,7 @@ class PaymentProviders implements InitializingBean {
       description = "Reloads payment providers and routes",
       every = "${solace.admin.settings-refresh:PT30S}",
       initialDelay = "${solace.admin.settings-refresh:PT30S}",
-      locked = true)
+      caution = true)
   void reload() {
     try {
       Map<String, Client> next = new HashMap<>();

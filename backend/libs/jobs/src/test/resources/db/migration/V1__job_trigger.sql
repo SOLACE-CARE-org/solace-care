@@ -3,7 +3,8 @@ CREATE TABLE job_trigger (
     name               TEXT PRIMARY KEY CHECK (name ~ '^[a-z][a-z0-9.-]{2,80}$'),
     description        TEXT        NOT NULL,
     status             TEXT        NOT NULL CHECK (status IN ('ACTIVE', 'PAUSED')),
-    locked             BOOLEAN     NOT NULL,
+    -- Safety or money depends on it: the portal warns before it is paused or slowed.
+    caution            BOOLEAN     NOT NULL,
     kind               TEXT        NOT NULL CHECK (kind IN ('CRON', 'INTERVAL')),
     schedule           TEXT        NOT NULL,
     zone               TEXT,

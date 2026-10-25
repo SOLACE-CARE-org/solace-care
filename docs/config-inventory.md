@@ -167,22 +167,22 @@ Built (D61). Every job was a Spring `@Scheduled` method that always ran, with it
 | --- | --- |
 | name | Stable code, for example `core.bookings.expire-unpaid` |
 | description | What the job does, in plain words (EN and FR for the portal) |
-| status | `ACTIVE` or `PAUSED`; plus **locked**, meaning staff cannot pause it (safety, money or fixed decisions) |
+| status | `ACTIVE` or `PAUSED`. Every job can be paused and rescheduled (D61) |
 | schedule | A cron expression with its time zone, or a fixed interval (`PT1M`) |
 | last run, last outcome, next run | Shown in the portal so staff see that a job runs |
 
-Each service reads its trigger rows when it starts and registers only the jobs whose row is ACTIVE (D61). Pausing, resuming or rescheduling a job takes effect at the service's next restart, with no code change. A locked trigger shows in the portal but cannot be paused, and its schedule can be changed only within safe limits.
+Each service reads its trigger rows when it starts and registers only the jobs whose row is ACTIVE (D61). Pausing, resuming or rescheduling a job takes effect at the service's next restart, with no code change.
 
 | Service | Trigger name | What it does | Schedule today | Can be paused? |
 | --- | --- | --- | --- | --- |
-| Core | `core.crisis.escalate` | Escalates unacknowledged crisis alerts to the backup at 5 min and Super admins at 10 min | every 30 s | **No, locked** (D11) |
-| Core | `core.bookings.expire-unpaid` | Expires bookings not paid within the 10-minute hold and frees the time | every 30 s (`solace.bookings.expiry-interval`) | **No, locked** |
-| Core | `core.payments.poll` | Asks the payment providers about payments, refunds and payouts still on their way | every 20 s (`solace.payments.poll-interval`) | **No, locked** |
+| Core | `core.crisis.escalate` | Escalates unacknowledged crisis alerts to the backup at 5 min and Super admins at 10 min | every 30 s | Yes, with care |
+| Core | `core.bookings.expire-unpaid` | Expires bookings not paid within the 10-minute hold and frees the time | every 30 s (`solace.bookings.expiry-interval`) | Yes, with care |
+| Core | `core.payments.poll` | Asks the payment providers about payments, refunds and payouts still on their way | every 20 s (`solace.payments.poll-interval`) | Yes, with care |
 | Core | `core.payments.draft-payout-runs` | Drafts the twice-monthly payout run when its period closes | hourly | Yes |
 | Core | `core.payments.reconcile` | Compares yesterday's ledger with the provider's records | 03:00 daily (`solace.payments.reconciliation-cron`) | Yes |
-| Core | `core.sessions.settle` | Marks no-shows and completes sessions the media server did not report | every minute | **No, locked** (money follows it) |
+| Core | `core.sessions.settle` | Marks no-shows and completes sessions the media server did not report | every minute | Yes, with care |
 | Core | `core.sessions.dial-in-rules` | Opens and closes phone dial-in rules as joining opens and ends | every minute | Yes |
-| Core | `core.messaging.reminders` | Day-before, joining-opens, 10-minutes-before and Brief ready pushes | every minute | **No, locked** (joining-opens is required) |
+| Core | `core.messaging.reminders` | Day-before, joining-opens, 10-minutes-before and Brief ready pushes | every minute | Yes, with care |
 | Core | `core.messaging.deliver-waiting` | Sends pushes held back by quiet hours once they end | every minute | Yes |
 | Core | `core.messaging.licence-renewals` | Reminds specialists 60 days before their licence ends | 09:00 daily | Yes |
 | Core | `core.messaging.forget-old-messages` | Deletes delivered messages past their retention | 02:30 daily | Yes |
@@ -192,12 +192,12 @@ Each service reads its trigger rows when it starts and registers only the jobs w
 | Core | `core.identity.remove-unverified` | Removes sign-ups never verified within 24 h | every 15 min (`solace.identity.unverified-cleanup-interval`) | Yes |
 | Core | `core.health-check.forget-unclaimed` | Deletes guest health check answers never claimed | 03:15 daily | Yes |
 | Core | `core.insight.anomalies` | Checks for booking drops and failed-payment spikes for the copilot | hourly | Yes |
-| Core | `core.admin.settings-reload` | Reloads platform settings and flags | every 30 s (`solace.admin.settings-refresh`) | **No, locked** (internal) |
-| Core | `core.payments.providers-reload` | Reloads payment providers and routes (D61) | every 30 s | **No, locked** (internal) |
-| Core | `core.notifications.copy-reload` | Reloads notification copy edited on the portal (D61) | every 30 s | **No, locked** (internal) |
+| Core | `core.admin.settings-reload` | Reloads platform settings and flags | every 30 s (`solace.admin.settings-refresh`) | Yes, with care |
+| Core | `core.payments.providers-reload` | Reloads payment providers and routes (D61) | every 30 s | Yes, with care |
+| Core | `core.notifications.copy-reload` | Reloads notification copy edited on the portal (D61) | every 30 s | Yes, with care |
 | Core | `core.guests.purge-contacts` | Removes guest phone numbers `[12]` months after their last booking | 02:45 daily | Yes |
-| AI | `ai.gateway.forget-texts` | Clears prompt and output texts older than `[30]` days | 02:30 daily | **No, locked** (data rule) |
-| AI | `ai.scribe.sweep` | Deletes unsigned drafts and session audio after 7 days | hourly | **No, locked** (System Design, Recording) |
+| AI | `ai.gateway.forget-texts` | Clears prompt and output texts older than `[30]` days | 02:30 daily | Yes, with care |
+| AI | `ai.scribe.sweep` | Deletes unsigned drafts and session audio after 7 days | hourly | Yes, with care |
 | AI | `ai.scribe.draft-waiting` | Transcribes and drafts notes for waiting session audio | every minute | Yes |
 | Tracking | `tracking.nudges.reminders` | Daily tracking reminders and invite pushes | every minute (`solace.tracking.nudges.every`) | Yes |
 | Tracking | `tracking.rules.nightly` | Runs the pattern check for everyone enrolled | 02:30 daily (`solace.tracking.pattern-check-cron`) | Yes |
@@ -296,7 +296,7 @@ Contract first: a new gRPC call on Core, `ConfigService.GetSettings(service)`. I
 
 - Schedules are runtime state (last run, next run, outcome) owned by the service that runs them. So each service keeps a `job_trigger` table, as section 6 proposes.
 - The portal shows all of them on one screen through each service's admin API, the way it already reaches Tracking for modules and AI for prompts.
-- Locked triggers are shown and cannot be paused.
+- Every job can be paused and rescheduled; the portal warns beside the jobs that safety or money depend on.
 
 **Tranche 4: registries.**
 
@@ -329,4 +329,4 @@ Every new screen or screen change needs a design first: settings for Tracking an
 5. **Scheduled jobs:**
    - Every job has a row in its service's trigger table.
    - A job whose row is PAUSED is not registered when the service starts, so it does not run. Pausing or resuming takes effect at the next restart, with no code change.
-   - The jobs marked locked in section 6 cannot be paused.
+   - Every job can be paused and its schedule changed, crisis escalation included. "Yes, with care" in section 6 marks the jobs that safety or money depend on.

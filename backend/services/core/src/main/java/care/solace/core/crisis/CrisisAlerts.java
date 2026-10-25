@@ -235,7 +235,7 @@ class CrisisAlerts implements CrisisSummaries, CrisisRaising {
           "Escalates unacknowledged crisis alerts to the backup at 5 minutes and Super admins at 10",
       every = "PT30S",
       initialDelay = "PT30S",
-      locked = true)
+      caution = true)
   void escalate() {
     try {
       escalateNow(clock.instant());

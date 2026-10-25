@@ -189,7 +189,7 @@ class Sessions {
       description = "Marks no-shows and completes sessions the media server did not report",
       every = "PT1M",
       initialDelay = "PT1M",
-      locked = true)
+      caution = true)
   void settle() {
     try {
       settleNow();

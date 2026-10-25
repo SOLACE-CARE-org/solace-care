@@ -514,7 +514,7 @@ paths:
     put:
       operationId: changeJob
       summary: Pause, resume or reschedule a job with a reason (Super admin only, D61)
-      description: Saved at once; the running service follows it from its next restart. A paused job is not registered, so it does not run. Locked jobs answer 409.
+      description: Saved at once; the running service follows it from its next restart. A paused job is not registered, so it does not run. Any job can be paused, crisis escalation included.
       tags: [admin-jobs]
       requestBody:
         required: true
@@ -663,7 +663,7 @@ components:
     JobTrigger:
       type: object
       additionalProperties: false
-      required: [name, description, status, locked, kind, schedule, version, updatedBy, updatedAt, pendingRestart]
+      required: [name, description, status, caution, kind, schedule, version, updatedBy, updatedAt, pendingRestart]
       properties:
         name:
           type: string
@@ -672,8 +672,8 @@ components:
           type: string
         status:
           $ref: "#/components/schemas/JobTriggerStatus"
-        locked:
-          description: Safety, money or a fixed decision depends on it; it always runs and cannot be changed.
+        caution:
+          description: Safety or money depends on it (crisis escalation, payments, sessions, reminders). It can still be paused or rescheduled; the portal warns first.
           type: boolean
         kind:
           $ref: "#/components/schemas/JobTriggerKind"

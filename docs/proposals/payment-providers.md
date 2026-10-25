@@ -96,7 +96,7 @@ CREATE TABLE payment_route (
 
 - **Collect.** The seeker chooses the method (MTN MoMo or Orange Money), as now. Core takes the route's providers for that method in priority order and skips any that is not ACTIVE, whose circuit breaker is open, or whose amount limits do not fit. Seekers never see which provider handled their payment.
 - **Fallback is automatic only when nothing was asked.** If the call to provider 1 fails **before it accepted the request** (connection refused, circuit open), Core tries provider 2 with a new reference. If provider 1 **timed out** after the request may have arrived, Core does not fall back: the payment stays PENDING and is checked at provider 1. Otherwise the seeker could be asked to approve two payments.
-- **Refund.** The refund goes back through the provider that collected the payment while that provider is ACTIVE. Otherwise, whether it is draining or disabled, it goes through the first ACTIVE provider on the REFUND route for the method the seeker is repaid in (D61).
+- **Refund.** The refund goes back through the provider that collected the payment while that provider is ACTIVE. Otherwise, whether it is draining or disabled, it goes through the first ACTIVE provider on the REFUND route for the method the seeker is repaid in, which is always the wallet that paid (D61).
 - **Payout.** Each payout item takes the PAYOUT route for its method when the run is sent, and records it. A transfer is **never** retried at another provider automatically. An ambiguous transfer stays SENT and is checked, and Finance resolves it with the provider. This is the same rule as above: never risk sending money twice.
 - **Every later step goes to the provider on the record.** Polling, webhooks and reconciliation look up the adapter by the row's `provider` value, never by the current route. This fixes the risk described above.
 
@@ -160,4 +160,4 @@ Core cannot check these itself. The activation dialog asks the person to confirm
 
 1. **Second aggregator:** which one? The risks table in the implementation plan names a second aggregator as the fallback; none has been chosen.
 2. **Float management:** moving money between providers' floats, or to Solace's bank, happens outside the platform today. Should Finance be able to record such transfers in the ledger?
-3. **Repaid in another wallet:** a refund keeps its own method and phone, both starting as the payment's. Should a seeker be able to choose another wallet? That needs a screen and a check of the new number.
+

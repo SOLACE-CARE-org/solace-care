@@ -61,7 +61,7 @@ class Settings implements PlatformSettings, FeatureFlags {
       name = "core.admin.settings-reload",
       description = "Reloads platform settings and feature flags",
       every = "${solace.admin.settings-refresh:PT30S}",
-      locked = true)
+      caution = true)
   void reload() {
     Map<String, Current> v = new ConcurrentHashMap<>();
     db.sql("SELECT key, value, version, updated_by_name, updated_at FROM platform_setting")

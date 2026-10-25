@@ -193,7 +193,7 @@ public class ModelGateway {
       description = "Clears prompt and output texts past their retention",
       cron = "0 30 2 * * *",
       zone = "Africa/Douala",
-      locked = true)
+      caution = true)
   void forgetTexts() {
     try {
       db.sql(

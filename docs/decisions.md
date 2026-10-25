@@ -407,7 +407,7 @@ Every pair now meets WCAG 2.1 AA.
   - A LIVE provider becomes ACTIVE only after its keys are found, a connection test passes, and the Super admin confirms four activation checks (records of processing, threat model, contract, test transactions).
   - A provider is DISABLED only when nothing is in flight at it.
 - **Refunds:** a refund goes back through the provider that took the payment while that provider is ACTIVE. Otherwise it goes through the first ACTIVE provider on the REFUND route for the method the seeker is repaid in.
-  - The refund keeps its own method and phone, both starting as the payment's. Letting a seeker choose another wallet needs a screen and a check of the new number, so it is not built.
+  - A refund always goes back to the number and method that paid (owner, 25 Oct 2026). Seekers do not choose another wallet.
 - **Fallback:** behind the `paymentRouting` flag, off by default. A provider whose circuit is open is skipped, and a charge that certainly never reached a provider is tried at the next one. A transfer is never retried at another provider.
 - **Settings:** Core owns every platform setting, including those of Tracking and AI, which read them from Core (System Design, Admin & config). Settings stay Super admin only; Clinical reviewers do not change settings.
 - **Notification copy:** becomes editable in the portal by Super admins and Content editors (the content area), in EN and FR at once. The database becomes the source; `notification-copy.md` is the first version, shown beside any edit. Each save is checked:
@@ -419,7 +419,7 @@ Every pair now meets WCAG 2.1 AA.
 - **Scheduled jobs:**
   - Every job has a row in its service's trigger table.
   - A job whose row is PAUSED is not registered when the service starts, so it does not run. Pausing or resuming takes effect at the next restart, with no code change.
-  - Jobs that safety or money depend on stay locked and cannot be paused: crisis escalation, expiring unpaid bookings, checking payments, settling sessions, reminders, clearing AI texts and the scribe sweep. So do the internal reloads of settings, payment providers and copy.
+  - Every job can be paused and rescheduled, crisis escalation included (owner, 25 Oct 2026). A paused crisis escalation means unacknowledged alerts no longer reach the backup at 5 minutes or Super admins at 10; the job's interval also sets how soon after those times they are reached. The portal says so beside those jobs.
   - Each job is a `@Job` in `backend/libs/jobs`, which also serves `/admin/v1/jobs` in Core, Tracking and AI: Super admins change rows, Operations look.
 
 ## Still open

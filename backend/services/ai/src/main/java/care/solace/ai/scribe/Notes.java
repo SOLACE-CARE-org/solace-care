@@ -319,7 +319,7 @@ public class Notes {
       description = "Deletes unsigned drafts and session audio after 7 days",
       every = "PT1H",
       initialDelay = "PT5M",
-      locked = true)
+      caution = true)
   void sweep() {
     try {
       sweepNow();
