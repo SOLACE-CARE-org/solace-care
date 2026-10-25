@@ -5565,6 +5565,7 @@ components:
         {to}, {text} and {from}), from, authHeader, authPrefix. SMTP: host, port, starttls, from,
         fromName.
       type: object
+      additionalProperties: true
     MessageSender:
       type: object
       additionalProperties: false
