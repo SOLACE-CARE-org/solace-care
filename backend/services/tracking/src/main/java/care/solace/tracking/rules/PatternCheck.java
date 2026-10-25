@@ -1,6 +1,7 @@
 package care.solace.tracking.rules;
 
 import care.solace.events.Events;
+import care.solace.jobs.Job;
 import care.solace.tracking.PersonalData;
 import care.solace.tracking.cycles.CycleReconciler;
 import care.solace.tracking.elements.ElementLibrary;
@@ -31,7 +32,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -98,7 +98,11 @@ public class PatternCheck implements PersonalData {
   }
 
   /** Nightly, 02:30 Douala time, for everyone enrolled; no withdrawals at night. */
-  @Scheduled(cron = "${solace.tracking.pattern-check-cron:0 30 2 * * *}", zone = "Africa/Douala")
+  @Job(
+      name = "tracking.rules.nightly",
+      description = "Runs the pattern check for everyone enrolled",
+      cron = "${solace.tracking.pattern-check-cron:0 30 2 * * *}",
+      zone = "Africa/Douala")
   void nightly() {
     for (UUID user :
         db.sql("SELECT DISTINCT user_id FROM enrolment WHERE left_at IS NULL")

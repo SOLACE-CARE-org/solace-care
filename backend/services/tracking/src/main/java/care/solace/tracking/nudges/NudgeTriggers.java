@@ -2,6 +2,7 @@ package care.solace.tracking.nudges;
 
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
+import care.solace.jobs.Job;
 import care.solace.tracking.rules.PatternCheck;
 import java.time.Clock;
 import java.time.Duration;
@@ -9,7 +10,6 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** What makes a nudge go out, or stop. */
@@ -34,9 +34,11 @@ class NudgeTriggers {
     this.riskPause = riskPause;
   }
 
-  @Scheduled(
-      fixedDelayString = "${solace.tracking.nudges.every:PT1M}",
-      initialDelayString = "${solace.tracking.nudges.every:PT1M}")
+  @Job(
+      name = "tracking.nudges.reminders",
+      description = "Sends daily tracking reminders and invite pushes",
+      every = "${solace.tracking.nudges.every:PT1M}",
+      initialDelay = "${solace.tracking.nudges.every:PT1M}")
   void reminders() {
     nudges.sendDueReminders();
   }

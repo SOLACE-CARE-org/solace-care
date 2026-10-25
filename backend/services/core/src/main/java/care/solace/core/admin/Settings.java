@@ -6,6 +6,7 @@ import care.solace.core.admin.SettingCatalogue.Type;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
+import care.solace.jobs.Job;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -19,7 +20,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +57,11 @@ class Settings implements PlatformSettings, FeatureFlags {
     reload();
   }
 
-  @Scheduled(fixedDelayString = "${solace.admin.settings-refresh:PT30S}")
+  @Job(
+      name = "core.admin.settings-reload",
+      description = "Reloads platform settings and feature flags",
+      every = "${solace.admin.settings-refresh:PT30S}",
+      locked = true)
   void reload() {
     Map<String, Current> v = new ConcurrentHashMap<>();
     db.sql("SELECT key, value, version, updated_by_name, updated_at FROM platform_setting")

@@ -6,6 +6,7 @@ import care.solace.core.specialists.SpecialistOffers;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
 import care.solace.events.Topics;
+import care.solace.jobs.Job;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -21,7 +22,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -346,9 +346,12 @@ class Bookings implements BookingRecords {
   // --- Housekeeping ----------------------------------------------------------------------------
 
   /** Unpaid when the hold window ends: the booking expires and its time is free again (D32). */
-  @Scheduled(
-      fixedDelayString = "${solace.bookings.expiry-interval:PT30S}",
-      initialDelayString = "PT30S")
+  @Job(
+      name = "core.bookings.expire-unpaid",
+      description = "Expires bookings not paid within the 10-minute hold and frees the time",
+      every = "${solace.bookings.expiry-interval:PT30S}",
+      initialDelay = "PT30S",
+      locked = true)
   void expireUnpaid() {
     Instant now = clock.instant();
     for (UUID id : store.unpaidBefore(now, 100)) {

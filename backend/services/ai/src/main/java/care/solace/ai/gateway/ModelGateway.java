@@ -1,5 +1,6 @@
 package care.solace.ai.gateway;
 
+import care.solace.jobs.Job;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
@@ -13,7 +14,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -188,7 +188,12 @@ public class ModelGateway {
   }
 
   /** Prompts and outputs are kept [30] days for the safety audit, then deleted. */
-  @Scheduled(cron = "0 30 2 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "ai.gateway.forget-texts",
+      description = "Clears prompt and output texts past their retention",
+      cron = "0 30 2 * * *",
+      zone = "Africa/Douala",
+      locked = true)
   void forgetTexts() {
     try {
       db.sql(

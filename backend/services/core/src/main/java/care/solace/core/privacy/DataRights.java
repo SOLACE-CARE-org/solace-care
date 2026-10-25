@@ -9,6 +9,7 @@ import care.solace.core.system.ObjectStorage;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
+import care.solace.jobs.Job;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -29,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -123,7 +123,11 @@ class DataRights {
         .map(this::expiredIfPast);
   }
 
-  @Scheduled(fixedDelayString = "PT30S", initialDelayString = "PT30S")
+  @Job(
+      name = "core.privacy.prepare-exports",
+      description = "Builds requested data exports",
+      every = "PT30S",
+      initialDelay = "PT30S")
   void prepareExports() {
     try {
       prepareNow();
@@ -279,7 +283,11 @@ class DataRights {
   // --- Retention --------------------------------------------------------------------------------
 
   /** Copies past their [7] days are deleted (D40). */
-  @Scheduled(cron = "0 15 2 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "core.privacy.expire-exports",
+      description = "Deletes export files past their lifetime",
+      cron = "0 15 2 * * *",
+      zone = "Africa/Douala")
   void expireExports() {
     try {
       Instant now = clock.instant();

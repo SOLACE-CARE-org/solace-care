@@ -3,6 +3,7 @@ package care.solace.core.guests;
 import care.solace.core.identity.ContactVerified;
 import care.solace.core.notifications.SignInCodes;
 import care.solace.errors.SolaceException;
+import care.solace.jobs.Job;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -185,7 +186,9 @@ class Guests implements GuestAccess {
    * months after the last booking; D40). Each guest booking proves the phone again, so the last
    * proof is when the contact was last used.
    */
-  @org.springframework.scheduling.annotation.Scheduled(
+  @Job(
+      name = "core.guests.purge-contacts",
+      description = "Removes guest phone numbers long after their last booking",
       cron = "0 45 2 * * *",
       zone = "Africa/Douala")
   void purgeOldContacts() {

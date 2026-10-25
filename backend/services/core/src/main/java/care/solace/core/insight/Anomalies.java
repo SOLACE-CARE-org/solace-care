@@ -2,6 +2,7 @@ package care.solace.core.insight;
 
 import care.solace.core.admin.StaffAccess;
 import care.solace.core.admin.StaffAccess.Level;
+import care.solace.jobs.Job;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -14,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,7 +71,11 @@ class Anomalies {
         .list();
   }
 
-  @Scheduled(fixedDelayString = "PT1H", initialDelayString = "PT10M")
+  @Job(
+      name = "core.insight.anomalies",
+      description = "Checks for booking drops and failed-payment spikes for the copilot",
+      every = "PT1H",
+      initialDelay = "PT10M")
   void check() {
     try {
       checkNow();

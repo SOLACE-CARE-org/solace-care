@@ -3,6 +3,7 @@ package care.solace.core.sessions;
 import care.solace.core.bookings.BookingRecords;
 import care.solace.core.bookings.BookingRecords.NoShowBy;
 import care.solace.errors.SolaceException;
+import care.solace.jobs.Job;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
@@ -18,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -184,7 +184,12 @@ class Sessions {
   }
 
   /** Every minute: settle sessions the webhooks did not (D36). */
-  @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT1M")
+  @Job(
+      name = "core.sessions.settle",
+      description = "Marks no-shows and completes sessions the media server did not report",
+      every = "PT1M",
+      initialDelay = "PT1M",
+      locked = true)
   void settle() {
     try {
       settleNow();

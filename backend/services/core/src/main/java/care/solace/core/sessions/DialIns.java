@@ -3,6 +3,7 @@ package care.solace.core.sessions;
 import care.solace.core.admin.FeatureFlags;
 import care.solace.core.bookings.BookingRecords;
 import care.solace.errors.SolaceException;
+import care.solace.jobs.Job;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -102,7 +102,11 @@ class DialIns {
   /**
    * Every minute: open rules for bookings whose joining opened, close those whose joining ended.
    */
-  @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT1M")
+  @Job(
+      name = "core.sessions.dial-in-rules",
+      description = "Opens and closes phone dial-in rules as joining opens and ends",
+      every = "PT1M",
+      initialDelay = "PT1M")
   void sweep() {
     try {
       sweepNow();

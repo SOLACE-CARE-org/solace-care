@@ -1,9 +1,9 @@
 package care.solace.core.identity;
 
+import care.solace.jobs.Job;
 import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,9 +30,11 @@ class UnverifiedSignups {
     this.clock = clock;
   }
 
-  @Scheduled(
-      fixedDelayString = "${solace.identity.unverified-cleanup-interval:PT15M}",
-      initialDelayString = "PT1M")
+  @Job(
+      name = "core.identity.remove-unverified",
+      description = "Removes sign-ups never verified in time",
+      every = "${solace.identity.unverified-cleanup-interval:PT15M}",
+      initialDelay = "PT1M")
   void removeExpired() {
     var cutoff = clock.instant().minus(settings.unverifiedSignupTtl());
     int removed = 0;

@@ -3,6 +3,7 @@ package care.solace.ai.scribe;
 import care.solace.ai.privacy.Sealer;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import care.solace.jobs.Job;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,7 +22,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -314,7 +314,12 @@ public class Notes {
   }
 
   /** Hourly: drafts past 7 days go, with their transcript and audio; so does any older audio. */
-  @Scheduled(fixedDelayString = "PT1H", initialDelayString = "PT5M")
+  @Job(
+      name = "ai.scribe.sweep",
+      description = "Deletes unsigned drafts and session audio after 7 days",
+      every = "PT1H",
+      initialDelay = "PT5M",
+      locked = true)
   void sweep() {
     try {
       sweepNow();

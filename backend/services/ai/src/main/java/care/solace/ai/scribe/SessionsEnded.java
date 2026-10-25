@@ -3,6 +3,7 @@ package care.solace.ai.scribe;
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
 import care.solace.events.Topics;
+import care.solace.jobs.Job;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.util.UUID;
@@ -14,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -98,7 +98,11 @@ class SessionsEnded {
   }
 
   /** Every minute: draft the oldest audio still waiting for its note. */
-  @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT1M")
+  @Job(
+      name = "ai.scribe.draft-waiting",
+      description = "Transcribes and drafts notes for waiting session audio",
+      every = "PT1M",
+      initialDelay = "PT1M")
   void work() {
     try {
       while (draftNext()) {

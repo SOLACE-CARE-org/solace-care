@@ -10,6 +10,7 @@ import care.solace.core.identity.PersonalData;
 import care.solace.core.privacy.ConsentCheck;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import care.solace.jobs.Job;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -378,7 +378,11 @@ class Responses implements CallbackContacts, PersonalData {
   // --- Retention, export and erasure ------------------------------------------------------------
 
   /** Unclaimed guest responses go after [30] days (System Design, Guests and storage). */
-  @Scheduled(cron = "0 15 3 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "core.health-check.forget-unclaimed",
+      description = "Deletes guest health check answers never claimed",
+      cron = "0 15 3 * * *",
+      zone = "Africa/Douala")
   void forgetUnclaimed() {
     try {
       int gone = forgetUnclaimedNow();

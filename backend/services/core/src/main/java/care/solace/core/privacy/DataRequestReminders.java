@@ -2,6 +2,7 @@ package care.solace.core.privacy;
 
 import care.solace.core.admin.StaffDirectory;
 import care.solace.core.notifications.Delivery;
+import care.solace.jobs.Job;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Duration;
@@ -9,7 +10,6 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,7 +34,11 @@ class DataRequestReminders {
   }
 
   /** Every morning at 08:00 Douala time; not in the specs. */
-  @Scheduled(cron = "0 0 8 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "core.privacy.data-request-reminders",
+      description = "Emails Operations about data requests due this week",
+      cron = "0 0 8 * * *",
+      zone = "Africa/Douala")
   void remind() {
     int due = dueThisWeek();
     if (due == 0) {

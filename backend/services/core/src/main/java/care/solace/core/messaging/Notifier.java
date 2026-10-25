@@ -4,6 +4,7 @@ import care.solace.core.guests.GuestAccess;
 import care.solace.core.identity.Accounts;
 import care.solace.core.notifications.Delivery;
 import care.solace.core.scheduling.Availability;
+import care.solace.jobs.Job;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
@@ -19,7 +20,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -117,7 +117,11 @@ class Notifier {
   }
 
   /** Delivered messages are deleted after their retention (D40). */
-  @Scheduled(cron = "0 30 2 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "core.messaging.forget-old-messages",
+      description = "Deletes delivered messages past their retention",
+      cron = "0 30 2 * * *",
+      zone = "Africa/Douala")
   void forgetOldMessages() {
     try {
       db.sql("DELETE FROM notification WHERE created_at < :before AND status <> 'WAITING'")
@@ -135,7 +139,11 @@ class Notifier {
   }
 
   /** Pushes held back by quiet hours, once they end. */
-  @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT1M")
+  @Job(
+      name = "core.messaging.deliver-waiting",
+      description = "Sends pushes held back by quiet hours once they end",
+      every = "PT1M",
+      initialDelay = "PT1M")
   void deliverWaiting() {
     try {
       db.sql(

@@ -15,6 +15,7 @@ import care.solace.core.reviews.ReviewPublished;
 import care.solace.core.sessions.SeekerWaiting;
 import care.solace.core.specialists.ApplicationUpdated;
 import care.solace.core.specialists.LicenceRenewals;
+import care.solace.jobs.Job;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +23,6 @@ import java.util.Locale;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -277,7 +277,12 @@ class Messages {
   // --- Reminders (D38) --------------------------------------------------------------------------
 
   /** The day before, and when joining opens 10 minutes before (D18). Each goes once. */
-  @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT1M")
+  @Job(
+      name = "core.messaging.reminders",
+      description = "Sends the day-before, joining-opens, 10-minutes-before and Brief ready pushes",
+      every = "PT1M",
+      initialDelay = "PT1M",
+      locked = true)
   void reminders() {
     remindNow(Instant.now());
   }
@@ -350,7 +355,11 @@ class Messages {
   }
 
   /** Every morning: licences that end within 60 days, once per licence date. */
-  @Scheduled(cron = "0 0 9 * * *", zone = "Africa/Douala")
+  @Job(
+      name = "core.messaging.licence-renewals",
+      description = "Reminds specialists 60 days before their licence ends",
+      cron = "0 0 9 * * *",
+      zone = "Africa/Douala")
   void licenceRenewals() {
     licenceRenewalsNow(Instant.now());
   }

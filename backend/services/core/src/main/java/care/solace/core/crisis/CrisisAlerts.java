@@ -4,6 +4,7 @@ import care.solace.core.notifications.Delivery;
 import care.solace.core.reviews.FlaggedReviews;
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
+import care.solace.jobs.Job;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -20,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -229,7 +229,13 @@ class CrisisAlerts implements CrisisSummaries, CrisisRaising {
 
   // --- Escalating -------------------------------------------------------------------------------
 
-  @Scheduled(fixedDelayString = "PT30S", initialDelayString = "PT30S")
+  @Job(
+      name = "core.crisis.escalate",
+      description =
+          "Escalates unacknowledged crisis alerts to the backup at 5 minutes and Super admins at 10",
+      every = "PT30S",
+      initialDelay = "PT30S",
+      locked = true)
   void escalate() {
     try {
       escalateNow(clock.instant());

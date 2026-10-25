@@ -1,5 +1,6 @@
 // A deployable Spring Boot service in services/: web API, health checks, its own PostgreSQL
-// database with Flyway, Kafka through the outbox, and every shared library.
+// database with Flyway, Kafka through the outbox, jobs from its trigger table, and every shared
+// library.
 plugins {
     id("solace.boot-app")
 }
@@ -10,6 +11,7 @@ dependencies {
     implementation(project(":libs:error-model"))
     implementation(project(":libs:service-security"))
     implementation(project(":libs:audit"))
+    implementation(project(":libs:jobs"))
     implementation(project(":libs:event-envelope"))
     implementation(project(":contracts"))
 

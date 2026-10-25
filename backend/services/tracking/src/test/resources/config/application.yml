@@ -1,0 +1,6 @@
+# Added to src/main/resources/application.yml for every Tracking test (Spring Boot reads both).
+solace:
+  jobs:
+    # Each test context runs jobs on the schedules its properties give, not on the rows other
+    # contexts left in the shared database (D61). Paused rows still count.
+    schedule-from-code: true
