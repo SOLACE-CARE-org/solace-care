@@ -510,6 +510,27 @@
       ]
     },
     {
+      "name": "core:config.read",
+      "description": "Tracking and AI read the platform settings and flags from Core (D61)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience core",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "core",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
       "name": "core:profile-age.read",
       "description": "Tracking reads a seeker's age from Core at enrolment",
       "protocol": "openid-connect",
@@ -809,7 +830,8 @@
         "core:booking-access.read",
         "core:taxonomy.read",
         "core:profile-age.read",
-        "ai:insight.invoke"
+        "ai:insight.invoke",
+        "core:config.read"
       ]
     },
     {
@@ -829,7 +851,8 @@
         "service_account",
         "tracking:summary.read",
         "core:brief-sources.read",
-        "core:metrics.read"
+        "core:metrics.read",
+        "core:config.read"
       ]
     },
     {

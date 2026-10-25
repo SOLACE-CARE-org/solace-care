@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package solace.core.v1;
+
+option java_multiple_files = true;
+option java_package = "care.solace.contracts.core.v1";
+
+// Tracking, AI -> Core. The platform settings and feature flags staff set on Settings and flags
+// (admin screen 20; D42, D61). Core owns every setting, those of Tracking and AI included.
+// 2-second deadline. Callers load it when they start, again on core.config.changed and every [5]
+// minutes; fallback: keep the values last loaded, or the service's own configured defaults.
+service ConfigService {
+  rpc GetPlatformConfig(GetPlatformConfigRequest) returns (GetPlatformConfigResponse);
+}
+
+message GetPlatformConfigRequest {}
+
+message GetPlatformConfigResponse {
+  // Only the settings staff have set; for any other key the caller's own default is in force.
+  repeated PlatformSetting settings = 1;
+  // Every flag Core knows, with the value in force.
+  repeated FeatureFlag flags = 2;
+}
+
+message PlatformSetting {
+  // e.g. "solace.tracking.snooze-days".
+  string key = 1;
+  // As Settings and flags writes it: a whole number, or HH:MM for a time.
+  string value = 2;
+  // PERCENT, FCFA, MINUTES, HOURS, DAYS, COUNT or TIME: how to read value.
+  string unit = 3;
+  int32 version = 4;
+}
+
+message FeatureFlag {
+  string key = 1;
+  bool enabled = 2;
+}
