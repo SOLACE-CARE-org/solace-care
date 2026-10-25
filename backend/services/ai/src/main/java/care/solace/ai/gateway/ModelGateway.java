@@ -1,5 +1,6 @@
 package care.solace.ai.gateway;
 
+import care.solace.coresettings.CoreSettings;
 import care.solace.jobs.Job;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -39,41 +40,74 @@ public class ModelGateway {
   /** What came back, and from which model. */
   public record Answer(String text, String route) {}
 
+  private final CoreSettings core;
   private final GatewaySettings settings;
-  private final Map<String, ModelRoute> routes;
-  private final List<SpeechRoute> speech;
-  private final List<EmbeddingRoute> embeddings;
+  private final RouteCatalog catalog;
+
+  /** Routes tried in place of the live ones while a pending route is evaluated (D61). */
+  private final ThreadLocal<Map<Feature, List<String>>> trial = new ThreadLocal<>();
+
   private final JdbcClient db;
   private final Clock clock;
 
-  ModelGateway(GatewaySettings settings, RouteCatalog catalog, JdbcClient db, Clock clock) {
+  ModelGateway(
+      CoreSettings core,
+      GatewaySettings settings,
+      RouteCatalog catalog,
+      JdbcClient db,
+      Clock clock) {
+    this.core = core;
     this.settings = settings;
-    this.routes = new LinkedHashMap<>();
-    catalog.routes().forEach(r -> routes.put(r.name(), r));
-    this.speech = catalog.speech();
-    this.embeddings = catalog.embeddings();
+    this.catalog = catalog;
     this.db = db;
     this.clock = clock;
   }
 
   /** The model names a feature uses, for the AI controls screen. */
   public List<String> routeNames(Feature feature) {
-    return settings.routes().getOrDefault(feature, List.of());
+    var trying = trial.get();
+    if (trying != null && trying.containsKey(feature)) {
+      return trying.get(feature);
+    }
+    return catalog
+        .routeNames(feature)
+        .orElseGet(() -> settings.routes().getOrDefault(feature, List.of()));
+  }
+
+  /** Runs {@code work} with {@code names} as the feature's route, for its evaluation (D61). */
+  public <T> T trying(Feature feature, List<String> names, java.util.function.Supplier<T> work) {
+    var before = trial.get();
+    trial.set(Map.of(feature, List.copyOf(names)));
+    try {
+      return work.get();
+    } finally {
+      if (before == null) {
+        trial.remove();
+      } else {
+        trial.set(before);
+      }
+    }
+  }
+
+  private long budget(Feature feature) {
+    return catalog.budget(feature).orElseGet(() -> settings.budget(feature));
   }
 
   public Optional<Answer> complete(Request request) {
     Instant now = clock.instant();
-    if (usedThisMonth(request.feature(), now) >= settings.budget(request.feature())) {
+    if (usedThisMonth(request.feature(), now) >= budget(request.feature())) {
       log(request, "budget", "BUDGET", 0, 0, 0, null, null, now);
       return Optional.empty();
     }
     String user = Redactor.redact(request.user());
+    Map<String, ModelRoute> routes = new LinkedHashMap<>();
+    catalog.routes().forEach(r -> routes.put(r.name(), r));
     for (String name : routeNames(request.feature())) {
       ModelRoute route = routes.get(name);
       if (route == null) {
         continue;
       }
-      if (request.healthData() && !route.local() && !settings.transferAuthorised()) {
+      if (request.healthData() && !route.local() && !transferAuthorised()) {
         // Health data stays in Solace's hosting until the transfer is authorised.
         continue;
       }
@@ -115,8 +149,8 @@ public class ModelGateway {
       UUID subjectId, String promptVersion, byte[] audio, String filename, String language) {
     Instant now = clock.instant();
     var request = new Request(Feature.SESSION_SCRIBE, subjectId, promptVersion, "", "", true);
-    for (SpeechRoute route : speech) {
-      if (!route.local() && !settings.transferAuthorised()) {
+    for (SpeechRoute route : catalog.speech()) {
+      if (!route.local() && !transferAuthorised()) {
         continue;
       }
       long started = System.nanoTime();
@@ -140,8 +174,8 @@ public class ModelGateway {
 
   /** An embedding of vetted content or of the seeker's words, from a local model; empty if none. */
   public Optional<float[]> embed(String text) {
-    for (EmbeddingRoute route : embeddings) {
-      if (!route.local() && !settings.transferAuthorised()) {
+    for (EmbeddingRoute route : catalog.embeddings()) {
+      if (!route.local() && !transferAuthorised()) {
         continue;
       }
       try {
@@ -201,7 +235,12 @@ public class ModelGateway {
                   + " AND (prompt_text IS NOT NULL OR output_text IS NOT NULL)")
           .param(
               "before",
-              Timestamp.from(clock.instant().minus(settings.retentionDays(), ChronoUnit.DAYS)))
+              Timestamp.from(
+                  clock
+                      .instant()
+                      .minus(
+                          core.number("solace.ai.retention-days", settings.retentionDays()),
+                          ChronoUnit.DAYS)))
           .update();
     } catch (RuntimeException e) {
       LOG.warn("Deleting old AI call texts failed", e);
@@ -237,5 +276,10 @@ public class ModelGateway {
         .param("t", output)
         .param("now", Timestamp.from(now))
         .update();
+  }
+
+  /** Health data reaches a non-local model only once a Super admin turns this on (D61). */
+  private boolean transferAuthorised() {
+    return core.enabled("aiTransferAuthorised", settings.transferAuthorised());
   }
 }

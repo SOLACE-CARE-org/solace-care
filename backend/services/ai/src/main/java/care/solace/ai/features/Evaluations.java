@@ -1,6 +1,8 @@
 package care.solace.ai.features;
 
 import care.solace.ai.gateway.Feature;
+import care.solace.ai.gateway.ModelGateway;
+import care.solace.coresettings.CoreSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,6 +61,7 @@ public class Evaluations {
       String ranBy,
       Instant ranAt) {}
 
+  private final CoreSettings core;
   private final JdbcClient db;
   private final ObjectMapper json;
   private final Map<Feature, Runner> runners;
@@ -67,11 +70,13 @@ public class Evaluations {
   private final Clock clock;
 
   Evaluations(
+      CoreSettings core,
       JdbcClient db,
       ObjectMapper json,
       @Lazy List<Runner> runners,
       @Value("${solace.ai.eval-gate:95}") BigDecimal gate,
       Clock clock) {
+    this.core = core;
     this.db = db;
     this.json = json;
     this.runners = new java.util.HashMap<>();
@@ -90,6 +95,28 @@ public class Evaluations {
 
   /** Runs every test case of the version's feature with that version. */
   public Run evaluate(Features.PromptVersion version, String by) {
+    return evaluate(version, by, null);
+  }
+
+  /**
+   * Runs the feature's test cases with its live version on a pending route (D61). The run is kept
+   * apart from the version's own evaluations: it decides only whether the route may go live.
+   */
+  public Run evaluateOnRoute(
+      Features.PromptVersion live, List<String> route, String by, ModelGateway gateway) {
+    return gateway.trying(live.feature(), route, () -> evaluate(live, by, String.join(",", route)));
+  }
+
+  /** The latest run of the feature's live version on exactly this route, if any. */
+  public Optional<Run> latestOnRoute(UUID promptVersionId, List<String> route) {
+    return runs(
+        "SELECT * FROM eval_run WHERE prompt_version_id = :v AND routes = :r"
+            + " ORDER BY ran_at DESC LIMIT 1",
+        promptVersionId,
+        String.join(",", route));
+  }
+
+  private Run evaluate(Features.PromptVersion version, String by, String routes) {
     Runner runner = runner(version.feature());
     JsonNode cases = cases(version.feature());
     int passedEn = 0;
@@ -127,9 +154,10 @@ public class Evaluations {
     db.sql(
             """
             INSERT INTO eval_run (id, feature, prompt_version_id, passed_en, total_en, passed_fr, total_fr,
-                                  gate, passed, failures_json, ran_by, ran_at)
-            VALUES (:id, :f, :v, :pe, :te, :pf, :tf, :g, :p, CAST(:fail AS jsonb), :by, :now)
+                                  gate, passed, failures_json, ran_by, ran_at, routes)
+            VALUES (:id, :f, :v, :pe, :te, :pf, :tf, :g, :p, CAST(:fail AS jsonb), :by, :now, :r)
             """)
+        .param("r", routes)
         .param("id", id)
         .param("f", version.feature().name())
         .param("v", version.id())
@@ -137,24 +165,34 @@ public class Evaluations {
         .param("te", totalEn)
         .param("pf", passedFr)
         .param("tf", totalFr)
-        .param("g", gate)
+        .param("g", gate())
         .param("p", passed)
         .param("fail", write(failures))
         .param("by", by)
         .param("now", Timestamp.from(now))
         .update();
-    return latest(version.id()).orElseThrow();
+    return runs("SELECT * FROM eval_run WHERE id = :v", id, null).orElseThrow();
   }
 
   public boolean passed(UUID promptVersionId) {
     return latest(promptVersionId).map(Run::passed).orElse(false);
   }
 
+  /** The version's latest own evaluation; runs on a pending route are not counted (D61). */
   public Optional<Run> latest(UUID promptVersionId) {
-    return db.sql(
-            "SELECT * FROM eval_run WHERE prompt_version_id = :v ORDER BY ran_at DESC LIMIT 1")
-        .param("v", promptVersionId)
-        .query(
+    return runs(
+        "SELECT * FROM eval_run WHERE prompt_version_id = :v AND routes IS NULL"
+            + " ORDER BY ran_at DESC LIMIT 1",
+        promptVersionId,
+        null);
+  }
+
+  private Optional<Run> runs(String sql, UUID id, String routes) {
+    var spec = db.sql(sql).param("v", id);
+    if (routes != null) {
+      spec = spec.param("r", routes);
+    }
+    return spec.query(
             (rs, n) -> {
               try {
                 return new Run(
@@ -178,7 +216,7 @@ public class Evaluations {
   }
 
   private boolean share(int passed, int total) {
-    return BigDecimal.valueOf(passed * 100L).compareTo(gate.multiply(BigDecimal.valueOf(total)))
+    return BigDecimal.valueOf(passed * 100L).compareTo(gate().multiply(BigDecimal.valueOf(total)))
         >= 0;
   }
 
@@ -200,5 +238,10 @@ public class Evaluations {
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /** The share of cases that must pass, in percent ([95]; D61). */
+  private BigDecimal gate() {
+    return BigDecimal.valueOf(core.number("solace.ai.eval-gate", gate.longValue()));
   }
 }

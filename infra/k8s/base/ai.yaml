@@ -81,9 +81,17 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            # AI models' keys as files, updated in place without a restart (D61).
+            - name: ai-models
+              mountPath: /etc/solace/ai-models
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: ai-models
+          secret:
+            secretName: ai-models
+            optional: true
 ---
 apiVersion: v1
 kind: Service

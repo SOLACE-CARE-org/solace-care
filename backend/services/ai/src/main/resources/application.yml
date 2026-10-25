@@ -67,6 +67,9 @@ solace:
     routes: {}
     transfer-authorised: false
     retention-days: 30
+    # Models are rows changed on AI controls (D61); the lists here only seed them when no model
+    # row exists. Keys of rows set up later are files mounted from Vault here.
+    secrets-dir: ${SOLACE_AI_SECRETS_DIR:/etc/solace/ai-models}
     # Speech-to-text for the scribe and embeddings for the companion's corpus (D57). None by
     # default: session audio and answers go only to local models, once chosen and evaluated.
     speech: []
