@@ -626,6 +626,7 @@
       "flag": {
         "safetyMonitor": "Veille de sécurité",
         "cardPayments": "Paiement par carte",
+        "paymentRouting": "Repli entre prestataires de paiement",
         "specialistInterviewPicker": "Choix de l'heure d'entretien pour les candidats",
         "payoutBankTransfer": "Versements par virement bancaire",
         "payoutOnRequest": "Verser maintenant",

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Pattern;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -34,7 +35,7 @@ class PaymentController {
 
   private final Payments payments;
   private final PayoutRuns payouts;
-  private final PaymentProvider provider;
+  private final PaymentProviders providers;
   private final PaymentStore store;
   private final BookingRecords bookings;
   private final Accounts accounts;
@@ -44,7 +45,7 @@ class PaymentController {
   PaymentController(
       Payments payments,
       PayoutRuns payouts,
-      PaymentProvider provider,
+      PaymentProviders providers,
       PaymentStore store,
       BookingRecords bookings,
       Accounts accounts,
@@ -52,7 +53,7 @@ class PaymentController {
       Clock clock) {
     this.payments = payments;
     this.payouts = payouts;
-    this.provider = provider;
+    this.providers = providers;
     this.store = store;
     this.bookings = bookings;
     this.accounts = accounts;
@@ -153,18 +154,21 @@ class PaymentController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   void webhook(
       @PathVariable String providerName,
-      @RequestHeader(value = "X-Notch-Signature", required = false) String signature,
+      @RequestHeader HttpHeaders headers,
       @RequestBody byte[] body) {
-    if (!providerName.equals(provider.name()) || !provider.verify(signature, body)) {
-      throw new SolaceException(PaymentError.SIGNATURE_INVALID);
-    }
+    // Only a provider that still serves takes webhooks, each checked with its own secret (D61).
+    var provider =
+        providers
+            .serving(providerName)
+            .filter(p -> p.verify(headers, body))
+            .orElseThrow(() -> new SolaceException(PaymentError.SIGNATURE_INVALID));
     var notification = provider.parse(body);
     if (notification.isEmpty()
         || !store.firstDelivery(provider.name(), notification.get().eventId(), clock.instant())) {
       return;
     }
-    if (!payments.notified(notification.get())) {
-      payouts.notified(notification.get());
+    if (!payments.notified(provider.name(), notification.get())) {
+      payouts.notified(provider.name(), notification.get());
     }
   }
 

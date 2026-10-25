@@ -1,9 +1,11 @@
 package care.solace.core.payments;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -19,22 +21,26 @@ import org.springframework.web.client.RestClientException;
  */
 class NotchPayProvider implements PaymentProvider {
 
-  private final PaymentSettings.NotchPay settings;
+  private final String code;
+  private final ProviderSecrets.Keys keys;
   private final RestClient http;
 
-  NotchPayProvider(PaymentSettings.NotchPay settings, RestClient.Builder builder) {
-    this.settings = settings;
+  NotchPayProvider(
+      String code, URI baseUrl, ProviderSecrets.Keys keys, RestClient.Builder builder) {
+    this.code = code;
+    this.keys = keys;
     this.http =
         builder
-            .baseUrl(settings.baseUrl().toString())
-            .defaultHeader("Authorization", settings.publicKey())
+            .clone()
+            .baseUrl(baseUrl.toString())
+            .defaultHeader("Authorization", keys.publicKey())
             .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
             .build();
   }
 
   @Override
   public String name() {
-    return "notchpay";
+    return code;
   }
 
   @Override
@@ -46,7 +52,13 @@ class NotchPayProvider implements PaymentProvider {
       init.put("reference", request.reference().toString());
       init.put("description", request.description());
       init.put("customer", Map.of("phone", request.phone()));
-      JsonNode created = post("/payments", init, false);
+      JsonNode created;
+      try {
+        created = post("/payments", init, false);
+      } catch (RestClientException e) {
+        // Only initialised, never charged: the wallet holder was not asked.
+        throw new Unavailable("notchpay payment init", e, true);
+      }
       String ref = created.path("transaction").path("reference").asText();
       Map<String, Object> data =
           Map.of("phone", request.phone(), "account_number", request.phone());
@@ -104,13 +116,24 @@ class NotchPayProvider implements PaymentProvider {
   }
 
   @Override
-  public boolean verify(String signature, byte[] body) {
-    return NotchPayFormat.verify(settings.webhookSecret(), signature, body);
+  public boolean verify(HttpHeaders headers, byte[] body) {
+    return NotchPayFormat.verify(
+        keys.webhookSecret(), headers.getFirst(NotchPayFormat.SIGNATURE_HEADER), body);
   }
 
   @Override
   public Optional<Notification> parse(byte[] body) {
     return NotchPayFormat.parse(body);
+  }
+
+  /** Lists one payment: moves nothing, and fails on a wrong key or address. */
+  @Override
+  public void test() {
+    try {
+      get("/payments?limit=1", false);
+    } catch (RestClientException e) {
+      throw new Unavailable("notchpay test", e);
+    }
   }
 
   static String channel(Method method) {
@@ -120,7 +143,7 @@ class NotchPayProvider implements PaymentProvider {
   private JsonNode post(String path, Object body, boolean grant) {
     var spec = http.post().uri(path).contentType(MediaType.APPLICATION_JSON).body(body);
     if (grant) {
-      spec = spec.header("X-Grant", settings.privateKey());
+      spec = spec.header("X-Grant", keys.privateKey());
     }
     return spec.retrieve().body(JsonNode.class);
   }
@@ -128,7 +151,7 @@ class NotchPayProvider implements PaymentProvider {
   private JsonNode get(String path, boolean grant) {
     var spec = http.get().uri(path);
     if (grant) {
-      spec = spec.header("X-Grant", settings.privateKey());
+      spec = spec.header("X-Grant", keys.privateKey());
     }
     return spec.retrieve().body(JsonNode.class);
   }

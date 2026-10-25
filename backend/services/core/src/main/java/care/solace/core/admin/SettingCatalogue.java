@@ -190,6 +190,9 @@ class SettingCatalogue {
       List.of(
           new Flag("safetyMonitor", 1, true, true, false),
           new Flag("cardPayments", 1, false, false, true),
+          // Payment providers (D61): skip a provider whose circuit is open, and try the next one
+          // for a charge that certainly never reached the first.
+          new Flag("paymentRouting", 1, false, false, false),
           new Flag("specialistInterviewPicker", 1, false, false, true),
           new Flag("payoutBankTransfer", 1, false, false, true),
           // An off-cycle payout would skip the two-person run (D35).

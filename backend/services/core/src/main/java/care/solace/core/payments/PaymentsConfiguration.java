@@ -1,36 +1,18 @@
 package care.solace.core.payments;
 
-import java.time.Clock;
+import care.solace.jobs.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.client.RestClient;
 
-/** The provider adapter chosen by {@code solace.payments.provider}, and the payment jobs. */
+/** Payment settings and the payment jobs; providers are rows (PaymentProviders, D61). */
 @Configuration
 @EnableConfigurationProperties(PaymentSettings.class)
 class PaymentsConfiguration {
 
   private static final Logger LOG = LoggerFactory.getLogger(PaymentsConfiguration.class);
-
-  @Bean
-  PaymentProvider paymentProvider(
-      PaymentSettings settings, Clock clock, RestClient.Builder restClients) {
-    String name = settings.provider() == null ? "" : settings.provider();
-    return switch (name) {
-      case "notchpay" -> new NotchPayProvider(settings.notchpay(), restClients);
-      case "sandbox" -> {
-        LOG.warn("Payments use the sandbox provider: no real money moves");
-        yield new SandboxProvider(settings.sandbox(), clock);
-      }
-      default ->
-          throw new IllegalStateException(
-              "solace.payments.provider must be notchpay or sandbox (D35), not '" + name + "'");
-    };
-  }
 
   @Bean
   Jobs paymentJobs(Payments payments, PayoutRuns payouts, Reconciliation reconciliation) {
@@ -50,9 +32,13 @@ class PaymentsConfiguration {
       this.reconciliation = reconciliation;
     }
 
-    @Scheduled(
-        fixedDelayString = "${solace.payments.poll-interval:PT20S}",
-        initialDelayString = "PT20S")
+    @Job(
+        name = "core.payments.poll",
+        description =
+            "Asks the payment providers about payments, refunds and payouts still on their way",
+        every = "${solace.payments.poll-interval:PT20S}",
+        initialDelay = "PT20S",
+        locked = true)
     void poll() {
       try {
         payments.poll();
@@ -62,7 +48,11 @@ class PaymentsConfiguration {
       }
     }
 
-    @Scheduled(fixedDelayString = "PT1H", initialDelayString = "PT1M")
+    @Job(
+        name = "core.payments.draft-payout-runs",
+        description = "Drafts the twice-monthly payout run when its period closes",
+        every = "PT1H",
+        initialDelay = "PT1M")
     void draftPayoutRuns() {
       try {
         payouts.draftDue();
@@ -71,7 +61,10 @@ class PaymentsConfiguration {
       }
     }
 
-    @Scheduled(
+    @Job(
+        name = "core.payments.reconcile",
+        description =
+            "Compares yesterday's payments, refunds and payouts with the providers' records",
         cron = "${solace.payments.reconciliation-cron:0 0 3 * * *}",
         zone = "${solace.payments.time-zone:Africa/Douala}")
     void reconcile() {

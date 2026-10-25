@@ -99,9 +99,17 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            # Payment providers' keys as files, updated in place without a restart (D61).
+            - name: payment-providers
+              mountPath: /etc/solace/payment-providers
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: payment-providers
+          secret:
+            secretName: core-payment-providers
+            optional: true
 ---
 apiVersion: v1
 kind: Service

@@ -18,6 +18,8 @@ import javax.crypto.spec.SecretKeySpec;
  */
 final class NotchPayFormat {
 
+  static final String SIGNATURE_HEADER = "X-Notch-Signature";
+
   private static final ObjectMapper JSON = new ObjectMapper();
 
   private NotchPayFormat() {}

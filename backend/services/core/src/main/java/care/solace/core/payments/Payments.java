@@ -37,7 +37,7 @@ class Payments {
 
   private final PaymentStore store;
   private final Ledger ledger;
-  private final PaymentProvider provider;
+  private final PaymentProviders providers;
   private final BookingRecords bookings;
   private final SpecialistOffers specialists;
   private final ApplicationEventPublisher events;
@@ -48,7 +48,7 @@ class Payments {
   Payments(
       PaymentStore store,
       Ledger ledger,
-      PaymentProvider provider,
+      PaymentProviders providers,
       BookingRecords bookings,
       SpecialistOffers specialists,
       ApplicationEventPublisher events,
@@ -57,7 +57,7 @@ class Payments {
       Clock clock) {
     this.store = store;
     this.ledger = ledger;
-    this.provider = provider;
+    this.providers = providers;
     this.bookings = bookings;
     this.specialists = specialists;
     this.events = events;
@@ -80,11 +80,48 @@ class Payments {
         || !booking.payBy().isAfter(now)) {
       throw new SolaceException(PaymentError.NOT_PAYABLE);
     }
+    var candidates = providers.route(ProviderStore.Purpose.COLLECT, method, booking.price());
+    if (candidates.isEmpty()) {
+      LOG.warn("No payment provider takes {} for booking {}", method, booking.id());
+      throw new SolaceException(PaymentError.PROVIDER_UNAVAILABLE);
+    }
+    for (int i = 0; ; i++) {
+      var provider = candidates.get(i);
+      var payment = pending(booking, provider.name(), method, phone, clock.instant());
+      try {
+        var started =
+            provider.charge(
+                new PaymentProvider.ChargeRequest(
+                    payment.id(), payment.amount(), method, phone, "Solace " + booking.id()));
+        store.setProviderRef(payment.id(), started.providerRef());
+        if (started.status() != PaymentProvider.Status.PENDING) {
+          apply(store.payment(payment.id()).orElseThrow(), started.status(), null);
+        }
+        return store.payment(payment.id()).orElseThrow();
+      } catch (PaymentProvider.Unavailable e) {
+        LOG.warn(
+            "Payment provider {} unavailable for payment {}", provider.name(), payment.id(), e);
+        store.failPayment(payment.id(), "PROVIDER_UNAVAILABLE", clock.instant());
+        // The next provider only when this one certainly never asked the wallet (D61).
+        if (!e.notSent() || !providers.fallsBack() || i + 1 >= candidates.size()) {
+          throw new SolaceException(PaymentError.PROVIDER_UNAVAILABLE);
+        }
+      }
+    }
+  }
+
+  /** A new payment request at {@code provider}; an earlier unfinished one stops counting. */
+  private PaymentStore.Payment pending(
+      BookingRecords.Info booking,
+      String provider,
+      PaymentProvider.Method method,
+      String phone,
+      Instant now) {
     var payment =
         new PaymentStore.Payment(
             UUID.randomUUID(),
             booking.id(),
-            provider.name(),
+            provider,
             method.name(),
             phone,
             booking.price(),
@@ -99,21 +136,7 @@ class Payments {
           store.replacePending(booking.id(), now);
           store.insertPayment(payment);
         });
-    try {
-      var started =
-          provider.charge(
-              new PaymentProvider.ChargeRequest(
-                  payment.id(), payment.amount(), method, phone, "Solace " + booking.id()));
-      store.setProviderRef(payment.id(), started.providerRef());
-      if (started.status() != PaymentProvider.Status.PENDING) {
-        apply(store.payment(payment.id()).orElseThrow(), started.status(), null);
-      }
-    } catch (PaymentProvider.Unavailable e) {
-      LOG.warn("Payment provider unavailable for payment {}", payment.id(), e);
-      store.failPayment(payment.id(), "PROVIDER_UNAVAILABLE", clock.instant());
-      throw new SolaceException(PaymentError.PROVIDER_UNAVAILABLE);
-    }
-    return store.payment(payment.id()).orElseThrow();
+    return payment;
   }
 
   /** The booking's latest payment, asking the provider first when {@code check} is set. */
@@ -130,8 +153,13 @@ class Payments {
     if (!p.status().equals("PENDING") || p.providerRef() == null) {
       return;
     }
+    var provider = providers.serving(p.provider());
+    if (provider.isEmpty()) {
+      LOG.warn("Payment {} is at provider {}, which no longer serves", p.id(), p.provider());
+      return;
+    }
     try {
-      var outcome = provider.chargeStatus(p.providerRef());
+      var outcome = provider.get().chargeStatus(p.providerRef());
       if (outcome.status() == PaymentProvider.Status.PENDING
           && p.createdAt().plus(settings.pendingTimeout()).isBefore(clock.instant())) {
         apply(p, PaymentProvider.Status.FAILED, "TIMED_OUT");
@@ -174,8 +202,7 @@ class Payments {
               "CAPTURE",
               Ledger.Refs.booking(p.bookingId(), p.id()),
               List.of(
-                  Ledger.Line.debit(
-                      Ledger.Account.PROVIDER_CLEARING, null, p.bookingId(), p.amount()),
+                  Ledger.Line.clearingDebit(p.provider(), p.bookingId(), p.amount()),
                   Ledger.Line.credit(
                       Ledger.Account.HELD, booking.specialistId(), p.bookingId(), p.amount())),
               now);
@@ -298,7 +325,10 @@ class Payments {
             null,
             null,
             null,
-            now));
+            now,
+            p.method(),
+            p.phone(),
+            null));
     events.publishEvent(new FinanceAlerts.RefundWaiting());
   }
 
@@ -336,7 +366,10 @@ class Payments {
             null,
             null,
             null,
-            clock.instant());
+            clock.instant(),
+            p.method(),
+            p.phone(),
+            null);
     store.insertRefund(refund);
     events.publishEvent(new FinanceAlerts.RefundWaiting());
     return store.refund(refund.id()).orElseThrow();
@@ -441,19 +474,32 @@ class Payments {
     }
   }
 
+  /**
+   * The transfer goes through the provider that took the payment while it is ACTIVE, otherwise
+   * through the first ACTIVE provider on the REFUND route for the refund's method (D61).
+   */
   private void send(PaymentStore.Refund r) {
     var p = store.payment(r.paymentId()).orElseThrow();
+    var method = PaymentProvider.Method.valueOf(r.method());
+    var provider = providers.forRefund(p.provider(), method, r.amount());
+    if (provider.isEmpty()) {
+      LOG.warn("No payment provider can send refund {} by {}", r.id(), method);
+      store.moveRefund(r.id(), "APPROVED", "FAILED", null, null, clock.instant());
+      return;
+    }
     try {
       var started =
-          provider.transfer(
-              new PaymentProvider.TransferRequest(
-                  r.id(),
-                  r.amount(),
-                  PaymentProvider.Method.valueOf(p.method()),
-                  p.phone(),
-                  "Solace refund",
-                  "Solace refund " + r.bookingId()));
-      store.refundSent(r.id(), started.providerRef(), clock.instant());
+          provider
+              .get()
+              .transfer(
+                  new PaymentProvider.TransferRequest(
+                      r.id(),
+                      r.amount(),
+                      method,
+                      r.phone(),
+                      "Solace refund",
+                      "Solace refund " + r.bookingId()));
+      store.refundSent(r.id(), provider.get().name(), started.providerRef(), clock.instant());
       if (started.status() != PaymentProvider.Status.PENDING) {
         transferred(store.refund(r.id()).orElseThrow(), started.status(), null);
       }
@@ -479,8 +525,7 @@ class Payments {
                     List.of(
                         Ledger.Line.debit(
                             Ledger.Account.REFUNDS_PAYABLE, null, r.bookingId(), r.amount()),
-                        Ledger.Line.credit(
-                            Ledger.Account.PROVIDER_CLEARING, null, r.bookingId(), r.amount())),
+                        Ledger.Line.clearingCredit(r.provider(), r.bookingId(), r.amount())),
                     now);
                 var p = store.payment(r.paymentId()).orElseThrow();
                 bookings
@@ -504,8 +549,12 @@ class Payments {
       check(p);
     }
     for (var r : store.sentRefunds(100)) {
+      var provider = providers.serving(r.provider());
+      if (provider.isEmpty() || r.providerRef() == null) {
+        continue;
+      }
       try {
-        var outcome = provider.transferStatus(r.providerRef());
+        var outcome = provider.get().transferStatus(r.providerRef());
         transferred(r, outcome.status(), outcome.reason());
       } catch (PaymentProvider.Unavailable e) {
         LOG.warn("Could not check refund {}", r.id(), e);
@@ -513,20 +562,25 @@ class Payments {
     }
   }
 
-  /** A verified webhook about a payment or a refund; false if it is about neither. */
-  boolean notified(PaymentProvider.Notification n) {
+  /**
+   * A verified webhook from {@code provider} about a payment or a refund; false if it is about
+   * neither. A reference only counts for an item at that same provider.
+   */
+  boolean notified(String provider, PaymentProvider.Notification n) {
     if (n.kind() == PaymentProvider.Kind.PAYMENT) {
       var p =
           Optional.ofNullable(n.providerRef())
-              .flatMap(ref -> store.paymentByProviderRef(provider.name(), ref))
-              .or(() -> uuid(n.reference()).flatMap(store::payment));
+              .flatMap(ref -> store.paymentByProviderRef(provider, ref))
+              .or(() -> uuid(n.reference()).flatMap(store::payment))
+              .filter(payment -> payment.provider().equals(provider));
       p.ifPresent(payment -> apply(payment, n.status(), n.reason()));
       return p.isPresent();
     }
     var r =
         Optional.ofNullable(n.providerRef())
-            .flatMap(store::refundByProviderRef)
-            .or(() -> uuid(n.reference()).flatMap(store::refund));
+            .flatMap(ref -> store.refundByProviderRef(provider, ref))
+            .or(() -> uuid(n.reference()).flatMap(store::refund))
+            .filter(refund -> provider.equals(refund.provider()));
     r.ifPresent(refund -> transferred(refund, n.status(), n.reason()));
     return r.isPresent();
   }

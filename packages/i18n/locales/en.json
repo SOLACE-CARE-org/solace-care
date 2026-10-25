@@ -626,6 +626,7 @@
       "flag": {
         "safetyMonitor": "Safety monitor",
         "cardPayments": "Card payments",
+        "paymentRouting": "Payment provider fallback",
         "specialistInterviewPicker": "Interview time picker for applicants",
         "payoutBankTransfer": "Payouts by bank transfer",
         "payoutOnRequest": "Pay out now",

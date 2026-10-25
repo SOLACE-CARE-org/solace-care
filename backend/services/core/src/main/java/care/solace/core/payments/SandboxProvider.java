@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.http.HttpHeaders;
 
 /**
  * A stand-in aggregator for local runs and tests, never for real money. A charge is approved {@code
@@ -14,13 +15,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 class SandboxProvider implements PaymentProvider {
 
+  private final String code;
   private final PaymentSettings.Sandbox settings;
+  private final String webhookSecret;
   private final Clock clock;
   private final Map<String, Entry> charges = new ConcurrentHashMap<>();
   private final Map<String, Entry> transfers = new ConcurrentHashMap<>();
 
-  SandboxProvider(PaymentSettings.Sandbox settings, Clock clock) {
+  SandboxProvider(
+      String code, PaymentSettings.Sandbox settings, String webhookSecret, Clock clock) {
+    this.code = code;
     this.settings = settings;
+    this.webhookSecret = webhookSecret;
     this.clock = clock;
   }
 
@@ -28,7 +34,7 @@ class SandboxProvider implements PaymentProvider {
 
   @Override
   public String name() {
-    return "sandbox";
+    return code;
   }
 
   @Override
@@ -71,9 +77,13 @@ class SandboxProvider implements PaymentProvider {
   }
 
   @Override
-  public boolean verify(String signature, byte[] body) {
-    return NotchPayFormat.verify(settings.webhookSecret(), signature, body);
+  public boolean verify(HttpHeaders headers, byte[] body) {
+    return NotchPayFormat.verify(
+        webhookSecret, headers.getFirst(NotchPayFormat.SIGNATURE_HEADER), body);
   }
+
+  @Override
+  public void test() {}
 
   @Override
   public Optional<Notification> parse(byte[] body) {

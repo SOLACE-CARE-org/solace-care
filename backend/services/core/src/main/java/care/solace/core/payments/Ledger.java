@@ -24,13 +24,29 @@ class Ledger {
     PAYOUTS_IN_TRANSIT
   }
 
-  record Line(Account account, UUID specialistId, UUID bookingId, long debit, long credit) {
+  /** {@code provider} names whose float a PROVIDER_CLEARING line is in (D61); null elsewhere. */
+  record Line(
+      Account account,
+      UUID specialistId,
+      UUID bookingId,
+      long debit,
+      long credit,
+      String provider) {
     static Line debit(Account account, UUID specialistId, UUID bookingId, long amount) {
-      return new Line(account, specialistId, bookingId, amount, 0);
+      return new Line(account, specialistId, bookingId, amount, 0, null);
     }
 
     static Line credit(Account account, UUID specialistId, UUID bookingId, long amount) {
-      return new Line(account, specialistId, bookingId, 0, amount);
+      return new Line(account, specialistId, bookingId, 0, amount, null);
+    }
+
+    /** The money at the provider with {@code code}. */
+    static Line clearingDebit(String code, UUID bookingId, long amount) {
+      return new Line(Account.PROVIDER_CLEARING, null, bookingId, amount, 0, code);
+    }
+
+    static Line clearingCredit(String code, UUID bookingId, long amount) {
+      return new Line(Account.PROVIDER_CLEARING, null, bookingId, 0, amount, code);
     }
   }
 
@@ -58,6 +74,9 @@ class Ledger {
       }
       if (l.debit() == 0 && l.credit() == 0) {
         continue;
+      }
+      if ((l.account() == Account.PROVIDER_CLEARING) != (l.provider() != null)) {
+        throw new IllegalArgumentException("clearing lines, and only they, name a provider");
       }
       kept.add(l);
       debits += l.debit();
@@ -88,8 +107,9 @@ class Ledger {
     for (Line l : kept) {
       db.sql(
               """
-              INSERT INTO ledger_line (journal_id, account, specialist_id, booking_id, debit, credit)
-              VALUES (:j, :a, :s, :b, :d, :c)
+              INSERT INTO ledger_line (journal_id, account, specialist_id, booking_id, debit, credit,
+                                       provider)
+              VALUES (:j, :a, :s, :b, :d, :c, :p)
               """)
           .param("j", id)
           .param("a", l.account().name())
@@ -97,6 +117,7 @@ class Ledger {
           .param("b", l.bookingId())
           .param("d", l.debit())
           .param("c", l.credit())
+          .param("p", l.provider())
           .update();
     }
     return id;

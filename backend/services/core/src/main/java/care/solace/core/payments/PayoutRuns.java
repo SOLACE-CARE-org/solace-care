@@ -33,7 +33,7 @@ class PayoutRuns {
 
   private final PayoutStore store;
   private final Ledger ledger;
-  private final PaymentProvider provider;
+  private final PaymentProviders providers;
   private final SpecialistOffers specialists;
   private final TransactionTemplate transactions;
   private final org.springframework.context.ApplicationEventPublisher events;
@@ -43,7 +43,7 @@ class PayoutRuns {
   PayoutRuns(
       PayoutStore store,
       Ledger ledger,
-      PaymentProvider provider,
+      PaymentProviders providers,
       SpecialistOffers specialists,
       TransactionTemplate transactions,
       org.springframework.context.ApplicationEventPublisher events,
@@ -52,7 +52,7 @@ class PayoutRuns {
     this.store = store;
     this.events = events;
     this.ledger = ledger;
-    this.provider = provider;
+    this.providers = providers;
     this.specialists = specialists;
     this.transactions = transactions;
     this.zone = ZoneId.of(settings.timeZone());
@@ -114,7 +114,8 @@ class PayoutRuns {
                     hold,
                     null,
                     null,
-                    now),
+                    now,
+                    null),
                 before);
           }
         });
@@ -211,24 +212,37 @@ class PayoutRuns {
     store.finishRunIfDone(runId);
   }
 
+  /** Through the first ACTIVE provider on the PAYOUT route for the item's method (D61). */
   private void send(PayoutStore.Item item) {
+    var method = PaymentProvider.Method.valueOf(item.method());
+    var provider =
+        providers.route(ProviderStore.Purpose.PAYOUT, method, item.net()).stream().findFirst();
+    if (provider.isEmpty()) {
+      LOG.warn("No payment provider can send payout {} by {}", item.id(), method);
+      store.itemSent(item.id(), null, null, clock.instant());
+      transferred(
+          store.item(item.id()).orElseThrow(), PaymentProvider.Status.FAILED, "NO_PROVIDER");
+      return;
+    }
     try {
       var started =
-          provider.transfer(
-              new PaymentProvider.TransferRequest(
-                  item.id(),
-                  item.net(),
-                  PaymentProvider.Method.valueOf(item.method()),
-                  item.phone(),
-                  "Solace payout",
-                  "Solace payout " + item.runId()));
-      store.itemSent(item.id(), started.providerRef(), clock.instant());
+          provider
+              .get()
+              .transfer(
+                  new PaymentProvider.TransferRequest(
+                      item.id(),
+                      item.net(),
+                      method,
+                      item.phone(),
+                      "Solace payout",
+                      "Solace payout " + item.runId()));
+      store.itemSent(item.id(), provider.get().name(), started.providerRef(), clock.instant());
       if (started.status() != PaymentProvider.Status.PENDING) {
         transferred(store.item(item.id()).orElseThrow(), started.status(), null);
       }
     } catch (PaymentProvider.Unavailable e) {
       LOG.warn("Payout {} could not be sent", item.id(), e);
-      store.itemSent(item.id(), null, clock.instant());
+      store.itemSent(item.id(), provider.get().name(), null, clock.instant());
       transferred(
           store.item(item.id()).orElseThrow(),
           PaymentProvider.Status.FAILED,
@@ -271,7 +285,7 @@ class PayoutRuns {
                 List.of(
                     Ledger.Line.debit(
                         Ledger.Account.PAYOUTS_IN_TRANSIT, item.specialistId(), null, item.net()),
-                    Ledger.Line.credit(Ledger.Account.PROVIDER_CLEARING, null, null, item.net())),
+                    Ledger.Line.clearingCredit(item.provider(), null, item.net())),
                 now);
           } else {
             ledger.post(
@@ -291,11 +305,12 @@ class PayoutRuns {
 
   void poll() {
     for (var item : store.sentItems(100)) {
-      if (item.providerRef() == null) {
+      var provider = providers.serving(item.provider());
+      if (item.providerRef() == null || provider.isEmpty()) {
         continue;
       }
       try {
-        var outcome = provider.transferStatus(item.providerRef());
+        var outcome = provider.get().transferStatus(item.providerRef());
         transferred(item, outcome.status(), outcome.reason());
       } catch (PaymentProvider.Unavailable e) {
         LOG.warn("Could not check payout {}", item.id(), e);
@@ -303,11 +318,13 @@ class PayoutRuns {
     }
   }
 
-  boolean notified(PaymentProvider.Notification n) {
+  /** A verified webhook from {@code provider}; a reference only counts for an item sent there. */
+  boolean notified(String provider, PaymentProvider.Notification n) {
     var item =
         java.util.Optional.ofNullable(n.providerRef())
-            .flatMap(store::itemByProviderRef)
-            .or(() -> Payments.uuid(n.reference()).flatMap(store::item));
+            .flatMap(ref -> store.itemByProviderRef(provider, ref))
+            .or(() -> Payments.uuid(n.reference()).flatMap(store::item))
+            .filter(i -> provider.equals(i.provider()));
     item.ifPresent(i -> transferred(i, n.status(), n.reason()));
     return item.isPresent();
   }

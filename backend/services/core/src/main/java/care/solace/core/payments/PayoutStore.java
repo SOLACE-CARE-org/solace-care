@@ -49,7 +49,8 @@ class PayoutStore {
       String holdReason,
       String providerRef,
       String failureReason,
-      Instant updatedAt) {}
+      Instant updatedAt,
+      String provider) {}
 
   /** A specialist's unpaid earnings released before {@code before}, summed. */
   record Due(UUID specialistId, int sessions, long gross, long commission, long net) {}
@@ -191,8 +192,9 @@ class PayoutStore {
         .optional();
   }
 
-  Optional<Item> itemByProviderRef(String ref) {
-    return db.sql("SELECT * FROM payout_item WHERE provider_ref = :r")
+  Optional<Item> itemByProviderRef(String provider, String ref) {
+    return db.sql("SELECT * FROM payout_item WHERE provider = :p AND provider_ref = :r")
+        .param("p", provider)
         .param("r", ref)
         .query(PayoutStore::item)
         .optional();
@@ -274,13 +276,16 @@ class PayoutStore {
         == 1;
   }
 
-  void itemSent(UUID id, String providerRef, Instant now) {
+  /** {@code provider} is null when no provider could take it; the item then fails. */
+  void itemSent(UUID id, String provider, String providerRef, Instant now) {
     db.sql(
             """
-            UPDATE payout_item SET status = 'SENT', provider_ref = :r, updated_at = :now
+            UPDATE payout_item SET status = 'SENT', provider = :pr, provider_ref = :r,
+                   updated_at = :now
              WHERE id = :id
             """)
         .param("id", id)
+        .param("pr", provider)
         .param("r", providerRef)
         .param("now", Timestamp.from(now))
         .update();
@@ -328,6 +333,7 @@ class PayoutStore {
         rs.getString("hold_reason"),
         rs.getString("provider_ref"),
         rs.getString("failure_reason"),
-        rs.getTimestamp("updated_at").toInstant());
+        rs.getTimestamp("updated_at").toInstant(),
+        rs.getString("provider"));
   }
 }

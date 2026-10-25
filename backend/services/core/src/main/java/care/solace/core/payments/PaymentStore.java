@@ -199,7 +199,10 @@ class PaymentStore {
       String decidedByName,
       String providerRef,
       String failureReason,
-      Instant createdAt) {
+      Instant createdAt,
+      String method,
+      String phone,
+      String provider) {
 
     boolean bySystem() {
       return proposedBy == null;
@@ -210,9 +213,12 @@ class PaymentStore {
     db.sql(
             """
             INSERT INTO refund (id, booking_id, payment_id, amount, reason, policy_version,
-                                proposed_by, proposed_by_name, status, created_at, updated_at)
-            VALUES (:id, :b, :p, :a, :r, :v, :by, :byName, 'PROPOSED', :now, :now)
+                                proposed_by, proposed_by_name, status, created_at, updated_at,
+                                method, phone)
+            VALUES (:id, :b, :p, :a, :r, :v, :by, :byName, 'PROPOSED', :now, :now, :m, :ph)
             """)
+        .param("m", r.method())
+        .param("ph", r.phone())
         .param("id", r.id())
         .param("b", r.bookingId())
         .param("p", r.paymentId())
@@ -232,8 +238,9 @@ class PaymentStore {
         .optional();
   }
 
-  Optional<Refund> refundByProviderRef(String ref) {
-    return db.sql("SELECT * FROM refund WHERE provider_ref = :r")
+  Optional<Refund> refundByProviderRef(String provider, String ref) {
+    return db.sql("SELECT * FROM refund WHERE provider = :p AND provider_ref = :r")
+        .param("p", provider)
         .param("r", ref)
         .query(PaymentStore::refund)
         .optional();
@@ -276,14 +283,16 @@ class PaymentStore {
         == 1;
   }
 
-  void refundSent(UUID id, String providerRef, Instant now) {
+  /** The transfer went to {@code provider}; checks and webhooks for it go there from now on. */
+  void refundSent(UUID id, String provider, String providerRef, Instant now) {
     db.sql(
             """
-            UPDATE refund SET status = 'SENT', provider_ref = :r, failure_reason = NULL,
-                   updated_at = :now
+            UPDATE refund SET status = 'SENT', provider = :pr, provider_ref = :r,
+                   failure_reason = NULL, updated_at = :now
              WHERE id = :id
             """)
         .param("id", id)
+        .param("pr", provider)
         .param("r", providerRef)
         .param("now", Timestamp.from(now))
         .update();
@@ -329,7 +338,10 @@ class PaymentStore {
         rs.getString("decided_by_name"),
         rs.getString("provider_ref"),
         rs.getString("failure_reason"),
-        rs.getTimestamp("created_at").toInstant());
+        rs.getTimestamp("created_at").toInstant(),
+        rs.getString("method"),
+        rs.getString("phone"),
+        rs.getString("provider"));
   }
 
   // --- Earnings ---------------------------------------------------------------------------------

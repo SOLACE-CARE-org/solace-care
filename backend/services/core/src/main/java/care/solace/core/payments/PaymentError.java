@@ -25,7 +25,23 @@ enum PaymentError implements ErrorCode {
   /** Only a drafted run can be changed or submitted. */
   RUN_NOT_DRAFT("payout-run.not-draft", 409),
   /** Only a submitted run can be approved. */
-  RUN_NOT_SUBMITTED("payout-run.not-submitted", 409);
+  RUN_NOT_SUBMITTED("payout-run.not-submitted", 409),
+  /** A provider with this code exists (D61). */
+  PROVIDER_EXISTS("payment-provider.exists", 409),
+  /** The provider's version is not the one read. */
+  PROVIDER_CHANGED("payment-provider.changed", 409),
+  /** DISABLED while payments, refunds or payouts are still on their way at it. */
+  PROVIDER_IN_FLIGHT("payment-provider.in-flight", 409),
+  /** ACTIVE without every key, or with a failing connection test. */
+  PROVIDER_NOT_READY("payment-provider.not-ready", 409),
+  /** A LIVE provider made ACTIVE without every activation check confirmed. */
+  PROVIDER_CHECKS("payment-provider.checks-missing", 400),
+  /** A sandbox in LIVE mode, an unknown adapter or a bad address. */
+  PROVIDER_INVALID("payment-provider.invalid", 400),
+  /** A route to an unknown or disabled provider, or a purpose and method left without one. */
+  ROUTES_INVALID("payment-route.invalid", 400),
+  /** The routes' version is not the one read. */
+  ROUTES_CHANGED("payment-route.changed", 409);
 
   private final String code;
   private final int status;

@@ -129,9 +129,14 @@ solace:
       private-key: ${SOLACE_NOTIFICATIONS_VAPID_PRIVATE_KEY:}
       subject: ${SOLACE_NOTIFICATIONS_VAPID_SUBJECT:mailto:ops@solace.care}
   payments:
-    # The aggregator adapter (D35): notchpay, or sandbox where no real money may move. Nothing is
-    # set here, so Core will not start without a choice: local runs and the dev cluster set sandbox.
+    # Payment providers are rows, changed by a Super admin on the portal (D61). This names the one
+    # Core sets up, for every method, when no payment route exists yet: notchpay, or sandbox where
+    # no real money may move. Nothing is set here, so a first start needs a choice: local runs and
+    # the dev cluster set sandbox. After that it is ignored.
     provider: ${SOLACE_PAYMENTS_PROVIDER:}
+    # Providers' keys, mounted from Vault as files (<secret_ref>.public-key and so on); a provider
+    # whose secret_ref is "config" uses the notchpay keys below instead.
+    secrets-dir: ${SOLACE_PAYMENTS_SECRETS_DIR:/etc/solace/payment-providers}
     notchpay:
       public-key: ${SOLACE_PAYMENTS_NOTCHPAY_PUBLIC_KEY:}
       private-key: ${SOLACE_PAYMENTS_NOTCHPAY_PRIVATE_KEY:}

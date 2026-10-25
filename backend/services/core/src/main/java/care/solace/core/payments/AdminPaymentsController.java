@@ -94,7 +94,8 @@ class AdminPaymentsController {
       String phone,
       String providerRef,
       Instant createdAt,
-      Instant completedAt) {}
+      Instant completedAt,
+      String provider) {}
 
   record ProposedBy(boolean system, String name) {}
 
@@ -112,6 +113,7 @@ class AdminPaymentsController {
       String status,
       String failureReason,
       Instant createdAt,
+      String provider,
       boolean canDecide) {}
 
   record Totals(
@@ -147,7 +149,7 @@ class AdminPaymentsController {
       boolean canApprove,
       List<Item> items) {}
 
-  record Mismatch(String kind, UUID reference, String ours, String theirs) {}
+  record Mismatch(String kind, UUID reference, String ours, String theirs, String provider) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record ReconciliationView(LocalDate day, Integer checked, List<Mismatch> mismatches) {}
@@ -193,7 +195,8 @@ class AdminPaymentsController {
                     mask(p.phone()),
                     p.providerRef(),
                     p.createdAt(),
-                    p.completedAt()))
+                    p.completedAt(),
+                    p.provider()))
         .toList();
   }
 
@@ -208,7 +211,10 @@ class AdminPaymentsController {
                     r.day(),
                     r.checked(),
                     r.mismatches().stream()
-                        .map(m -> new Mismatch(m.kind(), m.reference(), m.ours(), m.theirs()))
+                        .map(
+                            m ->
+                                new Mismatch(
+                                    m.kind(), m.reference(), m.ours(), m.theirs(), m.provider()))
                         .toList()))
         .orElse(new ReconciliationView(null, null, List.of()));
   }
@@ -375,13 +381,12 @@ class AdminPaymentsController {
   }
 
   private Refund view(PaymentStore.Refund r, StaffAccess.Staff staff) {
-    var p = store.payment(r.paymentId()).orElseThrow();
     return new Refund(
         r.id(),
         r.bookingId(),
         r.amount(),
-        p.method(),
-        mask(p.phone()),
+        r.method(),
+        mask(r.phone()),
         r.reason(),
         r.policyVersion(),
         new ProposedBy(r.bySystem(), r.proposedByName()),
@@ -389,6 +394,7 @@ class AdminPaymentsController {
         r.status(),
         r.failureReason(),
         r.createdAt(),
+        r.provider(),
         r.status().equals("PROPOSED")
             && staff.roles().contains("FINANCE")
             && !staff.id().equals(r.proposedBy()));

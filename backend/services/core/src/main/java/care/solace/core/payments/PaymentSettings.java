@@ -8,19 +8,23 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 /**
  * Payment settings ({@code solace.payments.*}, D35). None of these numbers is in the specs.
  *
- * @param provider which aggregator adapter runs: {@code notchpay}, or {@code sandbox} for local
- *     runs and tests. No default: Core does not start without one
+ * @param provider the provider Core adds, with routes for every method, when no payment route
+ *     exists yet: {@code notchpay}, or {@code sandbox} for local runs and tests. Providers are rows
+ *     after that and this is ignored (D61). Core does not start with neither routes nor this
+ * @param secretsDir where providers' key files are mounted (D61)
  * @param pollInterval how often pending payments and sent transfers are checked with the provider,
  *     besides its webhooks
  * @param pendingTimeout a payment still unapproved after this fails; the slot hold is 10 minutes
  * @param timeZone payout periods and reconciliation days follow this zone
  * @param reconciliationCron when yesterday is reconciled
- * @param notchpay the Notch Pay adapter
+ * @param notchpay the Notch Pay adapter's default address, and the keys of a provider whose
+ *     secret_ref is {@code config}
  * @param sandbox the sandbox adapter
  */
 @ConfigurationProperties("solace.payments")
 record PaymentSettings(
     String provider,
+    @DefaultValue("/etc/solace/payment-providers") String secretsDir,
     @DefaultValue("PT20S") Duration pollInterval,
     @DefaultValue("PT10M") Duration pendingTimeout,
     @DefaultValue("Africa/Douala") String timeZone,

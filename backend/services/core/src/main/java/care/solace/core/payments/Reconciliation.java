@@ -25,22 +25,23 @@ class Reconciliation {
   private static final Logger LOG = LoggerFactory.getLogger(Reconciliation.class);
 
   private final JdbcClient db;
-  private final PaymentProvider provider;
+  private final PaymentProviders providers;
   private final ZoneId zone;
   private final Clock clock;
 
-  Reconciliation(JdbcClient db, PaymentProvider provider, PaymentSettings settings, Clock clock) {
+  Reconciliation(JdbcClient db, PaymentProviders providers, PaymentSettings settings, Clock clock) {
     this.db = db;
-    this.provider = provider;
+    this.providers = providers;
     this.zone = ZoneId.of(settings.timeZone());
     this.clock = clock;
   }
 
-  record Mismatch(String kind, UUID reference, String ours, String theirs) {}
+  /** {@code provider} is the one that handled the item: each item is checked there (D61). */
+  record Mismatch(String kind, UUID reference, String ours, String theirs, String provider) {}
 
   record Run(LocalDate day, int checked, List<Mismatch> mismatches) {}
 
-  private record Entry(String kind, UUID id, String status, String providerRef) {}
+  private record Entry(String kind, UUID id, String status, String providerRef, String provider) {}
 
   /** Reconciles yesterday, once. */
   void yesterday() {
@@ -65,18 +66,25 @@ class Reconciliation {
     entries.addAll(entries("PAYOUT", "payout_item", "updated_at", from, to));
     List<Mismatch> mismatches = new ArrayList<>();
     for (Entry e : entries) {
+      var provider = providers.serving(e.provider());
+      if (provider.isEmpty()) {
+        mismatches.add(
+            new Mismatch(e.kind(), e.id(), e.status(), "PROVIDER_DISABLED", e.provider()));
+        continue;
+      }
       try {
         var theirs =
             e.kind().equals("PAYMENT")
-                ? provider.chargeStatus(e.providerRef())
-                : provider.transferStatus(e.providerRef());
+                ? provider.get().chargeStatus(e.providerRef())
+                : provider.get().transferStatus(e.providerRef());
         String ours = done(e.status());
         if (theirs.status() != PaymentProvider.Status.PENDING
             && !ours.equals(theirs.status().name())) {
-          mismatches.add(new Mismatch(e.kind(), e.id(), e.status(), theirs.status().name()));
+          mismatches.add(
+              new Mismatch(e.kind(), e.id(), e.status(), theirs.status().name(), e.provider()));
         }
       } catch (PaymentProvider.Unavailable ex) {
-        mismatches.add(new Mismatch(e.kind(), e.id(), e.status(), "UNREACHABLE"));
+        mismatches.add(new Mismatch(e.kind(), e.id(), e.status(), "UNREACHABLE", e.provider()));
         LOG.warn("Reconciliation could not reach the provider for {} {}", e.kind(), e.id(), ex);
       }
     }
@@ -94,9 +102,10 @@ class Reconciliation {
     for (Mismatch m : mismatches) {
       db.sql(
               """
-              INSERT INTO reconciliation_mismatch (run_id, kind, reference, ours, theirs)
-              VALUES (:r, :k, :ref, :o, :t)
+              INSERT INTO reconciliation_mismatch (run_id, kind, reference, ours, theirs, provider)
+              VALUES (:r, :k, :ref, :o, :t, :p)
               """)
+          .param("p", m.provider())
           .param("r", runId)
           .param("k", m.kind())
           .param("ref", m.reference())
@@ -116,7 +125,8 @@ class Reconciliation {
                   rs.getObject("day", LocalDate.class),
                   rs.getInt("checked"),
                   db.sql(
-                          "SELECT kind, reference, ours, theirs FROM reconciliation_mismatch"
+                          "SELECT kind, reference, ours, theirs, provider"
+                              + " FROM reconciliation_mismatch"
                               + " WHERE run_id = :r")
                       .param("r", id)
                       .query(
@@ -125,7 +135,8 @@ class Reconciliation {
                                   m.getString("kind"),
                                   m.getObject("reference", UUID.class),
                                   m.getString("ours"),
-                                  m.getString("theirs")))
+                                  m.getString("theirs"),
+                                  m.getString("provider")))
                       .list());
             })
         .optional();
@@ -142,7 +153,7 @@ class Reconciliation {
 
   private List<Entry> entries(String kind, String table, String column, Instant from, Instant to) {
     return db.sql(
-            "SELECT id, status, provider_ref FROM "
+            "SELECT id, status, provider_ref, provider FROM "
                 + table
                 + " WHERE provider_ref IS NOT NULL AND "
                 + column
@@ -157,7 +168,8 @@ class Reconciliation {
                     kind,
                     rs.getObject("id", UUID.class),
                     rs.getString("status"),
-                    rs.getString("provider_ref")))
+                    rs.getString("provider_ref"),
+                    rs.getString("provider")))
         .list();
   }
 }

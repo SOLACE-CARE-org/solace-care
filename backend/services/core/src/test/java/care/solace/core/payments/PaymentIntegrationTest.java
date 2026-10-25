@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,11 +48,14 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
   @Autowired PayoutRuns payoutRuns;
   @Autowired Ledger ledger;
   @Autowired TransactionTemplate transactions;
+  @Autowired PaymentProviders providers;
 
   private final RequestPostProcessor finance = staff("fin-a", "A. Fon", "FINANCE");
   private final RequestPostProcessor finance2 = staff("fin-b", "B. Tabi", "FINANCE");
   private final RequestPostProcessor support = staff("sup-a", "E. Nkeng", "SUPPORT");
   private final RequestPostProcessor ops = staff("ops-p", "R", "OPERATIONS");
+  private final RequestPostProcessor superAdmin = staff("sa-p", "P. Ngu", "SUPER_ADMIN");
+  private static final AtomicInteger PROVIDERS = new AtomicInteger();
 
   private Applicant specialist;
   private LocalDate monday;
@@ -410,6 +414,268 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
         .andExpect(jsonPath("$[0].phone").value(org.hamcrest.Matchers.containsString("••")));
   }
 
+  // --- Payment providers as rows (D61) ---------------------------------------------------------
+
+  @Test
+  void aRoutedProviderTakesTheChargeAndKeepsWhatItStarted() throws Exception {
+    String second = activeSandbox();
+    JsonNode before = routes();
+    try {
+      putRoutes(withFirst(before, "COLLECT", "MTN_MOMO", second), "Second account first");
+      long atSecond = clearing(second);
+      String bookingId = paidBooking(seeker());
+      assertThat(
+              jdbc.queryForObject(
+                  "SELECT provider FROM payment WHERE booking_id = ?::uuid AND status = 'COMPLETE'",
+                  String.class,
+                  bookingId))
+          .isEqualTo(second);
+      // The capture sits in the second provider's float.
+      assertThat(clearing(second)).isEqualTo(atSecond + 15000);
+      mvc.perform(get("/admin/v1/payments").with(finance))
+          .andExpect(jsonPath("$[0].provider").value(second));
+    } finally {
+      putRoutes(before, "Back to the sandbox");
+    }
+  }
+
+  @Test
+  void aWebhookOnlyCountsForThePaymentsOfItsOwnProvider() throws Exception {
+    String second = activeSandbox();
+    JsonNode before = routes();
+    try {
+      putRoutes(withFirst(before, "COLLECT", "ORANGE_MONEY", second), "Second account first");
+      String seeker = seeker();
+      String bookingId = book(seeker);
+      String paymentId =
+          json(mvc.perform(
+                      post("/v1/bookings/" + bookingId + "/payments")
+                          .headers(bearer(seeker))
+                          .contentType(MediaType.APPLICATION_JSON)
+                          .content("{\"method\":\"ORANGE_MONEY\"}"))
+                  .andExpect(status().isCreated()))
+              .path("id")
+              .asText();
+      String ref =
+          jdbc.queryForObject(
+              "SELECT provider_ref FROM payment WHERE id = ?::uuid", String.class, paymentId);
+      byte[] body =
+          ("{\"id\":\"evt-"
+                  + UUID.randomUUID()
+                  + "\",\"type\":\"payment.complete\",\"data\":{\"reference\":\""
+                  + ref
+                  + "\"}}")
+              .getBytes(StandardCharsets.UTF_8);
+      String signature = NotchPayFormat.sign("sandbox-webhook-secret", body);
+      // Signed, but sent to the other provider's path: the payment is not that provider's.
+      webhook("sandbox", body, signature).andExpect(status().isNoContent());
+      assertThat(bookings.find(UUID.fromString(bookingId)).orElseThrow().status())
+          .isEqualTo("PENDING_PAYMENT");
+      webhook(second, body, signature).andExpect(status().isNoContent());
+      assertThat(bookings.find(UUID.fromString(bookingId)).orElseThrow().status())
+          .isEqualTo("CONFIRMED");
+      // A provider that does not serve takes no webhooks at all.
+      webhook("nobody", body, signature).andExpect(status().isUnauthorized());
+    } finally {
+      putRoutes(before, "Back to the sandbox");
+    }
+  }
+
+  @Test
+  void aRefundGoesBackThroughTheProviderThatTookItWhileItIsActive() throws Exception {
+    String second = activeSandbox();
+    JsonNode before = routes();
+    try {
+      putRoutes(withFirst(before, "COLLECT", "MTN_MOMO", second), "Second account first");
+      String active = refundedThrough(seeker());
+      assertThat(active).isEqualTo(second);
+
+      String drained = paidBooking(seeker());
+      provider(second, "DRAINING").andExpect(status().isOk());
+      refundAndApprove(drained);
+      // Draining: the REFUND route's first active provider pays it instead.
+      assertThat(refundProvider(drained)).isEqualTo("sandbox");
+      payments.poll();
+      assertThat(
+              jdbc.queryForObject(
+                  "SELECT status FROM refund WHERE booking_id = ?::uuid", String.class, drained))
+          .isEqualTo("PAID");
+    } finally {
+      provider(second, "ACTIVE");
+      putRoutes(before, "Back to the sandbox");
+    }
+  }
+
+  @Test
+  void aProviderIsDisabledOnlyWhenNothingIsOnItsWay() throws Exception {
+    String second = activeSandbox();
+    JsonNode before = routes();
+    String seeker = seeker();
+    String bookingId = book(seeker);
+    try {
+      putRoutes(withFirst(before, "COLLECT", "MTN_MOMO", second), "Second account first");
+      mvc.perform(
+              post("/v1/bookings/" + bookingId + "/payments")
+                  .headers(bearer(seeker))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"method\":\"MTN_MOMO\"}"))
+          .andExpect(status().isCreated());
+      putRoutes(before, "Back to the sandbox");
+      provider(second, "DRAINING").andExpect(status().isOk());
+      provider(second, "DISABLED")
+          .andExpect(status().isConflict())
+          .andExpect(jsonPath("$.code").value("payment-provider.in-flight"));
+      // Draining still checks what it holds; then nothing is left.
+      payments.poll();
+      assertThat(bookings.find(UUID.fromString(bookingId)).orElseThrow().status())
+          .isEqualTo("CONFIRMED");
+      provider(second, "DISABLED").andExpect(status().isOk());
+    } finally {
+      putRoutes(before, "Back to the sandbox");
+    }
+  }
+
+  @Test
+  void withRoutingOnAChargeThatNeverReachedAProviderTriesTheNext() throws Exception {
+    String broken = "np-down-" + PROVIDERS.incrementAndGet();
+    // Nothing listens on port 1: the request never reaches a provider. Made ACTIVE in the
+    // database, since it would never pass the connection test.
+    jdbc.update(
+        """
+        INSERT INTO payment_provider (code, adapter, display_name, mode, status, base_url,
+                                      secret_ref, version, updated_by, updated_by_name, updated_at)
+        VALUES (?, 'NOTCHPAY', 'Down', 'TEST', 'ACTIVE', 'https://127.0.0.1:1', 'config', 1,
+                'test', 'Test', now())
+        """,
+        broken);
+    providers.reload();
+    JsonNode before = routes();
+    try {
+      putRoutes(withFirst(before, "COLLECT", "MTN_MOMO", broken), "Down first");
+      flag("paymentRouting", true);
+      String bookingId = paidBooking(seeker());
+      assertThat(
+              jdbc.queryForList(
+                  "SELECT provider || ':' || status FROM payment WHERE booking_id = ?::uuid"
+                      + " ORDER BY created_at",
+                  String.class,
+                  bookingId))
+          .containsExactly(broken + ":FAILED", "sandbox:COMPLETE");
+
+      // Off, the first provider is the only one asked.
+      flag("paymentRouting", false);
+      String seeker = seeker();
+      String other = book(seeker);
+      mvc.perform(
+              post("/v1/bookings/" + other + "/payments")
+                  .headers(bearer(seeker))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"method\":\"MTN_MOMO\"}"))
+          .andExpect(status().isServiceUnavailable());
+    } finally {
+      flag("paymentRouting", false);
+      putRoutes(before, "Back to the sandbox");
+      jdbc.update("UPDATE payment_provider SET status = 'DISABLED' WHERE code = ?", broken);
+      providers.reload();
+    }
+  }
+
+  @Test
+  void onlyASuperAdminChangesProvidersAndTheRulesHold() throws Exception {
+    mvc.perform(get("/admin/v1/payment-providers").with(finance))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.code == 'sandbox')].keysFound").value(true))
+        .andExpect(
+            jsonPath("$[?(@.code == 'sandbox')].webhookPath")
+                .value("/v1/webhooks/payments/sandbox"));
+    String body =
+        "{\"code\":\"np-live-%d\",\"adapter\":\"%s\",\"displayName\":\"Notch Pay 2\",\"mode\":\"%s\",\"secretRef\":\"%s\",\"reason\":\"Second account\"}";
+    mvc.perform(
+            post("/admin/v1/payment-providers")
+                .with(finance)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.formatted(1, "NOTCHPAY", "LIVE", "np-two")))
+        .andExpect(status().isForbidden());
+    // A sandbox never takes real money.
+    mvc.perform(
+            post("/admin/v1/payment-providers")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.formatted(2, "SANDBOX", "LIVE", "config")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("payment-provider.invalid"));
+    // Keys are never accepted as a reference to a path.
+    mvc.perform(
+            post("/admin/v1/payment-providers")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.formatted(3, "NOTCHPAY", "LIVE", "../etc")))
+        .andExpect(status().isBadRequest());
+
+    int n = PROVIDERS.incrementAndGet() + 100;
+    String code = "np-live-" + n;
+    mvc.perform(
+            post("/admin/v1/payment-providers")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.formatted(n, "NOTCHPAY", "LIVE", "np-missing")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.keysFound").value(false));
+    String activate =
+        "{\"version\":1,\"displayName\":\"Notch Pay 2\",\"mode\":\"LIVE\",\"status\":\"ACTIVE\",\"secretRef\":\"np-missing\",%s\"reason\":\"Go live\"}";
+    String allChecks =
+        "\"checks\":{\"recordsOfProcessing\":true,\"threatModel\":true,\"contract\":true,\"testTransactions\":true},";
+    // LIVE needs every activation check, then keys and a passing test.
+    putProvider(code, activate.formatted(""))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("payment-provider.checks-missing"));
+    putProvider(code, activate.formatted(allChecks))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("payment-provider.not-ready"));
+    mvc.perform(post("/admin/v1/payment-providers/" + code + "/test").with(superAdmin))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ok").value(false))
+        .andExpect(jsonPath("$.keysFound").value(false));
+
+    // Routes always leave a way to collect, refund and pay out.
+    JsonNode routes = routes();
+    mvc.perform(
+            put("/admin/v1/payment-routes")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    JSON.writeValueAsString(
+                        Map.of(
+                            "version", routes.path("version").asInt(),
+                            "routes", java.util.List.of(),
+                            "reason", "Empty"))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("payment-route.invalid"));
+    mvc.perform(
+            put("/admin/v1/payment-routes")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    JSON.writeValueAsString(
+                        Map.of(
+                            "version",
+                            routes.path("version").asInt() - 1,
+                            "routes",
+                            routes.path("routes"),
+                            "reason",
+                            "Stale"))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("payment-route.changed"));
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM audit_log WHERE action = 'payments.provider.create'"
+                    + " AND target_id = ?",
+                Integer.class,
+                code))
+        .isEqualTo(1);
+  }
+
   // --- Helpers ---------------------------------------------------------------------------------
 
   private long available() {
@@ -480,6 +746,124 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
     return bookingId;
   }
 
+  /** A second sandbox account, ACTIVE, with the sandbox's own keys. */
+  private String activeSandbox() throws Exception {
+    String code = "sbx-" + PROVIDERS.incrementAndGet();
+    mvc.perform(
+            post("/admin/v1/payment-providers")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    ("{\"code\":\"%s\",\"adapter\":\"SANDBOX\",\"displayName\":\"Sandbox two\","
+                            + "\"mode\":\"TEST\",\"secretRef\":\"config\",\"reason\":\"Test\"}")
+                        .formatted(code)))
+        .andExpect(status().isCreated());
+    provider(code, "ACTIVE").andExpect(status().isOk());
+    return code;
+  }
+
+  private ResultActions provider(String code, String status) throws Exception {
+    JsonNode row = null;
+    for (JsonNode p : json(mvc.perform(get("/admin/v1/payment-providers").with(superAdmin)))) {
+      if (p.path("code").asText().equals(code)) {
+        row = p;
+      }
+    }
+    assertThat(row).as(code).isNotNull();
+    return putProvider(
+        code,
+        ("{\"version\":%d,\"displayName\":\"%s\",\"mode\":\"TEST\",\"status\":\"%s\","
+                + "\"secretRef\":\"config\",\"reason\":\"Test\"}")
+            .formatted(row.path("version").asInt(), row.path("displayName").asText(), status));
+  }
+
+  private ResultActions putProvider(String code, String body) throws Exception {
+    return mvc.perform(
+        put("/admin/v1/payment-providers/" + code)
+            .with(superAdmin)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  private JsonNode routes() throws Exception {
+    return json(mvc.perform(get("/admin/v1/payment-routes").with(superAdmin)));
+  }
+
+  /** The routes with {@code code} first for one purpose and method, the rest after it. */
+  private static JsonNode withFirst(JsonNode routes, String purpose, String method, String code) {
+    var copy = routes.deepCopy();
+    var list = (com.fasterxml.jackson.databind.node.ArrayNode) copy.path("routes");
+    for (JsonNode r : list) {
+      if (r.path("purpose").asText().equals(purpose) && r.path("method").asText().equals(method)) {
+        ((com.fasterxml.jackson.databind.node.ObjectNode) r)
+            .put("priority", r.path("priority").asInt() + 1);
+      }
+    }
+    list.addObject()
+        .put("purpose", purpose)
+        .put("method", method)
+        .put("priority", 1)
+        .put("providerCode", code);
+    return copy;
+  }
+
+  private void putRoutes(JsonNode routes, String reason) throws Exception {
+    var current = routes();
+    mvc.perform(
+            put("/admin/v1/payment-routes")
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    JSON.writeValueAsString(
+                        Map.of(
+                            "version", current.path("version").asInt(),
+                            "routes", routes.path("routes"),
+                            "reason", reason))))
+        .andExpect(status().isOk());
+  }
+
+  private void flag(String key, boolean enabled) throws Exception {
+    mvc.perform(
+            put("/admin/v1/flags/" + key)
+                .with(superAdmin)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":%s,\"reason\":\"Test\"}".formatted(enabled)))
+        .andExpect(status().isOk());
+  }
+
+  private long clearing(String code) {
+    return jdbc.queryForObject(
+        "SELECT coalesce(sum(debit) - sum(credit), 0) FROM ledger_line"
+            + " WHERE account = 'PROVIDER_CLEARING' AND provider = ?",
+        Long.class,
+        code);
+  }
+
+  /** Pays, then refunds through Finance; returns the provider the refund was sent through. */
+  private String refundedThrough(String seeker) throws Exception {
+    String bookingId = paidBooking(seeker);
+    refundAndApprove(bookingId);
+    return refundProvider(bookingId);
+  }
+
+  /** Support proposes a full refund and Finance approves it, so it is sent at once. */
+  private void refundAndApprove(String bookingId) throws Exception {
+    payments.propose(
+        UUID.fromString(bookingId), 15000, "Booked twice", new Payments.Decider("sup-x", "X"));
+    String refundId =
+        jdbc.queryForObject(
+            "SELECT id::text FROM refund WHERE booking_id = ?::uuid AND status = 'PROPOSED'",
+            String.class,
+            bookingId);
+    mvc.perform(post("/admin/v1/refunds/" + refundId + "/approval").with(finance))
+        .andExpect(status().isOk());
+  }
+
+  private String refundProvider(String bookingId) {
+    return jdbc.queryForObject(
+        "SELECT provider FROM refund WHERE booking_id = ?::uuid", String.class, bookingId);
+  }
+
   private JsonNode proposedFor(String bookingId) throws Exception {
     for (JsonNode r :
         json(mvc.perform(get("/admin/v1/refunds").with(finance).param("status", "PROPOSED")))) {
@@ -491,8 +875,14 @@ class PaymentIntegrationTest extends SpecialistFlowTest {
   }
 
   private ResultActions webhook(byte[] body, String signature) throws Exception {
+    return webhook("sandbox", body, signature);
+  }
+
+  private ResultActions webhook(String provider, byte[] body, String signature) throws Exception {
     var request =
-        post("/v1/webhooks/payments/sandbox").contentType(MediaType.APPLICATION_JSON).content(body);
+        post("/v1/webhooks/payments/" + provider)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body);
     if (signature != null) {
       request.header("X-Notch-Signature", signature);
     }
