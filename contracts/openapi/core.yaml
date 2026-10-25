@@ -4983,6 +4983,144 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /admin/v1/message-senders:
+    get:
+      operationId: listMessageSenders
+      summary: SMS and email senders, with their keys and circuit (D61)
+      tags: [admin-settings]
+      responses:
+        "200":
+          description: Every sender, by channel and priority
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageSender"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createMessageSender
+      summary: Add a sender as a DRAFT (Super admin only, D61)
+      description: Its keys must already be in Vault under secretRef.
+      tags: [admin-settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageSenderDraft"
+      responses:
+        "201":
+          description: The new sender
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageSender"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/message-senders/{code}:
+    parameters:
+      - $ref: "#/components/parameters/MessageSenderCode"
+    put:
+      operationId: changeMessageSender
+      summary: Change a sender or its status, with a reason (Super admin only, D61)
+      description: ACTIVE needs valid settings and every key. No change may leave a channel that had an ACTIVE sender without one.
+      tags: [admin-settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageSenderChange"
+      responses:
+        "200":
+          description: The sender after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageSender"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/message-senders/{code}/test:
+    parameters:
+      - $ref: "#/components/parameters/MessageSenderCode"
+    post:
+      operationId: testMessageSender
+      summary: Send one test message through this sender only (Super admin only)
+      description: The destination is not stored or audited, only whether the test worked.
+      tags: [admin-settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [to]
+              properties:
+                to:
+                  description: A phone number for SMS, an address for email.
+                  type: string
+                  maxLength: 254
+      responses:
+        "200":
+          description: The outcome; a failed test is still 200
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                  problem:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/message-senders/{code}/history:
+    parameters:
+      - $ref: "#/components/parameters/MessageSenderCode"
+    get:
+      operationId: getMessageSenderHistory
+      summary: Every version of a sender, newest first
+      tags: [admin-settings]
+      responses:
+        "200":
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentProviderVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /admin/v1/jobs:
     get:
       operationId: listJobs
@@ -5062,6 +5200,13 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    MessageSenderCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9-]{1,30}$"
     NotificationCopyKey:
       name: key
       in: path
@@ -5404,6 +5549,114 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
   schemas:
+    MessageSenderChannel:
+      type: string
+      x-extensible-enum: [SMS, EMAIL]
+    MessageSenderAdapter:
+      description: HTTP_SMS for any SMS gateway with an HTTP API, SMTP for any mail server, LOGGING for local runs only.
+      type: string
+      x-extensible-enum: [HTTP_SMS, SMTP, LOGGING]
+    MessageSenderStatus:
+      type: string
+      x-extensible-enum: [DRAFT, ACTIVE, DISABLED]
+    MessageSenderSettings:
+      description: >
+        Never a key. HTTP_SMS: url (https), format (JSON or FORM), fields (name to template, with
+        {to}, {text} and {from}), from, authHeader, authPrefix. SMTP: host, port, starttls, from,
+        fromName.
+      type: object
+    MessageSender:
+      type: object
+      additionalProperties: false
+      required: [code, channel, adapter, displayName, status, priority, secretRef, settings, version, updatedBy, updatedAt, keysFound]
+      properties:
+        code:
+          type: string
+        channel:
+          $ref: "#/components/schemas/MessageSenderChannel"
+        adapter:
+          $ref: "#/components/schemas/MessageSenderAdapter"
+        displayName:
+          type: string
+        status:
+          $ref: "#/components/schemas/MessageSenderStatus"
+        priority:
+          description: 1 is tried first; the next one when it fails.
+          type: integer
+        secretRef:
+          type: string
+        settings:
+          $ref: "#/components/schemas/MessageSenderSettings"
+        version:
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        keysFound:
+          type: boolean
+        problem:
+          description: Why the settings would not work, if they would not.
+          type: string
+        circuit:
+          type: string
+    MessageSenderDraft:
+      type: object
+      additionalProperties: false
+      required: [code, channel, adapter, displayName, priority, secretRef, settings, reason]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9-]{1,30}$"
+        channel:
+          $ref: "#/components/schemas/MessageSenderChannel"
+        adapter:
+          $ref: "#/components/schemas/MessageSenderAdapter"
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        settings:
+          $ref: "#/components/schemas/MessageSenderSettings"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    MessageSenderChange:
+      type: object
+      additionalProperties: false
+      required: [version, displayName, status, priority, secretRef, settings, reason]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        status:
+          $ref: "#/components/schemas/MessageSenderStatus"
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        settings:
+          $ref: "#/components/schemas/MessageSenderSettings"
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
     NotificationCopy:
       type: object
       additionalProperties: false
