@@ -1625,6 +1625,206 @@
       "openAnalytics": "Ouvrir dans Statistiques",
       "ask": "Poser une question",
       "askButton": "Demander"
+    },
+    "providers": {
+      "back": "Retour aux paiements",
+      "title": "Prestataires de paiement et itinéraires",
+      "subtitle": "Chaque prestataire est un compte chez un agrégateur. Les itinéraires indiquent quel prestataire reçoit les paiements, remboursements et versements pour chaque moyen. Seul un super administrateur les modifie, et chaque changement demande un motif.",
+      "list": "Prestataires",
+      "add": "Ajouter un prestataire",
+      "change": "Modifier le prestataire",
+      "adapter": {
+        "NOTCHPAY": "Notch Pay",
+        "SANDBOX": "Bac à sable (sans argent réel)"
+      },
+      "mode": {
+        "TEST": "Test",
+        "LIVE": "Réel"
+      },
+      "keysFound": "Clés trouvées",
+      "keysMissing": "Clés manquantes",
+      "circuit": {
+        "CLOSED": "Répond",
+        "OPEN": "Ne répond pas",
+        "HALF_OPEN": "Se rétablit"
+      },
+      "holds": "{{n}} en cours · {{amount}} détenus",
+      "status": {
+        "DRAFT": "Brouillon",
+        "ACTIVE": "Actif",
+        "DRAINING": "En retrait",
+        "DISABLED": "Désactivé"
+      },
+      "test": "Tester la connexion",
+      "testOk": "La connexion fonctionne.",
+      "testFailed": "La connexion a échoué.",
+      "routes": "Itinéraires",
+      "routesHelp": "Les prestataires sont essayés dans l'ordre. Un remboursement repasse par le prestataire du paiement tant qu'il est actif.",
+      "routesEdit": "Pour chacun, indiquez les codes des prestataires dans l'ordre, séparés par des virgules. Chaque ligne doit compter un prestataire actif.",
+      "purpose": {
+        "COLLECT": "Paiements",
+        "REFUND": "Remboursements",
+        "PAYOUT": "Versements"
+      },
+      "code": "Code",
+      "adapterLabel": "Adaptateur",
+      "name": "Nom",
+      "modeLabel": "Mode",
+      "statusLabel": "Statut",
+      "baseUrl": "Adresse (vide pour celle par défaut)",
+      "secretRef": "Référence des clés dans Vault",
+      "checks": "Avant d'activer un prestataire réel",
+      "check": {
+        "recordsOfProcessing": "Il figure au registre des traitements",
+        "threatModel": "Son API et ses notifications figurent dans le modèle de menaces",
+        "contract": "Un contrat est signé et l'adresse de notification est enregistrée",
+        "testTransactions": "Un paiement et un transfert de test ont réussi en mode test"
+      }
+    },
+    "senders": {
+      "back": "Retour aux réglages",
+      "title": "Expéditeurs de SMS et d'e-mails",
+      "subtitle": "Les messages partent par l'expéditeur actif de leur canal à la priorité la plus basse, puis par le suivant en cas d'échec. Les clés restent dans Vault.",
+      "list": "Expéditeurs",
+      "add": "Ajouter un expéditeur",
+      "change": "Modifier l'expéditeur",
+      "empty": "Aucun expéditeur pour l'instant. Les codes de connexion ne partiront pas tant qu'aucun n'est actif.",
+      "channel": {
+        "SMS": "SMS",
+        "EMAIL": "E-mail"
+      },
+      "channelLabel": "Canal",
+      "adapter": {
+        "HTTP_SMS": "Passerelle SMS par HTTP",
+        "SMTP": "Serveur de messagerie (SMTP)",
+        "LOGGING": "Journal (local seulement)"
+      },
+      "priority": "Priorité {{n}}",
+      "priorityLabel": "Priorité (1 est essayé en premier)",
+      "status": {
+        "DRAFT": "Brouillon",
+        "ACTIVE": "Actif",
+        "DISABLED": "Désactivé"
+      },
+      "settings": "Réglages (JSON, jamais une clé)",
+      "smsHelp": "url (https), format (JSON ou FORM), fields avec {to}, {text} et {from}, from, authHeader, authPrefix.",
+      "emailHelp": "host, port, starttls, from, fromName.",
+      "test": "Envoyer un test",
+      "testHelp": "Un seul message de test part par cet expéditeur. Le numéro ou l'adresse n'est pas conservé.",
+      "to": "Numéro de téléphone ou adresse e-mail",
+      "send": "Envoyer",
+      "notJson": "Ce n'est pas du JSON valide."
+    },
+    "jobs": {
+      "title": "Tâches planifiées",
+      "subtitle": "Chaque service lance ses tâches depuis sa table de déclencheurs. Un changement est enregistré tout de suite et suivi au prochain redémarrage du service. Une tâche suspendue ne tourne pas.",
+      "service": {
+        "core": "Core",
+        "tracking": "Suivi",
+        "ai": "IA"
+      },
+      "every": "toutes les {{interval}}",
+      "last": "dernière exécution {{when}}, {{outcome}}",
+      "pending": "Enregistré ; en vigueur après le prochain redémarrage",
+      "caution": "La sécurité ou l'argent dépend de cette tâche",
+      "cautionLong": "La sécurité ou l'argent dépend de cette tâche. La suspendre ou la ralentir retarde l'escalade des crises, les paiements ou la clôture des séances. Assurez-vous que c'est bien voulu.",
+      "status": {
+        "ACTIVE": "Active",
+        "PAUSED": "Suspendue"
+      },
+      "cron": "Calendrier (cron à six champs)",
+      "interval": "Intervalle (par exemple PT30S)",
+      "zone": "Fuseau horaire",
+      "restart": "Le service suit ce changement à son prochain redémarrage."
+    },
+    "copy": {
+      "back": "Retour aux contenus",
+      "title": "Textes des notifications",
+      "subtitle": "Chaque notification, SMS et e-mail en anglais et en français. Le texte approuvé reste à côté de toute modification et peut être rétabli.",
+      "channel": {
+        "push": "Notifications",
+        "sms": "SMS",
+        "email": "E-mails",
+        "word": "Mots",
+        "category": "Catégories de crise (personnel)"
+      },
+      "forStaff": "Pour le personnel",
+      "rules": "Gardez les champs comme {0}. Ni point d'exclamation ni emoji. Rien sur un trouble, une spécialité ou une humeur. Un SMS reste dans l'alphabet standard et pas plus long que le texte approuvé.",
+      "english": "Anglais",
+      "french": "Français",
+      "approved": "Approuvé",
+      "restore": "Reprendre le texte approuvé"
+    },
+    "models": {
+      "back": "Retour aux contrôles IA",
+      "title": "Modèles et itinéraires IA",
+      "subtitle": "Un itinéraire modifié reste en attente tant que l'évaluation de la fonction n'a pas réussi dessus. Les données de santé n'atteignent un modèle non hébergé par Solace que si le transfert est autorisé.",
+      "list": "Modèles",
+      "add": "Ajouter un modèle",
+      "change": "Modifier le modèle",
+      "empty": "Aucun modèle pour l'instant. Chaque fonction IA reste éteinte tant qu'aucun n'est configuré et évalué.",
+      "kind": {
+        "CHAT": "Conversation",
+        "SPEECH": "Transcription",
+        "EMBEDDING": "Plongements"
+      },
+      "kindLabel": "Type",
+      "local": "Hébergé par Solace",
+      "remote": "Hébergé ailleurs",
+      "localLabel": "Hébergé par Solace",
+      "routes": "Itinéraires et budgets",
+      "live": "En vigueur",
+      "pending": "En attente",
+      "passed": "évaluation réussie",
+      "notPassed": "pas encore évalué",
+      "budget": "Budget mensuel",
+      "defaultBudget": "par défaut",
+      "evaluate": "Évaluer",
+      "promote": "Mettre en vigueur",
+      "discard": "Abandonner",
+      "name": "Nom",
+      "url": "Adresse",
+      "modelName": "Nom du modèle à cette adresse",
+      "routeTitle": "Itinéraire de {{feature}}",
+      "promoteTitle": "Mettre en vigueur le nouvel itinéraire de {{feature}}",
+      "budgetTitle": "Budget mensuel de {{feature}}",
+      "routeHelp": "Les modèles de conversation dans l'ordre d'essai, séparés par des virgules. Laissez vide pour retirer tous les modèles de la fonction.",
+      "order": "Modèles dans l'ordre",
+      "tokens": "Jetons par mois",
+      "evalPassed": "L'évaluation a réussi sur l'itinéraire en attente.",
+      "evalFailed": "L'évaluation n'a pas réussi sur l'itinéraire en attente."
+    },
+    "lists": {
+      "back": "Retour",
+      "title": {
+        "ai": "Listes de mots, phrases et cas de test IA",
+        "tracking": "Formulation des règles"
+      },
+      "subtitle": "Un clinicien rédige une nouvelle version et un autre la valide une fois sa vérification réussie. Tant qu'aucune version n'est en vigueur, la liste du code s'applique.",
+      "all": "Listes",
+      "live": "version {{version}} en vigueur",
+      "fromCode": "la liste du code",
+      "drafts": "{{n}} en attente",
+      "open": "Ouvrir",
+      "draft": "Rédiger une nouvelle version",
+      "draftHelp": "La liste entière, en JSON. Partez de la version en vigueur.",
+      "inForce": "En vigueur",
+      "versions": "Versions",
+      "noVersions": "Aucune version pour l'instant.",
+      "status": {
+        "DRAFT": "Brouillon",
+        "LIVE": "En vigueur",
+        "RETIRED": "Retirée",
+        "DECLINED": "Refusée"
+      },
+      "decidedBy": "décidée par {{name}}",
+      "check": "Lancer la vérification",
+      "checkPassed": "La vérification a réussi.",
+      "checkFailed": "La vérification n'a pas réussi.",
+      "signOff": "Valider",
+      "decline": "Refuser",
+      "entries": "Entrées",
+      "note": "Ce qui change"
     }
   },
   "roleChoice": {

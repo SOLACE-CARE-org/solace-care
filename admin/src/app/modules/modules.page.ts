@@ -32,6 +32,7 @@ type Summary = NonNullable<Row['versions']>[number];
     <div class="head">
       <div>
         <h1 class="sl-title">{{ 'admin.modules.title' | transloco }}</h1>
+        <a routerLink="/modules/lists" class="sl-meta">{{ 'admin.lists.title.tracking' | transloco }}</a>
         <p class="sl-muted subtitle">{{ 'admin.modules.subtitle' | transloco }}</p>
       </div>
       @if (mayDraft()) {

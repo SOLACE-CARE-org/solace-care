@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { AiApi, type AiSchemas } from '../api/ai-api';
@@ -18,7 +19,7 @@ type Status = 'LIVE' | 'PASSING' | 'BLOCKED' | 'NOT_EVALUATED';
  */
 @Component({
   selector: 'sl-ai-controls',
-  imports: [TranslocoPipe, FormsModule],
+  imports: [TranslocoPipe, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ai-controls.page.html',
   styles: `

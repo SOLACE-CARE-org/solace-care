@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
@@ -28,10 +29,11 @@ const POLICY_REASONS = ['POLICY_CANCELLATION', 'POLICY_NO_SHOW', 'PAID_AFTER_EXP
  */
 @Component({
   selector: 'sl-payments',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="sl-title">{{ 'admin.payments.title' | transloco }}</h1>
+    <a routerLink="/payments/providers" class="sl-meta related">{{ 'admin.providers.title' | transloco }}</a>
 
     <div class="tiles">
       <div class="sl-card tile">

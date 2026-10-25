@@ -31,6 +31,7 @@ const TYPES: ContentType[] = ['CRISIS_RESOURCE', 'ARTICLE', 'FAQ', 'LEGAL'];
   template: `
     <div class="head">
       <h1 class="sl-title">{{ 'admin.content.title' | transloco }}</h1>
+      <a routerLink="/content/notifications" class="sl-meta">{{ 'admin.copy.title' | transloco }}</a>
       @if (canChange()) {
         <button type="button" class="sl-button sl-button--primary" (click)="askNew()">
           {{ 'admin.content.new' | transloco }}

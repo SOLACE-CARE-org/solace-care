@@ -2,6 +2,12 @@ import type { Type } from '@angular/core';
 import type { Routes } from '@angular/router';
 
 import { AiControlsPage } from './ai/ai-controls.page';
+import { AiModelsPage } from './ai/ai-models.page';
+import { NotificationCopyPage } from './content/notification-copy.page';
+import { PaymentProvidersPage } from './payments/providers.page';
+import { JobsPage } from './settings/jobs.page';
+import { MessageSendersPage } from './settings/senders.page';
+import { ReviewedListsPage } from './shared/reviewed-lists.page';
 import { areaGuard } from './auth/area.guard';
 import { AuditLogPage } from './audit/audit-log.page';
 import { CataloguePage } from './catalogue/catalogue.page';
@@ -89,6 +95,42 @@ export const routes: Routes = [
         component: BookingDetailPage,
         canActivate: [areaGuard('bookings')],
       },
+      // D61: opened from their screen, not from the sidebar.
+      {
+        path: 'content/notifications',
+        component: NotificationCopyPage,
+        canActivate: [areaGuard('content')],
+      },
+      {
+        path: 'payments/providers',
+        component: PaymentProvidersPage,
+        canActivate: [areaGuard('payments')],
+      },
+      {
+        path: 'settings/senders',
+        component: MessageSendersPage,
+        canActivate: [areaGuard('settings')],
+      },
+      {
+        path: 'settings/jobs',
+        component: JobsPage,
+        canActivate: [areaGuard('settings')],
+      },
+      ...(environment.flags.aiControls
+        ? [
+            {
+              path: 'ai/models',
+              component: AiModelsPage,
+              canActivate: [areaGuard('aiControls')],
+            },
+            {
+              path: 'ai/lists',
+              component: ReviewedListsPage,
+              data: { service: 'ai' },
+              canActivate: [areaGuard('aiControls')],
+            },
+          ]
+        : []),
       {
         path: 'content/:id',
         component: ContentEditorPage,
@@ -115,6 +157,12 @@ export const routes: Routes = [
             {
               path: 'modules/versions/:id/review',
               component: ModuleReviewPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            {
+              path: 'modules/lists',
+              component: ReviewedListsPage,
+              data: { service: 'tracking' },
               canActivate: [areaGuard('trackingModules')],
             },
           ]

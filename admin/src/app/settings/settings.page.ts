@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
@@ -18,7 +19,18 @@ type Setting = CoreSchemas['PlatformSetting'];
 type Flag = CoreSchemas['FeatureFlag'];
 type Version = CoreSchemas['SettingVersion'];
 
-const GROUPS = ['MONEY', 'SESSIONS', 'REVIEWS', 'NOTIFICATIONS', 'PRIVACY', 'SAFETY', 'ACCESS'];
+const GROUPS = [
+  'MONEY',
+  'SESSIONS',
+  'REVIEWS',
+  'NOTIFICATIONS',
+  'PRIVACY',
+  'SAFETY',
+  'ACCESS',
+  'INSIGHT',
+  'TRACKING',
+  'AI',
+];
 
 /** Transloco reads dots as nesting; setting keys have dots. */
 export const labelKey = (key: string) => key.replaceAll('.', '_');
@@ -30,10 +42,14 @@ export const labelKey = (key: string) => key.replaceAll('.', '_');
  */
 @Component({
   selector: 'sl-settings',
-  imports: [TranslocoPipe, FormsModule],
+  imports: [TranslocoPipe, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="sl-title">{{ 'admin.settings.title' | transloco }}</h1>
+    <p class="related">
+      <a routerLink="/settings/jobs" class="sl-meta">{{ 'admin.jobs.title' | transloco }}</a>
+      <a routerLink="/settings/senders" class="sl-meta">{{ 'admin.senders.title' | transloco }}</a>
+    </p>
     <p class="sl-muted subtitle">{{ 'admin.settings.subtitle' | transloco }}</p>
 
     @if (error()) {
@@ -212,6 +228,16 @@ export const labelKey = (key: string) => key.replaceAll('.', '_');
     .subtitle {
       margin: var(--space-4) 0 var(--space-20);
       max-width: 72ch;
+    }
+    .related {
+      display: flex;
+      gap: var(--space-16);
+      margin: var(--space-4) 0 0;
+    }
+    .related a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
     }
     .sl-card + .sl-card {
       margin-top: var(--space-16);

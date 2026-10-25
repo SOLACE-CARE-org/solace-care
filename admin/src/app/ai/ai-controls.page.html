@@ -1,4 +1,8 @@
 <h1 class="sl-title">{{ 'admin.ai.title' | transloco }}</h1>
+<p class="related">
+  <a routerLink="/ai/models" class="sl-meta">{{ 'admin.models.title' | transloco }}</a>
+  <a routerLink="/ai/lists" class="sl-meta">{{ 'admin.lists.title.ai' | transloco }}</a>
+</p>
 <p class="sl-muted subtitle">{{ 'admin.ai.subtitle' | transloco }}</p>
 @if (failure(); as f) {
 <p class="error" role="alert">{{ f }}</p>

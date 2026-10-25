@@ -1625,6 +1625,206 @@
       "openAnalytics": "Open in Analytics",
       "ask": "Ask a question",
       "askButton": "Ask"
+    },
+    "providers": {
+      "back": "Back to payments",
+      "title": "Payment providers and routes",
+      "subtitle": "Each provider is an account with an aggregator. Routes say which provider takes payments, refunds and payouts for each method. Only a Super admin changes them, and every change needs a reason.",
+      "list": "Providers",
+      "add": "Add a provider",
+      "change": "Change provider",
+      "adapter": {
+        "NOTCHPAY": "Notch Pay",
+        "SANDBOX": "Sandbox (no real money)"
+      },
+      "mode": {
+        "TEST": "Test",
+        "LIVE": "Live"
+      },
+      "keysFound": "Keys found",
+      "keysMissing": "Keys missing",
+      "circuit": {
+        "CLOSED": "Answering",
+        "OPEN": "Not answering",
+        "HALF_OPEN": "Recovering"
+      },
+      "holds": "{{n}} on their way · {{amount}} held there",
+      "status": {
+        "DRAFT": "Draft",
+        "ACTIVE": "Active",
+        "DRAINING": "Draining",
+        "DISABLED": "Disabled"
+      },
+      "test": "Test connection",
+      "testOk": "The connection works.",
+      "testFailed": "The connection failed.",
+      "routes": "Routes",
+      "routesHelp": "Providers are tried in order. A refund goes back through the provider that took the payment while it is active.",
+      "routesEdit": "For each one, list provider codes in order, separated by commas. Every line needs an active provider.",
+      "purpose": {
+        "COLLECT": "Payments",
+        "REFUND": "Refunds",
+        "PAYOUT": "Payouts"
+      },
+      "code": "Code",
+      "adapterLabel": "Adapter",
+      "name": "Name",
+      "modeLabel": "Mode",
+      "statusLabel": "Status",
+      "baseUrl": "Address (leave empty for the default)",
+      "secretRef": "Keys reference in Vault",
+      "checks": "Before a live provider becomes active",
+      "check": {
+        "recordsOfProcessing": "It is in the records of processing",
+        "threatModel": "Its API and webhooks are in the threat model",
+        "contract": "A contract is signed and the webhook address is registered",
+        "testTransactions": "A test payment and a test transfer worked in test mode"
+      }
+    },
+    "senders": {
+      "back": "Back to settings",
+      "title": "SMS and email senders",
+      "subtitle": "Messages go to the active sender of their channel with the lowest priority number, then to the next one if it fails. Keys stay in Vault.",
+      "list": "Senders",
+      "add": "Add a sender",
+      "change": "Change sender",
+      "empty": "No sender yet. Sign-in codes cannot be sent until one is active.",
+      "channel": {
+        "SMS": "SMS",
+        "EMAIL": "Email"
+      },
+      "channelLabel": "Channel",
+      "adapter": {
+        "HTTP_SMS": "SMS gateway over HTTP",
+        "SMTP": "Mail server (SMTP)",
+        "LOGGING": "Log (local only)"
+      },
+      "priority": "Priority {{n}}",
+      "priorityLabel": "Priority (1 is tried first)",
+      "status": {
+        "DRAFT": "Draft",
+        "ACTIVE": "Active",
+        "DISABLED": "Disabled"
+      },
+      "settings": "Settings (JSON, never a key)",
+      "smsHelp": "url (https), format (JSON or FORM), fields with {to}, {text} and {from}, from, authHeader, authPrefix.",
+      "emailHelp": "host, port, starttls, from, fromName.",
+      "test": "Send a test",
+      "testHelp": "One test message goes through this sender only. The number or address is not stored.",
+      "to": "Phone number or email address",
+      "send": "Send",
+      "notJson": "This is not valid JSON."
+    },
+    "jobs": {
+      "title": "Scheduled jobs",
+      "subtitle": "Each service runs its jobs from its trigger table. A change is saved now and followed from the service's next restart. A paused job does not run.",
+      "service": {
+        "core": "Core",
+        "tracking": "Tracking",
+        "ai": "AI"
+      },
+      "every": "every {{interval}}",
+      "last": "last run {{when}}, {{outcome}}",
+      "pending": "Saved; in force after the next restart",
+      "caution": "Safety or money depends on this job",
+      "cautionLong": "Safety or money depends on this job. Pausing or slowing it delays crisis escalation, payments or session settlement. Make sure that is what you want.",
+      "status": {
+        "ACTIVE": "Active",
+        "PAUSED": "Paused"
+      },
+      "cron": "Schedule (six-field cron)",
+      "interval": "Interval (for example PT30S)",
+      "zone": "Time zone",
+      "restart": "The service follows this change from its next restart."
+    },
+    "copy": {
+      "back": "Back to content",
+      "title": "Notification copy",
+      "subtitle": "Every push, SMS and email in English and French. The approved wording stays beside any change and can be restored.",
+      "channel": {
+        "push": "Push",
+        "sms": "SMS",
+        "email": "Email",
+        "word": "Words",
+        "category": "Crisis categories (staff)"
+      },
+      "forStaff": "For staff",
+      "rules": "Keep the placeholders such as {0}. No exclamation marks or emoji. Say nothing about a condition, a specialty or a mood. An SMS stays in the standard alphabet and no longer than the approved text.",
+      "english": "English",
+      "french": "French",
+      "approved": "Approved",
+      "restore": "Use the approved wording"
+    },
+    "models": {
+      "back": "Back to AI controls",
+      "title": "AI models and routes",
+      "subtitle": "A changed route waits as pending until the feature's evaluation passes on it. Health data reaches a model Solace does not host only while the transfer authorisation flag is on.",
+      "list": "Models",
+      "add": "Add a model",
+      "change": "Change model",
+      "empty": "No model yet. Every AI feature stays off until one is set up and evaluated.",
+      "kind": {
+        "CHAT": "Chat",
+        "SPEECH": "Speech to text",
+        "EMBEDDING": "Embeddings"
+      },
+      "kindLabel": "Kind",
+      "local": "Hosted by Solace",
+      "remote": "Hosted elsewhere",
+      "localLabel": "Hosted by Solace",
+      "routes": "Routes and budgets",
+      "live": "Live",
+      "pending": "Pending",
+      "passed": "evaluation passed",
+      "notPassed": "not evaluated yet",
+      "budget": "Monthly budget",
+      "defaultBudget": "default",
+      "evaluate": "Evaluate",
+      "promote": "Put live",
+      "discard": "Discard",
+      "name": "Name",
+      "url": "Address",
+      "modelName": "Model name at that address",
+      "routeTitle": "Route for {{feature}}",
+      "promoteTitle": "Put the new route for {{feature}} live",
+      "budgetTitle": "Monthly budget for {{feature}}",
+      "routeHelp": "Chat models in the order to try them, separated by commas. Leave empty to turn the feature's models off.",
+      "order": "Models in order",
+      "tokens": "Tokens a month",
+      "evalPassed": "The evaluation passed on the pending route.",
+      "evalFailed": "The evaluation did not pass on the pending route."
+    },
+    "lists": {
+      "back": "Back",
+      "title": {
+        "ai": "AI word lists, phrases and test cases",
+        "tracking": "Rule wording"
+      },
+      "subtitle": "A clinician drafts a new version and a different clinician signs it off once its check passed. Until a version is live, the list in the code is in force.",
+      "all": "Lists",
+      "live": "version {{version}} live",
+      "fromCode": "the list in the code",
+      "drafts": "{{n}} waiting",
+      "open": "Open",
+      "draft": "Draft a new version",
+      "draftHelp": "The whole list, as JSON. Start from the version in force.",
+      "inForce": "In force",
+      "versions": "Versions",
+      "noVersions": "No version yet.",
+      "status": {
+        "DRAFT": "Draft",
+        "LIVE": "Live",
+        "RETIRED": "Retired",
+        "DECLINED": "Declined"
+      },
+      "decidedBy": "decided by {{name}}",
+      "check": "Run the check",
+      "checkPassed": "The check passed.",
+      "checkFailed": "The check did not pass.",
+      "signOff": "Sign off",
+      "decline": "Decline",
+      "entries": "Entries",
+      "note": "What changed"
     }
   },
   "roleChoice": {
