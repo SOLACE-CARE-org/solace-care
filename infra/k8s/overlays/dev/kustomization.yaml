@@ -16,7 +16,7 @@ configMapGenerator:
       - SOLACE_SECURITY_SERVICE_ISSUER=https://id.dev.solace.example/realms/solace-staff
       - SOLACE_IDENTITY_MEMBERS_ISSUER=https://id.dev.solace.example/realms/solace-members
       # No SMS or email provider yet: Core writes messages, sign-in codes included, to its log.
-      # Dev only. Staging and prod set no sender, so Core refuses to start until one exists.
+      # Dev only: messages go to the log. Staging and prod use sender rows set on the portal (D61).
       - SOLACE_NOTIFICATIONS_SENDER=logging
       - SOLACE_NOTIFICATIONS_PUSH_SENDER=logging
       # No real money in dev: the sandbox aggregator (D35). Staging and prod set notchpay and its keys.

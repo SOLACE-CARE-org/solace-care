@@ -79,6 +79,7 @@ Staff messages carry no personal details; the responder opens the portal to see 
 | Payout run needs approval | Push | A payout run is ready for a second approver. | Un lot de versements attend un second approbateur. |
 | Module submitted | Push to clinical reviewers | {module} {version} is waiting for clinical review. | {module} {version} attend une revue clinique. |
 | Data requests due | Daily email to Operations | {n} data requests are due this week. | {n} demandes de données arrivent à échéance cette semaine. |
+| Sender test (D61) | SMS or email to the number or address a Super admin gives | Solace: test message from the admin portal. This SMS sender works. (Email: "This email sender works.") | Solace : message de test depuis le portail. Cet expediteur SMS fonctionne. (E-mail : « Cet expéditeur d'e-mails fonctionne. ») |
 
 {category} is one of the six safety-monitor categories, in the staff member's language: suicidal ideation, self-harm, acute anxiety, violent thoughts, substance crisis, risk-taking. In French SMS, "anxiété aiguë" is sent as "anxiété aigue" to stay in the standard format.
 

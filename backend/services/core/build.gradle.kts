@@ -15,6 +15,8 @@ dependencies {
     implementation(libs.aws.sdk.s3)
     // Slot holds (10 minutes), as the System Design puts them in Redis.
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // Email through any mail server, one sender row each (D61).
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     testImplementation("io.grpc:grpc-inprocess")
@@ -23,7 +25,7 @@ dependencies {
     testImplementation("org.testcontainers:minio")
 }
 
-// Local runs write SMS and email to the log: no provider is chosen yet (application.yml).
+// Local runs write SMS and email to the log through LOGGING sender rows (D61, application.yml).
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
     environment("SOLACE_NOTIFICATIONS_SENDER", "logging")
     environment("SOLACE_NOTIFICATIONS_PUSH_SENDER", "logging")

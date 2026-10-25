@@ -11,8 +11,8 @@ The register of every way Solace processes personal data, for Cameroon's Law No.
 | Controller | Solace Care (legal entity, address and contact to be filled in) | Open |
 | Data-protection contact | To be named | Open |
 | Hosting | In-country data centre or a regional cloud with transfer authorisation | Open (decisions.md, blocks the Phase 0 gate) |
-| SMS provider | Sends sign-in codes and guest notifications | Open (contract in Phase 0, outside engineering) |
-| Email provider | Codes, notifications, staff account emails | Open |
+| SMS provider | Sends sign-in codes and guest notifications, through any gateway set up as a `message_sender` row (D61). Receives the phone number and the message | Open: no vendor chosen (contract in Phase 0, outside engineering). Each gateway needs its own row here before it goes live |
+| Email provider | Codes, notifications, staff account emails, through any mail server set up as a `message_sender` row (D61) | Open: no vendor chosen. Each mail server needs its own row here before it goes live |
 | Browser push for staff | The staff member's browser push service (Google FCM, Mozilla, Apple), D47. Receives an encrypted message it cannot read and an endpoint for one browser; no personal details | Chosen by each browser; listed for transparency |
 | Push notifications | Expo's push service (D38), delivering through Apple (APNs) and Google (FCM). Receives the device token and the message text (neutral copy, or "you have a reminder" in discreet mode) | Chosen; data-processing terms and transfer authorisation open (**Counsel**) |
 | Mobile-money aggregator | Notch Pay (D35): MTN MoMo and Orange Money charges; refunds and payouts as transfers. Receives the payer's or specialist's phone, the amount and Solace's reference | Chosen; contract and data-processing terms open (**Counsel**), and whether it processes in Cameroon |

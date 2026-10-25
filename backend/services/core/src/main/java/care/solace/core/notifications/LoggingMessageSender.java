@@ -2,17 +2,13 @@ package care.solace.core.notifications;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 /**
  * Local development only: writes messages to the log instead of sending them, so a developer can
- * read a sign-in code. Messages carry codes, so this must never run in a real environment: it is
- * active only with {@code solace.notifications.sender=logging}, which only local configuration
- * sets.
+ * read a sign-in code. Messages carry codes, so this must never run in a real environment: a
+ * LOGGING sender row is used only with {@code solace.notifications.sender=logging}, which only
+ * local configuration sets (D61).
  */
-@Component
-@ConditionalOnProperty(name = "solace.notifications.sender", havingValue = "logging")
 class LoggingMessageSender implements SmsSender, EmailSender {
 
   private static final Logger LOG = LoggerFactory.getLogger(LoggingMessageSender.class);

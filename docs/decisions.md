@@ -409,6 +409,11 @@ Every pair now meets WCAG 2.1 AA.
 - **Refunds:** a refund goes back through the provider that took the payment while that provider is ACTIVE. Otherwise it goes through the first ACTIVE provider on the REFUND route for the method the seeker is repaid in.
   - A refund always goes back to the number and method that paid (owner, 25 Oct 2026). Seekers do not choose another wallet.
 - **Fallback:** behind the `paymentRouting` flag, off by default. A provider whose circuit is open is skipped, and a charge that certainly never reached a provider is tried at the next one. A transfer is never retried at another provider.
+- **SMS and email senders:** rows in `message_sender`, like payment providers (owner, 25 Oct 2026). No vendor is chosen yet:
+  - `HTTP_SMS` speaks to any SMS gateway with an HTTP API, with its address and field names in the row;
+  - `SMTP` speaks to any mail server;
+  - `LOGGING` is for local runs only.
+  A message goes to the active sender of its channel with the lowest priority number, and to the next one when that fails. Only a Super admin changes senders, and a channel never loses its last active sender.
 - **Settings:** Core owns every platform setting, including those of Tracking and AI, which read them from Core (System Design, Admin & config). Settings stay Super admin only; Clinical reviewers do not change settings.
 - **Notification copy:** becomes editable in the portal by Super admins and Content editors (the content area), in EN and FR at once. The database becomes the source; `notification-copy.md` is the first version, shown beside any edit. Each save is checked:
   - the same placeholders as the approved wording;

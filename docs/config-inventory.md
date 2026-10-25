@@ -215,9 +215,8 @@ Main gaps: **Tracking and AI have no settings table**; **AI models are config-on
 
 **Status:** accepted as D61 on 25 October 2026; the answers to the open questions are at the end of this section.
 
-- **Built:** payment providers and routes (tranche 4), the trigger table for every job (tranche 3), and editable notification copy (part of tranche 5). Each has its API, contract, tests, EN and FR texts and audit.
-- **Not built yet:** their admin screens, which need a design first.
-- **Still to do:** tranches 1 and 2, AI models, SMS and email senders, the clinical word lists, the evaluation sets and the corpus screen.
+- **Built:** payment providers and routes, and SMS and email senders (tranche 4), the trigger table for every job (tranche 3), and editable notification copy (part of tranche 5). Each has its API, contract, tests, EN and FR texts and audit.
+- **Still to do:** tranches 1 and 2, AI models, the clinical word lists, the evaluation sets, the corpus screen, and the admin screens for all of this.
 
 ### Principles
 

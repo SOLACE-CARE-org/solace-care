@@ -103,12 +103,20 @@ spec:
             - name: payment-providers
               mountPath: /etc/solace/payment-providers
               readOnly: true
+            # SMS and email senders' keys, likewise (D61).
+            - name: message-senders
+              mountPath: /etc/solace/message-senders
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
         - name: payment-providers
           secret:
             secretName: core-payment-providers
+            optional: true
+        - name: message-senders
+          secret:
+            secretName: core-message-senders
             optional: true
 ---
 apiVersion: v1

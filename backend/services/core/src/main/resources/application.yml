@@ -115,10 +115,12 @@ solace:
     keycloak:
       admin-url: http://localhost:8180
   notifications:
-    # Which SMS and email provider sends messages. No provider is chosen yet (decisions.md), so
-    # nothing is set here and Core will not start without one: local runs and the dev cluster set
-    # "logging", which writes messages to the log. Never set "logging" anywhere real people are.
+    # SMS and email senders are rows, changed by a Super admin on the portal (D61). "logging" here
+    # lets LOGGING senders write messages, codes included, to the log, and sets them up when no
+    # sender exists: local runs and the dev cluster only. Never set it anywhere real people are.
     sender: ${SOLACE_NOTIFICATIONS_SENDER:}
+    # Senders' keys, mounted from Vault as files (<secret_ref>.api-key, .username, .password).
+    secrets-dir: ${SOLACE_NOTIFICATIONS_SECRETS_DIR:/etc/solace/message-senders}
     # Push through Expo's service (D38); local runs, tests and the dev cluster log pushes instead.
     push-sender: ${SOLACE_NOTIFICATIONS_PUSH_SENDER:expo}
     expo-access-token: ${SOLACE_NOTIFICATIONS_EXPO_ACCESS_TOKEN:}

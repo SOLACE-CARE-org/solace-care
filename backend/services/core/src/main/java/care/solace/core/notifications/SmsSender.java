@@ -1,8 +1,8 @@
 package care.solace.core.notifications;
 
 /**
- * Hands one SMS to the SMS provider. The provider is not chosen yet (decisions.md, Still open), so
- * the only adapter is {@link LoggingMessageSender}, for local development.
+ * Hands one SMS to an SMS gateway. {@link MessageSenders} picks the gateway from the sender rows
+ * (D61); {@link HttpSmsSender} speaks to any gateway with an HTTP API.
  */
 interface SmsSender {
 
