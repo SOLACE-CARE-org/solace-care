@@ -490,6 +490,252 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-models:
+    get:
+      operationId: listAiModels
+      summary: AI models, with whether their keys are found (D61)
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: Every model
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiModel"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createAiModel
+      summary: Add a model as a DRAFT (Super admin only, D61)
+      tags: [admin-ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiModelDraft"
+      responses:
+        "201":
+          description: The new model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiModel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-models/{name}:
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-z][a-z0-9-]{1,40}$"
+    put:
+      operationId: changeAiModel
+      summary: Change a model or its status, with a reason (Super admin only, D61)
+      description: ACTIVE needs the key of a model Solace does not host. A model a route uses cannot be disabled.
+      tags: [admin-ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiModelChange"
+      responses:
+        "200":
+          description: The model after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiModel"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-routes:
+    get:
+      operationId: listAiRoutes
+      summary: Each feature's live route, any pending change with its evaluation, and its budget (D61)
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: One entry per feature
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiRoute"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/ai-routes/{feature}:
+    parameters:
+      - $ref: "#/components/parameters/AiFeaturePath"
+    put:
+      operationId: proposeAiRoute
+      summary: Save a pending route for the feature (Super admin only, D61)
+      description: It goes live only after the feature's evaluation passes on it with the live prompt version.
+      tags: [admin-ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [models, reason]
+              properties:
+                models:
+                  description: Active chat models, in the order to try them.
+                  type: array
+                  maxItems: 10
+                  items:
+                    type: string
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The feature's routes after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiRoute"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/ai-routes/{feature}/evaluation:
+    parameters:
+      - $ref: "#/components/parameters/AiFeaturePath"
+    post:
+      operationId: evaluateAiRoute
+      summary: Run the feature's evaluation set with its live version on the pending route
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: The evaluation run
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-routes/{feature}/promotion:
+    parameters:
+      - $ref: "#/components/parameters/AiFeaturePath"
+    post:
+      operationId: promoteAiRoute
+      summary: Put the pending route live once its evaluation passed (Super admin only)
+      tags: [admin-ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The feature's routes after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiRoute"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-routes/{feature}/pending:
+    parameters:
+      - $ref: "#/components/parameters/AiFeaturePath"
+    delete:
+      operationId: discardAiRoute
+      summary: Drop the pending route (Super admin only)
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: The feature's routes after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiRoute"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/ai-features/{feature}/budget:
+    parameters:
+      - $ref: "#/components/parameters/AiFeaturePath"
+    put:
+      operationId: changeAiBudget
+      summary: Set the feature's monthly token budget, with a reason (Super admin only)
+      tags: [admin-ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [tokens, reason]
+              properties:
+                tokens:
+                  type: integer
+                  minimum: 0
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The feature's routes and budget
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiRoute"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /admin/v1/jobs:
     get:
       operationId: listJobs
@@ -569,6 +815,13 @@ components:
       bearerFormat: JWT
       description: Keycloak access token
   parameters:
+    AiFeaturePath:
+      name: feature
+      in: path
+      required: true
+      schema:
+        type: string
+        x-extensible-enum: [TRACKING_INSIGHTS, PRE_SESSION_BRIEF, REVIEW_MODERATION, TRANSLATION, SESSION_SCRIBE, COMPANION, ADMIN_COPILOT]
     JobName:
       name: name
       in: path
@@ -653,6 +906,130 @@ components:
           schema:
             $ref: "#/components/schemas/PromptVersion"
   schemas:
+    AiModel:
+      type: object
+      additionalProperties: false
+      required: [name, kind, url, model, local, secretRef, status, priority, version, updatedBy, updatedAt, keyFound]
+      properties:
+        name:
+          type: string
+        kind:
+          type: string
+          x-extensible-enum: [CHAT, SPEECH, EMBEDDING]
+        url:
+          type: string
+        model:
+          type: string
+        local:
+          description: Hosted by Solace. Only local models get health data until aiTransferAuthorised is on.
+          type: boolean
+        secretRef:
+          description: Where its key is in Vault; never the key.
+          type: string
+        status:
+          type: string
+          x-extensible-enum: [DRAFT, ACTIVE, DISABLED]
+        priority:
+          description: The order speech and embedding models are tried in.
+          type: integer
+        version:
+          type: integer
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        keyFound:
+          type: boolean
+    AiModelDraft:
+      type: object
+      additionalProperties: false
+      required: [name, kind, url, model, local, secretRef, priority, reason]
+      properties:
+        name:
+          type: string
+          pattern: "^[a-z][a-z0-9-]{1,40}$"
+        kind:
+          type: string
+          x-extensible-enum: [CHAT, SPEECH, EMBEDDING]
+        url:
+          description: https; http only for a model Solace hosts.
+          type: string
+          maxLength: 200
+        model:
+          type: string
+          maxLength: 120
+        local:
+          type: boolean
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AiModelChange:
+      type: object
+      additionalProperties: false
+      required: [version, url, model, local, secretRef, status, priority, reason]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        url:
+          type: string
+          maxLength: 200
+        model:
+          type: string
+          maxLength: 120
+        local:
+          type: boolean
+        secretRef:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9._-]{0,62}$"
+        status:
+          type: string
+          x-extensible-enum: [DRAFT, ACTIVE, DISABLED]
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AiRoute:
+      type: object
+      additionalProperties: false
+      required: [feature, live]
+      properties:
+        feature:
+          type: string
+        live:
+          description: Chat models tried in this order.
+          type: array
+          items:
+            type: string
+        pending:
+          description: A change waiting for its evaluation.
+          type: array
+          items:
+            type: string
+        proposedBy:
+          type: string
+        proposedAt:
+          type: string
+          format: date-time
+        pendingPassed:
+          description: Whether the latest evaluation on the pending route passed.
+          type: boolean
+        monthlyBudget:
+          description: Tokens a month; absent while the configured budget counts.
+          type: integer
     JobTriggerStatus:
       description: ACTIVE jobs are registered when the service starts; PAUSED ones are not, so they do not run.
       type: string
