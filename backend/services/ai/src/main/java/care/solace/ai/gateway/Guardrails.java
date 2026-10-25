@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
  */
 public final class Guardrails {
 
+  /** Version 1. Clinicians change it as the reviewed list ai.guardrails.clinical (D61). */
   private static final List<Pattern> CLINICAL =
       List.of(
           Pattern.compile("\\bdiagnos"),
@@ -29,17 +30,29 @@ public final class Guardrails {
 
   private static final Pattern NUMBER = Pattern.compile("\\d+(?:[.,]\\d+)?");
 
+  private static volatile List<Pattern> inForce = CLINICAL;
+
   private Guardrails() {}
 
   /** Why the text may not be shown, or empty when it may. */
   public static Optional<String> clinical(String text) {
     String t = fold(text).replace("not a diagnosis", " ").replace("pas un diagnostic", " ");
-    for (Pattern p : CLINICAL) {
+    for (Pattern p : inForce) {
       if (p.matcher(t).find()) {
         return Optional.of("clinical-wording");
       }
     }
     return Optional.empty();
+  }
+
+  /** The patterns of version 1, as written. */
+  public static List<String> clinicalDefaults() {
+    return CLINICAL.stream().map(Pattern::pattern).toList();
+  }
+
+  /** Puts a signed-off version of the clinical words in force (D61). */
+  public static void useClinical(List<String> patterns) {
+    inForce = patterns.stream().map(Pattern::compile).toList();
   }
 
   /** Every number in the text must appear in the evidence: the model adds no findings. */

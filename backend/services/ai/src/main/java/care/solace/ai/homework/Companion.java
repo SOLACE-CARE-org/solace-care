@@ -301,9 +301,13 @@ class Companion implements Evaluations.Runner {
         .optional();
   }
 
+  /** A signed-off version of the companion's wording wins over messages.properties (D61). */
   private String message(String key, Locale locale, Object... args) {
-    return messages.getMessage(
-        key, args, "fr".equals(locale.getLanguage()) ? Locale.FRENCH : Locale.ENGLISH);
+    return CompanionCopyList.text(key, locale, args)
+        .orElseGet(
+            () ->
+                messages.getMessage(
+                    key, args, "fr".equals(locale.getLanguage()) ? Locale.FRENCH : Locale.ENGLISH));
   }
 
   private byte[] seal(Map<String, String> record) {

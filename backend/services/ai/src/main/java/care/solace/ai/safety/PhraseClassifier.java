@@ -12,12 +12,50 @@ import java.util.Optional;
  * text with accents, case and apostrophes evened out, so code-switched text is caught too. It is
  * deliberately broad: a false alarm costs a responder a minute, a miss can cost a life
  * (threat-model-ai.md: over-flagging is acceptable). Categories are tried in order of severity.
+ *
+ * <p>The phrases below are version 1. Clinicians change them as the reviewed list {@code
+ * ai.safety.phrases}: a draft goes live only after the safety set passes on it (D61), and is then
+ * in force here through {@link #use}.
  */
 final class PhraseClassifier implements SafetyClassifier {
 
   static final String VERSION = "phrases-1";
 
   private static final Map<Category, List<String>> PHRASES = new LinkedHashMap<>();
+
+  private record Phrases(String version, Map<Category, List<String>> byCategory) {}
+
+  private static volatile Phrases inForce;
+
+  /** The phrases a classifier made with {@code new PhraseClassifier()} uses: the live ones. */
+  private final Phrases fixed;
+
+  PhraseClassifier() {
+    this.fixed = null;
+  }
+
+  /** A classifier for one set of phrases, such as a draft being checked against the safety set. */
+  PhraseClassifier(String version, Map<Category, List<String>> phrases) {
+    this.fixed = new Phrases(version, phrases);
+  }
+
+  /** Puts a signed-off version in force for every classifier made without phrases of its own. */
+  static void use(String version, Map<Category, List<String>> phrases) {
+    inForce = new Phrases(version, phrases);
+  }
+
+  /** Version 1, in this file. */
+  static Map<Category, List<String>> defaults() {
+    return PHRASES;
+  }
+
+  private Phrases phrases() {
+    if (fixed != null) {
+      return fixed;
+    }
+    var live = inForce;
+    return live == null ? new Phrases(VERSION, PHRASES) : live;
+  }
 
   static {
     PHRASES.put(
@@ -165,7 +203,7 @@ final class PhraseClassifier implements SafetyClassifier {
 
   @Override
   public String version() {
-    return VERSION;
+    return phrases().version();
   }
 
   @Override
@@ -174,7 +212,7 @@ final class PhraseClassifier implements SafetyClassifier {
       return Optional.empty();
     }
     String plain = plain(text);
-    for (var entry : PHRASES.entrySet()) {
+    for (var entry : phrases().byCategory().entrySet()) {
       for (String phrase : entry.getValue()) {
         if (plain.contains(plain(phrase))) {
           return Optional.of(entry.getKey());

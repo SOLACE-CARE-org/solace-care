@@ -68,6 +68,8 @@ public class Evaluations {
   private final List<Runner> lazyRunners;
   private final BigDecimal gate;
   private final Clock clock;
+  private final org.springframework.beans.factory.ObjectProvider<care.solace.lists.ReviewedLists>
+      lists;
 
   Evaluations(
       CoreSettings core,
@@ -75,7 +77,9 @@ public class Evaluations {
       ObjectMapper json,
       @Lazy List<Runner> runners,
       @Value("${solace.ai.eval-gate:95}") BigDecimal gate,
-      Clock clock) {
+      Clock clock,
+      org.springframework.beans.factory.ObjectProvider<care.solace.lists.ReviewedLists> lists) {
+    this.lists = lists;
     this.core = core;
     this.db = db;
     this.json = json;
@@ -220,7 +224,12 @@ public class Evaluations {
         >= 0;
   }
 
+  /** The cases in force: the clinicians' reviewed list, or the file it started from (D61). */
   JsonNode cases(Feature feature) {
+    var reviewed = lists.getIfAvailable();
+    if (reviewed != null) {
+      return reviewed.inForce(EvalSets.code(feature)).path("cases");
+    }
     String path = "/eval/" + feature.name().toLowerCase(Locale.ROOT).replace('_', '-') + ".json";
     try (InputStream in = Evaluations.class.getResourceAsStream(path)) {
       if (in == null) {

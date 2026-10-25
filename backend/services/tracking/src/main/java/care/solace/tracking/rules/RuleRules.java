@@ -46,15 +46,34 @@ public final class RuleRules {
           "ce n'est pas un diagnostic",
           "pas un diagnostic");
 
+  private record Wording(List<Pattern> blocked, List<String> allowed) {}
+
+  /** Version 0 is the lists above; clinicians change them as tracking.rules.wording (D61). */
+  private static volatile Wording inForce = new Wording(BLOCKED, ALLOWED_PHRASES);
+
   private RuleRules() {}
+
+  public static List<String> blockedDefaults() {
+    return BLOCKED.stream().map(Pattern::pattern).toList();
+  }
+
+  public static List<String> allowedDefaults() {
+    return ALLOWED_PHRASES;
+  }
+
+  /** Puts a signed-off version of the word list in force. */
+  public static void useWording(List<String> blocked, List<String> allowed) {
+    inForce = new Wording(blocked.stream().map(Pattern::compile).toList(), List.copyOf(allowed));
+  }
 
   /** True when the message passes the word list. */
   public static boolean wordingAllowed(String message) {
     String text = fold(message);
-    for (String allowed : ALLOWED_PHRASES) {
+    var wording = inForce;
+    for (String allowed : wording.allowed()) {
       text = text.replace(allowed, " ");
     }
-    for (Pattern p : BLOCKED) {
+    for (Pattern p : wording.blocked()) {
       if (p.matcher(text).find()) {
         return false;
       }

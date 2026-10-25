@@ -33,7 +33,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * AI models and routes as rows (D61): the configured model becomes the first row, a new model is
- * active only with its key, and a changed route goes live only after an evaluation on it.
+ * active only with its key, and a changed route goes live only after an evaluation on it. And the
+ * reviewed lists: safety phrases go live only once the safety set passes on them, signed off by a
+ * second clinician.
  */
 @SpringBootTest(
     properties = {
@@ -62,6 +64,8 @@ class AiModelsTest {
 
   private final RequestPostProcessor superAdmin = staff("sa-9", "S. Admin", "SUPER_ADMIN");
   private final RequestPostProcessor ops = staff("op-9", "O. Ops", "OPERATIONS");
+  private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+      new com.fasterxml.jackson.databind.ObjectMapper();
 
   @Test
   void theConfiguredModelIsTheFirstRowAndANewOneNeedsItsKey() throws Exception {
@@ -145,6 +149,83 @@ class AiModelsTest {
                 .content("{\"tokens\":250000,\"reason\":\"Pilot\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.monthlyBudget").value(250000));
+  }
+
+  @Test
+  void safetyPhrasesGoLiveOnlyWhenTheSafetySetPassesAndASecondClinicianSignsOff() throws Exception {
+    var drafter = staff("cr-a", "Dr. Ade", "CLINICAL_REVIEWER");
+    var approver = staff("cr-b", "Dr. Bih", "CLINICAL_REVIEWER");
+    mvc.perform(get("/admin/v1/lists").with(ops))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$[?(@.code == 'ai.safety.phrases')].approvers[0]")
+                .value("CLINICAL_REVIEWER"));
+    var phrases =
+        JSON.readTree(
+                mvc.perform(get("/admin/v1/lists/ai.safety.phrases").with(ops))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString(java.nio.charset.StandardCharsets.UTF_8))
+            .path("inForce");
+
+    // No safety set yet: no phrases can pass.
+    int first = draft("ai.safety.phrases", phrases, drafter).path("version").asInt();
+    mvc.perform(
+            post("/admin/v1/lists/ai.safety.phrases/drafts/" + first + "/sign-off").with(approver))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("list.check-failed"));
+
+    // The clinicians' safety set, signed off by a second clinician.
+    var set =
+        JSON.readTree(
+            """
+            {"cases":[
+              {"id":"en-1","locale":"en","text":"I want to end my life","crisis":true},
+              {"id":"fr-1","locale":"fr","text":"je veux mettre fin a mes jours","crisis":true},
+              {"id":"en-2","locale":"en","text":"I slept badly","crisis":false}]}
+            """);
+    int setVersion = draft("ai.eval.safety-monitor", set, drafter).path("version").asInt();
+    mvc.perform(
+            post("/admin/v1/lists/ai.eval.safety-monitor/drafts/" + setVersion + "/sign-off")
+                .with(drafter))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("list.same-person"));
+    mvc.perform(
+            post("/admin/v1/lists/ai.eval.safety-monitor/drafts/" + setVersion + "/sign-off")
+                .with(approver))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/admin/v1/lists/ai.safety.phrases/drafts/" + first + "/sign-off").with(approver))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("LIVE"))
+        .andExpect(
+            jsonPath("$.checkResult").value(org.hamcrest.Matchers.startsWith("recall EN 100")));
+
+    // The guardrail list always keeps "triage".
+    mvc.perform(
+            post("/admin/v1/lists/ai.guardrails.clinical/drafts")
+                .with(drafter)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"entries\":[\"\\bdiagnos\"],\"note\":\"Shorter\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("list.invalid"));
+  }
+
+  private com.fasterxml.jackson.databind.JsonNode draft(
+      String code, com.fasterxml.jackson.databind.JsonNode entries, RequestPostProcessor who)
+      throws Exception {
+    return JSON.readTree(
+        mvc.perform(
+                post("/admin/v1/lists/" + code + "/drafts")
+                    .with(who)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        JSON.writeValueAsString(Map.of("entries", entries, "note", "Clinicians"))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(java.nio.charset.StandardCharsets.UTF_8));
   }
 
   private ResultActions route(String feature, String models) throws Exception {

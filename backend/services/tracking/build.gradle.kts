@@ -6,6 +6,8 @@ plugins {
 dependencies {
     // Platform settings and flags from Core (D61).
     implementation(project(":libs:core-settings"))
+    // Clinicians change word lists, phrases and test cases with a second sign-off (D61).
+    implementation(project(":libs:reviewed-lists"))
     implementation("org.springframework.grpc:spring-grpc-server-spring-boot-starter")
     // Calls to Core (live-booking check, taxonomy, age) with deadlines and breakers.
     implementation(project(":libs:grpc-client"))

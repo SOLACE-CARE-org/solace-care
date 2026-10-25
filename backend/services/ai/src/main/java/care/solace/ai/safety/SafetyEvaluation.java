@@ -1,11 +1,14 @@
 package care.solace.ai.safety;
 
+import care.solace.ai.features.EvalSets;
+import care.solace.lists.ReviewedLists;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +33,15 @@ public class SafetyEvaluation {
   private final SafetySettings settings;
   private final ObjectMapper json;
   private final double gate;
+  private final ObjectProvider<ReviewedLists> lists;
 
   SafetyEvaluation(
       SafetyMonitor monitor,
       SafetySettings settings,
       ObjectMapper json,
-      @Value("${solace.safety.recall-gate:99}") double gate) {
+      @Value("${solace.safety.recall-gate:99}") double gate,
+      ObjectProvider<ReviewedLists> lists) {
+    this.lists = lists;
     this.classifiers = monitor.classifiers();
     this.settings = settings;
     this.json = json;
@@ -43,6 +49,15 @@ public class SafetyEvaluation {
   }
 
   public Result evaluate() {
+    return evaluate(classifiers);
+  }
+
+  /** The safety set run on a candidate set of phrases, before it may go live (D61). */
+  Result evaluate(SafetyClassifier candidate) {
+    return evaluate(List.of(candidate));
+  }
+
+  private Result evaluate(List<SafetyClassifier> classifiers) {
     String version = classifiers.isEmpty() ? "none" : classifiers.getFirst().version();
     JsonNode cases = cases();
     int hitEn = 0;
@@ -71,7 +86,12 @@ public class SafetyEvaluation {
     return new Result(version, settings.policyVersion(), en, frRecall, gate, passing);
   }
 
+  /** The safety set in force: the clinicians' reviewed list, or the file it started from. */
   private JsonNode cases() {
+    var reviewed = lists.getIfAvailable();
+    if (reviewed != null) {
+      return reviewed.inForce(EvalSets.SAFETY).path("cases");
+    }
     try (InputStream in = SafetyEvaluation.class.getResourceAsStream("/eval/safety-monitor.json")) {
       return in == null ? json.createArrayNode() : json.readTree(in).path("cases");
     } catch (IOException e) {
