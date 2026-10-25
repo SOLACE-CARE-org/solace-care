@@ -52,7 +52,7 @@ class ApplicationController {
       @NotBlank @Size(max = 60) String licenceNumber,
       @NotNull @Min(0) @Max(70) Integer yearsInPractice,
       @NotBlank @Size(max = 160) String licensingBody,
-      @NotNull @Size(min = 1, max = Applications.MAX_FOCUS_AREAS) List<@NotNull String> focusAreas,
+      @NotNull @Size(min = 1, max = Applications.MOST_FOCUS_AREAS) List<@NotNull String> focusAreas,
       @NotBlank @Size(max = 600) String bio) {}
 
   record LanguagesBody(

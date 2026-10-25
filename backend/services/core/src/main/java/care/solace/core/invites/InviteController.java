@@ -1,5 +1,6 @@
 package care.solace.core.invites;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.catalog.Catalogue;
 import care.solace.core.identity.Accounts;
 import care.solace.core.specialists.SpecialistOffers;
@@ -22,6 +23,7 @@ class InviteController {
 
   static final int MATCHES = 5;
 
+  private final PlatformSettings platform;
   private final Accounts accounts;
   private final Invites invites;
   private final SpecialistOffers specialists;
@@ -29,11 +31,13 @@ class InviteController {
   private final InvitePreferences preferences;
 
   InviteController(
+      PlatformSettings platform,
       Accounts accounts,
       Invites invites,
       SpecialistOffers specialists,
       Catalogue catalogue,
       InvitePreferences preferences) {
+    this.platform = platform;
     this.accounts = accounts;
     this.invites = invites;
     this.specialists = specialists;
@@ -61,6 +65,10 @@ class InviteController {
         invite.specialtyCodes().stream()
             .map(c -> new Specialty(c, labels.getOrDefault(c, c)))
             .toList(),
-        specialists.matches(invite.specialtyCodes(), languages, locale, MATCHES));
+        specialists.matches(
+            invite.specialtyCodes(),
+            languages,
+            locale,
+            (int) platform.number("solace.invites.matches", MATCHES)));
   }
 }

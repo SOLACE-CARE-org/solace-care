@@ -349,7 +349,7 @@ class HealthCheckController {
             p == null ? null : p.modality(),
             p == null ? null : p.maxPrice(),
             locale,
-            MATCHES);
+            matches());
     Comparator<SpecialistOffers.Candidate> order =
         Comparator.<SpecialistOffers.Candidate>comparingInt(
                 c -> c.specialty().equals(r.state().specialty()) ? 0 : 1)
@@ -360,7 +360,7 @@ class HealthCheckController {
             .thenComparing(c -> -c.rating());
     return found.stream()
         .sorted(order)
-        .limit(MATCHES)
+        .limit(matches())
         .map(
             c ->
                 new Match(
@@ -381,5 +381,10 @@ class HealthCheckController {
 
   private static boolean french(Locale locale) {
     return locale != null && "fr".equals(locale.getLanguage());
+  }
+
+  /** How many specialists the health check suggests ([10], D61). */
+  private int matches() {
+    return (int) settings.number("solace.health-check.matches", MATCHES);
   }
 }

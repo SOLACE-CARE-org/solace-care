@@ -1,5 +1,6 @@
 package care.solace.core.specialists;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.catalog.Catalogue;
 import care.solace.core.identity.Account;
 import care.solace.core.identity.MemberSignups;
@@ -30,9 +31,13 @@ class Applications implements SpecialistSummaries {
   /** SpecProfessional: "Areas you work with (up to 5)". A decision, not a setting. */
   static final int MAX_FOCUS_AREAS = 5;
 
+  /** The setting's ceiling, checked before the setting itself (D61). */
+  static final int MOST_FOCUS_AREAS = 20;
+
   private static final Pattern E164 = Pattern.compile("^[+][1-9][0-9]{7,14}$");
   private static final Set<String> MOBILE_MONEY = Set.of("MTN_MOMO", "ORANGE_MONEY");
 
+  private final PlatformSettings platform;
   private final ApplicationStore store;
   private final ReviewStore reviews;
   private final DocumentStore documentStore;
@@ -47,6 +52,7 @@ class Applications implements SpecialistSummaries {
   private final Clock clock;
 
   Applications(
+      PlatformSettings platform,
       ApplicationStore store,
       ReviewStore reviews,
       DocumentStore documentStore,
@@ -59,6 +65,7 @@ class Applications implements SpecialistSummaries {
       care.solace.core.content.LegalTexts legal,
       TransactionTemplate transactions,
       Clock clock) {
+    this.platform = platform;
     this.store = store;
     this.reviews = reviews;
     this.documentStore = documentStore;
@@ -169,7 +176,8 @@ class Applications implements SpecialistSummaries {
   void savePractice(Account account, Practice practice) {
     UUID id = editable(account).accountId();
     List<String> topics = practice.focusAreas().stream().distinct().toList();
-    if (topics.isEmpty() || topics.size() > MAX_FOCUS_AREAS) {
+    if (topics.isEmpty()
+        || topics.size() > platform.number("solace.specialists.max-focus-areas", MAX_FOCUS_AREAS)) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
     if (!catalogue.isProfession(practice.profession()) || !catalogue.areHelpTopics(topics)) {

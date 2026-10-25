@@ -6,6 +6,7 @@ import care.solace.contracts.core.v1.MetricsServiceGrpc;
 import care.solace.contracts.core.v1.Period;
 import care.solace.contracts.core.v1.QueryMetricRequest;
 import care.solace.contracts.core.v1.QueryMetricResponse;
+import care.solace.core.admin.PlatformSettings;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.sql.Timestamp;
@@ -29,19 +30,22 @@ import org.springframework.stereotype.Service;
 @Service
 class MetricsEndpoint extends MetricsServiceGrpc.MetricsServiceImplBase {
 
+  private final PlatformSettings platform;
   private final JdbcClient db;
   private final MessageSource messages;
-  private final int minCell;
+  private final int configuredMinCell;
   private final Clock clock;
 
   MetricsEndpoint(
+      PlatformSettings platform,
       JdbcClient db,
       MessageSource messages,
       @Value("${solace.insight.min-cell:5}") int minCell,
       Clock clock) {
+    this.platform = platform;
     this.db = db;
     this.messages = messages;
-    this.minCell = minCell;
+    this.configuredMinCell = minCell;
     this.clock = clock;
   }
 
@@ -136,10 +140,10 @@ class MetricsEndpoint extends MetricsServiceGrpc.MetricsServiceImplBase {
                 .single();
         columns.add(text("metrics.col.ratings", locale, "Ratings"));
         columns.add(text("metrics.col.average", locale, "Average"));
-        boolean small = r[0] > 0 && r[0] < minCell;
+        boolean small = r[0] > 0 && r[0] < minCell();
         var row =
             MetricRow.newBuilder()
-                .addCells(small ? "<" + minCell : Long.toString((long) r[0]))
+                .addCells(small ? "<" + minCell() : Long.toString((long) r[0]))
                 .addCells(
                     small || r[0] == 0
                         ? "–"
@@ -171,9 +175,9 @@ class MetricsEndpoint extends MetricsServiceGrpc.MetricsServiceImplBase {
     for (Group g : groups) {
       var row = MetricRow.newBuilder().addCells(g.label());
       for (long v : twoCounts ? new long[] {g.a(), g.b()} : new long[] {g.a()}) {
-        if (v > 0 && v < minCell) {
+        if (v > 0 && v < minCell()) {
           suppressed = true;
-          row.addCells("<" + minCell);
+          row.addCells("<" + minCell());
         } else {
           row.addCells(Long.toString(v));
         }
@@ -222,5 +226,10 @@ class MetricsEndpoint extends MetricsServiceGrpc.MetricsServiceImplBase {
 
   private String text(String key, Locale locale, String fallback) {
     return messages.getMessage(key, null, fallback, locale);
+  }
+
+  /** Cells under this are hidden (D58); a setting, read when used. */
+  private long minCell() {
+    return platform.number("solace.insight.min-cell", configuredMinCell);
   }
 }

@@ -594,7 +594,8 @@
         "NOTIFICATIONS": "Notifications",
         "PRIVACY": "Privacy",
         "SAFETY": "Safety",
-        "ACCESS": "Access"
+        "ACCESS": "Access",
+        "INSIGHT": "Analytics and alerts"
       },
       "label": {
         "solace_specialists_pricing_fee-percent": "Commission on each session",
@@ -621,7 +622,26 @@
         "solace_health-check_retake-after": "A health check older than this asks for a retake",
         "solace_health-check_also-fit-within": "\"Also a good fit\" when this many points behind",
         "solace_health-check_price-band-1": "Health check price band 1, up to",
-        "solace_health-check_price-band-2": "Health check price band 2, up to"
+        "solace_health-check_price-band-2": "Health check price band 2, up to",
+        "solace_brief_notice": "The Brief ready push goes this long before a session",
+        "solace_scheduling_horizon": "Seekers can book this far ahead",
+        "solace_scheduling_longest-time-off": "Longest single time-off block",
+        "solace_specialists_max-focus-areas": "Focus areas a specialist can choose",
+        "solace_health-check_matches": "Specialists the health check suggests",
+        "solace_invites_matches": "Specialists a tracking invitation suggests",
+        "solace_bookings_guest-token-after-end": "A guest's booking link works after the session for",
+        "solace_identity_unverified-signup-ttl": "An unfinished sign-up is removed after",
+        "solace_insight_booking-drop-percent": "Alert when bookings drop by",
+        "solace_insight_payment-failure-factor": "Alert when failed payments are this many times usual",
+        "solace_insight_min-volume": "Fewest events before an alert can fire",
+        "solace_insight_min-cell": "Counts under this are hidden in de-identified metrics",
+        "solace_insight_slow-payment": "Mobile money shows slow after a payment waits",
+        "solace_staff_temporary-password": "A staff temporary password works for",
+        "solace_sessions_join-opens": "Joining opens before the start",
+        "solace_sessions_token-after-end": "Joining stays open after the end for",
+        "solace_sessions_reconnect": "A dropped call can reconnect within",
+        "solace_identity_minimum-age": "Minimum age to sign up",
+        "solace_specialists_licence-reminder": "Specialists are reminded before their licence ends"
       },
       "flag": {
         "safetyMonitor": "Safety monitor",

@@ -1,5 +1,6 @@
 package care.solace.core.bookings;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.guests.GuestAccess;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class GuestBookingController {
 
+  private final PlatformSettings platform;
   private final Bookings bookings;
   private final BookingStore store;
   private final BookingViews views;
@@ -37,12 +39,14 @@ class GuestBookingController {
   private final Duration tokenAfterEnd;
 
   GuestBookingController(
+      PlatformSettings platform,
       Bookings bookings,
       BookingStore store,
       BookingViews views,
       GuestAccess guests,
       Clock clock,
       @Value("${solace.bookings.guest-token-after-end:P1D}") Duration tokenAfterEnd) {
+    this.platform = platform;
     this.bookings = bookings;
     this.store = store;
     this.views = views;
@@ -81,7 +85,8 @@ class GuestBookingController {
             body.holdId(),
             body.sessionLanguage(),
             "SEARCH");
-    Instant expiresAt = row.end().plus(tokenAfterEnd);
+    Instant expiresAt =
+        row.end().plus(platform.duration("solace.bookings.guest-token-after-end", tokenAfterEnd));
     String token = guests.issueToken(contact, row.id(), expiresAt);
     return new GuestBooking(view(row, locale), token, expiresAt);
   }

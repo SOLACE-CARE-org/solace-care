@@ -1,5 +1,6 @@
 package care.solace.core.scheduling;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.identity.Account;
 import care.solace.core.identity.Accounts;
 import care.solace.errors.CommonError;
@@ -28,10 +29,12 @@ class TimeOffController {
   /** Longest single block. Not in the specs: a working default against typing mistakes. */
   static final Duration LONGEST = Duration.ofDays(60);
 
+  private final PlatformSettings platform;
   private final Accounts accounts;
   private final CalendarStore calendar;
 
-  TimeOffController(Accounts accounts, CalendarStore calendar) {
+  TimeOffController(PlatformSettings platform, Accounts accounts, CalendarStore calendar) {
+    this.platform = platform;
     this.accounts = accounts;
     this.calendar = calendar;
   }
@@ -48,7 +51,9 @@ class TimeOffController {
   TimeOff block(@AuthenticationPrincipal Jwt token, @Valid @RequestBody TimeOffRequest body) {
     Account specialist = specialist(token);
     if (!body.start().isBefore(body.end())
-        || Duration.between(body.start(), body.end()).compareTo(LONGEST) > 0) {
+        || Duration.between(body.start(), body.end())
+                .compareTo(platform.duration("solace.scheduling.longest-time-off", LONGEST))
+            > 0) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
     String reason = body.reason() == null ? "PERSONAL" : body.reason();

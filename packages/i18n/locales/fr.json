@@ -594,7 +594,8 @@
         "NOTIFICATIONS": "Notifications",
         "PRIVACY": "Confidentialité",
         "SAFETY": "Sécurité",
-        "ACCESS": "Accès"
+        "ACCESS": "Accès",
+        "INSIGHT": "Analyses et alertes"
       },
       "label": {
         "solace_specialists_pricing_fee-percent": "Commission par séance",
@@ -621,7 +622,26 @@
         "solace_health-check_retake-after": "Au-delà de ce délai, le bilan de santé est à refaire",
         "solace_health-check_also-fit-within": "« Convient aussi » à cet écart de points",
         "solace_health-check_price-band-1": "Bilan de santé, tranche de prix 1, jusqu'à",
-        "solace_health-check_price-band-2": "Bilan de santé, tranche de prix 2, jusqu'à"
+        "solace_health-check_price-band-2": "Bilan de santé, tranche de prix 2, jusqu'à",
+        "solace_brief_notice": "La notification « Préparation prête » part ce délai avant la séance",
+        "solace_scheduling_horizon": "Les personnes peuvent réserver jusqu'à",
+        "solace_scheduling_longest-time-off": "Absence la plus longue en un seul bloc",
+        "solace_specialists_max-focus-areas": "Domaines d'intervention qu'un spécialiste peut choisir",
+        "solace_health-check_matches": "Spécialistes proposés par le bilan",
+        "solace_invites_matches": "Spécialistes proposés par une invitation de suivi",
+        "solace_bookings_guest-token-after-end": "Le lien de réservation d'un invité fonctionne après la séance pendant",
+        "solace_identity_unverified-signup-ttl": "Une inscription inachevée est supprimée après",
+        "solace_insight_booking-drop-percent": "Alerte quand les réservations baissent de",
+        "solace_insight_payment-failure-factor": "Alerte quand les paiements échoués atteignent ce multiple de l'habitude",
+        "solace_insight_min-volume": "Nombre minimal d'événements avant une alerte",
+        "solace_insight_min-cell": "Les effectifs inférieurs sont masqués dans les indicateurs anonymisés",
+        "solace_insight_slow-payment": "Le mobile money est signalé lent quand un paiement attend",
+        "solace_staff_temporary-password": "Un mot de passe temporaire du personnel fonctionne pendant",
+        "solace_sessions_join-opens": "L'accès ouvre avant le début",
+        "solace_sessions_token-after-end": "L'accès reste ouvert après la fin pendant",
+        "solace_sessions_reconnect": "Un appel coupé peut reprendre dans",
+        "solace_identity_minimum-age": "Âge minimal pour s'inscrire",
+        "solace_specialists_licence-reminder": "Les spécialistes sont prévenus avant la fin de leur licence"
       },
       "flag": {
         "safetyMonitor": "Veille de sécurité",

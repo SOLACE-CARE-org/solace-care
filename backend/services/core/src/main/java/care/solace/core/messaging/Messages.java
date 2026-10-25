@@ -1,6 +1,7 @@
 package care.solace.core.messaging;
 
 import care.solace.core.admin.FeatureFlags;
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.bookings.BookingCancelled;
 import care.solace.core.bookings.BookingCompleted;
 import care.solace.core.bookings.BookingRecords;
@@ -32,9 +33,10 @@ import org.springframework.stereotype.Component;
 @Component
 class Messages {
 
-  /** Guest links stay valid until a day after the session, like the guest token (D34). */
+  /** Guest links stay valid as long as the guest token after the session (D34, D61). */
   private static final Duration LINK_AFTER_END = Duration.ofDays(1);
 
+  private final PlatformSettings platform;
   private final Notifier notifier;
   private final BookingRecords bookings;
   private final Catalogue catalogue;
@@ -44,6 +46,7 @@ class Messages {
   private final LicenceRenewals licences;
 
   Messages(
+      PlatformSettings platform,
       Notifier notifier,
       BookingRecords bookings,
       Catalogue catalogue,
@@ -51,6 +54,7 @@ class Messages {
       FeatureFlags flags,
       @Value("${solace.brief.notice:PT60M}") Duration briefNotice,
       LicenceRenewals licences) {
+    this.platform = platform;
     this.notifier = notifier;
     this.bookings = bookings;
     this.catalogue = catalogue;
@@ -91,7 +95,7 @@ class Messages {
                     b.guestContactId(),
                     "BOOKING_CONFIRMED",
                     b.id(),
-                    b.end().plus(LINK_AFTER_END),
+                    b.end().plus(linkAfterEnd()),
                     true,
                     (l, z) -> when(b.start(), l, z));
               }
@@ -128,7 +132,7 @@ class Messages {
                     b.guestContactId(),
                     "PAYMENT_NOT_COMPLETED",
                     b.id(),
-                    b.end().plus(LINK_AFTER_END),
+                    b.end().plus(linkAfterEnd()),
                     true,
                     (l, z) -> new Object[] {Formats.time(failed.payBy(), z)});
               }
@@ -319,7 +323,7 @@ class Messages {
             b.guestContactId(),
             "JOIN_OPENS",
             b.id(),
-            b.end().plus(LINK_AFTER_END),
+            b.end().plus(linkAfterEnd()),
             true,
             (l, z) -> new Object[] {Formats.time(b.start(), z)});
       }
@@ -333,7 +337,7 @@ class Messages {
     }
     // The pre-session brief, `[60]` minutes before, while AI assist is on (Phase 3, D56).
     if (flags.enabled("aiAssist")) {
-      Instant at = now.plus(briefNotice);
+      Instant at = now.plus(platform.duration("solace.brief.notice", briefNotice));
       for (var b : bookings.confirmedStartingBetween(at.minusSeconds(2 * 60), at.plusSeconds(60))) {
         notifier.push(
             b.specialistId(),
@@ -386,7 +390,7 @@ class Messages {
     if (b.seekerAccountId() != null) {
       notifier.push(b.seekerAccountId(), kind, b.id(), false, args);
     } else {
-      notifier.sms(b.guestContactId(), kind, b.id(), b.end().plus(LINK_AFTER_END), smsLink, args);
+      notifier.sms(b.guestContactId(), kind, b.id(), b.end().plus(linkAfterEnd()), smsLink, args);
     }
   }
 
@@ -408,5 +412,9 @@ class Messages {
     var day = DateTimeFormatter.ofPattern("d", locale);
     var dayMonth = DateTimeFormatter.ofPattern("d MMM", Formats.language(locale));
     return day.format(p.periodStart()) + "–" + dayMonth.format(p.periodEnd());
+  }
+
+  private Duration linkAfterEnd() {
+    return platform.duration("solace.bookings.guest-token-after-end", LINK_AFTER_END);
   }
 }

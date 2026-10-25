@@ -1,5 +1,6 @@
 package care.solace.core.insight;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.admin.StaffAccess;
 import care.solace.core.admin.StaffAccess.Level;
 import care.solace.core.bookings.BookingAttendance;
@@ -40,10 +41,12 @@ import org.springframework.web.bind.annotation.RestController;
 class OverviewController {
 
   /** A payment still unconfirmed this long counts as slow mobile money. Not in the specs. */
+  /** Mobile money shows slow after this ([5] minutes); a setting (D61). */
   private static final Duration SLOW_PAYMENT = Duration.ofMinutes(5);
 
   private static final Duration CALLS_CHECK = Duration.ofSeconds(60);
 
+  private final PlatformSettings platform;
   private final StaffAccess access;
   private final JdbcClient db;
   private final SpecialistOffers specialists;
@@ -57,6 +60,7 @@ class OverviewController {
   private volatile String callsStatus = "UNKNOWN";
 
   OverviewController(
+      PlatformSettings platform,
       StaffAccess access,
       JdbcClient db,
       SpecialistOffers specialists,
@@ -64,6 +68,7 @@ class OverviewController {
       ObjectProvider<CircuitBreakerRegistry> breakers,
       @Value("${solace.sessions.api-url:http://localhost:7880}") URI livekit,
       Clock clock) {
+    this.platform = platform;
     this.access = access;
     this.db = db;
     this.specialists = specialists;
@@ -332,7 +337,11 @@ class OverviewController {
     out.add(new Health("CALLS", calls()));
     int slow =
         db.sql("SELECT count(*) FROM payment WHERE status = 'PENDING' AND created_at < :before")
-            .param("before", Timestamp.from(now.toInstant().minus(SLOW_PAYMENT)))
+            .param(
+                "before",
+                Timestamp.from(
+                    now.toInstant()
+                        .minus(platform.duration("solace.insight.slow-payment", SLOW_PAYMENT))))
             .query(Integer.class)
             .single();
     out.add(new Health("PAYMENTS", slow > 0 ? "SLOW" : "HEALTHY"));

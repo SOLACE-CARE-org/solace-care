@@ -26,7 +26,8 @@ class SettingCatalogue {
     NOTIFICATIONS,
     PRIVACY,
     SAFETY,
-    ACCESS
+    ACCESS,
+    INSIGHT
   }
 
   /** How a value is written on the screen and stored: whole units, or HH:MM. */
@@ -175,6 +176,62 @@ class SettingCatalogue {
               1000,
               1000000,
               true),
+          // Tranche 1 of the configuration strategy (D61): values that were in config or code.
+          new Definition("solace.brief.notice", Group.SESSIONS, Type.MINUTES, "60", 15, 1440, true),
+          new Definition("solace.scheduling.horizon", Group.SESSIONS, Type.DAYS, "14", 7, 90, true),
+          new Definition(
+              "solace.scheduling.longest-time-off", Group.SESSIONS, Type.DAYS, "60", 1, 365, true),
+          new Definition(
+              "solace.specialists.max-focus-areas", Group.SESSIONS, Type.COUNT, "5", 1, 20, true),
+          new Definition(
+              "solace.health-check.matches", Group.SESSIONS, Type.COUNT, "10", 3, 50, true),
+          new Definition("solace.invites.matches", Group.SESSIONS, Type.COUNT, "5", 1, 20, true),
+          new Definition(
+              "solace.bookings.guest-token-after-end", Group.ACCESS, Type.DAYS, "1", 1, 7, true),
+          new Definition(
+              "solace.identity.unverified-signup-ttl",
+              Group.ACCESS,
+              Type.HOURS,
+              "24",
+              1,
+              168,
+              true),
+          new Definition(
+              "solace.insight.booking-drop-percent",
+              Group.INSIGHT,
+              Type.PERCENT,
+              "50",
+              10,
+              90,
+              true),
+          new Definition(
+              "solace.insight.payment-failure-factor", Group.INSIGHT, Type.COUNT, "2", 2, 10, true),
+          new Definition(
+              "solace.insight.min-volume", Group.INSIGHT, Type.COUNT, "5", 1, 1000, true),
+          // Small-cell suppression for de-identified metrics (D58).
+          new Definition("solace.insight.min-cell", Group.INSIGHT, Type.COUNT, "5", 3, 50, true),
+          new Definition(
+              "solace.insight.slow-payment", Group.INSIGHT, Type.MINUTES, "5", 1, 60, true),
+          // Fixed decisions, shown and not changed (CLAUDE.md, numbers without brackets);
+          // FixedSettingsTest checks each one against the constant the code uses.
+          new Definition(
+              "solace.staff.temporary-password", Group.ACCESS, Type.HOURS, "72", 72, 72, false),
+          new Definition(
+              "solace.sessions.join-opens", Group.SESSIONS, Type.MINUTES, "10", 10, 10, false),
+          new Definition(
+              "solace.sessions.token-after-end", Group.SESSIONS, Type.MINUTES, "15", 15, 15, false),
+          new Definition(
+              "solace.sessions.reconnect", Group.SESSIONS, Type.MINUTES, "2", 2, 2, false),
+          new Definition(
+              "solace.identity.minimum-age", Group.ACCESS, Type.COUNT, "18", 18, 18, false),
+          new Definition(
+              "solace.specialists.licence-reminder",
+              Group.SESSIONS,
+              Type.DAYS,
+              "60",
+              60,
+              60,
+              false),
           // Crisis escalation at 5 and then 10 minutes is a decision (D11, D15).
           new Definition(
               "solace.crisis.escalate-after", Group.SAFETY, Type.MINUTES, "5", 5, 5, false),

@@ -1,5 +1,6 @@
 package care.solace.core.scheduling;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.errors.SolaceException;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,16 +20,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 class Scheduling implements Availability {
 
+  private final PlatformSettings platform;
   private final WeeklyHoursStore hours;
   private final CalendarStore calendar;
   private final HoldStore holds;
   private final TransactionTemplate transactions;
 
   Scheduling(
+      PlatformSettings platform,
       WeeklyHoursStore hours,
       CalendarStore calendar,
       HoldStore holds,
       TransactionTemplate transactions) {
+    this.platform = platform;
     this.hours = hours;
     this.calendar = calendar;
     this.holds = holds;
@@ -52,7 +56,7 @@ class Scheduling implements Availability {
         .flatMap(
             schedule -> {
               LocalDate today = LocalDate.ofInstant(now, ZoneId.of(schedule.timeZone()));
-              return week(specialistId, schedule, today, Slots.HORIZON_DAYS + 1, minutes, now)
+              return week(specialistId, schedule, today, horizonDays() + 1, minutes, now)
                   .slots()
                   .stream()
                   .filter(Slot::available)
@@ -194,5 +198,13 @@ class Scheduling implements Availability {
                 })
             .toList();
     return new Week(schedule.timeZone(), slots);
+  }
+
+  /** How far ahead seekers can book ([14] days, D61). */
+  private int horizonDays() {
+    return (int)
+        platform
+            .duration("solace.scheduling.horizon", Duration.ofDays(Slots.HORIZON_DAYS))
+            .toDays();
   }
 }

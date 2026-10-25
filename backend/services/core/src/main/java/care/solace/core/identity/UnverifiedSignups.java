@@ -1,5 +1,6 @@
 package care.solace.core.identity;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.jobs.Job;
 import java.time.Clock;
 import org.slf4j.Logger;
@@ -17,13 +18,19 @@ class UnverifiedSignups {
   private static final Logger LOG = LoggerFactory.getLogger(UnverifiedSignups.class);
   private static final int BATCH = 100;
 
+  private final PlatformSettings platform;
   private final AccountStore store;
   private final KeycloakMembers keycloak;
   private final IdentitySettings settings;
   private final Clock clock;
 
   UnverifiedSignups(
-      AccountStore store, KeycloakMembers keycloak, IdentitySettings settings, Clock clock) {
+      PlatformSettings platform,
+      AccountStore store,
+      KeycloakMembers keycloak,
+      IdentitySettings settings,
+      Clock clock) {
+    this.platform = platform;
     this.store = store;
     this.keycloak = keycloak;
     this.settings = settings;
@@ -36,7 +43,12 @@ class UnverifiedSignups {
       every = "${solace.identity.unverified-cleanup-interval:PT15M}",
       initialDelay = "PT1M")
   void removeExpired() {
-    var cutoff = clock.instant().minus(settings.unverifiedSignupTtl());
+    var cutoff =
+        clock
+            .instant()
+            .minus(
+                platform.duration(
+                    "solace.identity.unverified-signup-ttl", settings.unverifiedSignupTtl()));
     int removed = 0;
     for (var row : store.pendingBefore(cutoff, BATCH)) {
       try {

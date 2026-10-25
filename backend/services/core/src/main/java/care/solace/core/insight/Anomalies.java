@@ -1,5 +1,6 @@
 package care.solace.core.insight;
 
+import care.solace.core.admin.PlatformSettings;
 import care.solace.core.admin.StaffAccess;
 import care.solace.core.admin.StaffAccess.Level;
 import care.solace.jobs.Job;
@@ -32,6 +33,7 @@ class Anomalies {
 
   record Alert(String kind, Instant detectedAt, BigDecimal value, BigDecimal baseline) {}
 
+  private final PlatformSettings platform;
   private final JdbcClient db;
   private final StaffAccess access;
   private final Clock clock;
@@ -40,12 +42,14 @@ class Anomalies {
   private final int minVolume;
 
   Anomalies(
+      PlatformSettings platform,
       JdbcClient db,
       StaffAccess access,
       Clock clock,
       @Value("${solace.insight.booking-drop-percent:50}") int dropPercent,
       @Value("${solace.insight.payment-failure-factor:2}") double failureFactor,
       @Value("${solace.insight.min-volume:5}") int minVolume) {
+    this.platform = platform;
     this.db = db;
     this.access = access;
     this.clock = clock;
@@ -95,6 +99,8 @@ class Anomalies {
             dayAgo,
             weekBefore);
     double daily = before / 7.0;
+    long minVolume = platform.number("solace.insight.min-volume", this.minVolume);
+    long dropPercent = platform.number("solace.insight.booking-drop-percent", this.dropPercent);
     if (daily >= minVolume && recent <= daily * (100 - dropPercent) / 100.0) {
       raise("BOOKING_DROP", recent, daily, now);
     }
@@ -115,6 +121,8 @@ class Anomalies {
             "SELECT count(*) FROM payment WHERE created_at >= :b AND created_at < :a",
             dayAgo,
             weekBefore);
+    double failureFactor =
+        platform.number("solace.insight.payment-failure-factor", (long) this.failureFactor);
     if (failedNow >= minVolume && allNow > 0) {
       double share = 100.0 * failedNow / allNow;
       double usual = allBefore == 0 ? 0 : 100.0 * failedBefore / allBefore;
