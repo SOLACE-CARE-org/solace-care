@@ -7964,7 +7964,8 @@ components:
           x-extensible-enum: [MONEY, SESSIONS, REVIEWS, NOTIFICATIONS, PRIVACY, SAFETY, ACCESS, INSIGHT, TRACKING, AI]
         type:
           type: string
-          x-extensible-enum: [PERCENT, FCFA, MINUTES, HOURS, DAYS, COUNT, TIME]
+          description: MINUTES_LIST and HOURS_LIST are comma-separated whole numbers; PHONE is an international number or empty; CODES are comma-separated codes from allowed (D61).
+          x-extensible-enum: [PERCENT, FCFA, MINUTES, HOURS, DAYS, COUNT, TIME, MINUTES_LIST, HOURS_LIST, PHONE, CODES]
         value:
           type: string
         defaultValue:
@@ -7976,6 +7977,11 @@ components:
         editable:
           description: False for fixed decisions (the 10-minute hold, two people for every refund) and values set in the identity service.
           type: boolean
+        allowed:
+          description: For CODES, the codes the value may hold.
+          type: array
+          items:
+            type: string
         version:
           description: 0 while the default is in force.
           type: integer
