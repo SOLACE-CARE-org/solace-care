@@ -134,6 +134,11 @@ class Settings implements PlatformSettings, FeatureFlags {
     return state != null ? state.enabled() : catalogue.defaultEnabled(flag.get());
   }
 
+  /** Every value staff set, for Tracking and AI (ConfigEndpoint, D61). */
+  Map<String, Current> setValues() {
+    return values;
+  }
+
   Optional<Current> current(String key) {
     return Optional.ofNullable(values.get(key));
   }

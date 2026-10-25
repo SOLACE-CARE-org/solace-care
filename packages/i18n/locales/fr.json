@@ -595,7 +595,9 @@
         "PRIVACY": "Confidentialité",
         "SAFETY": "Sécurité",
         "ACCESS": "Accès",
-        "INSIGHT": "Analyses et alertes"
+        "INSIGHT": "Analyses et alertes",
+        "TRACKING": "Suivi",
+        "AI": "IA"
       },
       "label": {
         "solace_specialists_pricing_fee-percent": "Commission par séance",
@@ -641,7 +643,16 @@
         "solace_sessions_token-after-end": "L'accès reste ouvert après la fin pendant",
         "solace_sessions_reconnect": "Un appel coupé peut reprendre dans",
         "solace_identity_minimum-age": "Âge minimal pour s'inscrire",
-        "solace_specialists_licence-reminder": "Les spécialistes sont prévenus avant la fin de leur licence"
+        "solace_specialists_licence-reminder": "Les spécialistes sont prévenus avant la fin de leur licence",
+        "solace_tracking_snooze-days": "Une invitation reportée revient après",
+        "solace_tracking_nudges_reminder-window": "Un rappel de suivi peut partir jusqu'à ce délai après l'heure prévue",
+        "solace_tracking_nudges_risk-pause": "Les notifications de suivi s'arrêtent après un signalement de sécurité pendant",
+        "solace_tracking_nudges_ignored-limit": "Les rappels de suivi s'arrêtent après ce nombre de jours ignorés",
+        "solace_tracking_trend-window": "Jours de suivi dans la préparation de séance",
+        "solace_tracking_cycle_new-period-gap-days": "Jours sans saignement avant que de nouvelles règles ouvrent un cycle",
+        "solace_ai_retention-days": "Les requêtes et réponses de l'IA sont gardées pour l'audit pendant",
+        "solace_ai_eval-gate": "Une version de requête IA réussit son évaluation à partir de",
+        "solace_ai_homework_default-due": "Un exercice est à rendre après ce délai, sauf date choisie par le spécialiste"
       },
       "flag": {
         "safetyMonitor": "Veille de sécurité",
@@ -657,7 +668,8 @@
         "sessionScribe": "Scribe de séance",
         "companion": "Compagnon d'exercices et plan de sécurité",
         "adminCopilot": "Copilote admin",
-        "phoneDialIn": "Accès par téléphone"
+        "phoneDialIn": "Accès par téléphone",
+        "aiTransferAuthorised": "L'IA peut recevoir des données de santé à l'étranger (transfert autorisé)"
       },
       "value": {
         "PERCENT": "{{value}} %",

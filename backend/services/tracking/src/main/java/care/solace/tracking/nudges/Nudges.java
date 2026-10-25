@@ -1,5 +1,6 @@
 package care.solace.tracking.nudges;
 
+import care.solace.coresettings.CoreSettings;
 import care.solace.events.EventEnvelope;
 import care.solace.events.Events;
 import care.solace.tracking.PersonalData;
@@ -39,6 +40,7 @@ public class Nudges implements PersonalData {
   /** Payload of tracking.nudge.requested v1. The kind only: Core holds the copy. */
   public record NudgeRequested(String kind) {}
 
+  private final CoreSettings core;
   private final JdbcClient db;
   private final ApplicationEventPublisher events;
   private final Clock clock;
@@ -46,11 +48,13 @@ public class Nudges implements PersonalData {
   private final Duration window;
 
   Nudges(
+      CoreSettings core,
       JdbcClient db,
       ApplicationEventPublisher events,
       Clock clock,
       @Value("${solace.tracking.nudges.default-zone:Africa/Douala}") ZoneId defaultZone,
       @Value("${solace.tracking.nudges.reminder-window:PT2H}") Duration window) {
+    this.core = core;
     this.db = db;
     this.events = events;
     this.clock = clock;
@@ -84,7 +88,9 @@ public class Nudges implements PersonalData {
       ZoneId zone = zone(d.user());
       ZonedDateTime local = now.atZone(zone);
       ZonedDateTime at = local.toLocalDate().atTime(d.at()).atZone(zone);
-      if (local.isBefore(at) || local.isAfter(at.plus(window))) {
+      if (local.isBefore(at)
+          || local.isAfter(
+              at.plus(core.duration("solace.tracking.nudges.reminder-window", window)))) {
         continue;
       }
       if (loggedSince(d.user(), local.toLocalDate().atStartOfDay(zone).toInstant())) {
@@ -159,10 +165,11 @@ public class Nudges implements PersonalData {
     List<Instant> last =
         db.sql("SELECT sent_at FROM nudge WHERE user_id = :u ORDER BY local_day DESC LIMIT :n")
             .param("u", user)
-            .param("n", IGNORED_LIMIT)
+            .param("n", ignoredLimit())
             .query((rs, n) -> rs.getTimestamp("sent_at").toInstant())
             .list();
-    return last.size() == IGNORED_LIMIT && !loggedSince(user, last.get(IGNORED_LIMIT - 1));
+    int limit = ignoredLimit();
+    return last.size() == limit && !loggedSince(user, last.get(limit - 1));
   }
 
   private boolean loggedSince(UUID user, Instant since) {
@@ -205,5 +212,10 @@ public class Nudges implements PersonalData {
   public void erase(UUID userId) {
     db.sql("DELETE FROM nudge WHERE user_id = :u").param("u", userId).update();
     db.sql("DELETE FROM nudge_pause WHERE user_id = :u").param("u", userId).update();
+  }
+
+  /** Nudges stop after this many ignored days ([5]; D52, D61). */
+  private int ignoredLimit() {
+    return (int) core.number("solace.tracking.nudges.ignored-limit", IGNORED_LIMIT);
   }
 }

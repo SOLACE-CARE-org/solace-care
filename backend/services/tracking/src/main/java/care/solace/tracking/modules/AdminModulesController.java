@@ -1,6 +1,7 @@
 package care.solace.tracking.modules;
 
 import care.solace.audit.AuditLog;
+import care.solace.coresettings.CoreSettings;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.tracking.elements.ElementController;
@@ -51,6 +52,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 class AdminModulesController {
 
+  private final CoreSettings core;
   private final StaffGate gate;
   private final Modules modules;
   private final ModuleStore store;
@@ -61,6 +63,7 @@ class AdminModulesController {
   private final Clock clock;
 
   AdminModulesController(
+      CoreSettings core,
       StaffGate gate,
       Modules modules,
       ModuleStore store,
@@ -69,6 +72,7 @@ class AdminModulesController {
       AuditLog audit,
       @Value("${solace.tracking.cycle.new-period-gap-days:10}") int gapDays,
       Clock clock) {
+    this.core = core;
     this.gate = gate;
     this.modules = modules;
     this.store = store;
@@ -365,7 +369,9 @@ class AdminModulesController {
     LocalDate today = LocalDate.now(clock);
     List<TestResult> out = new ArrayList<>();
     for (var history : SyntheticHistories.all(today)) {
-      var signals = history.signals(today, gapDays);
+      var signals =
+          history.signals(
+              today, (int) core.number("solace.tracking.cycle.new-period-gap-days", gapDays));
       for (var r : store.rules(v.id())) {
         var result = RuleEngine.evaluate(r.conditions(), signals);
         boolean unless =

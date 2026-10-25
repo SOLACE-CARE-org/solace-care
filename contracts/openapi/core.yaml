@@ -7961,7 +7961,7 @@ components:
           type: string
         group:
           type: string
-          x-extensible-enum: [MONEY, SESSIONS, REVIEWS, NOTIFICATIONS, PRIVACY, SAFETY, ACCESS, INSIGHT]
+          x-extensible-enum: [MONEY, SESSIONS, REVIEWS, NOTIFICATIONS, PRIVACY, SAFETY, ACCESS, INSIGHT, TRACKING, AI]
         type:
           type: string
           x-extensible-enum: [PERCENT, FCFA, MINUTES, HOURS, DAYS, COUNT, TIME]

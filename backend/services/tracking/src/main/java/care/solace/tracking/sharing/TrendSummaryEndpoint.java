@@ -6,6 +6,7 @@ import care.solace.contracts.tracking.v1.GetTrendSummaryRequest;
 import care.solace.contracts.tracking.v1.GetTrendSummaryResponse;
 import care.solace.contracts.tracking.v1.TrendLine;
 import care.solace.contracts.tracking.v1.TrendSummaryServiceGrpc;
+import care.solace.coresettings.CoreSettings;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.sync.Sync;
 import io.grpc.Status;
@@ -32,6 +33,7 @@ class TrendSummaryEndpoint extends TrendSummaryServiceGrpc.TrendSummaryServiceIm
 
   static final int WINDOW = 14;
 
+  private final CoreSettings core;
   private final Sharing sharing;
   private final Sync sync;
   private final ElementLibrary library;
@@ -39,7 +41,13 @@ class TrendSummaryEndpoint extends TrendSummaryServiceGrpc.TrendSummaryServiceIm
   private final Clock clock;
 
   TrendSummaryEndpoint(
-      Sharing sharing, Sync sync, ElementLibrary library, AuditLog audit, Clock clock) {
+      CoreSettings core,
+      Sharing sharing,
+      Sync sync,
+      ElementLibrary library,
+      AuditLog audit,
+      Clock clock) {
+    this.core = core;
     this.sharing = sharing;
     this.sync = sync;
     this.library = library;
@@ -67,7 +75,8 @@ class TrendSummaryEndpoint extends TrendSummaryServiceGrpc.TrendSummaryServiceIm
     }
     boolean fr = "fr".equals(request.getLocale());
     LocalDate today = LocalDate.now(clock.withZone(ZoneId.of("Africa/Douala")));
-    LocalDate from = today.minusDays(WINDOW - 1);
+    int window = (int) core.number("solace.tracking.trend-window", WINDOW);
+    LocalDate from = today.minusDays(window - 1);
     Set<String> codes =
         library.all().stream()
             .filter(e -> !e.isNote())
@@ -93,7 +102,7 @@ class TrendSummaryEndpoint extends TrendSummaryServiceGrpc.TrendSummaryServiceIm
               .setElementCode(element.code())
               .setElementName(name(element, fr))
               .setDaysLogged((int) days)
-              .setWindowDays(WINDOW);
+              .setWindowDays(window);
       switch (element.valueType()) {
         case INT, MINUTES -> {
           double avg =

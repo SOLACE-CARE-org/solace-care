@@ -1,5 +1,6 @@
 package care.solace.tracking.cycles;
 
+import care.solace.coresettings.CoreSettings;
 import care.solace.tracking.PersonalData;
 import care.solace.tracking.sync.Sync;
 import java.sql.Date;
@@ -30,16 +31,19 @@ public class CycleReconciler implements PersonalData {
 
   static final Set<String> CYCLE_ELEMENTS = Set.of("flow_intensity", "period_start", "period_end");
 
+  private final CoreSettings core;
   private final JdbcClient db;
   private final Sync sync;
   private final int gapDays;
   private final Clock clock;
 
   CycleReconciler(
+      CoreSettings core,
       JdbcClient db,
       Sync sync,
       @Value("${solace.tracking.cycle.new-period-gap-days:10}") int gapDays,
       Clock clock) {
+    this.core = core;
     this.db = db;
     this.sync = sync;
     this.gapDays = gapDays;
@@ -67,7 +71,12 @@ public class CycleReconciler implements PersonalData {
         default -> {}
       }
     }
-    var cycles = CycleModel.cycles(flow, starts, ends, gapDays);
+    var cycles =
+        CycleModel.cycles(
+            flow,
+            starts,
+            ends,
+            (int) core.number("solace.tracking.cycle.new-period-gap-days", gapDays));
     db.sql("DELETE FROM cycle WHERE user_id = :u").param("u", user).update();
     for (var c : cycles) {
       db.sql(

@@ -1,5 +1,6 @@
 package care.solace.tracking.nudges;
 
+import care.solace.coresettings.CoreSettings;
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
 import care.solace.jobs.Job;
@@ -18,16 +19,19 @@ class NudgeTriggers {
 
   static final String RISK_CONSUMER = "tracking.risk-flagged";
 
+  private final CoreSettings core;
   private final Nudges nudges;
   private final IdempotentConsumer once;
   private final Clock clock;
   private final Duration riskPause;
 
   NudgeTriggers(
+      CoreSettings core,
       Nudges nudges,
       IdempotentConsumer once,
       Clock clock,
       @Value("${solace.tracking.nudges.risk-pause:P14D}") Duration riskPause) {
+    this.core = core;
     this.nudges = nudges;
     this.once = once;
     this.clock = clock;
@@ -64,6 +68,11 @@ class NudgeTriggers {
     once.handle(
         RISK_CONSUMER,
         event,
-        () -> nudges.pause(UUID.fromString(event.subjectId()), clock.instant().plus(riskPause)));
+        () ->
+            nudges.pause(
+                UUID.fromString(event.subjectId()),
+                clock
+                    .instant()
+                    .plus(core.duration("solace.tracking.nudges.risk-pause", riskPause))));
   }
 }

@@ -1,6 +1,7 @@
 package care.solace.tracking.rules;
 
 import care.solace.audit.AuditLog;
+import care.solace.coresettings.CoreSettings;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
@@ -42,6 +43,7 @@ class RecommendationsController {
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
+  private final CoreSettings core;
   private final Seekers seekers;
   private final JdbcClient db;
   private final ApplicationEventPublisher events;
@@ -50,12 +52,14 @@ class RecommendationsController {
   private final Clock clock;
 
   RecommendationsController(
+      CoreSettings core,
       Seekers seekers,
       JdbcClient db,
       ApplicationEventPublisher events,
       AuditLog audit,
       @Value("${solace.tracking.snooze-days:7}") int snoozeDays,
       Clock clock) {
+    this.core = core;
     this.seekers = seekers;
     this.db = db;
     this.events = events;
@@ -155,7 +159,9 @@ class RecommendationsController {
       @RequestBody(required = false) Snooze body) {
     UUID user = seekers.require(token);
     int days =
-        body != null && body.days() != null ? Math.max(1, Math.min(body.days(), 90)) : snoozeDays;
+        body != null && body.days() != null
+            ? Math.max(1, Math.min(body.days(), 90))
+            : (int) core.number("solace.tracking.snooze-days", snoozeDays);
     Instant now = clock.instant();
     int n =
         db.sql(

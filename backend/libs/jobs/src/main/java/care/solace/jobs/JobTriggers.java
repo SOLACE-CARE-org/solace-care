@@ -57,6 +57,7 @@ public class JobTriggers implements SchedulingConfigurer {
   /** A job found on a bean, with its defaults resolved. */
   record Found(
       Job job,
+      String name,
       Object bean,
       Method method,
       JobTriggerStore.Kind kind,
@@ -69,14 +70,14 @@ public class JobTriggers implements SchedulingConfigurer {
     Instant now = clock.instant();
     for (Found f : collector.found()) {
       store.ensure(
-          f.job().name(),
+          f.name(),
           f.job().description(),
           f.job().caution(),
           f.kind(),
           f.schedule(),
           f.zone(),
           now);
-      var row = store.find(f.job().name()).orElseThrow();
+      var row = store.find(f.name()).orElseThrow();
       if (row.status() == JobTriggerStore.Status.PAUSED) {
         store.registered(row.name(), null);
         LOG.warn("Job {} is paused: not registered", row.name());
@@ -166,26 +167,31 @@ public class JobTriggers implements SchedulingConfigurer {
             if (method.getParameterCount() != 0) {
               throw new IllegalStateException("@Job " + job.name() + " must take no arguments");
             }
-            if (!names.add(job.name())) {
-              throw new IllegalStateException("Two jobs are named " + job.name());
+            String name = resolve(job.name());
+            if (!name.matches("^[a-z][a-z0-9.-]{2,80}$")) {
+              throw new IllegalStateException("@Job name not valid: " + name);
             }
-            found.add(found(job, bean, AopUtils.selectInvocableMethod(method, bean.getClass())));
+            if (!names.add(name)) {
+              throw new IllegalStateException("Two jobs are named " + name);
+            }
+            found.add(
+                found(job, name, bean, AopUtils.selectInvocableMethod(method, bean.getClass())));
           });
       return bean;
     }
 
-    private Found found(Job job, Object bean, Method method) {
+    private Found found(Job job, String name, Object bean, Method method) {
       String every = resolve(job.every());
       String cron = resolve(job.cron());
       if (every.isEmpty() == cron.isEmpty()) {
-        throw new IllegalStateException(
-            "@Job " + job.name() + " needs exactly one of every or cron");
+        throw new IllegalStateException("@Job " + name + " needs exactly one of every or cron");
       }
       String delay = resolve(job.initialDelay());
       Duration initial = delay.isEmpty() ? Duration.ZERO : Schedules.interval(delay);
       if (cron.isEmpty()) {
         return new Found(
             job,
+            name,
             bean,
             method,
             JobTriggerStore.Kind.INTERVAL,
@@ -200,6 +206,7 @@ public class JobTriggers implements SchedulingConfigurer {
       }
       return new Found(
           job,
+          name,
           bean,
           method,
           JobTriggerStore.Kind.CRON,

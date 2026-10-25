@@ -27,7 +27,9 @@ class SettingCatalogue {
     PRIVACY,
     SAFETY,
     ACCESS,
-    INSIGHT
+    INSIGHT,
+    TRACKING,
+    AI
   }
 
   /** How a value is written on the screen and stored: whole units, or HH:MM. */
@@ -212,6 +214,35 @@ class SettingCatalogue {
           new Definition("solace.insight.min-cell", Group.INSIGHT, Type.COUNT, "5", 3, 50, true),
           new Definition(
               "solace.insight.slow-payment", Group.INSIGHT, Type.MINUTES, "5", 1, 60, true),
+          // Tranche 2 (D61): Tracking's and AI's values, read by them from Core over gRPC.
+          new Definition(
+              "solace.tracking.snooze-days", Group.TRACKING, Type.DAYS, "7", 1, 90, true),
+          new Definition(
+              "solace.tracking.nudges.reminder-window",
+              Group.TRACKING,
+              Type.HOURS,
+              "2",
+              1,
+              12,
+              true),
+          new Definition(
+              "solace.tracking.nudges.risk-pause", Group.TRACKING, Type.DAYS, "14", 1, 90, true),
+          new Definition(
+              "solace.tracking.nudges.ignored-limit", Group.TRACKING, Type.COUNT, "5", 1, 30, true),
+          new Definition(
+              "solace.tracking.trend-window", Group.TRACKING, Type.DAYS, "14", 7, 90, true),
+          // Changes how cycles are counted: a Super admin setting (D61).
+          new Definition(
+              "solace.tracking.cycle.new-period-gap-days",
+              Group.TRACKING,
+              Type.DAYS,
+              "10",
+              5,
+              20,
+              true),
+          new Definition("solace.ai.retention-days", Group.AI, Type.DAYS, "30", 1, 365, true),
+          new Definition("solace.ai.eval-gate", Group.AI, Type.PERCENT, "95", 50, 100, true),
+          new Definition("solace.ai.homework.default-due", Group.AI, Type.DAYS, "7", 1, 60, true),
           // Fixed decisions, shown and not changed (CLAUDE.md, numbers without brackets);
           // FixedSettingsTest checks each one against the constant the code uses.
           new Definition(
@@ -258,6 +289,9 @@ class SettingCatalogue {
           new Flag("trackTab", 2, false, false, true),
           new Flag("healthCheck", 2, false, false, true),
           new Flag("aiAssist", 3, false, false, true),
+          // Lets health data reach a non-local model: on only once Cameroon's data-transfer
+          // authorisation covers it (System Design, AI; D61). AI reads it from Core.
+          new Flag("aiTransferAuthorised", 3, false, false, false),
           new Flag("sessionScribe", 4, false, false, true),
           new Flag("companion", 4, false, false, true),
           new Flag("adminCopilot", 4, false, false, false),

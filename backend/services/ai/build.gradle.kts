@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    // Platform settings and flags from Core (D61).
+    implementation(project(":libs:core-settings"))
     implementation("org.springframework.grpc:spring-grpc-server-spring-boot-starter")
     // Calls to Core and Tracking for the pre-session brief, with deadlines and breakers.
     implementation(project(":libs:grpc-client"))

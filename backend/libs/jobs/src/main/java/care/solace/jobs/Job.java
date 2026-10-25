@@ -19,7 +19,10 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Job {
 
-  /** Stable name, {@code <service>.<area>.<what>}: {@code core.crisis.escalate}. */
+  /**
+   * Stable name, {@code <service>.<area>.<what>}: {@code core.crisis.escalate}. May hold a
+   * placeholder, such as {@code ${spring.application.name}}, for a job a shared library adds.
+   */
   String name();
 
   /** What the job does, for staff on the portal and in logs. */

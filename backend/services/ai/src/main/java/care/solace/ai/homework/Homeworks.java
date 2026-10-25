@@ -1,6 +1,7 @@
 package care.solace.ai.homework;
 
 import care.solace.ai.scribe.ScribeError;
+import care.solace.coresettings.CoreSettings;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
@@ -66,16 +67,19 @@ public class Homeworks {
 
   static final String TOPIC = "ai.homework";
 
+  private final CoreSettings core;
   private final JdbcClient db;
   private final Duration defaultDue;
   private final ApplicationEventPublisher events;
   private final Clock clock;
 
   Homeworks(
+      CoreSettings core,
       JdbcClient db,
       @Value("${solace.ai.homework.default-due:P7D}") Duration defaultDue,
       ApplicationEventPublisher events,
       Clock clock) {
+    this.core = core;
     this.db = db;
     this.defaultDue = defaultDue;
     this.events = events;
@@ -117,7 +121,10 @@ public class Homeworks {
             .optional()
             .orElseThrow(() -> new SolaceException(ScribeError.NO_SESSION));
     Instant now = clock.instant();
-    Instant due = a.dueBy() == null ? now.plus(defaultDue) : a.dueBy();
+    Instant due =
+        a.dueBy() == null
+            ? now.plus(core.duration("solace.ai.homework.default-due", defaultDue))
+            : a.dueBy();
     if (!due.isAfter(now) || due.isAfter(now.plus(Duration.ofDays(60)))) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }

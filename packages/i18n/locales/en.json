@@ -595,7 +595,9 @@
         "PRIVACY": "Privacy",
         "SAFETY": "Safety",
         "ACCESS": "Access",
-        "INSIGHT": "Analytics and alerts"
+        "INSIGHT": "Analytics and alerts",
+        "TRACKING": "Tracking",
+        "AI": "AI"
       },
       "label": {
         "solace_specialists_pricing_fee-percent": "Commission on each session",
@@ -641,7 +643,16 @@
         "solace_sessions_token-after-end": "Joining stays open after the end for",
         "solace_sessions_reconnect": "A dropped call can reconnect within",
         "solace_identity_minimum-age": "Minimum age to sign up",
-        "solace_specialists_licence-reminder": "Specialists are reminded before their licence ends"
+        "solace_specialists_licence-reminder": "Specialists are reminded before their licence ends",
+        "solace_tracking_snooze-days": "A snoozed invitation comes back after",
+        "solace_tracking_nudges_reminder-window": "A tracking reminder can go this long after the reminder time",
+        "solace_tracking_nudges_risk-pause": "Tracking pushes pause after a safety flag for",
+        "solace_tracking_nudges_ignored-limit": "Tracking reminders stop after this many ignored days",
+        "solace_tracking_trend-window": "Days of tracking in the pre-session brief",
+        "solace_tracking_cycle_new-period-gap-days": "Days without flow before a new period starts a cycle",
+        "solace_ai_retention-days": "AI prompts and outputs are kept for audit for",
+        "solace_ai_eval-gate": "An AI prompt version passes its evaluation at",
+        "solace_ai_homework_default-due": "Homework is due after, unless the specialist sets a date"
       },
       "flag": {
         "safetyMonitor": "Safety monitor",
@@ -657,7 +668,8 @@
         "sessionScribe": "Session scribe",
         "companion": "Homework companion and safety plan",
         "adminCopilot": "Admin copilot",
-        "phoneDialIn": "Phone dial-in"
+        "phoneDialIn": "Phone dial-in",
+        "aiTransferAuthorised": "AI may receive health data abroad (transfer authorised)"
       },
       "value": {
         "PERCENT": "{{value}}%",
