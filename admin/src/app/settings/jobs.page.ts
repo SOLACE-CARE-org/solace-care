@@ -6,19 +6,25 @@ import {
   inject,
   signal,
   viewChild,
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+} from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { RouterLink } from "@angular/router";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 
-import { AiApi } from '../api/ai-api';
-import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
-import { TrackingApi } from '../api/tracking-api';
-import { StaffSession } from '../auth/staff-session';
-import { dateTime } from '../shared/format';
+import { AiApi } from "../api/ai-api";
+import {
+  ApiProblem,
+  CoreApi,
+  type CoreSchemas,
+  orThrow,
+} from "../api/core-api";
+import { TrackingApi } from "../api/tracking-api";
+import { StaffSession } from "../auth/staff-session";
+import { dateTime } from "../shared/format";
+import { labelKey } from "./settings.page";
 
-type Job = CoreSchemas['JobTrigger'];
-type Service = 'core' | 'tracking' | 'ai';
+type Job = CoreSchemas["JobTrigger"];
+type Service = "core" | "tracking" | "ai";
 
 /**
  * Every scheduled job of Core, Tracking and AI, from each service's trigger table (D61), opened
@@ -27,13 +33,15 @@ type Service = 'core' | 'tracking' | 'ai';
  * that safety or money depend on carry a warning, but can still be changed.
  */
 @Component({
-  selector: 'sl-jobs',
+  selector: "sl-jobs",
   imports: [TranslocoPipe, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a routerLink="/settings" class="sl-meta">{{ 'admin.senders.back' | transloco }}</a>
-    <h1 class="sl-title">{{ 'admin.jobs.title' | transloco }}</h1>
-    <p class="sl-muted subtitle">{{ 'admin.jobs.subtitle' | transloco }}</p>
+    <a routerLink="/settings" class="sl-meta">{{
+      "admin.senders.back" | transloco
+    }}</a>
+    <h1 class="sl-title">{{ "admin.jobs.title" | transloco }}</h1>
+    <p class="sl-muted subtitle">{{ "admin.jobs.subtitle" | transloco }}</p>
 
     <div class="tabs" role="tablist">
       @for (s of services; track s) {
@@ -45,42 +53,60 @@ type Service = 'core' | 'tracking' | 'ai';
           [attr.aria-selected]="service() === s"
           (click)="show(s)"
         >
-          {{ 'admin.jobs.service.' + s | transloco }}
+          {{ "admin.jobs.service." + s | transloco }}
         </button>
       }
     </div>
 
     @if (error()) {
       <div class="sl-card">
-        <p>{{ 'common.checkConnection' | transloco }}</p>
+        <p>{{ "common.checkConnection" | transloco }}</p>
         <button class="sl-button" type="button" (click)="load()">
-          {{ 'common.tryAgain' | transloco }}
+          {{ "common.tryAgain" | transloco }}
         </button>
       </div>
     } @else if (jobs(); as list) {
-      <section class="sl-card" [attr.aria-label]="'admin.jobs.service.' + service() | transloco">
+      <section
+        class="sl-card"
+        [attr.aria-label]="'admin.jobs.service.' + service() | transloco"
+      >
         <ul class="rows">
           @for (j of list; track j.name) {
             <li class="row">
               <div>
-                <p class="label">{{ j.description }}</p>
+                <p class="label">{{ nameOf(j) }}</p>
                 <p class="sl-meta">
                   {{ j.name }} · {{ scheduleOf(j) }}
                   @if (j.lastFinishedAt) {
-                    · {{ 'admin.jobs.last' | transloco: { when: when(j.lastFinishedAt), outcome: j.lastOutcome } }}
+                    ·
+                    {{
+                      "admin.jobs.last"
+                        | transloco
+                          : {
+                              when: when(j.lastFinishedAt),
+                              outcome: j.lastOutcome,
+                            }
+                    }}
                   }
                 </p>
                 @if (j.pendingRestart) {
-                  <p class="sl-meta pending">{{ 'admin.jobs.pending' | transloco }}</p>
+                  <p class="sl-meta pending">
+                    {{ "admin.jobs.pending" | transloco }}
+                  </p>
                 }
                 @if (j.caution) {
-                  <p class="sl-meta">{{ 'admin.jobs.caution' | transloco }}</p>
+                  <p class="sl-meta">{{ "admin.jobs.caution" | transloco }}</p>
                 }
               </div>
-              <span class="sl-pill">{{ 'admin.jobs.status.' + j.status | transloco }}</span>
+              <span
+                class="sl-pill"
+                [class.sl-pill--brand]="j.status === 'ACTIVE'"
+                [class.sl-pill--warning]="j.status === 'PAUSED'"
+                >{{ "admin.jobs.status." + j.status | transloco }}</span
+              >
               @if (canChange()) {
                 <button type="button" class="sl-button" (click)="ask(j)">
-                  {{ 'admin.settings.change' | transloco }}
+                  {{ "admin.settings.change" | transloco }}
                 </button>
               } @else {
                 <span></span>
@@ -90,36 +116,50 @@ type Service = 'core' | 'tracking' | 'ai';
         </ul>
       </section>
     } @else {
-      <p class="sl-card sl-muted">{{ 'common.loading' | transloco }}</p>
+      <p class="sl-card sl-muted">{{ "common.loading" | transloco }}</p>
     }
 
     <dialog #jobDialog class="sl-dialog" aria-labelledby="job-title">
       @if (editing(); as j) {
-        <h2 id="job-title" class="section">{{ j.description }}</h2>
+        <h2 id="job-title" class="section">{{ nameOf(j) }}</h2>
         @if (j.caution) {
-          <p class="sl-meta warning" role="note">{{ 'admin.jobs.cautionLong' | transloco }}</p>
+          <p class="sl-meta warning" role="note">
+            {{ "admin.jobs.cautionLong" | transloco }}
+          </p>
         }
         <label class="sl-field">
-          <span>{{ 'admin.providers.statusLabel' | transloco }}</span>
+          <span>{{ "admin.providers.statusLabel" | transloco }}</span>
           <select class="sl-input" [(ngModel)]="status">
-            <option value="ACTIVE">{{ 'admin.jobs.status.ACTIVE' | transloco }}</option>
-            <option value="PAUSED">{{ 'admin.jobs.status.PAUSED' | transloco }}</option>
+            <option value="ACTIVE">
+              {{ "admin.jobs.status.ACTIVE" | transloco }}
+            </option>
+            <option value="PAUSED">
+              {{ "admin.jobs.status.PAUSED" | transloco }}
+            </option>
           </select>
         </label>
         <label class="sl-field">
-          <span>{{ (j.kind === 'CRON' ? 'admin.jobs.cron' : 'admin.jobs.interval') | transloco }}</span>
+          <span>{{
+            (j.kind === "CRON" ? "admin.jobs.cron" : "admin.jobs.interval")
+              | transloco
+          }}</span>
           <input class="sl-input" [(ngModel)]="schedule" maxlength="120" />
         </label>
-        @if (j.kind === 'CRON') {
+        @if (j.kind === "CRON") {
           <label class="sl-field">
-            <span>{{ 'admin.jobs.zone' | transloco }}</span>
+            <span>{{ "admin.jobs.zone" | transloco }}</span>
             <input class="sl-input" [(ngModel)]="zone" maxlength="60" />
           </label>
         }
-        <p class="sl-meta">{{ 'admin.jobs.restart' | transloco }}</p>
+        <p class="sl-meta">{{ "admin.jobs.restart" | transloco }}</p>
         <label class="sl-field">
-          <span>{{ 'admin.bookings.reasonRequired' | transloco }}</span>
-          <textarea class="sl-textarea" rows="3" maxlength="500" [(ngModel)]="reason"></textarea>
+          <span>{{ "admin.bookings.reasonRequired" | transloco }}</span>
+          <textarea
+            class="sl-textarea"
+            rows="3"
+            maxlength="500"
+            [(ngModel)]="reason"
+          ></textarea>
         </label>
       }
       @if (problem()) {
@@ -127,7 +167,7 @@ type Service = 'core' | 'tracking' | 'ai';
       }
       <div class="actions">
         <button type="button" class="sl-button" (click)="jobDialog.close()">
-          {{ 'admin.common.cancel' | transloco }}
+          {{ "admin.common.cancel" | transloco }}
         </button>
         <button
           type="button"
@@ -135,7 +175,7 @@ type Service = 'core' | 'tracking' | 'ai';
           [disabled]="busy() || !reason().trim() || !schedule().trim()"
           (click)="save()"
         >
-          {{ 'admin.common.save' | transloco }}
+          {{ "admin.common.save" | transloco }}
         </button>
       </div>
     </dialog>
@@ -195,20 +235,21 @@ export class JobsPage {
   private readonly ai = inject(AiApi);
   private readonly transloco = inject(TranslocoService);
   private readonly staff = inject(StaffSession);
-  private readonly jobDialog = viewChild<ElementRef<HTMLDialogElement>>('jobDialog');
+  private readonly jobDialog =
+    viewChild<ElementRef<HTMLDialogElement>>("jobDialog");
 
-  readonly services: Service[] = ['core', 'tracking', 'ai'];
-  readonly service = signal<Service>('core');
+  readonly services: Service[] = ["core", "tracking", "ai"];
+  readonly service = signal<Service>("core");
   readonly jobs = signal<Job[] | null>(null);
   readonly error = signal(false);
   readonly busy = signal(false);
   readonly problem = signal<string | null>(null);
   readonly editing = signal<Job | null>(null);
-  readonly status = signal('ACTIVE');
-  readonly schedule = signal('');
-  readonly zone = signal('');
-  readonly reason = signal('');
-  readonly canChange = computed(() => this.staff.accessTo('settings') === 'F');
+  readonly status = signal("ACTIVE");
+  readonly schedule = signal("");
+  readonly zone = signal("");
+  readonly reason = signal("");
+  readonly canChange = computed(() => this.staff.accessTo("settings") === "F");
   private readonly lang = signal(this.transloco.getActiveLang());
 
   constructor() {
@@ -220,7 +261,13 @@ export class JobsPage {
   private client() {
     const s = this.service();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (s === 'core' ? this.core.client : s === 'tracking' ? this.tracking.client : this.ai.client) as any;
+    return (
+      s === "core"
+        ? this.core.client
+        : s === "tracking"
+          ? this.tracking.client
+          : this.ai.client
+    ) as any;
   }
 
   show(s: Service) {
@@ -232,7 +279,9 @@ export class JobsPage {
   async load() {
     this.error.set(false);
     try {
-      this.jobs.set(orThrow(await this.client().GET('/admin/v1/jobs')) as Job[]);
+      this.jobs.set(
+        orThrow(await this.client().GET("/admin/v1/jobs")) as Job[],
+      );
     } catch {
       this.error.set(true);
     }
@@ -240,21 +289,29 @@ export class JobsPage {
 
   /** "every PT30S", "0 30 2 * * * (Africa/Douala)". */
   scheduleOf(j: Job): string {
-    return j.kind === 'CRON'
-      ? `${j.schedule}${j.zone ? ` (${j.zone})` : ''}`
-      : this.transloco.translate('admin.jobs.every', { interval: j.schedule });
+    return j.kind === "CRON"
+      ? `${j.schedule}${j.zone ? ` (${j.zone})` : ""}`
+      : this.transloco.translate("admin.jobs.every", { interval: j.schedule });
   }
 
   when(iso: string | undefined): string {
     return dateTime(iso, this.lang());
   }
 
+  /** The catalogue's name for the job; the code's English text for a job added since. */
+  nameOf(j: Job): string {
+    this.lang();
+    const key = `admin.jobs.name.${labelKey(j.name)}`;
+    const name = this.transloco.translate(key);
+    return name === key ? j.description : name;
+  }
+
   ask(j: Job) {
     this.editing.set(j);
     this.status.set(j.status);
     this.schedule.set(j.schedule);
-    this.zone.set(j.zone ?? '');
-    this.reason.set('');
+    this.zone.set(j.zone ?? "");
+    this.reason.set("");
     this.problem.set(null);
     this.jobDialog()?.nativeElement.showModal();
   }
@@ -266,7 +323,7 @@ export class JobsPage {
     this.problem.set(null);
     try {
       orThrow(
-        await this.client().PUT('/admin/v1/jobs/{name}', {
+        await this.client().PUT("/admin/v1/jobs/{name}", {
           params: { path: { name: j.name } },
           body: {
             version: j.version,
@@ -281,7 +338,9 @@ export class JobsPage {
       await this.load();
     } catch (e) {
       this.problem.set(
-        e instanceof ApiProblem && e.title ? e.title : this.transloco.translate('common.checkConnection'),
+        e instanceof ApiProblem && e.title
+          ? e.title
+          : this.transloco.translate("common.checkConnection"),
       );
     } finally {
       this.busy.set(false);

@@ -1735,7 +1735,41 @@
       "cron": "Schedule (six-field cron)",
       "interval": "Interval (for example PT30S)",
       "zone": "Time zone",
-      "restart": "The service follows this change from its next restart."
+      "restart": "The service follows this change from its next restart.",
+      "name": {
+        "core_admin_settings-reload": "Reloads platform settings and feature flags",
+        "core_bookings_expire-unpaid": "Expires bookings not paid within the 10-minute hold and frees the time",
+        "core_crisis_escalate": "Escalates unacknowledged crisis alerts to the backup at 5 minutes and Super admins at 10",
+        "core_guests_purge-contacts": "Removes guest phone numbers long after their last booking",
+        "core_health-check_forget-unclaimed": "Deletes guest health check answers never claimed",
+        "core_identity_remove-unverified": "Removes sign-ups never verified in time",
+        "core_insight_anomalies": "Checks for booking drops and failed-payment spikes for the copilot",
+        "core_messaging_reminders": "Sends the day-before, joining-opens, 10-minutes-before and Brief ready pushes",
+        "core_messaging_licence-renewals": "Reminds specialists 60 days before their licence ends",
+        "core_messaging_forget-old-messages": "Deletes delivered messages past their retention",
+        "core_messaging_deliver-waiting": "Sends pushes held back by quiet hours once they end",
+        "core_notifications_copy-reload": "Reloads the notification copy edited on the portal",
+        "core_notifications_senders-reload": "Reloads the SMS and email senders",
+        "core_payments_providers-reload": "Reloads payment providers and routes",
+        "core_payments_poll": "Asks the payment providers about payments, refunds and payouts still on their way",
+        "core_payments_draft-payout-runs": "Drafts the twice-monthly payout run when its period closes",
+        "core_payments_reconcile": "Compares yesterday's payments, refunds and payouts with the providers' records",
+        "core_privacy_data-request-reminders": "Emails Operations about data requests due this week",
+        "core_privacy_prepare-exports": "Builds requested data exports",
+        "core_privacy_expire-exports": "Deletes export files past their lifetime",
+        "core_sessions_dial-in-rules": "Opens and closes phone dial-in rules as joining opens and ends",
+        "core_sessions_settle": "Marks no-shows and completes sessions the media server did not report",
+        "tracking_nudges_reminders": "Sends daily tracking reminders and invite pushes",
+        "tracking_rules_nightly": "Runs the pattern check for everyone enrolled",
+        "tracking_settings_reload": "Reloads the platform settings and flags from Core",
+        "tracking_lists_reload": "Puts signed-off versions of the reviewed lists in force",
+        "ai_gateway_forget-texts": "Clears prompt and output texts past their retention",
+        "ai_models_reload": "Reloads the AI models, routes and budgets",
+        "ai_scribe_sweep": "Deletes unsigned drafts and session audio after 7 days",
+        "ai_scribe_draft-waiting": "Transcribes and drafts notes for waiting session audio",
+        "ai_settings_reload": "Reloads the platform settings and flags from Core",
+        "ai_lists_reload": "Puts signed-off versions of the reviewed lists in force"
+      }
     },
     "copy": {
       "back": "Back to content",
@@ -1824,7 +1858,16 @@
       "signOff": "Sign off",
       "decline": "Decline",
       "entries": "Entries",
-      "note": "What changed"
+      "note": "What changed",
+      "name": {
+        "ai_safety_phrases": "Safety monitor phrases by category; the safety set must pass on them",
+        "ai_guardrails_clinical": "Wording no AI text may contain: diagnoses, prescriptions, predictions",
+        "ai_eval_safety-monitor": "The safety monitor's set: crisis recall must reach 99% in EN and FR",
+        "ai_companion_corpus": "The companion's vetted passages, per exercise, in EN and FR",
+        "ai_companion_copy": "The homework companion's questions and closing lines, in EN and FR",
+        "tracking_rules_wording": "Wording a rule's message may not use (blocked), and phrases allowed anyway"
+      },
+      "evalFor": "Evaluation cases for {{feature}}"
     }
   },
   "roleChoice": {

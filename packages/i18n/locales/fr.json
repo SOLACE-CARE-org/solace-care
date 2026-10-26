@@ -1735,7 +1735,41 @@
       "cron": "Calendrier (cron à six champs)",
       "interval": "Intervalle (par exemple PT30S)",
       "zone": "Fuseau horaire",
-      "restart": "Le service suit ce changement à son prochain redémarrage."
+      "restart": "Le service suit ce changement à son prochain redémarrage.",
+      "name": {
+        "core_admin_settings-reload": "Recharge les réglages et les options de la plateforme",
+        "core_bookings_expire-unpaid": "Fait expirer les réservations non payées pendant les 10 minutes de blocage et libère le créneau",
+        "core_crisis_escalate": "Fait remonter les alertes de crise non prises en charge au suppléant après 5 minutes et aux Super admins après 10",
+        "core_guests_purge-contacts": "Supprime les numéros des invités longtemps après leur dernière réservation",
+        "core_health-check_forget-unclaimed": "Supprime les réponses au bilan de santé des invités jamais récupérées",
+        "core_identity_remove-unverified": "Supprime les inscriptions non vérifiées à temps",
+        "core_insight_anomalies": "Repère les baisses de réservations et les pics de paiements échoués pour le copilote",
+        "core_messaging_reminders": "Envoie les notifications de la veille, de l'ouverture, des 10 minutes avant et de la fiche prête",
+        "core_messaging_licence-renewals": "Rappelle aux spécialistes l'échéance de leur licence 60 jours avant",
+        "core_messaging_forget-old-messages": "Supprime les messages délivrés après leur durée de conservation",
+        "core_messaging_deliver-waiting": "Envoie les notifications retenues pendant les heures calmes une fois celles-ci finies",
+        "core_notifications_copy-reload": "Recharge les textes des notifications modifiés sur le portail",
+        "core_notifications_senders-reload": "Recharge les expéditeurs SMS et e-mail",
+        "core_payments_providers-reload": "Recharge les prestataires de paiement et les routes",
+        "core_payments_poll": "Interroge les prestataires sur les paiements, remboursements et versements en cours",
+        "core_payments_draft-payout-runs": "Prépare le lot de versements bimensuel à la clôture de sa période",
+        "core_payments_reconcile": "Compare les paiements, remboursements et versements de la veille avec les relevés des prestataires",
+        "core_privacy_data-request-reminders": "Écrit aux Opérations au sujet des demandes de données à traiter cette semaine",
+        "core_privacy_prepare-exports": "Prépare les exports de données demandés",
+        "core_privacy_expire-exports": "Supprime les fichiers d'export arrivés à expiration",
+        "core_sessions_dial-in-rules": "Ouvre et ferme l'accès par téléphone selon l'ouverture et la fin des séances",
+        "core_sessions_settle": "Note les absences et clôt les séances que le serveur média n'a pas signalées",
+        "tracking_nudges_reminders": "Envoie les rappels de suivi quotidiens et les notifications d'invitation",
+        "tracking_rules_nightly": "Lance la vérification des tendances pour toutes les personnes inscrites",
+        "tracking_settings_reload": "Recharge les réglages et les options de la plateforme depuis Core",
+        "tracking_lists_reload": "Met en vigueur les versions validées des listes relues",
+        "ai_gateway_forget-texts": "Efface les textes envoyés et produits après leur durée de conservation",
+        "ai_models_reload": "Recharge les modèles d'IA, les routes et les budgets",
+        "ai_scribe_sweep": "Supprime les brouillons non signés et l'audio des séances après 7 jours",
+        "ai_scribe_draft-waiting": "Transcrit l'audio des séances en attente et rédige les brouillons de notes",
+        "ai_settings_reload": "Recharge les réglages et les options de la plateforme depuis Core",
+        "ai_lists_reload": "Met en vigueur les versions validées des listes relues"
+      }
     },
     "copy": {
       "back": "Retour aux contenus",
@@ -1824,7 +1858,16 @@
       "signOff": "Valider",
       "decline": "Refuser",
       "entries": "Entrées",
-      "note": "Ce qui change"
+      "note": "Ce qui change",
+      "name": {
+        "ai_safety_phrases": "Phrases du moniteur de sécurité par catégorie ; le jeu de sécurité doit réussir avec elles",
+        "ai_guardrails_clinical": "Formulations qu'aucun texte d'IA ne peut contenir : diagnostics, prescriptions, prédictions",
+        "ai_eval_safety-monitor": "Le jeu du moniteur de sécurité : le rappel des crises doit atteindre 99 % en anglais et en français",
+        "ai_companion_corpus": "Les passages vérifiés du compagnon, par exercice, en anglais et en français",
+        "ai_companion_copy": "Les questions et phrases de fin du compagnon d'exercices, en anglais et en français",
+        "tracking_rules_wording": "Formulations interdites dans le message d'une règle, et phrases permises malgré tout"
+      },
+      "evalFor": "Cas d'évaluation pour {{feature}}"
     }
   },
   "roleChoice": {
