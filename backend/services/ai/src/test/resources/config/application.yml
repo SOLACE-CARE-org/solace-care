@@ -1,4 +1,14 @@
 # Added to src/main/resources/application.yml for every AI test (Spring Boot reads both).
+spring:
+  kafka:
+    # No broker in these tests: outgoing events stay in event_publication, where the tests read
+    # them. Without this the producer finds a local docker-compose Kafka on localhost:9092,
+    # publications complete and are deleted, and events leave for the developer's broker. A test
+    # with its own Kafka container overrides this through @ServiceConnection.
+    bootstrap-servers: 127.0.0.1:1
+    producer:
+      properties:
+        max.block.ms: 1000
 solace:
   jobs:
     # Each test context runs jobs on the schedules its properties give, not on the rows other
