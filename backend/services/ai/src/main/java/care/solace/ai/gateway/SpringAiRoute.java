@@ -17,9 +17,12 @@ final class SpringAiRoute implements ModelRoute {
 
   SpringAiRoute(GatewaySettings.Model settings) {
     this.settings = settings;
+    // A model's url ends with the API version (".../v1"), as for speech and embeddings; Spring
+    // AI's default path would add a second "/v1".
     OpenAiApi api =
         OpenAiApi.builder()
             .baseUrl(settings.url())
+            .completionsPath("/chat/completions")
             .apiKey(settings.apiKey().isBlank() ? "none" : settings.apiKey())
             .build();
     this.model =
