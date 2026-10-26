@@ -192,6 +192,26 @@ services:
       - ./livekit/egress.yaml:/etc/egress.yaml:ro
     depends_on: [livekit, redis, minio]
 
+  # OmniRoute, an OpenAI-compatible gateway in front of the model providers you add in its
+  # dashboard, as the AI service's model for local development. Start it with
+  #   docker compose --profile ai up -d
+  # and run the AI service with the omniroute profile (infra/README.md). It forwards prompts to
+  # outside providers, so the AI service treats it as a model Solace does not host: no health
+  # data reaches it until the transfer authorisation is recorded.
+  omniroute:
+    <<: *restart
+    profiles: [ai]
+    image: diegosouzapw/omniroute:3.8.51@sha256:8bd462c9f60d8eda79329cfbb6ea7ea723505fe7721beb944f3d43835409e218
+    environment:
+      INITIAL_PASSWORD: ${OMNIROUTE_PASSWORD:-solace-dev-only}
+      DATA_DIR: /app/data
+    # Only this machine: the dashboard holds the providers' keys.
+    ports:
+      - "127.0.0.1:20128:20128"
+    volumes:
+      - omniroute-data:/app/data
+    stop_grace_period: 40s
+
   # Observability: services send OTLP to the collector, which fans out to Tempo, Prometheus and Loki.
   otel-collector:
     <<: *restart
@@ -267,3 +287,4 @@ volumes:
   prometheus-data:
   loki-data:
   grafana-data:
+  omniroute-data:

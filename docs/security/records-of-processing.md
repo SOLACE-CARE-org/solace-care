@@ -20,6 +20,7 @@ The register of every way Solace processes personal data, for Cameroon's Law No.
 | Media server | LiveKit, self-hosted or LiveKit Cloud | Open, follows hosting |
 | Phone dial-in | A SIP trunk with a Cameroonian number, into LiveKit SIP (D59). Carries the caller's phone number and the call audio; the PIN routes the call to one booking | Open (contract outside engineering); off until contracted |
 | AI model vendors | Safety monitor classifier (Phase 1); later AI features (Phase 3, 4) | Open (decisions.md); see AI-1 in the AI threat model |
+| OmniRoute and the providers a developer adds to it | Local development only, made-up data; no real processing | Not a processor of personal data; see AI-21 |
 
 Every processor needs a contract that forbids other use and, for AI vendors, training on Solace data. Any processor outside Cameroon needs the Authority's transfer authorisation (**Counsel**).
 

@@ -25,6 +25,30 @@ Defaults work out of the box. To change a password, copy `.env.example` to `.env
 | OTel collector | OTLP gRPC `localhost:4317`, HTTP `localhost:4318` | Traces to Tempo, metrics to Prometheus, logs to Loki |
 | Grafana | <http://localhost:3000> | Prometheus, Loki and Tempo provisioned, trace-to-logs linked. Login `admin` / `admin` |
 | Prometheus, Loki, Tempo | :9090, :3100, :3200 | Usually viewed through Grafana |
+| OmniRoute (profile `ai`) | <http://localhost:20128>, API `/v1` | Model gateway for the AI service in local development; see below. Login password `solace-dev-only` |
+
+## A model for the AI service
+
+The AI service ships with no model, so its features stay off (D56). For local development, [OmniRoute](https://github.com/diegosouzapw/OmniRoute) puts one OpenAI-compatible endpoint in front of the model providers you add to it:
+
+1. `docker compose -f infra/docker-compose.yml --profile ai up -d omniroute`
+2. Open <http://localhost:20128>, sign in with `OMNIROUTE_PASSWORD` (`solace-dev-only` by default), add a provider with your own key, and make an API key. Note a model or combo name it lists.
+3. Run the AI service with the `omniroute` profile:
+
+   ```sh
+   cd backend
+   SOLACE_AI_OMNIROUTE_MODEL=<model or combo> SOLACE_AI_OMNIROUTE_KEY=<key>      ./gradlew :services:ai:bootRun --args='--spring.profiles.active=omniroute'
+   ```
+
+The profile ([application-omniroute.yml](../backend/services/ai/src/main/resources/application-omniroute.yml)) adds OmniRoute as the model for every chat feature, but only when the AI database has no model yet. After that, change models and routes on the AI models page.
+
+OmniRoute sends prompts on to outside providers, so the AI service treats it as a model Solace does not host:
+
+- Review moderation, translation and the admin copilot can use it.
+- Tracking insights, the pre-session brief, the scribe and the companion carry health data, so they refuse it while Core's `aiTransferAuthorised` flag is off. Leave that flag off; it records the transfer authorisation, which is still an open question.
+- Use made-up data only. Whatever you type reaches the provider you added.
+
+OmniRoute is not part of any deployed environment; which vendors may be used there is still open (decisions.md).
 
 ## Seeing a request end to end
 

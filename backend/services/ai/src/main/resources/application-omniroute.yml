@@ -1,0 +1,29 @@
+# Local development only: OmniRoute (infra/docker-compose.yml, profile ai) as the model for every
+# chat feature. Run with
+#   SOLACE_AI_OMNIROUTE_MODEL=<model or combo> SOLACE_AI_OMNIROUTE_KEY=<key> \
+#     ./gradlew :services:ai:bootRun --args='--spring.profiles.active=omniroute'
+# These only become rows when the AI database has no model yet (D61); after that, change the
+# model and routes on the AI models page.
+#
+# OmniRoute runs here but forwards prompts to outside providers, so it is not local: features that
+# send health data (tracking insights, the brief, the scribe, the companion) refuse it until
+# Core's aiTransferAuthorised flag is on. Never turn that flag on for this; it is for a recorded
+# transfer authorisation.
+solace:
+  ai:
+    models:
+      - name: omniroute
+        url: http://localhost:20128/v1
+        # A model or combo name from OmniRoute's dashboard.
+        model: ${SOLACE_AI_OMNIROUTE_MODEL}
+        # An API key made in OmniRoute's dashboard.
+        api-key: ${SOLACE_AI_OMNIROUTE_KEY:}
+        local: false
+    routes:
+      TRACKING_INSIGHTS: [omniroute]
+      PRE_SESSION_BRIEF: [omniroute]
+      REVIEW_MODERATION: [omniroute]
+      TRANSLATION: [omniroute]
+      SESSION_SCRIBE: [omniroute]
+      COMPANION: [omniroute]
+      ADMIN_COPILOT: [omniroute]
