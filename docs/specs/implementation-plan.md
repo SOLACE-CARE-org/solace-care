@@ -29,6 +29,7 @@ Implementation starts only when this list is done and signed off, so engineers n
 - [x] Specs: Solace — System Design, Solace — Tracking Service Spec and Solace — Admin Portal Spec
 - [x] Mobile app: all 69 screens, including the health check, on the [Solace App Screens](https://claude.ai/artifact/UkTAFAMeaoepm59BU9xH8p) canvas
 - [x] Admin portal: all 31 screens, plus first sign-in and the phone crisis queue, on the [Solace Admin Portal](https://claude.ai/artifact/CF8vRe3ntoFM6FVaNgEzvf) canvas
+- [x] Admin portal, D61 configuration screens 32 to 37 (providers, senders, jobs, notification copy, AI models, reviewed lists): in `design/screens/admin`, on the canvas's Configuration pages
 - [x] French versions of every mobile and admin screen, checked for longer text: on the FR pages of both canvases
 - [x] Empty, loading, error and offline states: shown as patterns on representative screens, on the States pages of the [app](https://claude.ai/artifact/UkTAFAMeaoepm59BU9xH8p) and [admin](https://claude.ai/artifact/CF8vRe3ntoFM6FVaNgEzvf) canvases
 - [x] Push, SMS and email message copy in EN and FR, in neutral wording: Solace — Notification Copy

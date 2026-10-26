@@ -41,6 +41,14 @@
   {
    "id": "states-fr",
    "name": "States (FR)"
+  },
+  {
+   "id": "cfg",
+   "name": "Configuration (D61)"
+  },
+  {
+   "id": "cfg-fr",
+   "name": "Configuration (D61, FR)"
   }
  ],
  "boards": {
@@ -821,6 +829,166 @@
    "is_interactive": true,
    "page": "states-fr",
    "expand": "fill"
+  },
+  "PaymentProviders.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "32 · Payment providers and routes",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "PaymentProviders_fr.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 32 · Prestataires de paiement et routes",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "PaymentProviderActivate.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "32b · Activate a live provider",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "PaymentProviderActivate_fr.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 32b · Activer un prestataire réel",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "MessageSenders.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "33 · SMS and email senders",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "MessageSenders_fr.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 33 · Expéditeurs SMS et e-mail",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "Jobs.dc.html": {
+   "x": 0,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "34 · Scheduled jobs",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "Jobs_fr.dc.html": {
+   "x": 0,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 34 · Tâches planifiées",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "JobPause.dc.html": {
+   "x": 1520,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "34b · Change a job safety depends on",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "JobPause_fr.dc.html": {
+   "x": 1520,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 34b · Modifier une tâche dont dépend la sécurité",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "NotificationCopy.dc.html": {
+   "x": 3040,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "35 · Notification copy",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "NotificationCopy_fr.dc.html": {
+   "x": 3040,
+   "y": 1700,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 35 · Textes des notifications",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "AIModels.dc.html": {
+   "x": 0,
+   "y": 3400,
+   "w": 1440,
+   "h": 1000,
+   "title": "36 · AI models and routes",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "AIModels_fr.dc.html": {
+   "x": 0,
+   "y": 3400,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 36 · Modèles d'IA et routes",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
+  },
+  "ReviewedLists.dc.html": {
+   "x": 1520,
+   "y": 3400,
+   "w": 1440,
+   "h": 1000,
+   "title": "37 · Reviewed lists",
+   "is_interactive": true,
+   "page": "cfg",
+   "expand": "fill"
+  },
+  "ReviewedLists_fr.dc.html": {
+   "x": 1520,
+   "y": 3400,
+   "w": 1440,
+   "h": 1000,
+   "title": "FR · 37 · Listes relues",
+   "is_interactive": true,
+   "page": "cfg-fr",
+   "expand": "fill"
   }
  },
  "order": [
@@ -901,7 +1069,23 @@
   "StateAdminNoAccess_fr.dc.html",
   "StateAdminSessionEnded_fr.dc.html",
   "FirstSignIn.dc.html",
-  "FirstSignIn_fr.dc.html"
+  "FirstSignIn_fr.dc.html",
+  "PaymentProviders.dc.html",
+  "PaymentProviders_fr.dc.html",
+  "PaymentProviderActivate.dc.html",
+  "PaymentProviderActivate_fr.dc.html",
+  "MessageSenders.dc.html",
+  "MessageSenders_fr.dc.html",
+  "Jobs.dc.html",
+  "Jobs_fr.dc.html",
+  "JobPause.dc.html",
+  "JobPause_fr.dc.html",
+  "NotificationCopy.dc.html",
+  "NotificationCopy_fr.dc.html",
+  "AIModels.dc.html",
+  "AIModels_fr.dc.html",
+  "ReviewedLists.dc.html",
+  "ReviewedLists_fr.dc.html"
  ],
  "notes": {
   "row-p1-0": {
@@ -1151,6 +1335,70 @@
    "fill": "blue",
    "page": "states",
    "text": "Staff accounts. A Super admin adds each staff member; Solace generates a unique temporary password to hand over in person. It works once and expires after 72 hours. First sign-in forces a new password and an authenticator app. Built on Keycloak required actions (update password, configure OTP); nobody signs themselves up."
+  },
+  "row-cfg-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Payments and messages",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "cfg"
+  },
+  "row-cfg-fr-0": {
+   "x": 0,
+   "y": -300,
+   "text": "Paiements et messages",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "cfg-fr"
+  },
+  "row-cfg-1": {
+   "x": 0,
+   "y": 1400,
+   "text": "Scheduled jobs and notification copy",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "cfg"
+  },
+  "row-cfg-fr-1": {
+   "x": 0,
+   "y": 1400,
+   "text": "Tâches planifiées et textes des notifications",
+   "kind": "title1",
+   "maxW": 4480,
+   "page": "cfg-fr"
+  },
+  "row-cfg-2": {
+   "x": 0,
+   "y": 3100,
+   "text": "AI models and reviewed lists",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "cfg"
+  },
+  "row-cfg-fr-2": {
+   "x": 0,
+   "y": 3100,
+   "text": "Modèles d'IA et listes relues",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "cfg-fr"
+  },
+  "cfg-sticky": {
+   "x": 4560,
+   "y": 0,
+   "w": 340,
+   "fill": "teal",
+   "page": "cfg",
+   "text": "Configuration (D61). Payment providers, senders, jobs, notification copy and AI models live in tables, not code. Only a Super admin changes providers, senders, jobs and AI routes, always with a reason, and each change is audited. A live provider becomes active only once its four checks are confirmed. A paused job is not registered at the service's next restart. Reviewed lists are drafted by one clinician and signed off by another once their check passes."
+  },
+  "cfg-fr-sticky": {
+   "x": 4560,
+   "y": 0,
+   "w": 340,
+   "fill": "teal",
+   "page": "cfg-fr",
+   "text": "Configuration (D61). Les prestataires de paiement, les expéditeurs, les tâches, les textes des notifications et les modèles d'IA sont dans des tables, pas dans le code. Seul un Super admin modifie les prestataires, les expéditeurs, les tâches et les routes d'IA, toujours avec un motif, et chaque changement est journalisé. Un prestataire réel ne devient actif qu'une fois ses quatre vérifications confirmées. Une tâche suspendue n'est pas enregistrée au prochain redémarrage du service. Une liste relue est rédigée par un clinicien et validée par un autre une fois sa vérification réussie."
   }
  },
  "designSystems": []

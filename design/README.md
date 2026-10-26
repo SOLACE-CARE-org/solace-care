@@ -5,7 +5,8 @@ The screens and the design system for Solace Care, all approved. Start with `../
 ## screens/
 
 - **`mobile/`** holds 81 screens: 69 product screens and 12 states, each in EN and FR. The phone frame is 390 × 844.
-- **`admin/`** holds 39 boards: 31 numbered screens, the shared Sidebar, a phone layout of the crisis queue, first sign-in and 5 states, each in EN and FR. Layouts are 1440 wide.
+- **`admin/`** holds 47 boards: 37 numbered screens, two dialogs (32b, 34b), the shared Sidebar, a phone layout of the crisis queue, first sign-in and 5 states, each in EN and FR. Layouts are 1440 wide.
+  - Screens 32 to 37 (D61) are written by `admin/tools/d61_boards.py` from the portal's EN and FR catalogues, and rendered by `admin/tools/render_boards.py`. Change the script, not the boards, and run both again.
 
 Each folder contains:
 

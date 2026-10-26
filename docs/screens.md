@@ -160,6 +160,19 @@ PNG renders use fallback fonts and a dashed "logo" placeholder: the real faces a
 | 26 · AI controls | 3 | `design/screens/admin/source/AIControls.dc.html` | `design/screens/admin/png/AIControls.png` |  |
 | 27 · Admin copilot | 4 | `design/screens/admin/source/Copilot.dc.html` | `design/screens/admin/png/Copilot.png` |  |
 
+### Configuration (D61)
+
+| Screen | Phase | Source | Render | Note |
+| --- | --- | --- | --- | --- |
+| 32 · Payment providers and routes | 1 | `design/screens/admin/source/PaymentProviders.dc.html` | `design/screens/admin/png/PaymentProviders.png` | Opened from Payments |
+| 32b · Activate a live provider | 1 | `design/screens/admin/source/PaymentProviderActivate.dc.html` | `design/screens/admin/png/PaymentProviderActivate.png` | The four checks before a live provider becomes active |
+| 33 · SMS and email senders | 1 | `design/screens/admin/source/MessageSenders.dc.html` | `design/screens/admin/png/MessageSenders.png` | Opened from Settings and flags |
+| 34 · Scheduled jobs | 1 | `design/screens/admin/source/Jobs.dc.html` | `design/screens/admin/png/Jobs.png` | Opened from Settings and flags; Core, Tracking and AI tabs |
+| 34b · Change a job safety depends on | 1 | `design/screens/admin/source/JobPause.dc.html` | `design/screens/admin/png/JobPause.png` |  |
+| 35 · Notification copy | 1 | `design/screens/admin/source/NotificationCopy.dc.html` | `design/screens/admin/png/NotificationCopy.png` | Opened from Content |
+| 36 · AI models and routes | 3 | `design/screens/admin/source/AIModels.dc.html` | `design/screens/admin/png/AIModels.png` | Opened from AI controls |
+| 37 · Reviewed lists | 2 (Tracking), 3 (AI) | `design/screens/admin/source/ReviewedLists.dc.html` | `design/screens/admin/png/ReviewedLists.png` | Opened from AI controls and from Tracking modules; the board shows the AI lists |
+
 ### States
 
 | Screen | Phase | Source | Render | Note |

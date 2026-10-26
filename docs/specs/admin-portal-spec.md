@@ -47,7 +47,7 @@ Each staff member sees only the entries their roles allow. Detail screens (appli
 
 ## Screens
 
-The portal has 31 screens. Phase 1 needs 20 of them for the public launch; the rest arrive with the phase that adds their feature.
+The portal has 37 screens. Phase 1 needs 24 of them for the public launch; the rest arrive with the phase that adds their feature.
 
 | # | Screen | Purpose | Key actions | Phase |
 | --- | --- | --- | --- | --- |
@@ -82,6 +82,18 @@ The portal has 31 screens. Phase 1 needs 20 of them for the public launch; the r
 | 29 | Health check: questions | Questions and answers in EN and FR, when each is shown | Add, reorder, set show-if; screener items and the safety question are locked | 2 |
 | 30 | Health check: scoring | Rules that add points to specialties, with the reason seekers read | Add a rule, set the specialty order | 2 |
 | 31 | Health check: test and review | Sample answer sets run against the draft, beside the published version | Run tests, submit, approve, return with comments | 2 |
+| 32 | Payment providers and routes | Each aggregator account, its keys, circuit and money in flight; which providers collect, refund and pay out per method (D61) | Add, test, change, activate (four checks), drain or disable a provider; change routes | 1 |
+| 33 | SMS and email senders | Each sender by channel and priority, and whether its keys are found (D61) | Add, test or change a sender | 1 |
+| 34 | Scheduled jobs | Every job of Core, Tracking and AI from its trigger table, with its schedule and last run (D61) | Pause, resume or reschedule a job; followed from the service's next restart | 1 |
+| 35 | Notification copy | Every push, SMS and email in EN and FR, beside the approved wording (D61) | Edit both languages, restore the approved wording | 1 |
+| 36 | AI models and routes | Models, each feature's route and monthly budget, and pending routes with their evaluation (D61) | Add or change a model, propose a route, evaluate it, put it live or discard it, set a budget | 3 |
+| 37 | Reviewed lists | Guardrail wording, safety phrases, evaluation sets, the companion's corpus and wording, Tracking's rule wording (D61) | Draft a version, run its check, sign off or decline | 2 (Tracking), 3 (AI) |
+
+Screens 32 to 37 open from their area's page (Payments; Settings and flags; Content; AI controls; Tracking modules) and are not in the sidebar. They follow the area's row in the matrix, narrowed by D61:
+
+- Providers, routes, senders, jobs and AI models: only a Super admin changes them, with a reason. The other roles that can see the area look.
+- Notification copy: Super admins and Content editors change it.
+- Reviewed lists: a Clinical reviewer or a Super admin drafts a version; a different Clinical reviewer signs it off.
 
 The element library is not its own screen: the elements step of the builder shows it, read-only. Every screen is drawn on the [Solace Admin Portal](https://claude.ai/artifact/CF8vRe3ntoFM6FVaNgEzvf) canvas, plus a phone layout of the crisis queue for on-call responders.
 

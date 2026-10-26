@@ -11,7 +11,7 @@ Everything here was designed before any code was written. **The specs and screen
 | `docs/specs/system-design.md` | Architecture: services, modules, data model, events, security, infrastructure. Read it first. |
 | `docs/specs/implementation-plan.md` | Phases 0–4, epics in build order, gates, definition of done, and screens by phase |
 | `docs/specs/tracking-service-spec.md` | The Tracking service in full: elements, modules, rules, the pattern check, APIs, tables |
-| `docs/specs/admin-portal-spec.md` | 31 admin screens, 7 roles, the permission matrix, workflows |
+| `docs/specs/admin-portal-spec.md` | 37 admin screens, 7 roles, the permission matrix, workflows |
 | `docs/specs/notification-copy.md` | Every push, SMS and email in EN and FR, word for word |
 | `docs/decisions.md` | Decisions already made, with the reasons. Don't reopen these without asking. |
 | `docs/security/` | Threat model per service and the records-of-processing register. A PR that adds a data flow, a store of personal data or an external provider updates them. |
