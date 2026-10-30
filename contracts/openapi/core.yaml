@@ -333,13 +333,19 @@ paths:
         required: true
         schema:
           $ref: "#/components/schemas/DocumentKind"
+      - name: profession
+        in: query
+        description: LICENCE only, the profession it is for; the main profession when absent (D62).
+        schema:
+          type: string
     put:
       operationId: uploadSpecialistDocument
       summary: Add or replace a document (SpecDocuments, step 4 of 7)
       description: |
-        Replaces every file of this kind. One file per kind, except IDENTITY, which takes up to two
-        (front and back). PDF, JPEG or PNG; PHOTO must be an image. Files are encrypted in object
-        storage and only the verification team can open them; each opening is audited.
+        Replaces every file of this kind, or of this kind and profession for a LICENCE. One file per
+        kind, except IDENTITY, which takes up to two (front and back). PDF, JPEG or PNG; PHOTO must be
+        an image. CERTIFICATE is refused here. Files are encrypted in object storage and only the
+        verification team can open them; each opening is audited.
       tags: [specialists]
       requestBody:
         required: true
@@ -485,6 +491,196 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/me/specialist-professions:
+    post:
+      operationId: addSpecialistProfession
+      summary: An approved specialist adds a profession, with its licence (D62)
+      description: |
+        Waits as PENDING until two staff members approve it (D29); the specialist keeps working under
+        what is approved. A profession withdrawn or rejected before can be added again.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [profession, licenceNumber, licensingBody, specialties, file]
+              properties:
+                profession:
+                  type: string
+                licenceNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 60
+                licensingBody:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+                specialties:
+                  description: Codes this profession allows; repeat the field for each.
+                  type: array
+                  minItems: 1
+                  maxItems: 20
+                  items:
+                    type: string
+                file:
+                  description: The licence, PDF, JPEG or PNG.
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /v1/me/specialist-professions/{profession}:
+    parameters:
+      - $ref: "#/components/parameters/ProfessionCode"
+    delete:
+      operationId: withdrawSpecialistProfession
+      summary: Withdraw a profession and its specialties
+      description: It leaves search at once; booked sessions are kept. The last approved profession cannot be withdrawn.
+      tags: [specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialist-professions/{profession}/specialties:
+    parameters:
+      - $ref: "#/components/parameters/ProfessionCode"
+    post:
+      operationId: addSpecialistSpecialty
+      summary: An approved specialist adds a specialty under one of their professions (D62)
+      description: One reviewer approves or declines it. The note says what training or experience the specialist has in it.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [specialty, note]
+              properties:
+                specialty:
+                  type: string
+                note:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                file:
+                  description: A certificate, optional; PDF, JPEG or PNG.
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /v1/me/specialist-professions/{profession}/specialties/{specialty}:
+    parameters:
+      - $ref: "#/components/parameters/ProfessionCode"
+      - $ref: "#/components/parameters/SpecialtyCode"
+    delete:
+      operationId: withdrawSpecialistSpecialty
+      summary: Withdraw a specialty
+      description: The last approved specialty of an approved profession cannot be withdrawn; withdraw the profession instead.
+      tags: [specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/me/specialty-requests:
+    post:
+      operationId: requestSpecialty
+      summary: Ask for a specialty that is not listed yet, under one of your professions (D62)
+      description: Open while the application is a draft or once approved. At most the max-open-specialty-requests setting at once.
+      tags: [specialists]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [profession, name, note]
+              properties:
+                profession:
+                  type: string
+                name:
+                  description: The specialty's name, in either language.
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                note:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                file:
+                  description: A certificate, optional; PDF, JPEG or PNG.
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /v1/me/specialty-requests/{requestId}:
+    parameters:
+      - $ref: "#/components/parameters/SpecialtyRequestId"
+    delete:
+      operationId: withdrawSpecialtyRequest
+      summary: Withdraw an open request
+      tags: [specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialistApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/catalogue/professions:
     get:
       operationId: listProfessions
@@ -582,13 +778,14 @@ paths:
         required: true
         schema:
           type: string
-          enum: [IDENTITY, LICENCE, PROFILE, PAYOUT]
+          enum: [IDENTITY, PROFILE, PAYOUT]
     put:
       operationId: verifyApplicationItem
       summary: Mark an item verified, or not
       description: |
-        Languages are verified one by one, and services follow from the price bands, so neither is
-        set here. PROFILE needs the bio in both EN and FR. LICENCE takes the licence's expiry date.
+        Languages are verified one by one, services follow from the price bands, and each
+        profession's licence and specialties are checked under /admin/v1/specialists/{id}/professions
+        (D62), so none of them is set here. PROFILE needs the bio in both EN and FR.
       tags: [admin-specialists]
       requestBody:
         required: true
@@ -952,6 +1149,288 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/specialists/{id}/professions/{profession}/verification:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - $ref: "#/components/parameters/ProfessionCode"
+    put:
+      operationId: verifyProfession
+      summary: Mark a profession's licence checked, or not (D62)
+      description: |
+        In an application under review, one of its items. For a profession an approved specialist
+        added, the first of two people (D29): someone else then approves it.
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LicenceVerification"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialists/{id}/professions/{profession}/approval:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - $ref: "#/components/parameters/ProfessionCode"
+    post:
+      operationId: approveProfession
+      summary: Approve a profession an approved specialist added; only someone other than who checked it (D29, D62)
+      description: Its checked specialties are approved with it. In an application, the application's approval does this instead.
+      tags: [admin-specialists]
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialists/{id}/professions/{profession}/rejection:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - $ref: "#/components/parameters/ProfessionCode"
+    post:
+      operationId: rejectProfession
+      summary: Reject a pending profession, with a reason the specialist sees (D62)
+      description: Its pending specialties are declined with it. An application keeps at least one profession; reject the application instead.
+      tags: [admin-specialists]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialists/{id}/professions/{profession}/specialties/{specialty}/verification:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - $ref: "#/components/parameters/ProfessionCode"
+      - $ref: "#/components/parameters/SpecialtyCode"
+    put:
+      operationId: verifySpecialty
+      summary: Mark a specialty checked, or not (D62)
+      description: |
+        Under an approved profession this approves it at once; one reviewer is enough. Otherwise it
+        is approved with its profession or application.
+      tags: [admin-specialists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemVerification"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialists/{id}/professions/{profession}/specialties/{specialty}/rejection:
+    parameters:
+      - $ref: "#/components/parameters/SpecialistId"
+      - $ref: "#/components/parameters/ProfessionCode"
+      - $ref: "#/components/parameters/SpecialtyCode"
+    post:
+      operationId: declineSpecialty
+      summary: Decline a pending specialty, with a reason the specialist sees (D62)
+      description: A profession keeps at least one specialty that is not declined.
+      tags: [admin-specialists]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/ApplicationReviewResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialist-additions:
+    get:
+      operationId: listPracticeAdditions
+      summary: Professions and specialties approved specialists added, oldest first (D62)
+      tags: [admin-specialists]
+      responses:
+        "200":
+          description: What waits for staff
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PracticeAddition"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/specialty-requests:
+    get:
+      operationId: listSpecialtyRequests
+      summary: Requests for new specialties (D62)
+      description: Staff with view access to Specialists or the Catalogue.
+      tags: [admin-catalogue]
+      parameters:
+        - name: status
+          in: query
+          description: OPEN when absent.
+          schema:
+            $ref: "#/components/schemas/SpecialtyRequestStatus"
+      responses:
+        "200":
+          description: Open ones oldest first; others newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialtyRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/specialty-requests/{requestId}/creation:
+    parameters:
+      - $ref: "#/components/parameters/SpecialtyRequestId"
+    post:
+      operationId: createRequestedSpecialty
+      summary: Add the requested specialty to the catalogue (Catalogue, F; D62)
+      description: |
+        Creates it under a main specialty, links it to the request's profession, and adds it to the
+        specialist's practice as PENDING for a reviewer to check.
+      tags: [admin-catalogue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [code, labelEn, labelFr, parentCode, reason]
+              properties:
+                code:
+                  type: string
+                  pattern: "^[a-z][a-z0-9-]*$"
+                  maxLength: 40
+                labelEn:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                labelFr:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                parentCode:
+                  description: A main specialty.
+                  type: string
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialtyRequestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialty-requests/{requestId}/match:
+    parameters:
+      - $ref: "#/components/parameters/SpecialtyRequestId"
+    post:
+      operationId: matchRequestedSpecialty
+      summary: Answer a request with a specialty that already exists (Catalogue, F; D62)
+      description: Links it to the request's profession if it was not, and adds it to the specialist's practice as PENDING.
+      tags: [admin-catalogue]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [specialty, reason]
+              properties:
+                specialty:
+                  type: string
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialtyRequestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/specialty-requests/{requestId}/decline:
+    parameters:
+      - $ref: "#/components/parameters/SpecialtyRequestId"
+    post:
+      operationId: declineSpecialtyRequest
+      summary: Decline a request, with a reason the specialist sees (Catalogue, F; D62)
+      tags: [admin-catalogue]
+      requestBody:
+        $ref: "#/components/requestBodies/Reason"
+      responses:
+        "200":
+          $ref: "#/components/responses/SpecialtyRequestResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /v1/catalogue/specialties:
     get:
       operationId: listSpecialties
@@ -998,6 +1477,7 @@ paths:
             maxLength: 120
         - name: specialty
           in: query
+          description: A specialty code; a main specialty also finds the specialties under it (D62).
           schema:
             type: string
         - name: maxPrice
@@ -3345,7 +3825,7 @@ paths:
   /admin/v1/catalogue:
     get:
       operationId: getAdminCatalogue
-      summary: Every specialty, session language and help topic, enabled or not, in EN and FR
+      summary: Every specialty, profession, session language and help topic, enabled or not, in EN and FR
       tags: [admin-catalogue]
       responses:
         "200":
@@ -3365,7 +3845,7 @@ paths:
         required: true
         schema:
           type: string
-          enum: [specialties, session-languages, help-topics]
+          enum: [specialties, professions, session-languages, help-topics]
       - name: code
         in: path
         required: true
@@ -3401,6 +3881,17 @@ paths:
                   description: Display order; a new entry goes last when absent.
                   type: integer
                   minimum: 1
+                parentCode:
+                  description: Specialties only. The main specialty it sits under; absent for a main specialty. One level deep (D62).
+                  type: string
+                specialties:
+                  description: Professions only, and required for them. The specialties it allows; a change applies to new choices only (D62).
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  uniqueItems: true
+                  items:
+                    type: string
                 reason:
                   type: string
                   minLength: 1
@@ -5309,6 +5800,29 @@ components:
       schema:
         type: string
         format: uuid
+    ProfessionCode:
+      name: profession
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9-]*$"
+        maxLength: 40
+    SpecialtyCode:
+      name: specialty
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z][a-z0-9-]*$"
+        maxLength: 40
+    SpecialtyRequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     SettingKey:
       name: key
       in: path
@@ -5506,6 +6020,18 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ApplicationReview"
+    SpecialtyRequestResponse:
+      description: The request after the answer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SpecialtyRequest"
+    SpecialistApplicationResponse:
+      description: The specialist's application or practice after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SpecialistApplication"
     NotFound:
       description: No such application or specialist
       content:
@@ -6033,6 +6559,11 @@ components:
           type: string
         label:
           type: string
+        specialties:
+          description: The enabled specialties this profession allows, in display order (D62).
+          type: array
+          items:
+            $ref: "#/components/schemas/Specialty"
     SpecialistSignupRequest:
       type: object
       additionalProperties: false
@@ -6070,8 +6601,9 @@ components:
       type: string
       enum: [NATIVE, FLUENT, PROFESSIONAL]
     DocumentKind:
+      description: CERTIFICATE comes with a specialty or a specialty request (D62) and is never uploaded on its own.
       type: string
-      enum: [LICENCE, IDENTITY, PHOTO, CV]
+      enum: [LICENCE, IDENTITY, PHOTO, CV, CERTIFICATE]
     AdminBookingStatus:
       description: A booking status as staff filter it; DISPUTED while a dispute or flag is open (D41).
       type: string
@@ -6228,24 +6760,19 @@ components:
     Practice:
       type: object
       additionalProperties: false
-      required: [profession, licenceNumber, yearsInPractice, licensingBody, focusAreas, bio]
+      required: [professions, yearsInPractice, focusAreas, bio]
       properties:
-        profession:
-          description: A code from /v1/catalogue/professions.
-          type: string
-        licenceNumber:
-          type: string
-          minLength: 1
-          maxLength: 60
+        professions:
+          description: The professions applied as, the main one first, up to the max-professions setting (D62). Saving replaces them all while the application is a draft.
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/PracticeProfession"
         yearsInPractice:
           type: integer
           minimum: 0
           maximum: 70
-        licensingBody:
-          description: Issuing professional body.
-          type: string
-          minLength: 1
-          maxLength: 160
         focusAreas:
           description: Help topic codes (/v1/catalogue/help-topics), up to 5 (D26).
           type: array
@@ -6335,6 +6862,9 @@ components:
       properties:
         kind:
           $ref: "#/components/schemas/DocumentKind"
+        profession:
+          description: The profession a LICENCE is for (D62).
+          type: string
         files:
           type: array
           items:
@@ -6370,6 +6900,99 @@ components:
           type: array
           items:
             type: integer
+    PracticeProfession:
+      type: object
+      additionalProperties: false
+      required: [profession, licenceNumber, licensingBody, specialties]
+      properties:
+        profession:
+          description: A code from /v1/catalogue/professions.
+          type: string
+        licenceNumber:
+          type: string
+          minLength: 1
+          maxLength: 60
+        licensingBody:
+          description: Issuing professional body.
+          type: string
+          minLength: 1
+          maxLength: 160
+        specialties:
+          description: Specialty codes this profession allows (Profession.specialties), at least one.
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items:
+            type: string
+    PracticeStatus:
+      description: Where a profession or specialty stands (D62). DECLINED is a specialty's REJECTED.
+      type: string
+      enum: [PENDING, APPROVED, REJECTED, DECLINED, WITHDRAWN]
+    MyProfession:
+      description: A profession as the specialist sees it, with its specialties and where each stands.
+      type: object
+      additionalProperties: false
+      required: [profession, label, licenceNumber, licensingBody, status, specialties]
+      properties:
+        profession:
+          type: string
+        label:
+          description: In the caller's language.
+          type: string
+        licenceNumber:
+          type: string
+        licensingBody:
+          type: string
+        status:
+          $ref: "#/components/schemas/PracticeStatus"
+        reviewNote:
+          description: The reviewer's reason for a rejection, in their words.
+          type: string
+        specialties:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [specialty, label, status]
+            properties:
+              specialty:
+                type: string
+              label:
+                type: string
+              status:
+                $ref: "#/components/schemas/PracticeStatus"
+              reviewNote:
+                type: string
+    SpecialtyRequestStatus:
+      type: string
+      enum: [OPEN, CREATED, MATCHED, DECLINED, WITHDRAWN]
+    MySpecialtyRequest:
+      description: A request for a specialty that is not in the catalogue yet (D62).
+      type: object
+      additionalProperties: false
+      required: [id, profession, proposedName, status, requestedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        profession:
+          type: string
+        proposedName:
+          description: As the specialist wrote it.
+          type: string
+        status:
+          $ref: "#/components/schemas/SpecialtyRequestStatus"
+        specialty:
+          description: The specialty it was created as or matched to.
+          type: string
+        specialtyLabel:
+          type: string
+        reviewNote:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
     SpecialistApplication:
       type: object
       additionalProperties: false
@@ -6390,7 +7013,7 @@ components:
             languages:
               type: boolean
             documents:
-              description: LICENCE, IDENTITY and PHOTO present; CV is optional.
+              description: IDENTITY, PHOTO and a LICENCE for every profession present; CV is optional.
               type: boolean
             services:
               type: boolean
@@ -6400,6 +7023,16 @@ components:
               type: boolean
         practice:
           $ref: "#/components/schemas/Practice"
+        professions:
+          description: Every profession claimed, with the status of each and of its specialties (D62). Withdrawn ones are left out.
+          type: array
+          items:
+            $ref: "#/components/schemas/MyProfession"
+        specialtyRequests:
+          description: Requests for new specialties, newest first.
+          type: array
+          items:
+            $ref: "#/components/schemas/MySpecialtyRequest"
         languages:
           type: array
           items:
@@ -6514,10 +7147,148 @@ components:
       properties:
         verified:
           type: boolean
+    LicenceVerification:
+      type: object
+      additionalProperties: false
+      required: [verified]
+      properties:
+        verified:
+          type: boolean
         licenceValidUntil:
-          description: LICENCE only, required when verifying it.
+          description: Required when verifying; today or later.
           type: string
           format: date
+    PracticeReview:
+      description: One profession a specialist claims, as staff check it (D62).
+      type: object
+      additionalProperties: false
+      required: [profession, label, position, licenceNumber, licensingBody, status, requestedAt, specialties]
+      properties:
+        profession:
+          type: string
+        label:
+          type: string
+        position:
+          description: 1 is the main profession.
+          type: integer
+        licenceNumber:
+          type: string
+        licensingBody:
+          type: string
+        status:
+          $ref: "#/components/schemas/PracticeStatus"
+        validUntil:
+          type: string
+          format: date
+        verification:
+          description: Who checked the licence. For a profession added after approval, the first of two people (D29).
+          $ref: "#/components/schemas/Verification"
+        decision:
+          description: Who approved, rejected or saw it withdrawn, and when.
+          $ref: "#/components/schemas/Verification"
+        reviewNote:
+          type: string
+        addedAfterApproval:
+          description: True when the specialist added it from their profile.
+          type: boolean
+        requestedAt:
+          type: string
+          format: date-time
+        specialties:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [specialty, label, status, requestedAt]
+            properties:
+              specialty:
+                type: string
+              label:
+                type: string
+              status:
+                $ref: "#/components/schemas/PracticeStatus"
+              note:
+                description: The specialist's training or experience in it, in their words.
+                type: string
+              certificateId:
+                description: The certificate's document id, opened like any other document.
+                type: string
+                format: uuid
+              verification:
+                $ref: "#/components/schemas/Verification"
+              decision:
+                $ref: "#/components/schemas/Verification"
+              reviewNote:
+                type: string
+              requestedAt:
+                type: string
+                format: date-time
+    SpecialtyRequest:
+      description: A request for a new specialty, as staff answer it (D62).
+      type: object
+      additionalProperties: false
+      required: [id, specialistId, fullName, profession, professionLabel, proposedName, note, status, requestedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        specialistId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        profession:
+          type: string
+        professionLabel:
+          type: string
+        proposedName:
+          type: string
+        note:
+          type: string
+        certificateId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/SpecialtyRequestStatus"
+        specialty:
+          type: string
+        specialtyLabel:
+          type: string
+        decision:
+          $ref: "#/components/schemas/Verification"
+        reviewNote:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
+    PracticeAddition:
+      description: A profession or specialty an approved specialist added, waiting for staff (D62).
+      type: object
+      additionalProperties: false
+      required: [specialistId, fullName, kind, profession, professionLabel, requestedAt]
+      properties:
+        specialistId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        kind:
+          type: string
+          enum: [PROFESSION, SPECIALTY]
+        profession:
+          type: string
+        professionLabel:
+          type: string
+        specialty:
+          type: string
+        specialtyLabel:
+          type: string
+        verification:
+          description: A profession's first approver, when one has checked it.
+          $ref: "#/components/schemas/Verification"
+        requestedAt:
+          type: string
+          format: date-time
     ApplicationQueue:
       type: object
       additionalProperties: false
@@ -6571,7 +7342,7 @@ components:
       description: One application, or one specialist's record, as staff see it.
       type: object
       additionalProperties: false
-      required: [id, status, fullName, verifiedItems, identity, licence, languages, services, profile, payout, documents, notes, activity]
+      required: [id, status, fullName, verifiedItems, identity, practice, professions, specialtyRequests, languages, services, profile, payout, documents, notes, activity]
       properties:
         id:
           type: string
@@ -6615,21 +7386,24 @@ components:
           properties:
             verification:
               $ref: "#/components/schemas/Verification"
-        licence:
+        practice:
+          description: The professions item. Verified once every profession left is checked and has a checked specialty, and no specialty is left unchecked (D62).
           type: object
           additionalProperties: false
+          required: [verified]
           properties:
-            licenceNumber:
-              type: string
-            licensingBody:
-              type: string
-            yearsInPractice:
-              type: integer
-            validUntil:
-              type: string
-              format: date
-            verification:
-              $ref: "#/components/schemas/Verification"
+            verified:
+              type: boolean
+        professions:
+          description: Main profession first; withdrawn ones last.
+          type: array
+          items:
+            $ref: "#/components/schemas/PracticeReview"
+        specialtyRequests:
+          description: This specialist's requests for new specialties, newest first.
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecialtyRequest"
         languages:
           type: array
           items:
@@ -6660,6 +7434,8 @@ components:
           type: object
           additionalProperties: false
           properties:
+            yearsInPractice:
+              type: integer
             focusAreas:
               type: array
               items:
@@ -6724,9 +7500,9 @@ components:
               kind:
                 description: The portal words each kind in the viewer's language. The list grows as review steps are added, so clients show unknown kinds plainly.
                 type: string
-                x-extensible-enum: [SUBMITTED, OPENED, ITEM_VERIFIED, ITEM_UNVERIFIED, LANGUAGE_VERIFIED, BIO_ADDED, INTERVIEW_BOOKED, CHANGES_REQUESTED, APPROVAL_PROPOSED, APPROVAL_WITHDRAWN, APPROVED, REJECTED, SUSPENDED, REINSTATED]
+                x-extensible-enum: [SUBMITTED, OPENED, ITEM_VERIFIED, ITEM_UNVERIFIED, LANGUAGE_VERIFIED, BIO_ADDED, INTERVIEW_BOOKED, CHANGES_REQUESTED, APPROVAL_PROPOSED, APPROVAL_WITHDRAWN, APPROVED, REJECTED, SUSPENDED, REINSTATED, PROFESSION_ADDED, PROFESSION_VERIFIED, PROFESSION_UNVERIFIED, PROFESSION_APPROVED, PROFESSION_REJECTED, PROFESSION_WITHDRAWN, SPECIALTY_ADDED, SPECIALTY_VERIFIED, SPECIALTY_UNVERIFIED, SPECIALTY_APPROVED, SPECIALTY_DECLINED, SPECIALTY_WITHDRAWN, SPECIALTY_REQUESTED, REQUEST_CREATED, REQUEST_MATCHED, REQUEST_DECLINED, REQUEST_WITHDRAWN]
               subject:
-                description: The item or language code the entry is about, if any.
+                description: The item, language, profession or "profession/specialty" code the entry is about, if any.
                 type: string
               value:
                 description: The level verified, if any.
@@ -6757,6 +7533,9 @@ components:
         code:
           type: string
         label:
+          type: string
+        parentCode:
+          description: The main specialty this one sits under, if any (D62). Searching the main one also finds this one.
           type: string
     BookableLanguage:
       description: A language the specialist was verified in, at a bookable level.
@@ -6792,7 +7571,18 @@ components:
         fullName:
           type: string
         professionLabel:
+          description: The main approved profession.
           type: string
+        professions:
+          description: Every approved profession, the main one first, in the caller's language (D62).
+          type: array
+          items:
+            type: string
+        specialties:
+          description: Every approved specialty, in catalogue order, in the caller's language (D62).
+          type: array
+          items:
+            type: string
         focusAreas:
           description: Labels in the caller's language.
           type: array
@@ -6833,9 +7623,21 @@ components:
         fullName:
           type: string
         professionLabel:
+          description: The main approved profession.
           type: string
         specialty:
+          description: The code of the first approved specialty.
           type: string
+        professions:
+          description: Every approved profession, the main one first, in the caller's language (D62).
+          type: array
+          items:
+            type: string
+        specialties:
+          description: Every approved specialty, in catalogue order, in the caller's language (D62).
+          type: array
+          items:
+            type: string
         bio:
           description: In the caller's language.
           type: string
@@ -8134,12 +8936,24 @@ components:
           type: integer
         enabled:
           type: boolean
+        parentCode:
+          description: Specialties only, when it sits under a main specialty (D62).
+          type: string
+        specialties:
+          description: Professions only, the specialties it allows (D62).
+          type: array
+          items:
+            type: string
     AdminCatalogue:
       type: object
       additionalProperties: false
-      required: [specialties, sessionLanguages, helpTopics, durations]
+      required: [specialties, professions, sessionLanguages, helpTopics, durations]
       properties:
         specialties:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogueEntry"
+        professions:
           type: array
           items:
             $ref: "#/components/schemas/CatalogueEntry"

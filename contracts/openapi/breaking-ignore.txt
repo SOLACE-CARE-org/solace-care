@@ -1,3 +1,66 @@
 POST /v1/webhooks/payments/{provider} removed the enum value `notchpay` from the `path` request parameter `provider`
 POST /v1/webhooks/payments/{provider} removed the enum value `sandbox` from the `path` request parameter `provider`
 POST /v1/webhooks/payments/{provider} added the pattern `^[a-z][a-z0-9-]{1,30}$` to the `path` request parameter `provider`
+DELETE /admin/v1/specialist-applications/{id}/approval-proposal added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+DELETE /admin/v1/specialist-applications/{id}/approval-proposal removed the required property `licence` from the response with the `200` status
+DELETE /admin/v1/specialists/{id}/suspension added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+DELETE /admin/v1/specialists/{id}/suspension removed the required property `licence` from the response with the `200` status
+GET /admin/v1/specialist-applications/{id} added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+GET /admin/v1/specialist-applications/{id} removed the required property `licence` from the response with the `200` status
+GET /admin/v1/specialists/{id} added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+GET /admin/v1/specialists/{id} removed the required property `licence` from the response with the `200` status
+GET /v1/me/specialist-application added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+GET /v1/me/specialist-application removed the required property `practice/licenceNumber` from the response with the `200` status
+GET /v1/me/specialist-application removed the required property `practice/licensingBody` from the response with the `200` status
+GET /v1/me/specialist-application removed the required property `practice/profession` from the response with the `200` status
+POST /admin/v1/specialist-applications/{id}/approval added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialist-applications/{id}/approval removed the required property `licence` from the response with the `200` status
+POST /admin/v1/specialist-applications/{id}/approval-proposal added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialist-applications/{id}/approval-proposal removed the required property `licence` from the response with the `200` status
+POST /admin/v1/specialist-applications/{id}/change-request added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialist-applications/{id}/change-request removed the required property `licence` from the response with the `200` status
+POST /admin/v1/specialist-applications/{id}/rejection added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialist-applications/{id}/rejection removed the required property `licence` from the response with the `200` status
+POST /admin/v1/specialist-applications/{id}/review added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialist-applications/{id}/review removed the required property `licence` from the response with the `200` status
+POST /admin/v1/specialists/{id}/suspension added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /admin/v1/specialists/{id}/suspension removed the required property `licence` from the response with the `200` status
+POST /v1/me/specialist-application/bio-confirmation added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /v1/me/specialist-application/bio-confirmation removed the required property `practice/licenceNumber` from the response with the `200` status
+POST /v1/me/specialist-application/bio-confirmation removed the required property `practice/licensingBody` from the response with the `200` status
+POST /v1/me/specialist-application/bio-confirmation removed the required property `practice/profession` from the response with the `200` status
+POST /v1/me/specialist-application/submission added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+POST /v1/me/specialist-application/submission removed the required property `practice/licenceNumber` from the response with the `200` status
+POST /v1/me/specialist-application/submission removed the required property `practice/licensingBody` from the response with the `200` status
+POST /v1/me/specialist-application/submission removed the required property `practice/profession` from the response with the `200` status
+PUT /admin/v1/specialist-applications/{id}/bio added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /admin/v1/specialist-applications/{id}/bio removed the required property `licence` from the response with the `200` status
+PUT /admin/v1/specialist-applications/{id}/interview added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /admin/v1/specialist-applications/{id}/interview removed the required property `licence` from the response with the `200` status
+PUT /admin/v1/specialist-applications/{id}/items/{item} added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /admin/v1/specialist-applications/{id}/items/{item} removed the required property `licence` from the response with the `200` status
+PUT /admin/v1/specialist-applications/{id}/languages/{code} added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /admin/v1/specialist-applications/{id}/languages/{code} removed the required property `licence` from the response with the `200` status
+PUT /admin/v1/specialist-applications/{id}/notes added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /admin/v1/specialist-applications/{id}/notes removed the required property `licence` from the response with the `200` status
+PUT /v1/me/specialist-application/documents/{kind} added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /v1/me/specialist-application/documents/{kind} removed the required property `practice/licenceNumber` from the response with the `200` status
+PUT /v1/me/specialist-application/documents/{kind} removed the required property `practice/licensingBody` from the response with the `200` status
+PUT /v1/me/specialist-application/documents/{kind} removed the required property `practice/profession` from the response with the `200` status
+PUT /v1/me/specialist-application/languages added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /v1/me/specialist-application/languages removed the required property `practice/licenceNumber` from the response with the `200` status
+PUT /v1/me/specialist-application/languages removed the required property `practice/licensingBody` from the response with the `200` status
+PUT /v1/me/specialist-application/languages removed the required property `practice/profession` from the response with the `200` status
+PUT /v1/me/specialist-application/payout added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /v1/me/specialist-application/payout removed the required property `practice/licenceNumber` from the response with the `200` status
+PUT /v1/me/specialist-application/payout removed the required property `practice/licensingBody` from the response with the `200` status
+PUT /v1/me/specialist-application/payout removed the required property `practice/profession` from the response with the `200` status
+PUT /v1/me/specialist-application/practice added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /v1/me/specialist-application/practice added the new required request property `professions`
+PUT /v1/me/specialist-application/practice removed the required property `practice/licenceNumber` from the response with the `200` status
+PUT /v1/me/specialist-application/practice removed the required property `practice/licensingBody` from the response with the `200` status
+PUT /v1/me/specialist-application/practice removed the required property `practice/profession` from the response with the `200` status
+PUT /v1/me/specialist-application/services added the new `CERTIFICATE` enum value to the `documents/items/kind` response property for the response status `200`
+PUT /v1/me/specialist-application/services removed the required property `practice/licenceNumber` from the response with the `200` status
+PUT /v1/me/specialist-application/services removed the required property `practice/licensingBody` from the response with the `200` status
+PUT /v1/me/specialist-application/services removed the required property `practice/profession` from the response with the `200` status
