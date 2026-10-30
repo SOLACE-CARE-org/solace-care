@@ -167,7 +167,7 @@ Every pair now meets WCAG 2.1 AA.
 
 **D31. Specialties for the catalogue and search (epic 3).** Working default, 18 Oct 2026; any of it can change.
 - Specialties are catalogue rows in EN and FR (System Design, data model `specialty`): clinical psychology, counselling, psychiatry, gynaecology, endocrinology. The last two stay disabled with their professions (D26). Admins will manage the list (Catalogue and policies).
-- Each profession belongs to one specialty, and a specialist's sessions carry it. A specialist with several specialties waits for profile editing.
+- Each profession belongs to one specialty, and a specialist's sessions carry it. A specialist with several specialties waits for profile editing. (Replaced by D62.)
 - Search lists only approved specialists with a verified level of Professional or above in the chosen session language, an enabled session, and a bio in EN and FR whose Solace draft, if any, the specialist has confirmed (D30).
 - "Next available" comes from weekly hours, notice and break until Scheduling (epic 4) subtracts bookings and holds. Ratings appear with Ratings and reviews (epic 8).
 
@@ -437,6 +437,35 @@ Every pair now meets WCAG 2.1 AA.
   - A job whose row is PAUSED is not registered when the service starts, so it does not run. Pausing or resuming takes effect at the next restart, with no code change.
   - Every job can be paused and rescheduled, crisis escalation included (owner, 25 Oct 2026). A paused crisis escalation means unacknowledged alerts no longer reach the backup at 5 minutes or Super admins at 10; the job's interval also sets how soon after those times they are reached. The portal says so beside those jobs.
   - Each job is a `@Job` in `backend/libs/jobs`, which also serves `/admin/v1/jobs` in Core, Tracking and AI: Super admins change rows, Operations look.
+
+**D62. Several professions per specialist, several specialties per profession.** Decided 30 Oct 2026 by the owner. This replaces "each profession belongs to one specialty" and "a specialist with several specialties waits for profile editing" in D31.
+- **The catalogue:**
+  - A specialty can sit under one main specialty (`specialty.parent_code`), one level deep: Counselling, then Marriage and couples counselling. Searching a main specialty also finds specialists of the specialties under it.
+  - `profession_specialty` says which specialties each profession allows, one row per pair. Operations and Super admins manage professions and these links on the Catalogue screen, in EN and FR with a reason, like the other entries (D43). The `profession.specialty_code` column goes.
+  - A changed link applies to new choices only. Specialists already approved for a specialty keep it until staff act on them one by one.
+- **A specialist's practice:**
+  - `specialist_profession` holds each profession a specialist claims, with its own licence number, licensing body, licence document and licence expiry. The first one is their main profession, shown first. Years in practice stay one number per person.
+  - `specialist_specialty` holds the specialties they offer under each profession, at least one per profession, chosen from those the profession allows.
+  - Each profession and each specialty has its own status: PENDING, then APPROVED or REJECTED/DECLINED, or WITHDRAWN by the specialist.
+  - At most `[3]` professions per specialist (`solace.specialists.max-professions`).
+  - Seekers book the specialist, not a profession. Prices stay one per session type, and `service_offering.specialty_code` goes.
+  - Search, the health check and tracking invites find a specialist under every approved specialty.
+- **At sign-up:** the Practice step takes one or more professions, each with its licence number, licensing body and specialties. The Documents step asks for one licence per profession. The licence covers the profession's specialties, so no other evidence is needed.
+- **Review of the application:** the reviewer checks each profession's licence and each specialty, and approves or rejects each one. The application's practice item is verified once every profession left is checked and has at least one checked specialty. The application's two-person approval (D29) then approves them all.
+- **After approval:**
+  - A specialist adds a profession from the Profile tab, with its licence. It waits as PENDING while they keep working under what is approved. Two people approve it, as with an application (D29): one checks the licence, someone else confirms.
+  - A specialist adds a specialty under one of their professions with a short note on their training or experience in it (required) and a certificate (optional). One reviewer approves it, or declines it with a reason. The reviewer can ask for a document by declining with that reason.
+  - A specialist can withdraw a profession or a specialty. It leaves search at once and booked sessions are kept. The last approved profession, and the last approved specialty of an approved profession, cannot be withdrawn this way.
+- **Requests for a specialty that does not exist yet:**
+  - A specialist proposes a name under one of their professions, with the same note and optional certificate. At most `[3]` requests are open at once (`solace.specialists.max-open-specialty-requests`).
+  - Operations or Super admins (Catalogue, F) answer it:
+    - **Create:** a new specialty under a main specialty, with EN and FR names, linked to that profession. Every specialist with the profession can choose it from then on.
+    - **Match:** the request becomes one for a specialty that already exists, linked to the profession if it was not.
+    - **Decline,** with a reason the specialist sees.
+  - A created or matched specialty is then reviewed for that specialist like any other.
+  - A request does not hold up an application.
+- **Messages:** every decision on a profession, a specialty or a request sends the neutral "Decision made" push (notification-copy.md, Specialists). No push ever names a profession or a specialty.
+- **Contract:** the Practice body, the application review and its LICENCE item change shape. This is a deliberate break, allowed because nothing has launched and the app and portal ship with Core; the findings are listed in `contracts/openapi/breaking-ignore.txt`.
 
 ## Still open
 
