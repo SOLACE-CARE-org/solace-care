@@ -79,7 +79,7 @@ class AdminReviewController {
 
   // --- Bodies, as in the contract --------------------------------------------------------------
 
-  record ItemVerification(@NotNull Boolean verified, LocalDate licenceValidUntil) {}
+  record ItemVerification(@NotNull Boolean verified) {}
 
   record LanguageVerification(
       @NotNull @Pattern(regexp = "NATIVE|FLUENT|PROFESSIONAL|BELOW_PROFESSIONAL")
@@ -133,7 +133,9 @@ class AdminReviewController {
       Verification approvalProposal,
       int verifiedItems,
       Identity identity,
-      Licence licence,
+      PracticeItem practice,
+      List<PracticeReview> professions,
+      List<SpecialtyRequestView> specialtyRequests,
       List<LanguageItem> languages,
       Services services,
       Profile profile,
@@ -145,13 +147,52 @@ class AdminReviewController {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record Identity(Verification verification) {}
 
+  record PracticeItem(boolean verified) {}
+
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  record Licence(
+  record PracticeReview(
+      String profession,
+      String label,
+      int position,
       String licenceNumber,
       String licensingBody,
-      Integer yearsInPractice,
+      String status,
       LocalDate validUntil,
-      Verification verification) {}
+      Verification verification,
+      Verification decision,
+      String reviewNote,
+      Boolean addedAfterApproval,
+      Instant requestedAt,
+      List<SpecialtyReview> specialties) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record SpecialtyReview(
+      String specialty,
+      String label,
+      String status,
+      String note,
+      UUID certificateId,
+      Verification verification,
+      Verification decision,
+      String reviewNote,
+      Instant requestedAt) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record SpecialtyRequestView(
+      UUID id,
+      UUID specialistId,
+      String fullName,
+      String profession,
+      String professionLabel,
+      String proposedName,
+      String note,
+      UUID certificateId,
+      String status,
+      String specialty,
+      String specialtyLabel,
+      Verification decision,
+      String reviewNote,
+      Instant requestedAt) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record LanguageItem(
@@ -163,6 +204,7 @@ class AdminReviewController {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record Profile(
+      Integer yearsInPractice,
       List<String> focusAreas,
       String bioEn,
       String bioFr,
@@ -172,8 +214,15 @@ class AdminReviewController {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record Payout(String method, String phone, String holderName, Verification verification) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   record Document(
-      UUID id, String kind, String fileName, String contentType, long size, Instant uploadedAt) {}
+      UUID id,
+      String kind,
+      String profession,
+      String fileName,
+      String contentType,
+      long size,
+      Instant uploadedAt) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record ActivityItem(Instant at, String kind, String subject, String value, StaffRef by) {}
@@ -234,12 +283,7 @@ class AdminReviewController {
       @PathVariable String item,
       @Valid @RequestBody ItemVerification body,
       Locale locale) {
-    reviews.verifyItem(
-        id,
-        parse(ReviewStore.Item.class, item),
-        body.verified(),
-        body.licenceValidUntil(),
-        changer(token));
+    reviews.verifyItem(id, parse(ReviewStore.Item.class, item), body.verified(), changer(token));
     return render(reviews.review(id, locale));
   }
 
@@ -363,7 +407,11 @@ class AdminReviewController {
                     r.profile().accountId(),
                     r.profile().fullName(),
                     r.professionLabel(),
-                    r.profile().licenceNumber(),
+                    r.professions().stream()
+                        .filter(PracticeStore.Profession::live)
+                        .map(PracticeStore.Profession::licenceNumber)
+                        .findFirst()
+                        .orElse(null),
                     r.profile().status().name()))
         .toList();
   }
@@ -403,7 +451,7 @@ class AdminReviewController {
     return new ReviewStore.StaffRef(staff.id(), staff.name());
   }
 
-  private static ApplicationReview render(Reviews.Review r) {
+  static ApplicationReview render(Reviews.Review r) {
     var p = r.profile();
     var items = r.items();
     return new ApplicationReview(
@@ -411,7 +459,7 @@ class AdminReviewController {
         p.status().name(),
         r.state().changesRequestedAt() != null ? Boolean.TRUE : null,
         p.fullName(),
-        p.profession(),
+        r.profession(),
         r.professionLabel(),
         p.submittedAt(),
         r.state().decidedAt(),
@@ -421,12 +469,48 @@ class AdminReviewController {
         verification(r.state().approvalProposal()),
         r.verifiedItems(),
         new Identity(verification(items.get(ReviewStore.Item.IDENTITY))),
-        new Licence(
-            p.licenceNumber(),
-            p.licensingBody(),
-            p.yearsExperience(),
-            r.state().licenceValidUntil(),
-            verification(items.get(ReviewStore.Item.LICENCE))),
+        new PracticeItem(r.practiceVerified()),
+        r.professions().stream()
+            .map(
+                pr ->
+                    new PracticeReview(
+                        pr.code(),
+                        r.professionLabels().get(pr.code()),
+                        pr.position(),
+                        pr.licenceNumber(),
+                        pr.licensingBody(),
+                        pr.status().name(),
+                        pr.validUntil(),
+                        verification(pr.verification()),
+                        verification(pr.decision()),
+                        pr.reviewNote(),
+                        pr.addedAfterApproval() ? Boolean.TRUE : null,
+                        pr.requestedAt(),
+                        r.specialties().stream()
+                            .filter(s -> s.profession().equals(pr.code()))
+                            .map(
+                                s ->
+                                    new SpecialtyReview(
+                                        s.code(),
+                                        r.specialtyLabels().get(s.code()),
+                                        s.status().name(),
+                                        s.note(),
+                                        s.certificateId(),
+                                        verification(s.verification()),
+                                        verification(s.decision()),
+                                        s.reviewNote(),
+                                        s.requestedAt()))
+                            .toList()))
+            .toList(),
+        r.requests().stream()
+            .map(
+                q ->
+                    request(
+                        q,
+                        p.fullName(),
+                        r.professionLabels().get(q.profession()),
+                        q.specialty() == null ? null : r.specialtyLabels().get(q.specialty())))
+            .toList(),
         r.languages().stream()
             .map(
                 l ->
@@ -439,6 +523,7 @@ class AdminReviewController {
                 .toList(),
             r.withinBands()),
         new Profile(
+            p.yearsExperience(),
             r.focusAreas(),
             p.bioEn(),
             p.bioFr(),
@@ -457,7 +542,13 @@ class AdminReviewController {
             .map(
                 f ->
                     new Document(
-                        f.id(), f.kind(), f.fileName(), f.contentType(), f.size(), f.uploadedAt()))
+                        f.id(),
+                        f.kind(),
+                        f.profession(),
+                        f.fileName(),
+                        f.contentType(),
+                        f.size(),
+                        f.uploadedAt()))
             .toList(),
         r.state().staffNotes() == null ? "" : r.state().staffNotes(),
         r.activity().stream()
@@ -478,7 +569,27 @@ class AdminReviewController {
     return ref == null ? null : new StaffRef(ref.id(), ref.name());
   }
 
+  /** Who did it and when; none when nobody on staff did, as with a specialist's withdrawal. */
   private static Verification verification(ReviewStore.Verification v) {
-    return v == null ? null : new Verification(staff(v.by()), v.at());
+    return v == null || v.by() == null ? null : new Verification(staff(v.by()), v.at());
+  }
+
+  static SpecialtyRequestView request(
+      PracticeStore.Request q, String fullName, String professionLabel, String specialtyLabel) {
+    return new SpecialtyRequestView(
+        q.id(),
+        q.accountId(),
+        fullName,
+        q.profession(),
+        professionLabel,
+        q.proposedName(),
+        q.note(),
+        q.certificateId(),
+        q.status(),
+        q.specialty(),
+        specialtyLabel,
+        verification(q.decision()),
+        q.reviewNote(),
+        q.requestedAt());
   }
 }

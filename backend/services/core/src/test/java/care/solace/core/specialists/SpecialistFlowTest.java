@@ -43,6 +43,24 @@ public abstract class SpecialistFlowTest extends MemberStackTest {
 
   /** A specialist who went through every step in the app and submitted. */
   protected Applicant submittedApplicant(String phone, String name) throws Exception {
+    return submittedApplicant(
+        phone,
+        name,
+        """
+        {"professions":[{"profession":"clinical-psychologist","licenceNumber":"ONPC-%s",
+                         "licensingBody":"Ordre national","specialties":["clinical-psychology"]}],
+         "yearsInPractice":8,"focusAreas":["anxiety"],"bio":"I help adults with anxiety."}
+        """
+            .formatted(phone.substring(8)),
+        "clinical-psychologist");
+  }
+
+  /**
+   * The same, with a Practice step of the test's own and a licence for each of {@code professions}
+   * (D62).
+   */
+  protected Applicant submittedApplicant(
+      String phone, String name, String practice, String... professions) throws Exception {
     mvc.perform(
             post("/v1/specialist-signups")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -64,20 +82,17 @@ public abstract class SpecialistFlowTest extends MemberStackTest {
         .andExpect(status().isAccepted());
     String token = signIn(phone);
     String id = json(mvc.perform(get("/v1/me").headers(bearer(token)))).path("id").asText();
-    step(
-        token,
-        "/practice",
-        """
-        {"profession":"clinical-psychologist","licenceNumber":"ONPC-%s","yearsInPractice":8,
-         "licensingBody":"Ordre national","focusAreas":["anxiety"],"bio":"I help adults with anxiety."}
-        """
-            .formatted(phone.substring(8)));
+    step(token, "/practice", practice);
     step(
         token,
         "/languages",
         "{\"languages\":[{\"code\":\"en\",\"proficiency\":\"NATIVE\"},{\"code\":\"fr\",\"proficiency\":\"FLUENT\"}]}");
-    upload(token, "LICENCE", new MockMultipartFile("file", "licence.pdf", "x", PDF))
-        .andExpect(status().isOk());
+    for (String profession : professions) {
+      var licence = multipart(HttpMethod.PUT, "/v1/me/specialist-application/documents/LICENCE");
+      licence.file(new MockMultipartFile("file", "licence.pdf", "x", PDF));
+      mvc.perform(licence.param("profession", profession).headers(bearer(token)))
+          .andExpect(status().isOk());
+    }
     upload(
             token,
             "IDENTITY",
@@ -124,11 +139,8 @@ public abstract class SpecialistFlowTest extends MemberStackTest {
     Applicant applicant = submittedApplicant(phone, name);
     act(post(app(applicant, "/review")).with(ops)).andExpect(status().isOk());
     item(applicant, ops, "IDENTITY", "{\"verified\":true}");
-    item(
-        applicant,
-        ops,
-        "LICENCE",
-        "{\"verified\":true,\"licenceValidUntil\":\"%s\"}".formatted(LocalDate.now().plusYears(1)));
+    verifyProfession(applicant, ops, "clinical-psychologist");
+    verifySpecialty(applicant, ops, "clinical-psychologist", "clinical-psychology");
     act(
         put(app(applicant, "/bio"))
             .with(ops)
@@ -166,6 +178,33 @@ public abstract class SpecialistFlowTest extends MemberStackTest {
             .with(staff)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
+  }
+
+  /** Checks a profession's licence, valid for a year (D62). */
+  protected ResultActions verifyProfession(
+      Applicant a, RequestPostProcessor staff, String profession) throws Exception {
+    return act(
+        put(specialist(a, "/professions/" + profession + "/verification"))
+            .with(staff)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                "{\"verified\":true,\"licenceValidUntil\":\"%s\"}"
+                    .formatted(LocalDate.now().plusYears(1))));
+  }
+
+  protected ResultActions verifySpecialty(
+      Applicant a, RequestPostProcessor staff, String profession, String specialty)
+      throws Exception {
+    return act(
+        put(specialist(
+                a, "/professions/" + profession + "/specialties/" + specialty + "/verification"))
+            .with(staff)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"verified\":true}"));
+  }
+
+  protected static String specialist(Applicant a, String rest) {
+    return "/admin/v1/specialists/" + a.id() + rest;
   }
 
   protected ResultActions language(

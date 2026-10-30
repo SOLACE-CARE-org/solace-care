@@ -24,36 +24,49 @@ import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** {@code /v1/me/specialist-application} (contracts/openapi/core.yaml, tag specialists). */
+/**
+ * {@code /v1/me/specialist-application}, {@code /v1/me/specialist-professions} and {@code
+ * /v1/me/specialty-requests} (contracts/openapi/core.yaml, tag specialists).
+ */
 @RestController
 class ApplicationController {
 
   private final Accounts accounts;
   private final Applications applications;
+  private final Practices practices;
 
-  ApplicationController(Accounts accounts, Applications applications) {
+  ApplicationController(Accounts accounts, Applications applications, Practices practices) {
     this.accounts = accounts;
     this.applications = applications;
+    this.practices = practices;
   }
 
   // --- Request bodies, as in the contract ------------------------------------------------------
 
   record PracticeBody(
-      @NotBlank String profession,
-      @NotBlank @Size(max = 60) String licenceNumber,
+      @NotNull @Size(min = 1, max = Practices.MOST_PROFESSIONS)
+          List<@NotNull @Valid ProfessionBody> professions,
       @NotNull @Min(0) @Max(70) Integer yearsInPractice,
-      @NotBlank @Size(max = 160) String licensingBody,
       @NotNull @Size(min = 1, max = Applications.MOST_FOCUS_AREAS) List<@NotNull String> focusAreas,
       @NotBlank @Size(max = 600) String bio) {}
+
+  record ProfessionBody(
+      @NotBlank @Size(max = 40) String profession,
+      @NotBlank @Size(max = 60) String licenceNumber,
+      @NotBlank @Size(max = 160) String licensingBody,
+      @NotNull @Size(min = 1, max = Practices.MOST_SPECIALTIES)
+          List<@NotBlank String> specialties) {}
 
   record LanguagesBody(
       @NotNull @Size(min = 1, max = 10) List<@NotNull @Valid LanguageBody> languages) {}
@@ -84,6 +97,8 @@ class ApplicationController {
       String fullName,
       Applications.Steps steps,
       PracticeView practice,
+      List<MyProfession> professions,
+      List<MyRequest> specialtyRequests,
       List<LanguageView> languages,
       List<DocumentView> documents,
       List<OfferingBody> offerings,
@@ -99,16 +114,36 @@ class ApplicationController {
   record BioConfirmation(@Size(min = 1, max = 600) String text) {}
 
   record PracticeView(
+      List<ProfessionBody> professions, int yearsInPractice, List<String> focusAreas, String bio) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record MyProfession(
       String profession,
+      String label,
       String licenceNumber,
-      int yearsInPractice,
       String licensingBody,
-      List<String> focusAreas,
-      String bio) {}
+      String status,
+      String reviewNote,
+      List<MySpecialty> specialties) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record MySpecialty(String specialty, String label, String status, String reviewNote) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record MyRequest(
+      java.util.UUID id,
+      String profession,
+      String proposedName,
+      String status,
+      String specialty,
+      String specialtyLabel,
+      String reviewNote,
+      Instant requestedAt) {}
 
   record LanguageView(String code, String proficiency, boolean verified) {}
 
-  record DocumentView(String kind, List<FileView> files) {}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record DocumentView(String kind, String profession, List<FileView> files) {}
 
   record FileView(String fileName, String contentType, long size, Instant uploadedAt) {}
 
@@ -131,10 +166,13 @@ class ApplicationController {
     applications.savePractice(
         account,
         new Applications.Practice(
-            body.profession(),
-            body.licenceNumber(),
+            body.professions().stream()
+                .map(
+                    p ->
+                        new PracticeStore.Draft(
+                            p.profession(), p.licenceNumber(), p.licensingBody(), p.specialties()))
+                .toList(),
             body.yearsInPractice(),
-            body.licensingBody(),
             body.focusAreas(),
             body.bio()));
     return render(applications.view(account));
@@ -158,6 +196,7 @@ class ApplicationController {
   SpecialistApplication document(
       @AuthenticationPrincipal Jwt token,
       @PathVariable String kind,
+      @RequestParam(required = false) String profession,
       @RequestPart("file") List<MultipartFile> files) {
     Account account = accounts.require(token);
     Documents.Kind parsed;
@@ -168,14 +207,93 @@ class ApplicationController {
     }
     List<Documents.Upload> uploads = new ArrayList<>();
     for (MultipartFile file : files) {
-      try {
-        uploads.add(new Documents.Upload(file.getOriginalFilename(), file.getBytes()));
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      uploads.add(upload(file));
     }
-    applications.uploadDocuments(account, parsed, uploads);
+    applications.uploadDocuments(
+        account, parsed, profession == null || profession.isBlank() ? null : profession, uploads);
     return render(applications.view(account));
+  }
+
+  // --- After approval: professions, specialties and requests (D62) ------------------------------
+
+  @PostMapping(
+      path = "/v1/me/specialist-professions",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  SpecialistApplication addProfession(
+      @AuthenticationPrincipal Jwt token,
+      @RequestParam String profession,
+      @RequestParam String licenceNumber,
+      @RequestParam String licensingBody,
+      @RequestParam List<String> specialties,
+      @RequestPart("file") MultipartFile file) {
+    if (licenceNumber.length() > 60 || licensingBody.length() > 160) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    Account account = accounts.require(token);
+    practices.addProfession(
+        account, profession, licenceNumber, licensingBody, specialties, upload(file));
+    return render(applications.view(account));
+  }
+
+  @DeleteMapping("/v1/me/specialist-professions/{profession}")
+  SpecialistApplication withdrawProfession(
+      @AuthenticationPrincipal Jwt token, @PathVariable String profession) {
+    Account account = accounts.require(token);
+    practices.withdrawProfession(account, profession);
+    return render(applications.view(account));
+  }
+
+  @PostMapping(
+      path = "/v1/me/specialist-professions/{profession}/specialties",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  SpecialistApplication addSpecialty(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable String profession,
+      @RequestParam String specialty,
+      @RequestParam String note,
+      @RequestPart(name = "file", required = false) MultipartFile file) {
+    Account account = accounts.require(token);
+    practices.addSpecialty(
+        account, profession, specialty, note, file == null ? null : upload(file));
+    return render(applications.view(account));
+  }
+
+  @DeleteMapping("/v1/me/specialist-professions/{profession}/specialties/{specialty}")
+  SpecialistApplication withdrawSpecialty(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable String profession,
+      @PathVariable String specialty) {
+    Account account = accounts.require(token);
+    practices.withdrawSpecialty(account, profession, specialty);
+    return render(applications.view(account));
+  }
+
+  @PostMapping(path = "/v1/me/specialty-requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  SpecialistApplication requestSpecialty(
+      @AuthenticationPrincipal Jwt token,
+      @RequestParam String profession,
+      @RequestParam String name,
+      @RequestParam String note,
+      @RequestPart(name = "file", required = false) MultipartFile file) {
+    Account account = accounts.require(token);
+    practices.requestSpecialty(account, profession, name, note, file == null ? null : upload(file));
+    return render(applications.view(account));
+  }
+
+  @DeleteMapping("/v1/me/specialty-requests/{requestId}")
+  SpecialistApplication withdrawRequest(
+      @AuthenticationPrincipal Jwt token, @PathVariable java.util.UUID requestId) {
+    Account account = accounts.require(token);
+    practices.withdrawRequest(account, requestId);
+    return render(applications.view(account));
+  }
+
+  private static Documents.Upload upload(MultipartFile file) {
+    try {
+      return new Documents.Upload(file.getOriginalFilename(), file.getBytes());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @PutMapping("/v1/me/specialist-application/services")
@@ -222,19 +340,30 @@ class ApplicationController {
   private static SpecialistApplication render(Applications.View view) {
     var p = view.profile();
     PracticeView practice =
-        p.practiceSavedAt() == null
+        p.practiceSavedAt() == null || view.drafts().isEmpty()
             ? null
             : new PracticeView(
-                p.profession(),
-                p.licenceNumber(),
+                view.drafts().stream()
+                    .map(
+                        d ->
+                            new ProfessionBody(
+                                d.profession(),
+                                d.licenceNumber(),
+                                d.licensingBody(),
+                                d.specialties()))
+                    .toList(),
                 p.yearsExperience(),
-                p.licensingBody(),
                 view.focusAreas(),
                 p.bio());
-    Map<String, List<FileView>> byKind = new LinkedHashMap<>();
+    // One entry per kind, and per profession for licences. Certificates come with what they prove.
+    Map<List<String>, List<FileView>> byKind = new LinkedHashMap<>();
     for (var file : view.documents()) {
+      if (file.kind().equals("CERTIFICATE")) {
+        continue;
+      }
       byKind
-          .computeIfAbsent(file.kind(), k -> new ArrayList<>())
+          .computeIfAbsent(
+              java.util.Arrays.asList(file.kind(), file.profession()), k -> new ArrayList<>())
           .add(new FileView(file.fileName(), file.contentType(), file.size(), file.uploadedAt()));
     }
     var pricing = view.pricing();
@@ -243,10 +372,45 @@ class ApplicationController {
         p.fullName(),
         view.steps(),
         practice,
+        view.practice().professions().stream()
+            .map(
+                m ->
+                    new MyProfession(
+                        m.row().code(),
+                        m.label(),
+                        m.row().licenceNumber(),
+                        m.row().licensingBody(),
+                        m.row().status().name(),
+                        m.row().reviewNote(),
+                        m.specialties().stream()
+                            .map(
+                                s ->
+                                    new MySpecialty(
+                                        s.row().code(),
+                                        s.label(),
+                                        s.row().status().name(),
+                                        s.row().reviewNote()))
+                            .toList()))
+            .toList(),
+        view.practice().requests().stream()
+            .map(
+                r ->
+                    new MyRequest(
+                        r.row().id(),
+                        r.row().profession(),
+                        r.row().proposedName(),
+                        r.row().status(),
+                        r.row().specialty(),
+                        r.specialtyLabel(),
+                        r.row().reviewNote(),
+                        r.row().requestedAt()))
+            .toList(),
         view.languages().stream()
             .map(l -> new LanguageView(l.code(), l.proficiency(), l.verifiedAt() != null))
             .toList(),
-        byKind.entrySet().stream().map(e -> new DocumentView(e.getKey(), e.getValue())).toList(),
+        byKind.entrySet().stream()
+            .map(e -> new DocumentView(e.getKey().get(0), e.getKey().get(1), e.getValue()))
+            .toList(),
         view.offerings().stream()
             .map(o -> new OfferingBody(o.modality(), o.enabled(), o.durationMinutes(), o.price()))
             .toList(),

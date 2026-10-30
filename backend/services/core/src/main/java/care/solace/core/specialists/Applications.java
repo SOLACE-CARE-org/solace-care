@@ -39,6 +39,8 @@ class Applications implements SpecialistSummaries {
 
   private final PlatformSettings platform;
   private final ApplicationStore store;
+  private final PracticeStore practice;
+  private final Practices practices;
   private final ReviewStore reviews;
   private final DocumentStore documentStore;
   private final Documents documents;
@@ -54,6 +56,8 @@ class Applications implements SpecialistSummaries {
   Applications(
       PlatformSettings platform,
       ApplicationStore store,
+      PracticeStore practice,
+      Practices practices,
       ReviewStore reviews,
       DocumentStore documentStore,
       Documents documents,
@@ -67,6 +71,8 @@ class Applications implements SpecialistSummaries {
       Clock clock) {
     this.platform = platform;
     this.store = store;
+    this.practice = practice;
+    this.practices = practices;
     this.reviews = reviews;
     this.documentStore = documentStore;
     this.documents = documents;
@@ -89,10 +95,8 @@ class Applications implements SpecialistSummaries {
       Locale appLanguage) {}
 
   record Practice(
-      String profession,
-      String licenceNumber,
+      List<PracticeStore.Draft> professions,
       int yearsInPractice,
-      String licensingBody,
       List<String> focusAreas,
       String bio) {}
 
@@ -113,6 +117,8 @@ class Applications implements SpecialistSummaries {
   record View(
       ApplicationStore.Profile profile,
       Steps steps,
+      List<PracticeStore.Draft> drafts,
+      Practices.View practice,
       List<String> focusAreas,
       List<ApplicationStore.Language> languages,
       List<DocumentStore.StoredFile> documents,
@@ -150,13 +156,21 @@ class Applications implements SpecialistSummaries {
     var offerings = store.offerings(id);
     var languages = store.languages(id);
     var payout = store.payout(id);
+    var drafts = drafts(id);
     Set<String> kinds =
         files.stream().map(DocumentStore.StoredFile::kind).collect(Collectors.toSet());
+    Set<String> licensed =
+        files.stream()
+            .filter(f -> f.kind().equals("LICENCE"))
+            .map(DocumentStore.StoredFile::profession)
+            .collect(Collectors.toSet());
     var steps =
         new Steps(
-            profile.practiceSavedAt() != null,
+            profile.practiceSavedAt() != null && !drafts.isEmpty(),
             profile.languagesSavedAt() != null && !languages.isEmpty(),
-            kinds.containsAll(Documents.REQUIRED),
+            kinds.containsAll(Documents.REQUIRED)
+                && !drafts.isEmpty()
+                && drafts.stream().allMatch(d -> licensed.contains(d.profession())),
             profile.servicesSavedAt() != null
                 && offerings.stream().anyMatch(ApplicationStore.Offering::enabled),
             availability.hasWeeklyHours(id),
@@ -164,6 +178,8 @@ class Applications implements SpecialistSummaries {
     return new View(
         profile,
         steps,
+        drafts,
+        practices.view(id, account.appLanguage()),
         store.focusAreas(id),
         languages,
         files,
@@ -173,6 +189,7 @@ class Applications implements SpecialistSummaries {
         store.draftedBio(id));
   }
 
+  /** The professions in the order given, the first being the main one (D62). */
   void savePractice(Account account, Practice practice) {
     UUID id = editable(account).accountId();
     List<String> topics = practice.focusAreas().stream().distinct().toList();
@@ -180,28 +197,34 @@ class Applications implements SpecialistSummaries {
         || topics.size() > platform.number("solace.specialists.max-focus-areas", MAX_FOCUS_AREAS)) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
-    if (!catalogue.isProfession(practice.profession()) || !catalogue.areHelpTopics(topics)) {
+    if (!catalogue.areHelpTopics(topics)) {
       throw new SolaceException(SpecialistError.UNKNOWN_CHOICE);
     }
-    String licence = practice.licenceNumber().strip();
-    String body = practice.licensingBody().strip();
+    List<PracticeStore.Draft> professions =
+        practice.professions().stream()
+            .map(
+                d ->
+                    new PracticeStore.Draft(
+                        d.profession(),
+                        d.licenceNumber().strip(),
+                        d.licensingBody().strip(),
+                        d.specialties().stream().map(String::strip).distinct().toList()))
+            .toList();
+    practices.checkDraft(professions);
     String bio = practice.bio().strip();
-    if (licence.isEmpty() || body.isEmpty() || bio.isEmpty()) {
+    if (bio.isEmpty()) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
     String bioLanguage = account.appLanguage().getLanguage().equals("fr") ? "fr" : "en";
     transactions.executeWithoutResult(
-        s ->
-            store.savePractice(
-                id,
-                practice.profession(),
-                licence,
-                practice.yearsInPractice(),
-                body,
-                bio,
-                bioLanguage,
-                topics,
-                clock.instant()));
+        s -> {
+          Instant now = clock.instant();
+          store.savePractice(id, practice.yearsInPractice(), bio, bioLanguage, topics, now);
+          this.practice.replaceDraft(id, professions, now);
+        });
+    // A profession taken off the list takes its licence with it.
+    documents.keepLicencesOf(
+        id, professions.stream().map(PracticeStore.Draft::profession).toList());
   }
 
   void saveLanguages(Account account, List<ApplicationStore.Language> languages) {
@@ -274,8 +297,44 @@ class Applications implements SpecialistSummaries {
         s -> store.confirmBio(id, draft.language(), text, clock.instant()));
   }
 
-  void uploadDocuments(Account account, Documents.Kind kind, List<Documents.Upload> uploads) {
-    documents.replace(editable(account).accountId(), kind, uploads);
+  /** A LICENCE is for one of the draft's professions, the main one when none is named (D62). */
+  void uploadDocuments(
+      Account account, Documents.Kind kind, String profession, List<Documents.Upload> uploads) {
+    UUID id = editable(account).accountId();
+    String forProfession = null;
+    if (kind == Documents.Kind.LICENCE) {
+      var drafts = drafts(id);
+      if (drafts.isEmpty()) {
+        throw new SolaceException(SpecialistError.APPLICATION_INCOMPLETE);
+      }
+      forProfession = profession == null ? drafts.getFirst().profession() : profession;
+      String wanted = forProfession;
+      if (drafts.stream().noneMatch(d -> d.profession().equals(wanted))) {
+        throw new SolaceException(SpecialistError.UNKNOWN_CHOICE);
+      }
+    } else if (profession != null) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    documents.replace(id, kind, forProfession, uploads);
+  }
+
+  /** The draft as the Practice step last saved it, main profession first. */
+  private List<PracticeStore.Draft> drafts(UUID id) {
+    var specialties = practice.specialties(id);
+    return practice.professions(id).stream()
+        .filter(p -> p.status() != PracticeStore.Status.WITHDRAWN)
+        .map(
+            p ->
+                new PracticeStore.Draft(
+                    p.code(),
+                    p.licenceNumber(),
+                    p.licensingBody(),
+                    specialties.stream()
+                        .filter(s -> s.profession().equals(p.code()))
+                        .filter(s -> s.status() != PracticeStore.Status.WITHDRAWN)
+                        .map(PracticeStore.Specialty::code)
+                        .toList()))
+        .toList();
   }
 
   void submit(Account account) {
@@ -298,6 +357,7 @@ class Applications implements SpecialistSummaries {
               if (resubmission) {
                 // The applicant may have changed anything: every item is checked again.
                 reviews.restartReview(id);
+                practice.restartReview(id);
               }
               reviews.record(id, "SUBMITTED", null, null, null, now);
               return true;

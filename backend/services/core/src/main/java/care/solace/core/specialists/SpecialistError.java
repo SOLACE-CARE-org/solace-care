@@ -40,7 +40,25 @@ enum SpecialistError implements ErrorCode {
   /** The person who proposed an approval cannot also confirm it (D29). */
   SAME_APPROVER("specialist.same-approver", 409),
   /** There is no Solace-drafted bio to confirm (D30). */
-  NO_BIO_DRAFT("specialist.no-bio-draft", 409);
+  NO_BIO_DRAFT("specialist.no-bio-draft", 409),
+  /** More professions than the max-professions setting allows, or none (D62). */
+  TOO_MANY_PROFESSIONS("specialist.too-many-professions", 409),
+  /** That profession or specialty is already approved or waiting for review (D62). */
+  ALREADY_CLAIMED("specialist.already-claimed", 409),
+  /** The last approved profession, or the last approved specialty of one, stays (D62). */
+  LAST_APPROVED("specialist.last-approved", 409),
+  /** As many specialty requests open as the setting allows (D62). */
+  TOO_MANY_REQUESTS("specialist.too-many-requests", 409),
+  /** The specialty request has already been answered or withdrawn (D62). */
+  REQUEST_CLOSED("specialist.request-closed", 409),
+  /** Deciding on a profession or specialty that is not waiting for review (D62). */
+  NOT_PENDING("specialist.not-pending", 409),
+  /** A profession's licence is not checked yet, or it has no checked specialty (D62). */
+  PROFESSION_NOT_READY("specialist.profession-not-ready", 409),
+  /** An application or profession keeps at least one entry that is not rejected (D62). */
+  LAST_ONE("specialist.last-one", 409),
+  /** The specialty code is taken, or the main specialty is not one (D62). */
+  SPECIALTY_CONFLICT("specialist.specialty-conflict", 409);
 
   private final String code;
   private final int status;

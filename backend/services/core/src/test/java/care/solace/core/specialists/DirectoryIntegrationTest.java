@@ -102,8 +102,13 @@ class DirectoryIntegrationTest extends SpecialistFlowTest {
     assertThat(ids(search("language=en&maxPrice=10000"))).doesNotContain(clarisse.id());
     assertThat(ids(search("language=en&specialty=clinical-psychology"))).contains(clarisse.id());
     assertThat(ids(search("language=en&specialty=psychiatry"))).doesNotContain(clarisse.id());
+    // Other tests add specialties to the shared catalogue (D62), so only the seeded ones are known.
     mvc.perform(get("/v1/catalogue/specialties").header(HttpHeaders.ACCEPT_LANGUAGE, "fr"))
-        .andExpect(jsonPath("$.length()").value(3))
+        .andExpect(
+            jsonPath("$[*].code")
+                .value(
+                    org.hamcrest.Matchers.hasItems(
+                        "clinical-psychology", "counselling", "psychiatry")))
         .andExpect(jsonPath("$[0].label").value("Psychologie clinique"));
   }
 

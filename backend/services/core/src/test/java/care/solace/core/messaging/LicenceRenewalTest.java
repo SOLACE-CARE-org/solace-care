@@ -47,11 +47,11 @@ class LicenceRenewalTest extends SpecialistFlowTest {
         approvedSpecialist("+237696000512", "Licence Later", staff("ops-l2", "L", "OPERATIONS"));
     LocalDate today = LocalDate.now();
     jdbc.update(
-        "UPDATE specialist_profile SET licence_valid_until = ? WHERE account_id = ?::uuid",
+        "UPDATE specialist_profession SET licence_valid_until = ? WHERE account_id = ?::uuid",
         today.plusDays(30),
         soon.id());
     jdbc.update(
-        "UPDATE specialist_profile SET licence_valid_until = ? WHERE account_id = ?::uuid",
+        "UPDATE specialist_profession SET licence_valid_until = ? WHERE account_id = ?::uuid",
         today.plusDays(120),
         later.id());
 

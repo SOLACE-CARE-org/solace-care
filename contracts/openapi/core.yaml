@@ -7474,6 +7474,9 @@ components:
                 format: uuid
               kind:
                 $ref: "#/components/schemas/DocumentKind"
+              profession:
+                description: The profession a LICENCE is for (D62).
+                type: string
               fileName:
                 type: string
               contentType:

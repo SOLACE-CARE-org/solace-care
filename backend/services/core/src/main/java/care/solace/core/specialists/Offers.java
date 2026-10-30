@@ -12,6 +12,7 @@ class Offers implements SpecialistOffers {
 
   private final DirectoryStore directory;
   private final ApplicationStore applications;
+  private final PracticeStore practice;
   private final Catalogue catalogue;
   private final SpecialistSettings settings;
   private final LivePricing pricing;
@@ -20,12 +21,14 @@ class Offers implements SpecialistOffers {
   Offers(
       DirectoryStore directory,
       ApplicationStore applications,
+      PracticeStore practice,
       Catalogue catalogue,
       SpecialistSettings settings,
       LivePricing pricing,
       org.springframework.beans.factory.ObjectProvider<Directory> search) {
     this.directory = directory;
     this.applications = applications;
+    this.practice = practice;
     this.catalogue = catalogue;
     this.settings = settings;
     this.pricing = pricing;
@@ -149,12 +152,14 @@ class Offers implements SpecialistOffers {
             p ->
                 new Summary(
                     p.fullName(),
-                    p.profession() == null
-                        ? null
-                        : catalogue.allProfessions(viewer).stream()
-                            .filter(e -> e.code().equals(p.profession()))
-                            .map(Catalogue.Entry::label)
-                            .findFirst()
-                            .orElse(null)));
+                    practice
+                        .mainProfession(specialistId)
+                        .flatMap(
+                            code ->
+                                catalogue.allProfessions(viewer).stream()
+                                    .filter(e -> e.code().equals(code))
+                                    .map(Catalogue.Entry::label)
+                                    .findFirst())
+                        .orElse(null)));
   }
 }

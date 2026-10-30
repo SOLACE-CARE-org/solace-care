@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * {@code specialist_profile} and the application's other rows: focus areas, languages, offerings
- * and payout details.
+ * and payout details. Professions and specialties are in {@link PracticeStore} (D62).
  */
 @Repository
 class ApplicationStore {
@@ -27,10 +27,7 @@ class ApplicationStore {
       UUID accountId,
       ApplicationStatus status,
       String fullName,
-      String profession,
-      String licenceNumber,
       Integer yearsExperience,
-      String licensingBody,
       String bioEn,
       String bioFr,
       String bioLanguage,
@@ -74,8 +71,8 @@ class ApplicationStore {
   Optional<Profile> find(UUID accountId) {
     return db.sql(
             """
-            SELECT account_id, verification_status, full_name, profession_code, licence_number,
-                   years_experience, licensing_body, bio_en, bio_fr, bio_language,
+            SELECT account_id, verification_status, full_name, years_experience, bio_en, bio_fr,
+                   bio_language,
                    practice_saved_at, languages_saved_at, services_saved_at, submitted_at,
                    interview_at, review_note
               FROM specialist_profile WHERE account_id = :id
@@ -148,10 +145,7 @@ class ApplicationStore {
 
   void savePractice(
       UUID accountId,
-      String profession,
-      String licenceNumber,
       int yearsExperience,
-      String licensingBody,
       String bio,
       String bioLanguage,
       List<String> focusAreas,
@@ -160,18 +154,14 @@ class ApplicationStore {
     db.sql(
             """
             UPDATE specialist_profile
-               SET profession_code = :p, licence_number = :l, years_experience = :y,
-                   licensing_body = :b, bio_language = :bl,
+               SET years_experience = :y, bio_language = :bl,
                    bio_en = CASE WHEN :bl = 'en' THEN :bio ELSE NULL END,
                    bio_fr = CASE WHEN :bl = 'fr' THEN :bio ELSE NULL END,
                    practice_saved_at = :now, updated_at = :now
              WHERE account_id = :id
             """)
         .param("id", accountId)
-        .param("p", profession)
-        .param("l", licenceNumber)
         .param("y", yearsExperience)
-        .param("b", licensingBody)
         .param("bio", bio)
         .param("bl", bioLanguage)
         .param("now", Timestamp.from(now))
@@ -185,20 +175,6 @@ class ApplicationStore {
           .param("t", topic)
           .update();
     }
-    syncOfferingSpecialty(accountId);
-  }
-
-  /** Sessions carry the specialty of the specialist's profession (D31). */
-  private void syncOfferingSpecialty(UUID accountId) {
-    db.sql(
-            """
-            UPDATE service_offering o
-               SET specialty_code = pr.specialty_code
-              FROM specialist_profile p JOIN profession pr ON pr.code = p.profession_code
-             WHERE p.account_id = o.specialist_id AND o.specialist_id = :id
-            """)
-        .param("id", accountId)
-        .update();
   }
 
   /** The bio Solace drafted in the other language (D30), if any. */
@@ -275,7 +251,6 @@ class ApplicationStore {
           .param("p", offering.price())
           .update();
     }
-    syncOfferingSpecialty(accountId);
     touch(accountId, "services_saved_at", now);
   }
 
@@ -326,10 +301,7 @@ class ApplicationStore {
         rs.getObject("account_id", UUID.class),
         ApplicationStatus.valueOf(rs.getString("verification_status")),
         rs.getString("full_name"),
-        rs.getString("profession_code"),
-        rs.getString("licence_number"),
         (Integer) rs.getObject("years_experience"),
-        rs.getString("licensing_body"),
         rs.getString("bio_en"),
         rs.getString("bio_fr"),
         rs.getString("bio_language"),

@@ -266,6 +266,9 @@ class Messages {
         notifier.push(to, "DECISION_MADE", null, false, (l, z) -> new Object[0]);
         notifier.email(to, "APPLICATION_DECISION", update.kind(), (l, z) -> new Object[0]);
       }
+      // A profession, specialty or specialty request was decided (D62): the push never says which.
+      case "PRACTICE_DECIDED" ->
+          notifier.push(to, "DECISION_MADE", null, false, (l, z) -> new Object[0]);
       default -> {}
     }
   }

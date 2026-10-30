@@ -53,13 +53,21 @@ class AdminReviewIntegrationTest extends SpecialistFlowTest {
         .andExpect(jsonPath("$.code").value("specialist.item-not-ready"));
 
     item(applicant, ops, "IDENTITY", "{\"verified\":true}").andExpect(status().isOk());
-    item(
-            applicant,
-            ops,
-            "LICENCE",
-            "{\"verified\":true,\"licenceValidUntil\":\"%s\"}"
-                .formatted(LocalDate.now().plusYears(2)))
-        .andExpect(jsonPath("$.licence.verification.by.name").value("Nadine Ebai"));
+    // Each profession's licence, then its specialties (D62).
+    act(put(specialist(applicant, "/professions/clinical-psychologist/verification"))
+            .with(ops)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                "{\"verified\":true,\"licenceValidUntil\":\"%s\"}"
+                    .formatted(LocalDate.now().minusDays(1))))
+        .andExpect(status().isBadRequest());
+    verifyProfession(applicant, ops, "clinical-psychologist")
+        .andExpect(jsonPath("$.professions[0].verification.by.name").value("Nadine Ebai"))
+        .andExpect(jsonPath("$.practice.verified").value(false));
+    verifySpecialty(applicant, ops, "clinical-psychologist", "clinical-psychology")
+        .andExpect(
+            jsonPath("$.professions[0].specialties[0].verification.by.name").value("Nadine Ebai"))
+        .andExpect(jsonPath("$.practice.verified").value(true));
     act(put(app(applicant, "/bio"))
             .with(ops)
             .contentType(MediaType.APPLICATION_JSON)
@@ -92,7 +100,10 @@ class AdminReviewIntegrationTest extends SpecialistFlowTest {
         .andExpect(jsonPath("$.activity[0].by.name").value("Jean Fotso"))
         .andExpect(jsonPath("$.activity[1].kind").value("APPROVAL_PROPOSED"))
         .andExpect(jsonPath("$.activity[1].by.name").value("Nadine Ebai"))
-        .andExpect(jsonPath("$.profile.draftedLanguage").value("fr"));
+        .andExpect(jsonPath("$.profile.draftedLanguage").value("fr"))
+        // The application's approval approves what was checked (D62).
+        .andExpect(jsonPath("$.professions[0].status").value("APPROVED"))
+        .andExpect(jsonPath("$.professions[0].specialties[0].status").value("APPROVED"));
 
     // The specialist now gets the specialist app.
     mvc.perform(get("/v1/me").headers(bearer(applicant.token())))
@@ -107,6 +118,8 @@ class AdminReviewIntegrationTest extends SpecialistFlowTest {
         .contains(
             "specialists.application.open",
             "specialists.application.verify",
+            "specialists.profession.verify",
+            "specialists.specialty.verify",
             "specialists.application.verify-language",
             "specialists.application.bio",
             "specialists.application.propose-approval",

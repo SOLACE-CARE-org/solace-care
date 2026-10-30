@@ -9,8 +9,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * Approved specialists whose licence ends within 60 days and who have not been reminded for that
- * date yet (notification-copy.md, Licence renewal). 60 days is the copy's own number.
+ * Approved specialists with a licence that ends within 60 days, for any of their approved
+ * professions (D62), who have not been reminded for that date yet (notification-copy.md, Licence
+ * renewal). 60 days is the copy's own number.
  */
 @Component
 public class LicenceRenewals {
@@ -28,14 +29,17 @@ public class LicenceRenewals {
   public List<Due> due(LocalDate today) {
     return db.sql(
             """
-            SELECT p.account_id, p.licence_valid_until FROM specialist_profile p
+            SELECT DISTINCT p.account_id, sp.licence_valid_until
+              FROM specialist_profile p
+              JOIN specialist_profession sp ON sp.account_id = p.account_id
              WHERE p.verification_status = 'APPROVED'
-               AND p.licence_valid_until IS NOT NULL
-               AND p.licence_valid_until >= :today
-               AND p.licence_valid_until <= :until
+               AND sp.status = 'APPROVED'
+               AND sp.licence_valid_until IS NOT NULL
+               AND sp.licence_valid_until >= :today
+               AND sp.licence_valid_until <= :until
                AND NOT EXISTS (SELECT 1 FROM licence_reminder r
                                 WHERE r.specialist_id = p.account_id
-                                  AND r.valid_until = p.licence_valid_until)
+                                  AND r.valid_until = sp.licence_valid_until)
             """)
         .param("today", today)
         .param("until", today.plusDays(DAYS_BEFORE))

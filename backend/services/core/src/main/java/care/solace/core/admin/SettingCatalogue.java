@@ -210,6 +210,17 @@ class SettingCatalogue {
               "solace.scheduling.longest-time-off", Group.SESSIONS, Type.DAYS, "60", 1, 365, true),
           new Definition(
               "solace.specialists.max-focus-areas", Group.SESSIONS, Type.COUNT, "5", 1, 20, true),
+          // D62: professions per specialist, and specialty requests open at once.
+          new Definition(
+              "solace.specialists.max-professions", Group.SESSIONS, Type.COUNT, "3", 1, 10, true),
+          new Definition(
+              "solace.specialists.max-open-specialty-requests",
+              Group.SESSIONS,
+              Type.COUNT,
+              "3",
+              1,
+              10,
+              true),
           new Definition(
               "solace.health-check.matches", Group.SESSIONS, Type.COUNT, "10", 3, 50, true),
           new Definition("solace.invites.matches", Group.SESSIONS, Type.COUNT, "5", 1, 20, true),

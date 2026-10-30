@@ -60,18 +60,24 @@ class SpecialistApplicationIntegrationTest extends MemberStackTest {
     mvc.perform(get("/v1/catalogue/professions").header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(3))
-        .andExpect(jsonPath("$[0].label").value("Clinical psychologist"));
+        .andExpect(jsonPath("$[0].label").value("Clinical psychologist"))
+        .andExpect(jsonPath("$[0].specialties[0].code").value("clinical-psychology"));
     putJson(
             token,
             "/practice",
             """
-            {"profession":"clinical-psychologist","licenceNumber":"ONPC-1234","yearsInPractice":8,
-             "licensingBody":"Ordre national des psychologues","focusAreas":["anxiety","low-mood","grief"],
+            {"professions":[{"profession":"clinical-psychologist","licenceNumber":"ONPC-1234",
+                             "licensingBody":"Ordre national des psychologues",
+                             "specialties":["clinical-psychology"]}],
+             "yearsInPractice":8,"focusAreas":["anxiety","low-mood","grief"],
              "bio":"I help adults through anxiety, low mood and grief."}
             """)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.steps.practice").value(true))
-        .andExpect(jsonPath("$.practice.focusAreas.length()").value(3));
+        .andExpect(jsonPath("$.practice.focusAreas.length()").value(3))
+        .andExpect(jsonPath("$.practice.professions[0].licenceNumber").value("ONPC-1234"))
+        .andExpect(jsonPath("$.professions[0].status").value("PENDING"))
+        .andExpect(jsonPath("$.professions[0].specialties[0].label").value("Clinical psychology"));
 
     // Step 3: languages.
     putJson(
@@ -190,8 +196,9 @@ class SpecialistApplicationIntegrationTest extends MemberStackTest {
             token,
             "/practice",
             """
-            {"profession":"gynaecologist","licenceNumber":"1","yearsInPractice":3,
-             "licensingBody":"Ordre","focusAreas":["anxiety"],"bio":"Bio"}
+            {"professions":[{"profession":"gynaecologist","licenceNumber":"1",
+                             "licensingBody":"Ordre","specialties":["gynaecology"]}],
+             "yearsInPractice":3,"focusAreas":["anxiety"],"bio":"Bio"}
             """)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("specialist.unknown-choice"));
@@ -200,11 +207,57 @@ class SpecialistApplicationIntegrationTest extends MemberStackTest {
             token,
             "/practice",
             """
-            {"profession":"psychiatrist","licenceNumber":"1","yearsInPractice":3,
-             "licensingBody":"Ordre","bio":"Bio",
+            {"professions":[{"profession":"psychiatrist","licenceNumber":"1",
+                             "licensingBody":"Ordre","specialties":["psychiatry"]}],
+             "yearsInPractice":3,"bio":"Bio",
              "focusAreas":["anxiety","low-mood","sleep","grief","relationships","work-stress"]}
             """)
         .andExpect(status().isBadRequest());
+    // A licence is for a profession of the practice (D62), so a licence before any is refused.
+    upload(token, "LICENCE", file("early.pdf", PDF))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("specialist.application-incomplete"));
+    // A specialty the profession does not allow.
+    putJson(
+            token,
+            "/practice",
+            """
+            {"professions":[{"profession":"psychiatrist","licenceNumber":"1",
+                             "licensingBody":"Ordre","specialties":["counselling"]}],
+             "yearsInPractice":3,"focusAreas":["anxiety"],"bio":"Bio"}
+            """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("specialist.unknown-choice"));
+    // The same profession twice.
+    putJson(
+            token,
+            "/practice",
+            """
+            {"professions":[
+               {"profession":"psychiatrist","licenceNumber":"1","licensingBody":"O","specialties":["psychiatry"]},
+               {"profession":"clinical-psychologist","licenceNumber":"2","licensingBody":"O",
+                "specialties":["clinical-psychology"]},
+               {"profession":"licensed-counsellor","licenceNumber":"3","licensingBody":"O",
+                "specialties":["counselling"]},
+               {"profession":"psychiatrist","licenceNumber":"4","licensingBody":"O","specialties":["psychiatry"]}],
+             "yearsInPractice":3,"focusAreas":["anxiety"],"bio":"Bio"}
+            """)
+        .andExpect(status().isBadRequest());
+    putJson(
+            token,
+            "/practice",
+            """
+            {"professions":[{"profession":"psychiatrist","licenceNumber":"1",
+                             "licensingBody":"Ordre","specialties":["psychiatry"]}],
+             "yearsInPractice":3,"focusAreas":["anxiety"],"bio":"Bio"}
+            """)
+        .andExpect(status().isOk());
+    // A licence for a profession the practice does not list.
+    var other = multipart(HttpMethod.PUT, "/v1/me/specialist-application/documents/LICENCE");
+    other.file(file("other.pdf", PDF)).param("profession", "licensed-counsellor");
+    mvc.perform(other.headers(auth(token)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("specialist.unknown-choice"));
     // Prices inside the allowed range, lengths from the list.
     putJson(
             token,

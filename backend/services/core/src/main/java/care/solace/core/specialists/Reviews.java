@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -23,9 +22,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Staff review of specialist applications (Admin Portal Spec, Specialist application workflow):
- * reviewers check the licence, the identity document, each language in the interview, and the
- * services and prices. Approval needs every item verified. A change request or rejection carries a
- * reason the applicant sees. Every action is audited; so is every opening of a document.
+ * reviewers check each profession's licence and specialties (D62), the identity document, each
+ * language in the interview, and the services and prices. Approval needs every item verified, and
+ * approves the checked professions and specialties with the application. A change request or
+ * rejection carries a reason the applicant sees. Every action is audited; so is every opening of a
+ * document.
  */
 @Service
 class Reviews {
@@ -39,6 +40,7 @@ class Reviews {
 
   private final ApplicationStore applications;
   private final ReviewStore reviews;
+  private final PracticeStore practice;
   private final DocumentStore documents;
   private final ObjectStorage storage;
   private final Catalogue catalogue;
@@ -51,6 +53,7 @@ class Reviews {
   Reviews(
       ApplicationStore applications,
       ReviewStore reviews,
+      PracticeStore practice,
       DocumentStore documents,
       ObjectStorage storage,
       Catalogue catalogue,
@@ -61,6 +64,7 @@ class Reviews {
       Clock clock) {
     this.applications = applications;
     this.reviews = reviews;
+    this.practice = practice;
     this.documents = documents;
     this.storage = storage;
     this.catalogue = catalogue;
@@ -75,6 +79,7 @@ class Reviews {
   record Review(
       ApplicationStore.Profile profile,
       ReviewStore.State state,
+      String profession,
       String professionLabel,
       Map<ReviewStore.Item, ReviewStore.Verification> items,
       List<ReviewStore.LanguageReview> languages,
@@ -84,7 +89,13 @@ class Reviews {
       Optional<ApplicationStore.Payout> payout,
       List<DocumentStore.StoredFile> documents,
       List<ReviewStore.Activity> activity,
-      int verifiedItems) {}
+      int verifiedItems,
+      List<PracticeStore.Profession> professions,
+      List<PracticeStore.Specialty> specialties,
+      List<PracticeStore.Request> requests,
+      boolean practiceVerified,
+      Map<String, String> professionLabels,
+      Map<String, String> specialtyLabels) {}
 
   record Queue(Map<ReviewStore.Tab, Integer> counts, List<QueueItem> items) {}
 
@@ -132,11 +143,21 @@ class Reviews {
         !languages.isEmpty()
             && languages.stream().allMatch(l -> l.verifiedLevel() != null)
             && languages.stream().anyMatch(l -> BOOKABLE.contains(l.verifiedLevel()));
-    int verified = items.size() + (languagesVerified ? 1 : 0) + (withinBands ? 1 : 0);
+    var professions = practice.professions(id);
+    var specialties = practice.specialties(id);
+    boolean practiceVerified = practiceVerified(professions, specialties);
+    int verified =
+        items.size()
+            + (practiceVerified ? 1 : 0)
+            + (languagesVerified ? 1 : 0)
+            + (withinBands ? 1 : 0);
+    Map<String, String> professionLabels = professionLabels(viewer);
+    String main = practice.mainProfession(id).orElse(null);
     return new Review(
         profile,
         reviews.state(id),
-        profile.profession() == null ? null : professionLabels(viewer).get(profile.profession()),
+        main,
+        main == null ? null : professionLabels.get(main),
         items,
         languages,
         offerings,
@@ -145,7 +166,36 @@ class Reviews {
         applications.payout(id),
         documents.list(id),
         reviews.activity(id),
-        verified);
+        verified,
+        professions,
+        specialties,
+        practice.requests(id),
+        practiceVerified,
+        professionLabels,
+        catalogue.allSpecialties(viewer).stream()
+            .collect(Collectors.toMap(Catalogue.Entry::code, Catalogue.Entry::label)));
+  }
+
+  /**
+   * The practice item (D62): every profession still claimed has its licence checked and at least
+   * one checked specialty, and none of its specialties is left unchecked.
+   */
+  static boolean practiceVerified(
+      List<PracticeStore.Profession> professions, List<PracticeStore.Specialty> specialties) {
+    var live = professions.stream().filter(PracticeStore.Profession::live).toList();
+    return !live.isEmpty()
+        && live.stream()
+            .allMatch(
+                p -> {
+                  var under =
+                      specialties.stream()
+                          .filter(s -> s.profession().equals(p.code()) && s.live())
+                          .toList();
+                  return p.verification() != null
+                      && p.validUntil() != null
+                      && !under.isEmpty()
+                      && under.stream().allMatch(s -> s.verification() != null);
+                });
   }
 
   List<UUID> search(String query) {
@@ -188,23 +238,13 @@ class Reviews {
         });
   }
 
-  void verifyItem(
-      UUID id,
-      ReviewStore.Item item,
-      boolean verified,
-      LocalDate licenceValidUntil,
-      ReviewStore.StaffRef staff) {
+  void verifyItem(UUID id, ReviewStore.Item item, boolean verified, ReviewStore.StaffRef staff) {
     ApplicationStore.Profile profile = underReview(id);
     if (verified) {
       switch (item) {
         case IDENTITY -> {
           if (documents.list(id).stream().noneMatch(f -> f.kind().equals("IDENTITY"))) {
             throw new SolaceException(SpecialistError.ITEM_NOT_READY);
-          }
-        }
-        case LICENCE -> {
-          if (licenceValidUntil == null || licenceValidUntil.isBefore(LocalDate.now(clock))) {
-            throw new SolaceException(CommonError.REQUEST_INVALID);
           }
         }
         case PROFILE -> {
@@ -226,9 +266,6 @@ class Reviews {
         now -> {
           if (verified) {
             reviews.verify(id, item, staff, now);
-            if (item == ReviewStore.Item.LICENCE) {
-              reviews.licenceValidUntil(id, licenceValidUntil);
-            }
           } else {
             reviews.unverify(id, item);
           }
@@ -374,6 +411,7 @@ class Reviews {
               id, List.of(ApplicationStatus.UNDER_REVIEW), ApplicationStatus.APPROVED, null, now)) {
             throw new SolaceException(SpecialistError.NOT_UNDER_REVIEW);
           }
+          practice.approveApplication(id, staff, now);
           reviews.record(id, "APPROVED", null, null, staff, now);
         });
   }
@@ -446,7 +484,7 @@ class Reviews {
   }
 
   /** A proposal rests on the items as they were: any change to them withdraws it (D29). */
-  private void withdrawOnChange(UUID id, ReviewStore.StaffRef staff, Instant now) {
+  void withdrawOnChange(UUID id, ReviewStore.StaffRef staff, Instant now) {
     if (reviews.clearProposal(id)) {
       reviews.record(id, "APPROVAL_WITHDRAWN", null, null, staff, now);
     }

@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +44,12 @@ class ReviewStore {
     DECIDED
   }
 
-  /** Items a reviewer ticks; languages and services are not among them. */
+  /**
+   * Items a reviewer ticks; languages, services and the professions (D62) are checked their own
+   * way.
+   */
   enum Item {
     IDENTITY,
-    LICENCE,
     PROFILE,
     PAYOUT
   }
@@ -70,7 +71,6 @@ class ReviewStore {
       Instant reviewStartedAt,
       Instant changesRequestedAt,
       Instant decidedAt,
-      LocalDate licenceValidUntil,
       String staffNotes,
       Verification approvalProposal,
       String bioDraftedLanguage) {}
@@ -96,11 +96,16 @@ class ReviewStore {
         tab == Tab.DECIDED ? "p.decided_at DESC NULLS LAST" : "p.submitted_at ASC NULLS LAST";
     return db.sql(
             """
-            SELECT p.account_id, p.full_name, p.profession_code, p.verification_status,
-                   p.submitted_at, p.assigned_staff_id, p.assigned_staff_name
+            SELECT p.account_id, p.full_name, p.verification_status, p.submitted_at,
+                   p.assigned_staff_id, p.assigned_staff_name,
+                   (SELECT sp.profession_code FROM specialist_profession sp
+                     WHERE sp.account_id = p.account_id AND sp.status IN ('APPROVED', 'PENDING')
+                     ORDER BY sp.status <> 'APPROVED', sp.position LIMIT 1) AS profession_code
               FROM specialist_profile p
              WHERE %s
-               AND (CAST(:profession AS TEXT) IS NULL OR p.profession_code = :profession)
+               AND (CAST(:profession AS TEXT) IS NULL OR EXISTS (
+                     SELECT 1 FROM specialist_profession sp
+                      WHERE sp.account_id = p.account_id AND sp.profession_code = :profession))
                AND (CAST(:language AS TEXT) IS NULL OR EXISTS (
                      SELECT 1 FROM specialist_language l
                       WHERE l.account_id = p.account_id AND l.language_code = :language))
@@ -145,7 +150,7 @@ class ReviewStore {
     return db.sql(
             """
             SELECT assigned_staff_id, assigned_staff_name, review_started_at, changes_requested_at,
-                   decided_at, licence_valid_until, staff_notes, approval_proposed_by_id,
+                   decided_at, staff_notes, approval_proposed_by_id,
                    approval_proposed_by_name, approval_proposed_at, bio_drafted_language
               FROM specialist_profile WHERE account_id = :id
             """)
@@ -157,7 +162,6 @@ class ReviewStore {
                     instant(rs, "review_started_at"),
                     instant(rs, "changes_requested_at"),
                     instant(rs, "decided_at"),
-                    rs.getObject("licence_valid_until", LocalDate.class),
                     rs.getString("staff_notes"),
                     proposal(rs),
                     rs.getString("bio_drafted_language")))
@@ -232,10 +236,12 @@ class ReviewStore {
             + "%";
     return db.sql(
             """
-            SELECT account_id FROM specialist_profile
-             WHERE verification_status IN ('APPROVED', 'SUSPENDED')
-               AND (lower(full_name) LIKE :q OR lower(licence_number) LIKE :q)
-             ORDER BY full_name LIMIT 20
+            SELECT p.account_id FROM specialist_profile p
+             WHERE p.verification_status IN ('APPROVED', 'SUSPENDED')
+               AND (lower(p.full_name) LIKE :q OR EXISTS (
+                     SELECT 1 FROM specialist_profession sp
+                      WHERE sp.account_id = p.account_id AND lower(sp.licence_number) LIKE :q))
+             ORDER BY p.full_name LIMIT 20
             """)
         .param("q", like)
         .query(UUID.class)
@@ -285,13 +291,6 @@ class ReviewStore {
     db.sql("DELETE FROM specialist_review_item WHERE account_id = :id AND item = :item")
         .param("id", id)
         .param("item", item.name())
-        .update();
-  }
-
-  void licenceValidUntil(UUID id, LocalDate date) {
-    db.sql("UPDATE specialist_profile SET licence_valid_until = :d WHERE account_id = :id")
-        .param("id", id)
-        .param("d", date)
         .update();
   }
 

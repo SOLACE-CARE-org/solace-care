@@ -7,17 +7,27 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /**
- * Listed specialists as seekers and guests find them (System Design, Catalog and search; D31).
- * Listed means approved, bookable in the session language (verified at Professional or above), with
- * an enabled session, and a bio in EN and FR whose Solace draft, if any, the specialist confirmed
- * (D30). PostgreSQL full-text search over names, professions, focus areas and bios in both
- * languages, accents ignored.
+ * Listed specialists as seekers and guests find them (System Design, Catalog and search; D31, D62).
+ * Listed means approved, with an approved specialty under an approved profession, bookable in the
+ * session language (verified at Professional or above), with an enabled session, and a bio in EN
+ * and FR whose Solace draft, if any, the specialist confirmed (D30). PostgreSQL full-text search
+ * over names, professions, specialties, focus areas and bios in both languages, accents ignored.
  */
 @Repository
 class DirectoryStore {
 
   /** The most candidates one search looks at before ordering; ample for the year-one scale. */
   static final int CANDIDATES = 300;
+
+  /** The specialist's approved specialties, under approved professions (D62). */
+  private static final String APPROVED_SPECIALTIES =
+      """
+      FROM specialist_specialty ss
+      JOIN specialist_profession sx
+        ON sx.account_id = ss.account_id AND sx.profession_code = ss.profession_code
+      JOIN specialty s ON s.code = ss.specialty_code
+      WHERE ss.account_id = p.account_id AND ss.status = 'APPROVED' AND sx.status = 'APPROVED'
+      """;
 
   private static final String LISTED =
       """
@@ -26,17 +36,36 @@ class DirectoryStore {
       AND (p.bio_drafted_language IS NULL OR p.bio_draft_confirmed_at IS NOT NULL)
       AND EXISTS (SELECT 1 FROM service_offering o
                    WHERE o.specialist_id = p.account_id AND o.enabled)
-      """;
+      AND EXISTS (SELECT 1 %s)
+      """
+          .formatted(APPROVED_SPECIALTIES);
 
   /** Everything a seeker might type that should find this specialist, in both languages. */
   private static final String DOCUMENT =
       """
       to_tsvector('simple', unaccent(concat_ws(' ',
-          p.full_name, pr.label_en, pr.label_fr, sp.label_en, sp.label_fr, p.bio_en, p.bio_fr,
+          p.full_name, p.bio_en, p.bio_fr,
+          (SELECT string_agg(pr.label_en || ' ' || pr.label_fr, ' ')
+             FROM specialist_profession sx JOIN profession pr ON pr.code = sx.profession_code
+            WHERE sx.account_id = p.account_id AND sx.status = 'APPROVED'),
+          (SELECT string_agg(s.label_en || ' ' || s.label_fr, ' ') %s),
           (SELECT string_agg(t.label_en || ' ' || t.label_fr, ' ')
              FROM specialist_focus_area f JOIN help_topic t ON t.code = f.topic_code
             WHERE f.account_id = p.account_id))))
+      """
+          .formatted(APPROVED_SPECIALTIES);
+
+  /** The main profession: the approved one with the lowest position. */
+  private static final String MAIN_PROFESSION =
+      """
+      (SELECT sx.profession_code FROM specialist_profession sx
+        WHERE sx.account_id = p.account_id AND sx.status = 'APPROVED'
+        ORDER BY sx.position LIMIT 1)
       """;
+
+  /** The first approved specialty, in catalogue order. */
+  private static final String FIRST_SPECIALTY =
+      "(SELECT ss.specialty_code %s ORDER BY s.position LIMIT 1)".formatted(APPROVED_SPECIALTIES);
 
   private final JdbcClient db;
 
@@ -66,13 +95,11 @@ class DirectoryStore {
       String language, String modality, String specialty, Long maxPrice, String tsQuery) {
     return db.sql(
             """
-            SELECT p.account_id, p.full_name, p.profession_code, pr.specialty_code, p.bio_en,
-                   p.bio_fr,
+            SELECT p.account_id, p.full_name, %4$s AS profession_code, %5$s AS specialty_code,
+                   p.bio_en, p.bio_fr,
                    CASE WHEN CAST(:q AS TEXT) IS NULL THEN 0
                         ELSE ts_rank(%2$s, to_tsquery('simple', :q)) END AS rank
               FROM specialist_profile p
-              JOIN profession pr ON pr.code = p.profession_code
-              JOIN specialty sp ON sp.code = pr.specialty_code
              WHERE %1$s
                AND EXISTS (SELECT 1 FROM specialist_language l
                             WHERE l.account_id = p.account_id AND l.language_code = :language
@@ -81,11 +108,18 @@ class DirectoryStore {
                             WHERE o.specialist_id = p.account_id AND o.enabled
                               AND (CAST(:modality AS TEXT) IS NULL OR o.modality = :modality)
                               AND (CAST(:maxPrice AS BIGINT) IS NULL OR o.price <= :maxPrice))
-               AND (CAST(:specialty AS TEXT) IS NULL OR pr.specialty_code = :specialty)
+               AND (CAST(:specialty AS TEXT) IS NULL OR EXISTS (
+                     SELECT 1 %6$s AND (s.code = :specialty OR s.parent_code = :specialty)))
                AND (CAST(:q AS TEXT) IS NULL OR %2$s @@ to_tsquery('simple', :q))
              LIMIT %3$d
             """
-                .formatted(LISTED, DOCUMENT, CANDIDATES))
+                .formatted(
+                    LISTED,
+                    DOCUMENT,
+                    CANDIDATES,
+                    MAIN_PROFESSION,
+                    FIRST_SPECIALTY,
+                    APPROVED_SPECIALTIES))
         .param("language", language)
         .param("modality", modality)
         .param("maxPrice", maxPrice)
@@ -108,13 +142,12 @@ class DirectoryStore {
   Optional<Listed> listed(UUID id) {
     return db.sql(
             """
-            SELECT p.account_id, p.full_name, p.profession_code, pr.specialty_code, p.bio_en,
-                   p.bio_fr, 0 AS rank
+            SELECT p.account_id, p.full_name, %2$s AS profession_code, %3$s AS specialty_code,
+                   p.bio_en, p.bio_fr, 0 AS rank
               FROM specialist_profile p
-              JOIN profession pr ON pr.code = p.profession_code
-             WHERE p.account_id = :id AND %s
+             WHERE p.account_id = :id AND %1$s
             """
-                .formatted(LISTED))
+                .formatted(LISTED, MAIN_PROFESSION, FIRST_SPECIALTY))
         .param("id", id)
         .query(
             (rs, n) ->
@@ -154,6 +187,32 @@ class DirectoryStore {
         .param("id", id)
         .query(
             (rs, n) -> new Language(rs.getString("language_code"), rs.getString("verified_level")))
+        .list();
+  }
+
+  /** Approved profession labels in one language, the main one first (D62). */
+  List<String> professions(UUID id, boolean french) {
+    return db.sql(
+            "SELECT "
+                + (french ? "pr.label_fr" : "pr.label_en")
+                + " FROM specialist_profession sx JOIN profession pr ON pr.code = sx.profession_code"
+                + " WHERE sx.account_id = :id AND sx.status = 'APPROVED' ORDER BY sx.position")
+        .param("id", id)
+        .query(String.class)
+        .list();
+  }
+
+  /** Approved specialty labels in one language, in the catalogue's order, each once (D62). */
+  List<String> specialties(UUID id, boolean french) {
+    String label = french ? "s.label_fr" : "s.label_en";
+    return db.sql(
+            "SELECT %s FROM (SELECT DISTINCT ON (s.code) s.code, s.position, s.label_en, s.label_fr"
+                    .formatted(label)
+                + " "
+                + APPROVED_SPECIALTIES.replace("p.account_id", ":id")
+                + ") s ORDER BY s.position")
+        .param("id", id)
+        .query(String.class)
         .list();
   }
 
