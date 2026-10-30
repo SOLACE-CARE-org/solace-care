@@ -10,7 +10,7 @@ import { useSessionLanguages } from '@/api/account';
 import { type Modality, type SpecialistCard, useSpecialistSearch } from '@/api/catalogue';
 import { flags } from '@/config/flags';
 import i18n from '@/i18n';
-import { initials, money, whenLabel } from '@/state/format';
+import { initials, money, practiceLine, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
 import { Chip } from '@/ui/Chip';
 import { BackButton } from '@/ui/ProgressSteps';
@@ -222,17 +222,12 @@ function Card({
   const next = card.nextAvailable
     ? t('search.next', { when: whenLabel(card.nextAvailable, t, lang) })
     : null;
+  // "Licensed counsellor · Marriage and couples counselling" (D62).
+  const practice = practiceLine(card.professions, card.specialties, card.professionLabel);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={[
-        card.fullName,
-        card.professionLabel,
-        t('search.verified'),
-        languages,
-        next,
-        price,
-      ]
+      accessibilityLabel={[card.fullName, practice, t('search.verified'), languages, next, price]
         .filter(Boolean)
         .join('. ')}
       onPress={onPress}
@@ -246,9 +241,9 @@ function Card({
           <Text variant="label" style={styles.name}>
             {card.fullName}
           </Text>
-          {card.professionLabel ? (
+          {practice ? (
             <Text variant="meta" color={colors.inkMuted}>
-              {card.professionLabel}
+              {practice}
             </Text>
           ) : null}
           <RatingBadge rating={card.rating} />

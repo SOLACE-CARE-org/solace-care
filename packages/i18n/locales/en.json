@@ -2062,7 +2062,15 @@
       "bodyLabel": "Issuing professional body",
       "areasLabel": "Areas you work with (up to 5)",
       "bioLabel": "Short bio for your profile",
-      "bioHelp": "We'll draft the French version for you to check before it goes live."
+      "bioHelp": "We'll draft the French version for you to check before it goes live.",
+      "mainProfession": "Main profession",
+      "otherProfession": "Profession {{n}}",
+      "removeProfession": "Remove {{profession}}",
+      "remove": "Remove",
+      "specialtiesLabel": "Specialties you offer",
+      "notListed": "My specialty is not listed",
+      "notListedLater": "Specialty not listed? Save this step first, then ask for it here.",
+      "addProfession": "Add another profession"
     },
     "languages": {
       "title": "Languages you counsel in",
@@ -2090,7 +2098,8 @@
       "replace": "Replace",
       "add": "Add",
       "uploading": "Uploading",
-      "note": "Documents are encrypted and kept only as long as the law requires."
+      "note": "Documents are encrypted and kept only as long as the law requires.",
+      "licenceFor": "Licence · {{profession}}"
     },
     "services": {
       "title": "Sessions you offer",
@@ -2211,7 +2220,9 @@
     "draftLabel": "Your bio in {{language}}",
     "draftConfirm": "Confirm bio",
     "language_en": "English",
-    "language_fr": "French"
+    "language_fr": "French",
+    "practice": "Professions & specialties",
+    "practiceWaiting": "{{practice}} · additions waiting for review"
   },
   "book": {
     "step": "Step 1 of 2 · with {{name}}",
@@ -3008,5 +3019,43 @@
     "title": "Solace is locked",
     "unlock": "Unlock",
     "prompt": "Unlock Solace"
+  },
+  "specialistPractice": {
+    "title": "Professions & specialties",
+    "intro": "Seekers find you under what Solace has approved. What you add waits for review, and you keep working under the rest meanwhile.",
+    "status_PENDING": "Waiting for review",
+    "status_APPROVED": "Approved",
+    "status_REJECTED": "Not approved",
+    "status_DECLINED": "Not approved",
+    "status_WITHDRAWN": "Withdrawn",
+    "request_OPEN": "Waiting for an answer",
+    "request_CREATED": "Added to the list",
+    "request_MATCHED": "Matched to a listed specialty",
+    "request_DECLINED": "Not added",
+    "request_WITHDRAWN": "Withdrawn",
+    "licence": "Licence {{number}}",
+    "reason": "Reason: {{reason}}",
+    "becomes": "Now listed as {{specialty}}",
+    "withdraw": "Withdraw",
+    "withdrawBody": "Seekers no longer find you under it. Sessions already booked are kept.",
+    "cancel": "Cancel",
+    "withdrawSpecialty": "Withdraw {{specialty}}",
+    "withdrawProfession": "Withdraw {{profession}}",
+    "withdrawRequest": "Withdraw the request for {{name}}",
+    "addSpecialty": "Add a specialty",
+    "addProfession": "Add a profession",
+    "addProfessionIntro": "Two people at Solace check the licence before seekers see it.",
+    "noMoreProfessions": "You already have every profession Solace lists.",
+    "requests": "Specialties you asked for",
+    "afterApproval": "Once your application is approved, you can add professions and specialties here.",
+    "sendForReview": "Send for review",
+    "addSpecialtyTitle": "Add a specialty for {{profession}}",
+    "noteLabel": "Your training or experience in it",
+    "noteHelp": "For example the course, where and when. Solace's team reads this before approving.",
+    "certificate": "Certificate",
+    "requestTitle": "Ask for a specialty",
+    "requestIntro": "Tell us the specialty you work in as a {{profession}}. Solace's team adds it to the list or tells you why not.",
+    "requestName": "Name of the specialty",
+    "sendRequest": "Send request"
   }
 }

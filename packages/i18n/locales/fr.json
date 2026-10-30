@@ -2062,7 +2062,15 @@
       "bodyLabel": "Ordre professionnel",
       "areasLabel": "Domaines d'intervention (5 au maximum)",
       "bioLabel": "Courte bio pour votre profil",
-      "bioHelp": "Nous préparerons la version anglaise pour que vous la vérifiiez avant la mise en ligne."
+      "bioHelp": "Nous préparerons la version anglaise pour que vous la vérifiiez avant la mise en ligne.",
+      "mainProfession": "Profession principale",
+      "otherProfession": "Profession {{n}}",
+      "removeProfession": "Retirer {{profession}}",
+      "remove": "Retirer",
+      "specialtiesLabel": "Spécialités que vous proposez",
+      "notListed": "Ma spécialité n'est pas dans la liste",
+      "notListedLater": "Spécialité absente ? Enregistrez d'abord cette étape, puis demandez-la ici.",
+      "addProfession": "Ajouter une autre profession"
     },
     "languages": {
       "title": "Langues de consultation",
@@ -2090,7 +2098,8 @@
       "replace": "Remplacer",
       "add": "Ajouter",
       "uploading": "Envoi en cours",
-      "note": "Les documents sont chiffrés et conservés seulement le temps exigé par la loi."
+      "note": "Les documents sont chiffrés et conservés seulement le temps exigé par la loi.",
+      "licenceFor": "Autorisation d'exercer · {{profession}}"
     },
     "services": {
       "title": "Séances proposées",
@@ -2211,7 +2220,9 @@
     "draftLabel": "Votre bio en {{language}}",
     "draftConfirm": "Confirmer la bio",
     "language_en": "anglais",
-    "language_fr": "français"
+    "language_fr": "français",
+    "practice": "Professions et spécialités",
+    "practiceWaiting": "{{practice}} · ajouts en attente d'examen"
   },
   "book": {
     "step": "Étape 1 sur 2 · avec {{name}}",
@@ -3008,5 +3019,43 @@
     "title": "Solace est verrouillé",
     "unlock": "Déverrouiller",
     "prompt": "Déverrouiller Solace"
+  },
+  "specialistPractice": {
+    "title": "Professions et spécialités",
+    "intro": "Les usagers vous trouvent selon ce que Solace a approuvé. Ce que vous ajoutez attend un examen, et vous continuez d'exercer avec le reste en attendant.",
+    "status_PENDING": "En attente d'examen",
+    "status_APPROVED": "Approuvée",
+    "status_REJECTED": "Non approuvée",
+    "status_DECLINED": "Non approuvée",
+    "status_WITHDRAWN": "Retirée",
+    "request_OPEN": "En attente de réponse",
+    "request_CREATED": "Ajoutée à la liste",
+    "request_MATCHED": "Rattachée à une spécialité de la liste",
+    "request_DECLINED": "Non ajoutée",
+    "request_WITHDRAWN": "Retirée",
+    "licence": "Autorisation {{number}}",
+    "reason": "Motif : {{reason}}",
+    "becomes": "Désormais dans la liste : {{specialty}}",
+    "withdraw": "Retirer",
+    "withdrawBody": "Les usagers ne vous trouveront plus sous cet intitulé. Les séances déjà réservées sont maintenues.",
+    "cancel": "Annuler",
+    "withdrawSpecialty": "Retirer {{specialty}}",
+    "withdrawProfession": "Retirer {{profession}}",
+    "withdrawRequest": "Retirer la demande pour {{name}}",
+    "addSpecialty": "Ajouter une spécialité",
+    "addProfession": "Ajouter une profession",
+    "addProfessionIntro": "Deux personnes chez Solace vérifient l'autorisation d'exercer avant que les usagers la voient.",
+    "noMoreProfessions": "Vous avez déjà toutes les professions que Solace propose.",
+    "requests": "Spécialités demandées",
+    "afterApproval": "Une fois votre candidature approuvée, vous pourrez ajouter ici des professions et des spécialités.",
+    "sendForReview": "Envoyer pour examen",
+    "addSpecialtyTitle": "Ajouter une spécialité pour {{profession}}",
+    "noteLabel": "Votre formation ou expérience dans ce domaine",
+    "noteHelp": "Par exemple la formation suivie, où et quand. L'équipe de Solace la lit avant d'approuver.",
+    "certificate": "Certificat",
+    "requestTitle": "Demander une spécialité",
+    "requestIntro": "Indiquez la spécialité que vous exercez en tant que {{profession}}. L'équipe de Solace l'ajoute à la liste ou vous explique pourquoi non.",
+    "requestName": "Nom de la spécialité",
+    "sendRequest": "Envoyer la demande"
   }
 }

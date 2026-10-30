@@ -9,7 +9,7 @@ import { useSessionLanguages } from '@/api/account';
 import { useSpecialistProfile } from '@/api/catalogue';
 import { useSpecialistReviews } from '@/api/reviews';
 import i18n from '@/i18n';
-import { capitalised, initials, money, whenLabel } from '@/state/format';
+import { capitalised, initials, money, practiceLine, whenLabel } from '@/state/format';
 import { Button } from '@/ui/Button';
 import { BackButton } from '@/ui/ProgressSteps';
 import { RatingBadge, Stars } from '@/ui/Stars';
@@ -45,9 +45,9 @@ export default function SpecialistProfileScreen() {
                 <Text variant="titleMd" accessibilityRole="header">
                   {p.fullName}
                 </Text>
-                {p.professionLabel ? (
+                {p.professionLabel || p.specialties?.length ? (
                   <Text variant="body" color={colors.inkMuted}>
-                    {p.professionLabel}
+                    {practiceLine(p.professions, p.specialties, p.professionLabel)}
                   </Text>
                 ) : null}
                 <RatingBadge rating={p.rating} />

@@ -44,3 +44,17 @@ export function initials(name: string): string {
 export function capitalised(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/**
+ * "Licensed counsellor · Marriage and couples counselling": the professions, then the
+ * specialties, as search cards and profiles show them (D62).
+ */
+export function practiceLine(
+  professions: string[] | undefined,
+  specialties: string[] | undefined,
+  fallback?: string,
+): string {
+  const who = professions && professions.length > 0 ? professions.join(', ') : (fallback ?? '');
+  const what = (specialties ?? []).join(', ');
+  return [who, what].filter(Boolean).join(' · ');
+}

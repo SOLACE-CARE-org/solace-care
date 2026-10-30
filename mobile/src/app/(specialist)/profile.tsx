@@ -41,6 +41,13 @@ export default function SpecialistProfileTab() {
   const days = (hours.data?.days ?? []).filter((d) => d.ranges.length > 0).length;
   const languages = (a?.languages ?? []).map((l) => l.code.toUpperCase()).join(', ');
   const payout = a?.payout ? t(`specialistSignup.payout.${a.payout.method}`) : '';
+  const practice = (a?.professions ?? [])
+    .filter((p) => p.status === 'APPROVED')
+    .map((p) => p.label)
+    .join(', ');
+  const waiting = (a?.professions ?? []).some(
+    (p) => p.status === 'PENDING' || p.specialties.some((s) => s.status === 'PENDING'),
+  );
 
   const signOut = async () => {
     await signOutEverywhere();
@@ -118,6 +125,13 @@ export default function SpecialistProfileTab() {
         ) : null}
 
         <View style={styles.card}>
+          <Row
+            label={t('specialistProfileTab.practice')}
+            value={waiting ? t('specialistProfileTab.practiceWaiting', { practice }) : practice}
+            onPress={() => router.push('/specialist-practice')}
+          />
+        </View>
+        <View style={styles.card}>
           <Row label={t('specialistProfileTab.services')} value={services} />
           <Row
             label={t('specialistProfileTab.hours')}
@@ -173,23 +187,40 @@ function Row({
   label,
   value,
   divider = false,
+  onPress,
 }: {
   label: string;
   value: string;
   divider?: boolean;
+  /** Opens the row's own screen, as Professions & specialties does (D62). */
+  onPress?: () => void;
 }) {
-  return (
-    <View
-      style={[styles.row, divider && styles.divider]}
-      accessible
-      accessibilityLabel={`${label}: ${value}`}
-    >
+  const content = (
+    <>
       <Text variant="label" style={styles.rowLabel}>
         {label}
       </Text>
       <Text variant="meta" color={colors.inkMuted}>
         {value}
       </Text>
+    </>
+  );
+  return onPress ? (
+    <Pressable
+      style={[styles.row, divider && styles.divider]}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      onPress={onPress}
+    >
+      {content}
+    </Pressable>
+  ) : (
+    <View
+      style={[styles.row, divider && styles.divider]}
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+    >
+      {content}
     </View>
   );
 }

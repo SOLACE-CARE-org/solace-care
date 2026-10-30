@@ -9,6 +9,11 @@ import { ApiProblem, core, type CoreSchemas, orThrow } from './core';
 
 export type SpecialistApplication = CoreSchemas['SpecialistApplication'];
 export type Practice = CoreSchemas['Practice'];
+export type PracticeProfession = CoreSchemas['PracticeProfession'];
+export type Profession = CoreSchemas['Profession'];
+export type MyProfession = CoreSchemas['MyProfession'];
+export type MySpecialtyRequest = CoreSchemas['MySpecialtyRequest'];
+export type PracticeStatus = CoreSchemas['PracticeStatus'];
 export type SpecialistLanguage = CoreSchemas['SpecialistLanguage'];
 export type Offering = CoreSchemas['Offering'];
 export type PayoutDetails = CoreSchemas['PayoutDetails'];
@@ -35,7 +40,7 @@ export function useApplication() {
   return useQuery({ queryKey: specialistKeys.application, queryFn: fetchApplication });
 }
 
-/** Professions, labelled in the app language. */
+/** Professions with the specialties each allows (D62), labelled in the app language. */
 export function useProfessions(language: string) {
   return useQuery({
     queryKey: specialistKeys.professions(language),
@@ -101,42 +106,153 @@ export function useSubmitApplication() {
 /** A file picked on the device, as React Native's FormData takes it. */
 export type PickedFile = { uri: string; name: string; mimeType?: string };
 
+function filePart(file: PickedFile): Blob {
+  return {
+    uri: file.uri,
+    name: file.name,
+    type: file.mimeType ?? 'application/octet-stream',
+  } as unknown as Blob;
+}
+
 /**
- * Uploads one document kind (IDENTITY may have two files). Multipart goes through fetch directly:
- * React Native's FormData takes `{ uri, name, type }` parts, which the generated client does not
- * model.
+ * Sends a multipart form to Core and answers with the application. Multipart goes through fetch
+ * directly: React Native's FormData takes `{ uri, name, type }` parts, which the generated client
+ * does not model.
+ */
+async function sendForm(
+  method: 'PUT' | 'POST',
+  path: string,
+  form: FormData,
+): Promise<SpecialistApplication> {
+  const token = await accessToken();
+  const response = await fetch(`${env.apiUrl}/core${path}`, {
+    method,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      'Accept-Language': i18n.language || 'en',
+    },
+    body: form,
+  });
+  if (!response.ok) {
+    const problem = (await response.json().catch(() => ({}))) as {
+      code?: string;
+      title?: string;
+    };
+    throw new ApiProblem(response.status, problem.code, problem.title);
+  }
+  return (await response.json()) as SpecialistApplication;
+}
+
+/**
+ * Uploads one document kind (IDENTITY may have two files). A LICENCE names the profession it is
+ * for (D62).
  */
 export function useUploadDocument() {
-  return useStep(async ({ kind, files }: { kind: DocumentKind; files: PickedFile[] }) => {
-    const form = new FormData();
-    for (const file of files) {
-      form.append('file', {
-        uri: file.uri,
-        name: file.name,
-        type: file.mimeType ?? 'application/octet-stream',
-      } as unknown as Blob);
-    }
-    const token = await accessToken();
-    const response = await fetch(
-      `${env.apiUrl}/core/v1/me/specialist-application/documents/${kind}`,
-      {
-        method: 'PUT',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          'Accept-Language': i18n.language || 'en',
-        },
-        body: form,
-      },
-    );
-    if (!response.ok) {
-      const problem = (await response.json().catch(() => ({}))) as {
-        code?: string;
-        title?: string;
-      };
-      throw new ApiProblem(response.status, problem.code, problem.title);
-    }
-    return (await response.json()) as SpecialistApplication;
-  });
+  return useStep(
+    async ({
+      kind,
+      files,
+      profession,
+    }: {
+      kind: DocumentKind;
+      files: PickedFile[];
+      profession?: string;
+    }) => {
+      const form = new FormData();
+      for (const file of files) form.append('file', filePart(file));
+      const query = profession ? `?profession=${encodeURIComponent(profession)}` : '';
+      return sendForm('PUT', `/v1/me/specialist-application/documents/${kind}${query}`, form);
+    },
+  );
+}
+
+// --- After approval: professions, specialties and requests (D62) -------------------------------
+
+/** Adds a profession with its licence; it waits for two staff members. */
+export function useAddProfession() {
+  return useStep(
+    async (body: {
+      profession: string;
+      licenceNumber: string;
+      licensingBody: string;
+      specialties: string[];
+      licence: PickedFile;
+    }) => {
+      const form = new FormData();
+      form.append('profession', body.profession);
+      form.append('licenceNumber', body.licenceNumber);
+      form.append('licensingBody', body.licensingBody);
+      for (const s of body.specialties) form.append('specialties', s);
+      form.append('file', filePart(body.licence));
+      return sendForm('POST', '/v1/me/specialist-professions', form);
+    },
+  );
+}
+
+export function useWithdrawProfession() {
+  return useStep(async (profession: string) =>
+    orThrow(
+      await core.DELETE('/v1/me/specialist-professions/{profession}', {
+        params: { path: { profession } },
+      }),
+    ),
+  );
+}
+
+/** Adds a specialty under a profession, with a note and an optional certificate. */
+export function useAddSpecialty() {
+  return useStep(
+    async (body: {
+      profession: string;
+      specialty: string;
+      note: string;
+      certificate?: PickedFile;
+    }) => {
+      const form = new FormData();
+      form.append('specialty', body.specialty);
+      form.append('note', body.note);
+      if (body.certificate) form.append('file', filePart(body.certificate));
+      return sendForm(
+        'POST',
+        `/v1/me/specialist-professions/${encodeURIComponent(body.profession)}/specialties`,
+        form,
+      );
+    },
+  );
+}
+
+export function useWithdrawSpecialty() {
+  return useStep(async ({ profession, specialty }: { profession: string; specialty: string }) =>
+    orThrow(
+      await core.DELETE('/v1/me/specialist-professions/{profession}/specialties/{specialty}', {
+        params: { path: { profession, specialty } },
+      }),
+    ),
+  );
+}
+
+/** Asks for a specialty that is not listed, under one of the specialist's professions. */
+export function useRequestSpecialty() {
+  return useStep(
+    async (body: { profession: string; name: string; note: string; certificate?: PickedFile }) => {
+      const form = new FormData();
+      form.append('profession', body.profession);
+      form.append('name', body.name);
+      form.append('note', body.note);
+      if (body.certificate) form.append('file', filePart(body.certificate));
+      return sendForm('POST', '/v1/me/specialty-requests', form);
+    },
+  );
+}
+
+export function useWithdrawRequest() {
+  return useStep(async (requestId: string) =>
+    orThrow(
+      await core.DELETE('/v1/me/specialty-requests/{requestId}', {
+        params: { path: { requestId } },
+      }),
+    ),
+  );
 }
 
 export function useWeeklyHours() {

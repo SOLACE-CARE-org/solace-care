@@ -19,23 +19,44 @@ import { FlowScreen } from '@/ui/FlowScreen';
 import { ProgressSteps } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
 
-const KINDS: DocumentKind[] = ['LICENCE', 'IDENTITY', 'PHOTO', 'CV'];
 const ANY = ['application/pdf', 'image/jpeg', 'image/png'];
 const IMAGES = ['image/jpeg', 'image/png'];
 
-/** Specialist application, step 4 of 7: documents (SpecDocuments.dc.html). */
+/** One row of the list: a kind, and for a licence the profession it is for (D62). */
+type Row = { key: string; kind: DocumentKind; profession?: string; label?: string };
+
+/**
+ * Specialist application, step 4 of 7: documents (SpecDocuments.dc.html). One licence for each
+ * profession of the Practice step (D62), then the identity document, the photo and the CV.
+ */
 export default function SpecialistDocuments() {
   const { t } = useTranslation();
   const application = useApplication();
   const upload = useUploadDocument();
-  const [busyKind, setBusyKind] = useState<DocumentKind | null>(null);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
   const documents = application.data?.documents ?? [];
-  const filesOf = (kind: DocumentKind) => documents.find((d) => d.kind === kind)?.files ?? [];
+  const labels = new Map(
+    (application.data?.professions ?? []).map((p) => [p.profession, p.label] as const),
+  );
+  const rows: Row[] = [
+    ...(application.data?.practice?.professions ?? []).map((p) => ({
+      key: `LICENCE:${p.profession}`,
+      kind: 'LICENCE' as const,
+      profession: p.profession,
+      label: labels.get(p.profession),
+    })),
+    ...(['IDENTITY', 'PHOTO', 'CV'] as const).map((kind) => ({ key: kind, kind })),
+  ];
+  const filesOf = (row: Row) =>
+    documents.find(
+      (d) => d.kind === row.kind && (row.kind !== 'LICENCE' || d.profession === row.profession),
+    )?.files ?? [];
   const done = application.data?.steps.documents === true;
 
-  const pick = async (kind: DocumentKind) => {
+  const pick = async (row: Row) => {
+    const kind = row.kind;
     setProblem(null);
     const result = await DocumentPicker.getDocumentAsync({
       type: kind === 'PHOTO' ? IMAGES : ANY,
@@ -43,10 +64,11 @@ export default function SpecialistDocuments() {
       copyToCacheDirectory: true,
     });
     if (result.canceled || result.assets.length === 0) return;
-    setBusyKind(kind);
+    setBusyKey(row.key);
     upload.mutate(
       {
         kind,
+        profession: row.profession,
         files: result.assets
           .slice(0, kind === 'IDENTITY' ? 2 : 1)
           .map((a) => ({ uri: a.uri, name: a.name, mimeType: a.mimeType })),
@@ -54,13 +76,14 @@ export default function SpecialistDocuments() {
       {
         onError: (e) =>
           setProblem(e instanceof ApiProblem && e.title ? e.title : t('common.checkConnection')),
-        onSettled: () => setBusyKind(null),
+        onSettled: () => setBusyKey(null),
       },
     );
   };
 
-  const meta = (kind: DocumentKind) => {
-    const files = filesOf(kind);
+  const meta = (row: Row) => {
+    const kind = row.kind;
+    const files = filesOf(row);
     if (files.length > 0) {
       return kind === 'IDENTITY'
         ? t('specialistSignup.documents.identityUploaded')
@@ -77,8 +100,8 @@ export default function SpecialistDocuments() {
       footer={
         <Button
           label={t('common.continue')}
-          disabled={!done || busyKind !== null}
-          accessibilityState={{ disabled: !done || busyKind !== null }}
+          disabled={!done || busyKey !== null}
+          accessibilityState={{ disabled: !done || busyKey !== null }}
           onPress={() => application.data && router.push(stepRoute(application.data))}
         />
       }
@@ -93,15 +116,19 @@ export default function SpecialistDocuments() {
       </View>
 
       <View style={styles.card}>
-        {KINDS.map((kind, i) => {
-          const uploaded = filesOf(kind).length > 0;
-          const busy = busyKind === kind;
-          const title = t(`specialistSignup.documents.${kind}`);
+        {rows.map((row, i) => {
+          const kind = row.kind;
+          const uploaded = filesOf(row).length > 0;
+          const busy = busyKey === row.key;
+          const title =
+            kind === 'LICENCE' && row.label
+              ? t('specialistSignup.documents.licenceFor', { profession: row.label })
+              : t(`specialistSignup.documents.${kind}`);
           const action = uploaded
             ? t('specialistSignup.documents.replace')
             : t('specialistSignup.documents.add');
           return (
-            <View key={kind} style={[styles.row, i > 0 && styles.divider]}>
+            <View key={row.key} style={[styles.row, i > 0 && styles.divider]}>
               <View style={[styles.icon, uploaded ? styles.iconDone : styles.iconTodo]} aria-hidden>
                 <KindIcon kind={kind} uploaded={uploaded} />
               </View>
@@ -110,7 +137,7 @@ export default function SpecialistDocuments() {
                   {title}
                 </Text>
                 <Text variant="meta" color={colors.inkMuted}>
-                  {meta(kind)}
+                  {meta(row)}
                 </Text>
               </View>
               {busy ? (
@@ -122,8 +149,8 @@ export default function SpecialistDocuments() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`${action}: ${title}`}
-                  disabled={busyKind !== null}
-                  onPress={() => pick(kind)}
+                  disabled={busyKey !== null}
+                  onPress={() => pick(row)}
                   style={uploaded ? styles.replace : styles.addButton}
                 >
                   <Text variant="label" color={colors.brand}>
