@@ -67,6 +67,8 @@ So min and max price and the commission **are already live**: the values in `app
 | Core | `solace.insight.min-cell` | 5 | **Yes, Super admin** | Small-cell suppression for de-identified metrics. |
 | Core | `solace.specialists.pricing.durations` | 30, 50, 80 min | **Yes** | Session lengths specialists can offer (D43 left them in config until a spec says who changes them). |
 | Core | `solace.specialists.documents.max-file-size` | 10 MB | Maybe | |
+| Core | `solace.specialists.max-professions` | [3] | **Yes**, live | Professions one specialist can hold (D62). |
+| Core | `solace.specialists.max-open-specialty-requests` | [3] | **Yes**, live | Specialty requests a specialist can have open at once (D62). |
 | Core | `solace.bookings.guest-token-after-end` | 1 day | **Yes** | How long a guest link works after the session. |
 | Core | `solace.identity.unverified-signup-ttl` | 24 h | **Yes** | Unfinished sign-ups are removed after this. |
 | Core | `solace.identity.terms-version` / `privacy-notice-version` | v1 | No | Superseded by published legal content (D44). |
