@@ -112,46 +112,30 @@
       />
     </section>
 
-    <!-- 2. Licence -->
-    <section class="sl-card item" [class.current]="underReview() && !r.licence.verification">
+    <!-- 2. Professions, each with its licence and specialties (D62) -->
+    <section class="sl-card item" [class.current]="underReview() && !r.practice.verified">
       <div class="item-head">
         <h2>{{ 'admin.specialists.review.licence' | transloco }}</h2>
-        <ng-container *ngTemplateOutlet="badgeTpl; context: { v: r.licence.verification }" />
+        <span
+          class="sl-pill"
+          [class.sl-pill--brand]="r.practice.verified"
+          [class.sl-pill--warning]="!r.practice.verified"
+        >
+          {{ (r.practice.verified ? 'admin.specialists.practice.allChecked' :
+          'admin.specialists.review.notChecked') | transloco }}
+        </span>
       </div>
-      <dl class="facts">
-        <div>
-          <dt>{{ 'admin.specialists.review.licenceNumber' | transloco }}</dt>
-          <dd>{{ r.licence.licenceNumber }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'admin.specialists.review.issuedBy' | transloco }}</dt>
-          <dd>{{ r.licence.licensingBody }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'admin.specialists.review.validUntil' | transloco }}</dt>
-          <dd>
-            @if (r.licence.validUntil) { {{ day(r.licence.validUntil) }} } @else if (underReview()
-            && canChange()) {
-            <input
-              class="sl-input"
-              type="date"
-              [attr.aria-label]="'admin.specialists.review.validUntil' | transloco"
-              [value]="licenceValidUntil()"
-              (input)="licenceValidUntil.set(value($event))"
-            />
-            }
-          </dd>
-        </div>
-      </dl>
-      <div class="files">
-        @for (d of documents(r, 'LICENCE'); track d.id) {
-        <button class="file" type="button" (click)="openDocument(d.id)">{{ d.fileName }}</button>
-        }
-      </div>
-      <p class="sl-meta">{{ 'admin.specialists.review.licenceHelp' | transloco }}</p>
-      <ng-container
-        *ngTemplateOutlet="verifyTpl; context: { item: 'LICENCE', v: r.licence.verification }"
+      <p class="sl-meta">
+        {{ 'admin.specialists.review.yearsInPractice' | transloco: { years:
+        r.profile.yearsInPractice ?? 0 } }}
+      </p>
+      <sl-practice-review
+        mode="application"
+        [review]="r"
+        (changed)="review.set($event)"
+        (openDocument)="openDocument($event)"
       />
+      <p class="sl-meta">{{ 'admin.specialists.review.licenceHelp' | transloco }}</p>
     </section>
 
     <!-- 3. Languages -->
@@ -380,12 +364,7 @@
       {{ 'admin.specialists.review.undo' | transloco }}
     </button>
     } @else {
-    <button
-      class="sl-button"
-      type="button"
-      [disabled]="busy() || (item === 'LICENCE' && !licenceValidUntil() && !r.licence.validUntil)"
-      (click)="verify(item, true)"
-    >
+    <button class="sl-button" type="button" [disabled]="busy()" (click)="verify(item, true)">
       {{ 'admin.specialists.review.verify' | transloco }}
     </button>
     }

@@ -2,7 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CoreSchemas } from '../api/core-api';
-import { button, fn, ok, problem, render, route, sees, setUp } from '../testing/harness';
+import {
+  button,
+  fn,
+  ok,
+  problem,
+  render,
+  route,
+  sees,
+  setUp,
+  stubDialogs,
+} from '../testing/harness';
 import { CataloguePage } from './catalogue.page';
 
 const catalogue: CoreSchemas['AdminCatalogue'] = {
@@ -20,6 +30,16 @@ const catalogue: CoreSchemas['AdminCatalogue'] = {
       labelFr: 'Gynécologie',
       position: 4,
       enabled: false,
+    },
+  ],
+  professions: [
+    {
+      code: 'licensed-counsellor',
+      labelEn: 'Licensed counsellor',
+      labelFr: 'Conseiller agréé',
+      position: 3,
+      enabled: true,
+      specialties: ['counselling'],
     },
   ],
   sessionLanguages: [
@@ -59,6 +79,46 @@ describe('Catalogue and policies', () => {
     await sees(root, 'Conseil psychologique');
     expect(root.textContent).toContain('Hidden');
     expect(button(root, 'Add')).toBeUndefined();
+  });
+
+  it("saves a profession with the specialties it allows (D62)", async () => {
+    const client = {
+      GET: fn(
+        route({
+          '/admin/v1/catalogue': () => ok(catalogue),
+          '/admin/v1/cancellation-policies': () => ok([v1]),
+          '/admin/v1/settings': () => ok({ settings: [], flags: [] }),
+        }),
+      ),
+      PUT: fn(() => ok(catalogue.professions[0])),
+    };
+    setUp(['OPERATIONS'], client);
+    const { root, settle } = await render(CataloguePage);
+    await sees(root, 'Specialties');
+    stubDialogs(root);
+    button(root, 'Professions')!.click();
+    await settle();
+    expect(root.textContent).toContain('Conseiller agréé');
+    expect(root.textContent).toContain('Counselling');
+    expect(root.textContent).toContain('applies to new choices only');
+
+    button(root, 'Change')!.click();
+    await settle();
+    const dialog = root.querySelector('dialog')!;
+    const boxes = [...dialog.querySelectorAll<HTMLInputElement>('fieldset input[type="checkbox"]')];
+    expect(boxes.map((b) => b.checked)).toEqual([true, false]);
+    boxes[1]!.click();
+    const reason = dialog.querySelector('textarea')!;
+    reason.value = 'Counsellors also see women with cycle concerns';
+    reason.dispatchEvent(new Event('input'));
+    await settle();
+    button(dialog as unknown as HTMLElement, 'Save')!.click();
+
+    await vi.waitFor(() => expect(client.PUT).toHaveBeenCalled());
+    expect(client.PUT.mock.calls[0]![1]).toMatchObject({
+      params: { path: { kind: 'professions', code: 'licensed-counsellor' } },
+      body: { specialties: ['counselling', 'gynaecology'] },
+    });
   });
 
   it('publishes a new policy version only when it differs and has a reason', async () => {

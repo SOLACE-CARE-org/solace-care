@@ -38,6 +38,7 @@ import { ReviewsPage } from './reviews/reviews.page';
 import { SettingsPage } from './settings/settings.page';
 import { ApplicationReviewPage } from './specialists/application-review.page';
 import { ApplicationsPage } from './specialists/applications.page';
+import { PracticeRequestsPage } from './specialists/practice-requests.page';
 import { SpecialistRecordPage } from './specialists/specialist-record.page';
 import { TeamPage } from './team/team.page';
 
@@ -88,6 +89,12 @@ export const routes: Routes = [
       {
         path: 'specialists/:id',
         component: SpecialistRecordPage,
+        canActivate: [areaGuard('specialists')],
+      },
+      // D62: opened from Applications and the Catalogue, not from the sidebar.
+      {
+        path: 'practice-requests',
+        component: PracticeRequestsPage,
         canActivate: [areaGuard('specialists')],
       },
       {

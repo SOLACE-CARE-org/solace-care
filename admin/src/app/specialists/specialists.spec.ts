@@ -10,6 +10,8 @@ import { CoreApi, type CoreSchemas } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
 import { ApplicationReviewPage } from './application-review.page';
 import { ApplicationsPage } from './applications.page';
+import { PracticeRequestsPage } from './practice-requests.page';
+import { SpecialistRecordPage } from './specialist-record.page';
 
 type Review = CoreSchemas['ApplicationReview'];
 
@@ -34,7 +36,27 @@ function review(patch: Partial<Review> = {}): Review {
         at: '2026-10-14T09:00:00Z',
       },
     },
-    licence: { licenceNumber: 'ONPC-1234', licensingBody: 'Ordre national' },
+    practice: { verified: false },
+    professions: [
+      {
+        profession: 'clinical-psychologist',
+        label: 'Clinical psychologist',
+        position: 1,
+        licenceNumber: 'ONPC-1234',
+        licensingBody: 'Ordre national',
+        status: 'PENDING',
+        requestedAt: '2026-10-09T08:00:00Z',
+        specialties: [
+          {
+            specialty: 'clinical-psychology',
+            label: 'Clinical psychology',
+            status: 'PENDING',
+            requestedAt: '2026-10-09T08:00:00Z',
+          },
+        ],
+      },
+    ],
+    specialtyRequests: [],
     languages: [{ code: 'fr', declared: 'NATIVE' }],
     services: {
       offerings: [{ modality: 'AUDIO', enabled: true, durationMinutes: 50, price: 15000 }],
@@ -63,7 +85,11 @@ function setUp(roles: string[], client: Record<string, ReturnType<typeof fn>>, s
     ],
     providers: [
       provideZonelessChangeDetection(),
-      provideRouter([{ path: 'applications/:id', children: [] }]),
+      provideRouter([
+        { path: 'applications/:id', children: [] },
+        { path: 'practice-requests', children: [] },
+        { path: 'specialists/:id', children: [] },
+      ]),
       { provide: CoreApi, useValue: { client, document: vi.fn() } },
     ],
   });
@@ -161,7 +187,7 @@ describe('Application review', () => {
     }
   });
 
-  it('sends the licence expiry date when verifying the licence', async () => {
+  it("sends each profession's licence expiry date when checking it (D62)", async () => {
     const client = {
       GET: fn(() => ok(review())),
       POST: fn(),
@@ -170,19 +196,36 @@ describe('Application review', () => {
     setUp(['OPERATIONS'], client);
     const root = await render(ApplicationReviewPage, { id: review().id });
 
+    expect(root.textContent).toContain('2. Professions and licences');
+    expect(root.textContent).toContain('ONPC-1234');
+    const check = button(root, 'Mark licence verified')!;
+    expect(check.disabled).toBe(true);
     const date = root.querySelector<HTMLInputElement>('input[type="date"]')!;
     date.value = '2028-10-17';
     date.dispatchEvent(new Event('input'));
-    // The licence card's button is the first enabled "Mark verified".
-    const verify = [...root.querySelectorAll('button')].filter(
-      (b) => b.textContent?.trim() === 'Mark verified',
-    );
-    (await waitEnabled(verify[0]!)).click();
+    (await waitEnabled(check)).click();
     await vi.waitFor(() => expect(client.PUT).toHaveBeenCalled());
+    expect(client.PUT.mock.calls[0][0]).toBe(
+      '/admin/v1/specialists/{id}/professions/{profession}/verification',
+    );
     expect(client.PUT.mock.calls[0][1]).toEqual({
-      params: { path: { id: review().id, item: 'LICENCE' } },
+      params: { path: { id: review().id, profession: 'clinical-psychologist' } },
       body: { verified: true, licenceValidUntil: '2028-10-17' },
     });
+  });
+
+  it('checks a specialty under its profession', async () => {
+    const client = { GET: fn(() => ok(review())), POST: fn(), PUT: fn(() => ok(review())) };
+    setUp(['OPERATIONS'], client);
+    const root = await render(ApplicationReviewPage, { id: review().id });
+
+    expect(root.textContent).toContain('Clinical psychology');
+    // The identity item comes first, already verified; the specialty's is the only one left.
+    button(root, 'Mark verified')!.click();
+    await vi.waitFor(() => expect(client.PUT).toHaveBeenCalled());
+    expect(client.PUT.mock.calls[0][0]).toBe(
+      '/admin/v1/specialists/{id}/professions/{profession}/specialties/{specialty}/verification',
+    );
   });
 
   it('sends the reason the applicant will see when rejecting', async () => {
@@ -193,7 +236,8 @@ describe('Application review', () => {
     };
     setUp(['OPERATIONS'], client);
     const root = await render(ApplicationReviewPage, { id: review().id });
-    const dialog = root.querySelector('dialog')!;
+    // The application's own dialog comes after the professions' one.
+    const dialog = [...root.querySelectorAll('dialog')].at(-1)!;
     dialog.showModal = vi.fn();
     dialog.close = vi.fn();
 
@@ -211,6 +255,155 @@ describe('Application review', () => {
     expect(client.POST.mock.calls[0][1].body).toEqual({
       reason: 'The licence could not be confirmed.',
     });
+  });
+});
+
+describe('Specialist record (D62)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  const added = (by: string) =>
+    review({
+      status: 'APPROVED',
+      professions: [
+        {
+          ...review().professions[0]!,
+          status: 'APPROVED',
+          specialties: [{ ...review().professions[0]!.specialties[0]!, status: 'APPROVED' }],
+        },
+        {
+          profession: 'psychiatrist',
+          label: 'Psychiatrist',
+          position: 2,
+          licenceNumber: 'PSY-9',
+          licensingBody: 'Ordre des médecins',
+          status: 'PENDING',
+          addedAfterApproval: true,
+          validUntil: '2028-01-01',
+          verification: { by: { id: by, name: 'Checker' }, at: '2026-10-20T08:00:00Z' },
+          requestedAt: '2026-10-19T08:00:00Z',
+          specialties: [
+            {
+              specialty: 'psychiatry',
+              label: 'Psychiatry',
+              status: 'PENDING',
+              verification: { by: { id: by, name: 'Checker' }, at: '2026-10-20T08:00:00Z' },
+              requestedAt: '2026-10-19T08:00:00Z',
+            },
+          ],
+        },
+      ],
+    });
+
+  it('lets someone other than the checker approve an added profession', async () => {
+    const client = { GET: fn(() => ok(added('ops-9'))), POST: fn(() => ok(added('ops-9'))) };
+    setUp(['OPERATIONS'], client, 'ops-1');
+    const root = await render(SpecialistRecordPage, { id: review().id });
+
+    expect(root.textContent).toContain('Added after approval');
+    button(root, 'Approve profession')!.click();
+    await vi.waitFor(() => expect(client.POST).toHaveBeenCalled());
+    expect(client.POST.mock.calls[0][0]).toBe(
+      '/admin/v1/specialists/{id}/professions/{profession}/approval',
+    );
+    expect(client.POST.mock.calls[0][1].params.path.profession).toBe('psychiatrist');
+  });
+
+  it('tells the checker a second person approves it', async () => {
+    const client = { GET: fn(() => ok(added('ops-1'))), POST: fn() };
+    setUp(['OPERATIONS'], client, 'ops-1');
+    const root = await render(SpecialistRecordPage, { id: review().id });
+
+    expect(root.textContent).toContain('Someone else with access to Specialists approves it.');
+    expect(button(root, 'Approve profession')).toBeUndefined();
+  });
+});
+
+describe('Additions and specialty requests (D62)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  const request: CoreSchemas['SpecialtyRequest'] = {
+    id: 'r1',
+    specialistId: 's1',
+    fullName: 'Nkeng Brigitte',
+    profession: 'clinical-psychologist',
+    professionLabel: 'Clinical psychologist',
+    proposedName: 'Périnatalité',
+    note: 'Two years of training.',
+    status: 'OPEN',
+    requestedAt: '2026-10-20T08:00:00Z',
+  };
+  const catalogue = {
+    specialties: [
+      { code: 'clinical-psychology', labelEn: 'Clinical psychology', labelFr: 'Psychologie clinique', position: 1, enabled: true },
+    ],
+    professions: [],
+    sessionLanguages: [],
+    helpTopics: [],
+    durations: [50],
+  };
+
+  it('creates the requested specialty under a main one', async () => {
+    const client = {
+      GET: fn((path: string) =>
+        path === '/admin/v1/specialist-additions'
+          ? ok([])
+          : path === '/admin/v1/specialty-requests'
+            ? ok([request])
+            : ok(catalogue),
+      ),
+      POST: fn(() => ok({ ...request, status: 'CREATED' })),
+    };
+    setUp(['OPERATIONS'], client);
+    const root = await render(PracticeRequestsPage);
+    await vi.waitFor(() => expect(root.textContent).toContain('Périnatalité'));
+    for (const d of root.querySelectorAll('dialog')) {
+      d.showModal = vi.fn();
+      d.close = vi.fn();
+    }
+    expect(root.textContent).toContain('Nothing is waiting.');
+
+    button(root, 'Create specialty')!.click();
+    const dialog = root.querySelector('dialog')!;
+    const fields = () => dialog.querySelectorAll<HTMLInputElement>('input');
+    // The code comes from the proposed name, accents dropped.
+    await vi.waitFor(() => expect(fields()[0]?.value).toBe('perinatalite'));
+    for (const [i, text] of [
+      [1, 'Perinatal psychology'],
+      [2, 'Psychologie périnatale'],
+    ] as const) {
+      fields()[i]!.value = text;
+      fields()[i]!.dispatchEvent(new Event('input'));
+    }
+    const parent = dialog.querySelector<HTMLSelectElement>('select')!;
+    parent.value = 'clinical-psychology';
+    parent.dispatchEvent(new Event('change'));
+    const reason = dialog.querySelector('textarea')!;
+    reason.value = 'Asked for by a specialist.';
+    reason.dispatchEvent(new Event('input'));
+    const send = button(dialog as unknown as HTMLElement, 'Send')!;
+    (await waitEnabled(send)).click();
+
+    await vi.waitFor(() => expect(client.POST).toHaveBeenCalled());
+    expect(client.POST.mock.calls[0][0]).toBe('/admin/v1/specialty-requests/{requestId}/creation');
+    expect(client.POST.mock.calls[0][1].body).toEqual({
+      code: 'perinatalite',
+      labelEn: 'Perinatal psychology',
+      labelFr: 'Psychologie périnatale',
+      parentCode: 'clinical-psychology',
+      reason: 'Asked for by a specialist.',
+    });
+  });
+
+  it('shows requests without answers to staff who cannot change the catalogue', async () => {
+    const client = {
+      GET: fn((path: string) =>
+        path === '/admin/v1/specialty-requests' ? ok([request]) : ok([]),
+      ),
+    };
+    setUp(['SUPPORT'], client);
+    const root = await render(PracticeRequestsPage);
+    await vi.waitFor(() => expect(root.textContent).toContain('Périnatalité'));
+    expect(button(root, 'Create specialty')).toBeUndefined();
   });
 });
 

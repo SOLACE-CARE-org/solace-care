@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 
@@ -18,11 +19,19 @@ import { dateTime, fcfa } from '../shared/format';
 type Entry = CoreSchemas['CatalogueEntry'];
 type Policy = CoreSchemas['CancellationPolicy'];
 type Terms = CoreSchemas['CancellationPolicyTerms'];
-type Tab = 'SPECIALTIES' | 'SESSION_TYPES' | 'PRICE_BANDS' | 'LANGUAGES' | 'TOPICS' | 'POLICY';
-type Kind = 'specialties' | 'session-languages' | 'help-topics';
+type Tab =
+  | 'SPECIALTIES'
+  | 'PROFESSIONS'
+  | 'SESSION_TYPES'
+  | 'PRICE_BANDS'
+  | 'LANGUAGES'
+  | 'TOPICS'
+  | 'POLICY';
+type Kind = 'specialties' | 'professions' | 'session-languages' | 'help-topics';
 
 const TABS: Tab[] = [
   'SPECIALTIES',
+  'PROFESSIONS',
   'SESSION_TYPES',
   'PRICE_BANDS',
   'LANGUAGES',
@@ -40,13 +49,14 @@ const TERMS: (keyof Terms)[] = [
 ];
 
 /**
- * Admin screen 14: specialties, session types, price bands, session languages, help topics and the
- * cancellation policy (Catalogue.dc.html; D43). Every entry needs EN and FR; a policy version
- * applies to bookings made after it is published.
+ * Admin screen 14: specialties, professions, session types, price bands, session languages, help
+ * topics and the cancellation policy (Catalogue.dc.html; D43). Every entry needs EN and FR; a
+ * policy version applies to bookings made after it is published. A specialty can sit under a main
+ * one, and each profession lists the specialties it allows (D62).
  */
 @Component({
   selector: 'sl-catalogue',
-  imports: [TranslocoPipe, FormsModule],
+  imports: [TranslocoPipe, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="sl-title">{{ 'admin.catalogue.title' | transloco }}</h1>
@@ -169,6 +179,12 @@ const TERMS: (keyof Terms)[] = [
                   <th scope="col">{{ 'admin.catalogue.code' | transloco }}</th>
                   <th scope="col">{{ 'admin.catalogue.english' | transloco }}</th>
                   <th scope="col">{{ 'admin.catalogue.french' | transloco }}</th>
+                  @if (tab() === 'SPECIALTIES') {
+                    <th scope="col">{{ 'admin.catalogue.parent' | transloco }}</th>
+                  }
+                  @if (tab() === 'PROFESSIONS') {
+                    <th scope="col">{{ 'admin.catalogue.allows' | transloco }}</th>
+                  }
                   <th scope="col">{{ 'admin.catalogue.shown' | transloco }}</th>
                   <th scope="col">
                     <span class="sr-only">{{ 'admin.team.actions' | transloco }}</span>
@@ -181,6 +197,12 @@ const TERMS: (keyof Terms)[] = [
                     <td>{{ e.code }}</td>
                     <td lang="en">{{ e.labelEn }}</td>
                     <td lang="fr">{{ e.labelFr }}</td>
+                    @if (tab() === 'SPECIALTIES') {
+                      <td>{{ e.parentCode ? specialtyLabel(e.parentCode) : '—' }}</td>
+                    }
+                    @if (tab() === 'PROFESSIONS') {
+                      <td>{{ allowed(e) }}</td>
+                    }
                     <td>
                       {{
                         (e.enabled ? 'admin.catalogue.yes' : 'admin.catalogue.hidden') | transloco
@@ -197,13 +219,17 @@ const TERMS: (keyof Terms)[] = [
                 }
               </tbody>
             </table>
-            @if (canChange()) {
-              <div class="state">
+            <div class="state">
+              @if (canChange()) {
                 <button type="button" class="sl-button" (click)="askEdit(null)">
                   {{ 'admin.catalogue.add' | transloco }}
                 </button>
-              </div>
-            }
+              }
+              @if (tab() === 'SPECIALTIES' || tab() === 'PROFESSIONS') {
+                <a routerLink="/practice-requests">{{ 'admin.catalogue.requests' | transloco }}</a>
+                <p class="sl-meta">{{ 'admin.catalogue.linksNote' | transloco }}</p>
+              }
+            </div>
           </section>
         }
       }
@@ -230,6 +256,32 @@ const TERMS: (keyof Terms)[] = [
         <span>{{ 'admin.catalogue.french' | transloco }}</span>
         <input class="sl-input" lang="fr" maxlength="80" [(ngModel)]="labelFr" />
       </label>
+      @if (tab() === 'SPECIALTIES') {
+        <label class="sl-field">
+          <span>{{ 'admin.catalogue.parent' | transloco }}</span>
+          <select class="sl-select" [(ngModel)]="parentCode">
+            <option value="">{{ 'admin.catalogue.mainSpecialty' | transloco }}</option>
+            @for (s of parents(); track s.code) {
+              <option [value]="s.code">{{ label(s) }}</option>
+            }
+          </select>
+        </label>
+      }
+      @if (tab() === 'PROFESSIONS') {
+        <fieldset class="allows">
+          <legend>{{ 'admin.catalogue.allows' | transloco }}</legend>
+          @for (s of catalogue()?.specialties ?? []; track s.code) {
+            <label class="option">
+              <input
+                type="checkbox"
+                [checked]="picked().includes(s.code)"
+                (change)="toggle(s.code)"
+              />
+              <span>{{ label(s) }}</span>
+            </label>
+          }
+        </fieldset>
+      }
       <label class="option">
         <input type="checkbox" [(ngModel)]="enabled" />
         <span>{{ 'admin.catalogue.showToSeekers' | transloco }}</span>
@@ -246,7 +298,12 @@ const TERMS: (keyof Terms)[] = [
           type="button"
           class="sl-button sl-button--primary"
           [disabled]="
-            busy() || !code().trim() || !labelEn().trim() || !labelFr().trim() || !reason().trim()
+            busy() ||
+            !code().trim() ||
+            !labelEn().trim() ||
+            !labelFr().trim() ||
+            !reason().trim() ||
+            (tab() === 'PROFESSIONS' && picked().length === 0)
           "
           (click)="saveEntry()"
         >
@@ -301,6 +358,13 @@ const TERMS: (keyof Terms)[] = [
     .strong {
       font-weight: 700;
     }
+    .allows {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-10);
+      margin: 0 0 var(--space-12);
+      max-height: 16rem;
+      overflow-y: auto;
+    }
     .option {
       display: flex;
       gap: var(--space-8);
@@ -346,6 +410,8 @@ export class CataloguePage {
   readonly labelEn = signal('');
   readonly labelFr = signal('');
   readonly enabled = signal(true);
+  readonly parentCode = signal('');
+  readonly picked = signal<string[]>([]);
   readonly reason = signal('');
   readonly canChange = computed(() => this.staff.accessTo('catalogue') === 'F');
   private readonly bothLanguages = signal(false);
@@ -358,8 +424,15 @@ export class CataloguePage {
       ? c.sessionLanguages
       : this.tab() === 'TOPICS'
         ? c.helpTopics
-        : c.specialties;
+        : this.tab() === 'PROFESSIONS'
+          ? c.professions
+          : c.specialties;
   });
+
+  /** Main specialties a specialty can sit under: not itself, one level deep (D62). */
+  readonly parents = computed(() =>
+    (this.catalogue()?.specialties ?? []).filter((s) => !s.parentCode && s.code !== this.code()),
+  );
 
   readonly nextVersion = computed(() => (this.policies()[0]?.version ?? 0) + 1);
 
@@ -443,7 +516,9 @@ export class CataloguePage {
       ? 'session-languages'
       : this.tab() === 'TOPICS'
         ? 'help-topics'
-        : 'specialties';
+        : this.tab() === 'PROFESSIONS'
+          ? 'professions'
+          : 'specialties';
   }
 
   askEdit(e: Entry | null) {
@@ -452,8 +527,27 @@ export class CataloguePage {
     this.labelEn.set(e?.labelEn ?? '');
     this.labelFr.set(e?.labelFr ?? '');
     this.enabled.set(e?.enabled ?? false);
+    this.parentCode.set(e?.parentCode ?? '');
+    this.picked.set([...(e?.specialties ?? [])]);
     this.reason.set('');
     this.editDialog()?.nativeElement.showModal();
+  }
+
+  toggle(code: string) {
+    this.picked.update((p) => (p.includes(code) ? p.filter((c) => c !== code) : [...p, code]));
+  }
+
+  label(e: Entry): string {
+    return this.lang() === 'fr' ? e.labelFr : e.labelEn;
+  }
+
+  specialtyLabel(code: string): string {
+    const s = this.catalogue()?.specialties.find((x) => x.code === code);
+    return s ? this.label(s) : code;
+  }
+
+  allowed(e: Entry): string {
+    return (e.specialties ?? []).map((c) => this.specialtyLabel(c)).join(', ');
   }
 
   async saveEntry() {
@@ -467,6 +561,10 @@ export class CataloguePage {
             labelFr: this.labelFr().trim(),
             enabled: this.enabled(),
             reason: this.reason().trim(),
+            ...(this.tab() === 'SPECIALTIES' && this.parentCode()
+              ? { parentCode: this.parentCode() }
+              : {}),
+            ...(this.tab() === 'PROFESSIONS' ? { specialties: this.picked() } : {}),
           },
         }),
       );

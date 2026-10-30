@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
@@ -22,7 +22,7 @@ const TABS: Tab[] = ['SUBMITTED', 'UNDER_REVIEW', 'CHANGES_REQUESTED', 'DECIDED'
 /** Admin screen 4: specialist applications waiting for review (Applications.dc.html). */
 @Component({
   selector: 'sl-applications',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1 class="sl-title">
@@ -30,6 +30,9 @@ const TABS: Tab[] = ['SUBMITTED', 'UNDER_REVIEW', 'CHANGES_REQUESTED', 'DECIDED'
     </h1>
     <p class="sl-muted subtitle">
       {{ 'admin.specialists.applications.subtitle' | transloco }}
+      <a routerLink="/practice-requests">{{
+        'admin.specialists.applications.practiceRequests' | transloco
+      }}</a>
     </p>
 
     <div class="filters">

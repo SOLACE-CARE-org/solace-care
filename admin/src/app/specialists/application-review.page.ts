@@ -16,6 +16,8 @@ import { LucideChevronLeft, LucideDynamicIcon } from '@lucide/angular';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
+import { PracticeReviewComponent } from './practice-review.component';
+import { PRACTICE_KIND, practiceSubject } from './practice-subject';
 import {
   calendarDate,
   capitalised,
@@ -27,20 +29,20 @@ import {
 } from '../shared/format';
 
 type Review = CoreSchemas['ApplicationReview'];
-type Item = 'IDENTITY' | 'LICENCE' | 'PROFILE' | 'PAYOUT';
+type Item = 'IDENTITY' | 'PROFILE' | 'PAYOUT';
 type Level = 'NATIVE' | 'FLUENT' | 'PROFESSIONAL' | 'BELOW_PROFESSIONAL';
 type Decision = 'changes' | 'reject';
 
 const LEVELS: Level[] = ['NATIVE', 'FLUENT', 'PROFESSIONAL', 'BELOW_PROFESSIONAL'];
 
 /**
- * Admin screen 5: one applicant's licence, documents, languages and services
- * (ApplicationReview.dc.html). Approval needs all six items verified; a change request or
+ * Admin screen 5: one applicant's professions and licences, documents, languages and services
+ * (ApplicationReview.dc.html; D62). Approval needs all six items verified; a change request or
  * rejection carries a reason the applicant sees. Core checks every action again.
  */
 @Component({
   selector: 'sl-application-review',
-  imports: [TranslocoPipe, RouterLink, LucideDynamicIcon, NgTemplateOutlet],
+  imports: [TranslocoPipe, RouterLink, LucideDynamicIcon, NgTemplateOutlet, PracticeReviewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './application-review.page.html',
   styleUrl: './application-review.page.css',
@@ -66,7 +68,6 @@ export class ApplicationReviewPage {
   );
 
   // Form state: what the reviewer is typing, apart from what Core has.
-  readonly licenceValidUntil = signal('');
   readonly bioDraft = signal<{ en?: string; fr?: string }>({});
   readonly notesDraft = signal<string | null>(null);
   readonly interviewAt = signal('');
@@ -167,10 +168,13 @@ export class ApplicationReviewPage {
   }
 
   activity(a: Review['activity'][number]): string {
+    const review = this.review();
     const subject =
       a.kind === 'LANGUAGE_VERIFIED' || a.kind === 'BIO_ADDED'
         ? languageName(a.subject ?? '', this.lang())
-        : a.subject
+        : PRACTICE_KIND.test(a.kind) && review
+          ? practiceSubject(review, a.subject)
+          : a.subject
           ? this.transloco.translate(`admin.specialists.review.item_${a.subject}`)
           : '';
     const value = a.value
@@ -194,14 +198,10 @@ export class ApplicationReviewPage {
   }
 
   verify(item: Item, verified: boolean) {
-    const licenceValidUntil = item === 'LICENCE' && verified ? this.licenceValidUntil() : undefined;
     return this.act(() =>
       this.api.client.PUT('/admin/v1/specialist-applications/{id}/items/{item}', {
         params: { path: { id: this.id(), item } },
-        body: {
-          verified,
-          ...(licenceValidUntil ? { licenceValidUntil } : {}),
-        },
+        body: { verified },
       }),
     );
   }

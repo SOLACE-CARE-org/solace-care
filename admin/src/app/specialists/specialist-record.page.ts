@@ -14,22 +14,24 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
+import { PracticeReviewComponent } from './practice-review.component';
+import { PRACTICE_KIND, practiceSubject } from './practice-subject';
 import { calendarDate, capitalised, initials, languageName, shortDate } from '../shared/format';
 
 type RecordView = CoreSchemas['ApplicationReview'];
 type Summary = CoreSchemas['SpecialistSummary'];
-type Tab = 'upcoming' | 'past' | 'earnings' | 'reviews' | 'documents' | 'history';
+type Tab = 'practice' | 'upcoming' | 'past' | 'earnings' | 'reviews' | 'documents' | 'history';
 
-const TABS: Tab[] = ['upcoming', 'past', 'earnings', 'reviews', 'documents', 'history'];
+const TABS: Tab[] = ['practice', 'upcoming', 'past', 'earnings', 'reviews', 'documents', 'history'];
 
 /**
  * Admin screen 6: an approved specialist's profile, status and history (SpecialistRecord.dc.html).
- * Sessions, earnings and reviews fill in as those epics ship. Edit profile and re-verification
- * arrive with profile editing.
+ * The Practice tab holds their professions and specialties, and what they added since approval
+ * (D62). Sessions, earnings and reviews fill in as those epics ship.
  */
 @Component({
   selector: 'sl-specialist-record',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, PracticeReviewComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <input
@@ -113,7 +115,7 @@ const TABS: Tab[] = ['upcoming', 'past', 'earnings', 'reviews', 'documents', 'hi
         </div>
         <div class="sl-card stat">
           <span class="sl-muted">{{ 'admin.specialists.record.licenceValid' | transloco }}</span>
-          <strong>{{ day(r.licence.validUntil) || '—' }}</strong>
+          <strong>{{ day(licenceValidUntil(r)) || '—' }}</strong>
           <span class="sl-meta">{{ 'admin.specialists.record.reminder' | transloco }}</span>
         </div>
       </div>
@@ -128,6 +130,14 @@ const TABS: Tab[] = ['upcoming', 'past', 'earnings', 'reviews', 'documents', 'hi
 
       <section class="sl-card panel" role="tabpanel">
         @switch (tab()) {
+          @case ('practice') {
+            <sl-practice-review
+              mode="record"
+              [review]="r"
+              (changed)="record.set($event)"
+              (openDocument)="openDocument(r.id, $event)"
+            />
+          }
           @case ('documents') {
             <ul class="list">
               @for (d of r.documents; track d.id) {
@@ -325,7 +335,7 @@ export class SpecialistRecordPage {
   readonly id = input<string>('');
 
   readonly tabs = TABS;
-  readonly tab = signal<Tab>('documents');
+  readonly tab = signal<Tab>('practice');
   readonly query = signal('');
   readonly results = signal<Summary[]>([]);
   readonly record = signal<RecordView | null>(null);
@@ -449,6 +459,14 @@ export class SpecialistRecordPage {
     return [r.professionLabel, capitalised(languages)].filter(Boolean).join(' · ');
   }
 
+  /** The licence that ends first among the approved professions (D62). */
+  licenceValidUntil(r: RecordView): string | undefined {
+    return r.professions
+      .filter((p) => p.status === 'APPROVED' && p.validUntil)
+      .map((p) => p.validUntil as string)
+      .sort()[0];
+  }
+
   statusClass(status: string): string {
     if (status === 'APPROVED') return 'sl-pill sl-pill--brand';
     if (status === 'SUSPENDED' || status === 'REJECTED') return 'sl-pill sl-pill--danger';
@@ -456,10 +474,13 @@ export class SpecialistRecordPage {
   }
 
   activity(a: RecordView['activity'][number]): string {
+    const review = this.record();
     const subject =
       a.kind === 'LANGUAGE_VERIFIED' || a.kind === 'BIO_ADDED'
         ? languageName(a.subject ?? '', this.lang())
-        : a.subject
+        : PRACTICE_KIND.test(a.kind) && review
+          ? practiceSubject(review, a.subject)
+          : a.subject
           ? this.transloco.translate(`admin.specialists.review.item_${a.subject}`)
           : '';
     const value = a.value

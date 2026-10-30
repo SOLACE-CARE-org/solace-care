@@ -121,7 +121,8 @@
         "unassigned": "Non attribuée",
         "review": "Examiner",
         "note": "Seules les langues vérifiées au niveau professionnel ou plus deviennent réservables. La vérification se fait pendant l'entretien de langue, à l'étape 3.",
-        "empty": "Aucune candidature ici."
+        "empty": "Aucune candidature ici.",
+        "practiceRequests": "Ajouts et demandes de spécialité"
       },
       "levels": {
         "NATIVE": "maternel",
@@ -147,7 +148,7 @@
         "summary": "{{count}} éléments vérifiés sur 6.",
         "summaryLocked": "L'approbation se débloque quand chaque élément est vérifié.",
         "identity": "1. Identité",
-        "licence": "2. Autorisation d'exercer",
+        "licence": "2. Professions et autorisations d'exercer",
         "languages": "3. Langues",
         "services": "4. Prestations et tarifs",
         "profile": "5. Texte du profil",
@@ -232,7 +233,26 @@
         "kind_APPROVAL_PROPOSED": "Approbation proposée",
         "kind_APPROVAL_WITHDRAWN": "Proposition d'approbation retirée",
         "draftedBySolace": "Rédigée par Solace ; le spécialiste la vérifie avant la mise en ligne",
-        "aiDraftBio": "Rédiger la langue manquante avec l'IA"
+        "aiDraftBio": "Rédiger la langue manquante avec l'IA",
+        "yearsInPractice": "{{years}} ans d'exercice",
+        "doc_CERTIFICATE": "Certificat",
+        "kind_PROFESSION_ADDED": "{{subject}} ajoutée par le spécialiste",
+        "kind_PROFESSION_VERIFIED": "{{subject}} : autorisation d'exercer vérifiée",
+        "kind_PROFESSION_UNVERIFIED": "{{subject}} : vérification de l'autorisation annulée",
+        "kind_PROFESSION_APPROVED": "{{subject}} approuvée",
+        "kind_PROFESSION_REJECTED": "{{subject}} refusée",
+        "kind_PROFESSION_WITHDRAWN": "{{subject}} retirée par le spécialiste",
+        "kind_SPECIALTY_ADDED": "{{subject}} ajoutée par le spécialiste",
+        "kind_SPECIALTY_VERIFIED": "{{subject}} vérifiée",
+        "kind_SPECIALTY_UNVERIFIED": "{{subject}} : vérification annulée",
+        "kind_SPECIALTY_APPROVED": "{{subject}} approuvée",
+        "kind_SPECIALTY_DECLINED": "{{subject}} refusée",
+        "kind_SPECIALTY_WITHDRAWN": "{{subject}} retirée par le spécialiste",
+        "kind_SPECIALTY_REQUESTED": "Nouvelle spécialité demandée pour {{subject}}",
+        "kind_REQUEST_CREATED": "{{subject}} créée à partir d'une demande",
+        "kind_REQUEST_MATCHED": "Demande rattachée à {{subject}}",
+        "kind_REQUEST_DECLINED": "Demande de spécialité pour {{subject}} refusée",
+        "kind_REQUEST_WITHDRAWN": "Demande de spécialité pour {{subject}} retirée"
       },
       "record": {
         "search": "Trouver un spécialiste par nom ou numéro d'autorisation",
@@ -254,6 +274,57 @@
         "tab_documents": "Documents",
         "tab_history": "Historique",
         "laterEpic": "Affiché ici dès l'ouverture des réservations."
+      },
+      "practice": {
+        "main": "profession principale",
+        "added": "Ajoutée après l'approbation",
+        "status_PENDING": "En attente d'examen",
+        "status_APPROVED": "Approuvée",
+        "status_REJECTED": "Refusée",
+        "status_DECLINED": "Refusée",
+        "status_WITHDRAWN": "Retirée",
+        "decidedBy": "Décidé par {{name}}, {{date}}",
+        "checkLicence": "Marquer l'autorisation comme vérifiée",
+        "reject": "Refuser la profession",
+        "secondPerson": "Une autre personne ayant accès aux Spécialistes l'approuve.",
+        "approveProfession": "Approuver la profession",
+        "specialties": "Spécialités",
+        "note": "Formation ou expérience :",
+        "approveSpecialty": "Approuver la spécialité",
+        "decline": "Refuser",
+        "requests": "Demandes de nouvelles spécialités",
+        "request_OPEN": "Ouverte",
+        "request_CREATED": "Créée",
+        "request_MATCHED": "Rattachée",
+        "request_DECLINED": "Refusée",
+        "request_WITHDRAWN": "Retirée",
+        "openRequests": "Répondre aux demandes",
+        "rejectTitle": "Refuser la profession",
+        "declineTitle": "Refuser la spécialité",
+        "reasonLabel": "Motif que verra le spécialiste",
+        "allChecked": "Chaque profession vérifiée"
+      },
+      "requests": {
+        "title": "Ajouts et demandes de spécialité",
+        "subtitle": "Les professions et spécialités ajoutées par des spécialistes approuvés, et les spécialités qu'ils ont demandées. Vérifiez les ajouts sur la fiche de chaque spécialiste.",
+        "additions": "Ajouts en attente",
+        "noAdditions": "Rien n'est en attente.",
+        "specialist": "Spécialiste",
+        "what": "Ajout",
+        "asked": "Demandé le",
+        "state": "Examen",
+        "addedProfession": "Profession : {{profession}}",
+        "addedSpecialty": "{{specialty}}, pour {{profession}}",
+        "waitingSecond": "Autorisation vérifiée par {{name}} ; une deuxième personne l'approuve",
+        "requests": "Demandes de spécialité",
+        "show": "Afficher",
+        "noRequests": "Aucune demande ici.",
+        "create": "Créer la spécialité",
+        "match": "Rattacher à une spécialité existante",
+        "createTitle": "Créer la spécialité",
+        "matchTitle": "Rattacher à une spécialité existante",
+        "declineTitle": "Refuser la demande",
+        "matchTo": "Spécialité existante"
       }
     },
     "crisis": {
@@ -655,7 +726,9 @@
         "solace_ai_homework_default-due": "Un exercice est à rendre après ce délai, sauf date choisie par le spécialiste",
         "solace_specialists_pricing_durations": "Durées de séance que les spécialistes peuvent proposer",
         "solace_privacy_offered-purposes": "Consentements demandés par l'application (en plus du suivi et du bilan)",
-        "solace_sessions_dial-in_number": "Le numéro que les personnes appellent pour rejoindre par téléphone"
+        "solace_sessions_dial-in_number": "Le numéro que les personnes appellent pour rejoindre par téléphone",
+        "solace_specialists_max-professions": "Professions qu'un spécialiste peut avoir",
+        "solace_specialists_max-open-specialty-requests": "Demandes de spécialité qu'un spécialiste peut avoir ouvertes en même temps"
       },
       "flag": {
         "safetyMonitor": "Veille de sécurité",
@@ -816,7 +889,8 @@
         "PRICE_BANDS": "Fourchettes de prix",
         "LANGUAGES": "Langues de séance",
         "TOPICS": "Sujets d'aide",
-        "POLICY": "Politique d'annulation"
+        "POLICY": "Politique d'annulation",
+        "PROFESSIONS": "Professions"
       },
       "durationsNote": "Durées de séance que les spécialistes peuvent proposer.",
       "minutes": "{{n}} min",
@@ -849,7 +923,13 @@
       "yes": "Oui",
       "hidden": "Masqué",
       "add": "Ajouter",
-      "showToSeekers": "Montrer aux usagers"
+      "showToSeekers": "Montrer aux usagers",
+      "parent": "Rattachée à",
+      "mainSpecialty": "Aucune : spécialité principale",
+      "allows": "Spécialités autorisées",
+      "requests": "Demandes de spécialité des spécialistes",
+      "linksNote": "Un changement des spécialités d'une profession ne vaut que pour les nouveaux choix. Les spécialistes déjà approuvés pour une spécialité la gardent.",
+      "choose": "Choisir"
     },
     "content": {
       "title": "Contenus",
