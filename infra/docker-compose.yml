@@ -195,7 +195,7 @@ services:
   # Observability: services send OTLP to the collector, which fans out to Tempo, Prometheus and Loki.
   otel-collector:
     <<: *restart
-    image: otel/opentelemetry-collector-contrib:0.128.0
+    image: otel/opentelemetry-collector-contrib:0.164.0
     command: ["--config=/etc/otelcol/config.yaml"]
     depends_on: [tempo, prometheus, loki]
     ports:
