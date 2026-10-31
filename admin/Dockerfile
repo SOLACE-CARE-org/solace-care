@@ -2,7 +2,7 @@
 #   docker build -t solace/admin admin
 # The same image runs in every environment; the variables below fill /config.json and the
 # Content-Security-Policy when the container starts.
-FROM nginxinc/nginx-unprivileged:1.29.1-alpine
+FROM nginxinc/nginx-unprivileged:1.31.7-alpine
 
 ENV KEYCLOAK_URL=http://localhost:8180 \
     KEYCLOAK_REALM=solace-staff \
