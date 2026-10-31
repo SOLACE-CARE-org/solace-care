@@ -47,7 +47,11 @@ public interface AuditLog {
    * of money, a status, a policy, a setting or a module needs a written reason).
    */
   default void adminAction(
-      String action, String targetType, String targetId, String reason, Map<String, String> details) {
+      String action,
+      String targetType,
+      String targetId,
+      String reason,
+      Map<String, String> details) {
     record(
         new AuditEntry(
             currentActor(), action, targetType, targetId, null, Outcome.ALLOWED, reason, details));
