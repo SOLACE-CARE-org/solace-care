@@ -166,7 +166,7 @@ services:
   # Audio and video. Dev keys only; see livekit/livekit.yaml.
   livekit:
     <<: *restart
-    image: livekit/livekit-server:v1.9.0
+    image: livekit/livekit-server:v1.13.11
     command: ["--config", "/etc/livekit.yaml"]
     ports:
       - "7880:7880"
