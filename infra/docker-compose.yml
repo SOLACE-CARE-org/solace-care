@@ -241,7 +241,7 @@ services:
 
   grafana:
     <<: *restart
-    image: grafana/grafana:12.0.2
+    image: grafana/grafana:13.3.0
     depends_on: [tempo, prometheus, loki]
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN:-admin}
