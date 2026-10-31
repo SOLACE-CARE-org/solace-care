@@ -26,7 +26,7 @@ otel-instrumentation = "2.15.0-alpha"
 # S3 client for object storage (MinIO locally): specialist credentials, content images.
 aws-sdk = "2.39.2"
 # AI service (D56): Spring AI 1.1 is the Spring Boot 3.5 line; LangGraph4j for multi-step flows.
-spring-ai = "1.1.8"
+spring-ai = "2.0.2"
 langgraph4j = "1.9.3"
 
 [libraries]
