@@ -734,6 +734,8 @@
         "safetyMonitor": "Safety monitor",
         "cardPayments": "Card payments",
         "paymentRouting": "Payment provider fallback",
+        "testSignInCode": "Default sign-in code for testing (seekers, specialists, guests)",
+        "testStaffCode": "Default authenticator code for testing (staff)",
         "specialistInterviewPicker": "Interview time picker for applicants",
         "payoutBankTransfer": "Payouts by bank transfer",
         "payoutOnRequest": "Pay out now",

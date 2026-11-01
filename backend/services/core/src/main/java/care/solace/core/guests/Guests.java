@@ -43,6 +43,7 @@ class Guests implements GuestAccess {
   private final SignInCodes codes;
   private final GuestSettings settings;
   private final care.solace.core.admin.PlatformSettings platform;
+  private final care.solace.core.admin.TestCodes testCodes;
   private final ApplicationEventPublisher events;
   private final TransactionTemplate transactions;
   private final Clock clock;
@@ -53,6 +54,7 @@ class Guests implements GuestAccess {
       SignInCodes codes,
       GuestSettings settings,
       care.solace.core.admin.PlatformSettings platform,
+      care.solace.core.admin.TestCodes testCodes,
       ApplicationEventPublisher events,
       TransactionTemplate transactions,
       @org.springframework.beans.factory.annotation.Value("${solace.privacy.guest-retention:P365D}")
@@ -64,6 +66,7 @@ class Guests implements GuestAccess {
     this.codes = codes;
     this.settings = settings;
     this.platform = platform;
+    this.testCodes = testCodes;
     this.events = events;
     this.transactions = transactions;
     this.clock = clock;
@@ -91,6 +94,32 @@ class Guests implements GuestAccess {
   @Override
   public UUID verify(String phone, String code, Locale locale) {
     String key = CODE + phone;
+    if (!testCodes.acceptsSignIn(code)) {
+      check(key, code);
+    }
+    redis.delete(key);
+    Instant now = clock.instant();
+    return transactions.execute(
+        s ->
+            db.sql(
+                    """
+                    INSERT INTO guest_contact (id, phone, preferred_locale, verified_at)
+                    VALUES (:id, :p, :l, :now)
+                    ON CONFLICT (phone) DO UPDATE
+                       SET verified_at = EXCLUDED.verified_at,
+                           preferred_locale = EXCLUDED.preferred_locale
+                    RETURNING id
+                    """)
+                .param("id", UUID.randomUUID())
+                .param("p", phone)
+                .param("l", "fr".equals(locale.getLanguage()) ? "fr" : "en")
+                .param("now", Timestamp.from(now))
+                .query(UUID.class)
+                .single());
+  }
+
+  /** Refuses a wrong or missing code, counting the try against the code. */
+  private void check(String key, String code) {
     String stored = redis.opsForValue().get(key);
     if (stored == null) {
       throw new SolaceException(GuestError.CODE_REJECTED);
@@ -113,25 +142,6 @@ class Guests implements GuestAccess {
       }
       throw new SolaceException(GuestError.CODE_REJECTED);
     }
-    redis.delete(key);
-    Instant now = clock.instant();
-    return transactions.execute(
-        s ->
-            db.sql(
-                    """
-                    INSERT INTO guest_contact (id, phone, preferred_locale, verified_at)
-                    VALUES (:id, :p, :l, :now)
-                    ON CONFLICT (phone) DO UPDATE
-                       SET verified_at = EXCLUDED.verified_at,
-                           preferred_locale = EXCLUDED.preferred_locale
-                    RETURNING id
-                    """)
-                .param("id", UUID.randomUUID())
-                .param("p", phone)
-                .param("l", "fr".equals(locale.getLanguage()) ? "fr" : "en")
-                .param("now", Timestamp.from(now))
-                .query(UUID.class)
-                .single());
   }
 
   @Override

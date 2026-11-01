@@ -1,5 +1,6 @@
 package care.solace.core.identity;
 
+import care.solace.core.admin.TestCodes;
 import care.solace.core.notifications.SignInCodes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -10,6 +11,7 @@ import java.util.Locale;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,10 +27,21 @@ class SignInCodeController {
 
   private final SignInCodes codes;
   private final AccountStore store;
+  private final TestCodes testCodes;
 
-  SignInCodeController(SignInCodes codes, AccountStore store) {
+  SignInCodeController(SignInCodes codes, AccountStore store, TestCodes testCodes) {
     this.codes = codes;
     this.store = store;
+    this.testCodes = testCodes;
+  }
+
+  record TestCodeState(boolean signIn, boolean staff) {}
+
+  /** Whether Keycloak may accept the default test codes (D63). */
+  @GetMapping("/internal/v1/test-codes")
+  @PreAuthorize("hasAuthority('SCOPE_core:sign-in-codes.send')")
+  TestCodeState testCodes() {
+    return new TestCodeState(testCodes.signInOn(), testCodes.staffOn());
   }
 
   record SignInCode(

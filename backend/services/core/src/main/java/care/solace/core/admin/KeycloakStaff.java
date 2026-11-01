@@ -38,6 +38,7 @@ class KeycloakStaff {
 
   private final RestClient http;
   private final String realm;
+  private final TestCodes testCodes;
 
   KeycloakStaff(
       @Value("${solace.identity.keycloak.admin-url:http://localhost:8180}") String adminUrl,
@@ -45,7 +46,9 @@ class KeycloakStaff {
       @Value("${solace.admin.staff-client-registration:keycloak-staff-admin}") String registration,
       ClientRegistrationRepository registrations,
       OAuth2AuthorizedClientService clients,
-      RestClient.Builder builder) {
+      RestClient.Builder builder,
+      TestCodes testCodes) {
+    this.testCodes = testCodes;
     var manager = new AuthorizedClientServiceOAuth2AuthorizedClientManager(registrations, clients);
     var timeouts = new SimpleClientHttpRequestFactory();
     timeouts.setConnectTimeout(2_000);
@@ -96,7 +99,7 @@ class KeycloakStaff {
     user.put("enabled", true);
     user.put("firstName", space > 0 ? name.substring(0, space) : name);
     user.put("lastName", space > 0 ? name.substring(space + 1) : "");
-    user.put("requiredActions", List.of("UPDATE_PASSWORD", "CONFIGURE_TOTP"));
+    user.put("requiredActions", requiredActions());
     user.put("credentials", List.of(credential(password)));
     URI location;
     try {
@@ -118,6 +121,13 @@ class KeycloakStaff {
     String id = path.substring(path.lastIndexOf('/') + 1);
     setRoles(id, roles);
     return id;
+  }
+
+  /** No authenticator set-up while the staff test code stands in for it (D63). */
+  private List<String> requiredActions() {
+    return testCodes.staffOn()
+        ? List.of("UPDATE_PASSWORD")
+        : List.of("UPDATE_PASSWORD", "CONFIGURE_TOTP");
   }
 
   /** Replaces the account's Solace roles with these. */
@@ -171,7 +181,7 @@ class KeycloakStaff {
     }
     http.put()
         .uri(realm + "/users/{id}", id)
-        .body(Map.of("requiredActions", List.of("UPDATE_PASSWORD", "CONFIGURE_TOTP")))
+        .body(Map.of("requiredActions", requiredActions()))
         .retrieve()
         .toBodilessEntity();
   }

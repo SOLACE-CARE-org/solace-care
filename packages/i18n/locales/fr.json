@@ -745,6 +745,8 @@
         "companion": "Compagnon d'exercices et plan de sécurité",
         "adminCopilot": "Copilote admin",
         "phoneDialIn": "Accès par téléphone",
+        "testSignInCode": "Code de connexion par défaut pour les tests (usagers, spécialistes, invités)",
+        "testStaffCode": "Code d'authentification par défaut pour les tests (équipe)",
         "aiTransferAuthorised": "L'IA peut recevoir des données de santé à l'étranger (transfert autorisé)"
       },
       "value": {

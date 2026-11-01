@@ -340,6 +340,9 @@ class SettingCatalogue {
           // Payment providers (D61): skip a provider whose circuit is open, and try the next one
           // for a charge that certainly never reached the first.
           new Flag("paymentRouting", 1, false, false, false),
+          // Default test codes (D63). They do nothing unless the deployment sets a test code.
+          new Flag(TestCodes.SIGN_IN_FLAG, 1, false, false, false),
+          new Flag(TestCodes.STAFF_FLAG, 1, false, false, false),
           new Flag("specialistInterviewPicker", 1, false, false, true),
           new Flag("payoutBankTransfer", 1, false, false, true),
           // An off-cycle payout would skip the two-person run (D35).
