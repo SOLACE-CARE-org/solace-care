@@ -60,7 +60,15 @@
       "@livekit/react-native-expo-plugin",
       "@config-plugins/react-native-webrtc",
       "@config-plugins/react-native-callkeep",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "-keep class livekit.org.webrtc.** { *; }\n-keep class livekit.org.jni_zero.** { *; }\n-dontwarn livekit.org.jni_zero.**"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

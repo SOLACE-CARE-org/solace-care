@@ -28,6 +28,7 @@
     "@solace/tokens": "workspace:*",
     "@tanstack/react-query": "^5.104.3",
     "expo": "~58.0.14",
+    "expo-build-properties": "~58.0.12",
     "expo-constants": "~58.0.12",
     "expo-crypto": "58.0.3",
     "expo-dev-client": "~58.0.14",
