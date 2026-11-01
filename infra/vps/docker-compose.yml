@@ -253,6 +253,15 @@ services:
       SOLACE_SCRIBE_S3_ENDPOINT: http://minio:9000
       SOLACE_SCRIBE_S3_ACCESS_KEY: ${MINIO_ROOT_USER:?}
       SOLACE_SCRIBE_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+      # OmniRoute as the model for every chat feature. These only become rows when the AI database
+      # has no model yet (D61). A list set here replaces the profile's, so every field is named.
+      SPRING_PROFILES_ACTIVE: omniroute
+      SOLACE_AI_OMNIROUTE_MODEL: ${SOLACE_AI_OMNIROUTE_MODEL:?}
+      SOLACE_AI_MODELS_0_NAME: omniroute
+      SOLACE_AI_MODELS_0_URL: http://omniroute:20128/v1
+      SOLACE_AI_MODELS_0_MODEL: ${SOLACE_AI_OMNIROUTE_MODEL:?}
+      SOLACE_AI_MODELS_0_API_KEY: ${SOLACE_AI_OMNIROUTE_KEY:?}
+      SOLACE_AI_MODELS_0_LOCAL: "false"
 
   gateway:
     <<: *restart
@@ -282,7 +291,7 @@ services:
       FLAG_TRACKING_MODULES: "true"
       FLAG_HEALTH_CHECK: "true"
       FLAG_AI_CONTROLS: "true"
-      FLAG_COPILOT: "false"
+      FLAG_COPILOT: "true"
     ports: ["127.0.0.1:18081:8080"]
 
   # On the host's network: calls use thousands of UDP ports, which Docker maps badly. Port 7880 is
@@ -303,7 +312,7 @@ services:
   omniroute:
     <<: *restart
     image: diegosouzapw/omniroute:3.8.51@sha256:8bd462c9f60d8eda79329cfbb6ea7ea723505fe7721beb944f3d43835409e218
-    mem_limit: 512m
+    mem_limit: 768m
     environment:
       INITIAL_PASSWORD: ${OMNIROUTE_PASSWORD:?}
       DATA_DIR: /app/data
