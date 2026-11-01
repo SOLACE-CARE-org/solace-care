@@ -83,7 +83,7 @@ public class StaffDirectory {
             """)
         .param("id", id)
         .param("name", name)
-        .param("roles", roles.toArray(String[]::new))
+        .param("roles", StaffRoles.only(roles).toArray(String[]::new))
         .param("now", Timestamp.from(now))
         .query(
             (rs, n) ->
@@ -180,7 +180,7 @@ public class StaffDirectory {
         rs.getString("id"),
         rs.getString("name"),
         rs.getString("email"),
-        roles == null ? List.of() : Arrays.asList((String[]) roles.getArray()),
+        roles == null ? List.of() : StaffRoles.only(Arrays.asList((String[]) roles.getArray())),
         rs.getString("status"),
         rs.getTimestamp("added_at").toInstant(),
         instant(rs.getTimestamp("last_active_at")),
