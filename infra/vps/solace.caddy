@@ -1,0 +1,31 @@
+# Imported by /etc/caddy/Caddyfile. Caddy gets and renews each name's certificate.
+services.solacecare.space {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:18080
+}
+
+masters.solacecare.space {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:18081
+}
+
+# Only sign-in and the theme's files are public, as in infra/k8s/base/ingress.yaml.
+id.solacecare.space {
+	encode zstd gzip
+	@public path /realms/* /resources/*
+	handle @public {
+		reverse_proxy 127.0.0.1:18082
+	}
+	handle {
+		respond 404
+	}
+}
+
+live.solacecare.space {
+	reverse_proxy 127.0.0.1:7880
+}
+
+# Here only so Caddy gets the certificate LiveKit's TURN uses (copy-turn-cert.sh).
+turn.solacecare.space {
+	respond 404
+}

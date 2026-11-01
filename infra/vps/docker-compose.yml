@@ -1,0 +1,304 @@
+# Every Solace service on one small VPS, for testing and small pilots. infra/vps/README.md says what
+# this leaves out compared with infra/k8s. Secrets come from .env (make-secrets.sh); a missing one
+# stops the service from starting rather than falling back to a development default.
+#
+# Only LiveKit is reachable from outside, on its own ports. Everything else listens on 127.0.0.1 or
+# on the compose network, and Caddy on the host handles HTTPS.
+
+name: solace
+
+x-restart: &restart
+  restart: unless-stopped
+
+# Settings every Java service reads.
+x-java-env: &java-env
+  SOLACE_ENVIRONMENT: vps
+  SERVER_PORT: "8080"
+  SPRING_GRPC_SERVER_PORT: "9090"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:?}
+  SOLACE_SECURITY_ISSUERS: https://${ID_HOST:?}/realms/solace-members,https://${ID_HOST:?}/realms/solace-staff
+  SOLACE_SECURITY_SERVICE_ISSUER: https://${ID_HOST:?}/realms/solace-staff
+  # No collector here: traces and metrics stay off, logs go to Docker.
+  MANAGEMENT_TRACING_ENABLED: "false"
+  MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED: "false"
+  MANAGEMENT_OTLP_LOGGING_EXPORT_ENABLED: "false"
+  OTEL_SDK_DISABLED: "true"
+  # Tokens are fetched on the compose network; Keycloak still names its public address as issuer.
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/solace-staff/protocol/openid-connect/token
+
+services:
+  postgres:
+    <<: *restart
+    image: pgvector/pgvector:0.8.0-pg16
+    mem_limit: 600m
+    command:
+      - postgres
+      - -c
+      - shared_buffers=192MB
+      - -c
+      - max_connections=80
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      CORE_DB_PASSWORD: ${CORE_DB_PASSWORD:?}
+      TRACKING_DB_PASSWORD: ${TRACKING_DB_PASSWORD:?}
+      AI_DB_PASSWORD: ${AI_DB_PASSWORD:?}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -tAc \"select 1 from pg_database where datname='keycloak'\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka:
+    <<: *restart
+    image: apache/kafka:3.9.1
+    mem_limit: 600m
+    environment:
+      KAFKA_HEAP_OPTS: -Xms128m -Xmx300m
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_RETENTION_HOURS: 72
+      # Topics, including dead-letter topics, are declared by the services that own them.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:19092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  redis:
+    <<: *restart
+    image: redis:7.4.5-alpine
+    mem_limit: 128m
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?}
+
+  minio:
+    <<: *restart
+    image: cgr.dev/chainguard/minio@sha256:c93745c56fccdaf0e5dcb88999a96a65a136428beb045ef5d546255a80d747a7
+    mem_limit: 256m
+    user: "0"
+    command: ["server", "/data"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    volumes:
+      - minio-data:/data
+
+  # Creates the private buckets once MinIO answers, then exits.
+  minio-init:
+    image: cgr.dev/chainguard/minio-client@sha256:8d736271bb105639f2348d04186e748bbed63c5392e4ce86641453c11b53f3c8
+    depends_on: [minio]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" > /dev/null 2>&1; do sleep 1; done &&
+        mc mb --ignore-existing local/solace-credentials local/solace-content local/solace-exports local/solace-scribe-audio &&
+        mc anonymous set none local/solace-credentials &&
+        mc anonymous set none local/solace-exports &&
+        mc anonymous set none local/solace-scribe-audio &&
+        echo buckets ready
+
+  # Realms are imported on the first start only; an existing realm is left as it is.
+  keycloak:
+    <<: *restart
+    image: solace-keycloak:${SOLACE_TAG:?}
+    mem_limit: 1g
+    command: ["start", "--optimized", "--import-realm"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - ./realms:/opt/keycloak/data/import:ro
+    environment:
+      JAVA_OPTS_KC_HEAP: -XX:MaxRAMPercentage=65 -XX:InitialRAMPercentage=25
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:?}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+      KC_HOSTNAME: https://${ID_HOST:?}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_CACHE: local
+      SOLACE_ADMIN_URL: https://${ADMIN_HOST:?}
+      SOLACE_OTP_SENDER: core
+      SOLACE_CORE_URL: http://core:8080
+      SOLACE_CORE_ADMIN_SECRET: ${SOLACE_CORE_ADMIN_SECRET:?}
+      SOLACE_CORE_SERVICE_SECRET: ${SOLACE_CORE_SERVICE_SECRET:?}
+      SOLACE_TRACKING_SERVICE_SECRET: ${SOLACE_TRACKING_SERVICE_SECRET:?}
+      SOLACE_AI_SERVICE_SECRET: ${SOLACE_AI_SERVICE_SECRET:?}
+      SOLACE_CODE_SENDER_SECRET: ${SOLACE_CODE_SENDER_SECRET:?}
+    ports: ["127.0.0.1:18082:8080"]
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  core:
+    <<: *restart
+    image: solace-core:${SOLACE_TAG:?}
+    mem_limit: 1100m
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    environment:
+      <<: *java-env
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=62 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/core
+      SPRING_DATASOURCE_USERNAME: core
+      SPRING_DATASOURCE_PASSWORD: ${CORE_DB_PASSWORD:?}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "10"
+      SPRING_GRPC_CLIENT_CHANNELS_TRACKING_ADDRESS: static://tracking:9090
+      SPRING_GRPC_CLIENT_CHANNELS_AI_ADDRESS: static://ai:9090
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_MEMBERS_TOKEN_URI: http://keycloak:8080/realms/solace-members/protocol/openid-connect/token
+      SOLACE_IDENTITY_MEMBERS_ISSUER: https://${ID_HOST:?}/realms/solace-members
+      SOLACE_IDENTITY_KEYCLOAK_ADMIN_URL: http://keycloak:8080
+      SOLACE_CORE_SERVICE_SECRET: ${SOLACE_CORE_SERVICE_SECRET:?}
+      SOLACE_CORE_ADMIN_SECRET: ${SOLACE_CORE_ADMIN_SECRET:?}
+      SOLACE_CORE_STAFF_ADMIN_SECRET: ${SOLACE_CORE_ADMIN_SECRET:?}
+      SOLACE_HEALTH_CHECK_KEY: ${SOLACE_HEALTH_CHECK_KEY:?}
+      SOLACE_SAFETY_PLAN_KEY: ${SOLACE_SAFETY_PLAN_KEY:?}
+      SOLACE_STORAGE_ENDPOINT: http://minio:9000
+      SOLACE_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?}
+      SOLACE_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+      SOLACE_SESSIONS_URL: wss://${LIVE_HOST:?}
+      SOLACE_SESSIONS_API_URL: https://${LIVE_HOST:?}
+      SOLACE_SESSIONS_API_KEY: ${LIVEKIT_API_KEY:?}
+      SOLACE_SESSIONS_API_SECRET: ${LIVEKIT_API_SECRET:?}
+      # Testing only, with no real people. notchpay and sender rows replace these before any do.
+      SOLACE_PAYMENTS_PROVIDER: sandbox
+      SOLACE_PAYMENTS_SANDBOX_WEBHOOK_SECRET: ${SOLACE_PAYMENTS_SANDBOX_WEBHOOK_SECRET:?}
+      SOLACE_NOTIFICATIONS_SENDER: logging
+      SOLACE_NOTIFICATIONS_PUSH_SENDER: logging
+
+  tracking:
+    <<: *restart
+    image: solace-tracking:${SOLACE_TAG:?}
+    mem_limit: 700m
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    environment:
+      <<: *java-env
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tracking
+      SPRING_DATASOURCE_USERNAME: tracking
+      SPRING_DATASOURCE_PASSWORD: ${TRACKING_DB_PASSWORD:?}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
+      SPRING_GRPC_CLIENT_CHANNELS_CORE_ADDRESS: static://core:9090
+      SPRING_GRPC_CLIENT_CHANNELS_AI_ADDRESS: static://ai:9090
+      SOLACE_TRACKING_SERVICE_SECRET: ${SOLACE_TRACKING_SERVICE_SECRET:?}
+      SOLACE_STORAGE_ENDPOINT: http://minio:9000
+      SOLACE_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?}
+      SOLACE_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+
+  ai:
+    <<: *restart
+    image: solace-ai:${SOLACE_TAG:?}
+    mem_limit: 800m
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    environment:
+      <<: *java-env
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ai
+      SPRING_DATASOURCE_USERNAME: ai
+      SPRING_DATASOURCE_PASSWORD: ${AI_DB_PASSWORD:?}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
+      SPRING_GRPC_CLIENT_CHANNELS_CORE_ADDRESS: static://core:9090
+      SPRING_GRPC_CLIENT_CHANNELS_TRACKING_ADDRESS: static://tracking:9090
+      SOLACE_AI_SERVICE_SECRET: ${SOLACE_AI_SERVICE_SECRET:?}
+      SOLACE_AI_NOTES_KEY: ${SOLACE_AI_NOTES_KEY:?}
+      SOLACE_SCRIBE_S3_ENDPOINT: http://minio:9000
+      SOLACE_SCRIBE_S3_ACCESS_KEY: ${MINIO_ROOT_USER:?}
+      SOLACE_SCRIBE_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+
+  gateway:
+    <<: *restart
+    image: solace-gateway:${SOLACE_TAG:?}
+    mem_limit: 450m
+    depends_on:
+      redis: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    environment:
+      <<: *java-env
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+      SOLACE_GATEWAY_SERVICES_CORE: http://core:8080
+      SOLACE_GATEWAY_SERVICES_TRACKING: http://tracking:8080
+      SOLACE_GATEWAY_SERVICES_AI: http://ai:8080
+      SOLACE_GATEWAY_ISSUERS: https://${ID_HOST:?}/realms/solace-members,https://${ID_HOST:?}/realms/solace-staff
+      SOLACE_GATEWAY_CORS_ORIGINS: https://${ADMIN_HOST:?}
+    ports: ["127.0.0.1:18080:8080"]
+
+  admin:
+    <<: *restart
+    image: solace-admin:${SOLACE_TAG:?}
+    mem_limit: 48m
+    environment:
+      KEYCLOAK_URL: https://${ID_HOST:?}
+      API_URL: https://${API_HOST:?}/api
+      IDLE_SIGN_OUT_MINUTES: "15"
+      FLAG_TRACKING_MODULES: "true"
+      FLAG_HEALTH_CHECK: "true"
+      FLAG_AI_CONTROLS: "true"
+      FLAG_COPILOT: "false"
+    ports: ["127.0.0.1:18081:8080"]
+
+  # On the host's network: calls use thousands of UDP ports, which Docker maps badly. Port 7880 is
+  # closed in the firewall; Caddy proxies it. Egress is left out, so the scribe stays off.
+  livekit:
+    <<: *restart
+    image: livekit/livekit-server:v1.9.0
+    mem_limit: 512m
+    network_mode: host
+    command: ["--config", "/etc/livekit.yaml", "--node-ip", "${PUBLIC_IP:?}"]
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+      - ./turn-certs:/etc/livekit-certs:ro
+
+volumes:
+  postgres-data:
+  kafka-data:
+  redis-data:
+  minio-data:
