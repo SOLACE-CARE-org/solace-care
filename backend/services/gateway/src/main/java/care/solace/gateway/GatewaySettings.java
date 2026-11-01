@@ -33,7 +33,17 @@ public record GatewaySettings(
           "/api/core/v1/slot-holds/**",
           "/api/core/v1/guest/**",
           "/api/core/v1/webhooks/**",
-          "/api/core/v1/catalogue/**"
+          "/api/core/v1/catalogue/**",
+          "/api/core/v1/config",
+          "/api/core/v1/content",
+          "/api/core/v1/content/**",
+          "/api/core/v1/health-check",
+          "/api/core/v1/health-check/responses",
+          "/api/core/v1/health-check/responses/*/answers",
+          "/api/core/v1/health-check/responses/*/completion",
+          "/api/core/v1/health-check/responses/*/matches",
+          "/api/core/v1/health-check/responses/*/callback",
+          "/api/tracking/v1/tracking/images/**"
         })
         List<String> publicPaths,
     @DefaultValue RateLimit rateLimit,
