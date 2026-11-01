@@ -467,6 +467,13 @@ Every pair now meets WCAG 2.1 AA.
 - **Messages:** every decision on a profession, a specialty or a request sends the neutral "Decision made" push (notification-copy.md, Specialists). No push ever names a profession or a specialty.
 - **Contract:** the Practice body, the application review and its LICENCE item change shape. This is a deliberate break, allowed because nothing has launched and the app and portal ship with Core; the findings are listed in `contracts/openapi/breaking-ignore.txt`.
 
+**D63. Default test codes on a test deployment.** Decided 1 Nov 2026 by the owner, for the one-server test deployment, which has no SMS provider. This is a temporary exception to the one-time code (D6) and the authenticator app (D7).
+
+- A deployment may set one default code. `testSignInCode` turns it on for seeker, specialist and guest sign-in, for existing accounts. `testStaffCode` turns it on in place of the staff authenticator, and new staff then skip the authenticator set-up. The staff password is still required.
+- Only a Super admin changes the flags, and each change is audited. Both are off by default.
+- A deployment that sets no code ignores both flags, and staging and production set none. Keycloak refuses the code if it cannot ask Core.
+- It comes out before any real person uses the deployment: turn both flags off and remove `SOLACE_TEST_CODE`.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.

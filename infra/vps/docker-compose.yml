@@ -157,6 +157,8 @@ services:
       SOLACE_TRACKING_SERVICE_SECRET: ${SOLACE_TRACKING_SERVICE_SECRET:?}
       SOLACE_AI_SERVICE_SECRET: ${SOLACE_AI_SERVICE_SECRET:?}
       SOLACE_CODE_SENDER_SECRET: ${SOLACE_CODE_SENDER_SECRET:?}
+      # Testing only (D63): works once a Super admin turns its flag on. Remove before real people.
+      SOLACE_TEST_CODE: ${SOLACE_TEST_CODE:-}
     ports: ["127.0.0.1:18082:8080"]
     healthcheck:
       test:
@@ -208,6 +210,7 @@ services:
       SOLACE_PAYMENTS_SANDBOX_WEBHOOK_SECRET: ${SOLACE_PAYMENTS_SANDBOX_WEBHOOK_SECRET:?}
       SOLACE_NOTIFICATIONS_SENDER: logging
       SOLACE_NOTIFICATIONS_PUSH_SENDER: logging
+      SOLACE_IDENTITY_TEST_CODE: ${SOLACE_TEST_CODE:-}
 
   tracking:
     <<: *restart
