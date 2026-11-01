@@ -297,8 +297,24 @@ services:
       - ./livekit.yaml:/etc/livekit.yaml:ro
       - ./turn-certs:/etc/livekit-certs:ro
 
+  # An OpenAI-compatible gateway in front of the model providers added in its dashboard. Only this
+  # machine reaches it, through an SSH tunnel: the dashboard holds the providers' keys. It forwards
+  # prompts to outside providers, so no health data reaches it while aiTransferAuthorised is off.
+  omniroute:
+    <<: *restart
+    image: diegosouzapw/omniroute:3.8.51@sha256:8bd462c9f60d8eda79329cfbb6ea7ea723505fe7721beb944f3d43835409e218
+    mem_limit: 512m
+    environment:
+      INITIAL_PASSWORD: ${OMNIROUTE_PASSWORD:?}
+      DATA_DIR: /app/data
+    ports: ["127.0.0.1:20128:20128"]
+    volumes:
+      - omniroute-data:/app/data
+    stop_grace_period: 40s
+
 volumes:
   postgres-data:
   kafka-data:
   redis-data:
   minio-data:
+  omniroute-data:
