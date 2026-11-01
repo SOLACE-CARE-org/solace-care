@@ -42,6 +42,26 @@ paths:
           $ref: "#/components/responses/Problem"
         "403":
           $ref: "#/components/responses/Problem"
+  /internal/v1/test-codes:
+    get:
+      operationId: getTestCodes
+      summary: Which default test codes are on
+      description: |
+        Called by Keycloak before it accepts a default test code (D63). Both are false unless the
+        deployment sets a test code and a Super admin has turned the flag on. Needs the scope
+        core:sign-in-codes.send.
+      tags: [sign-in]
+      responses:
+        "200":
+          description: The current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestCodes"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Problem"
 components:
   securitySchemes:
     serviceToken:
@@ -69,6 +89,17 @@ components:
               code:
                 type: string
   schemas:
+    TestCodes:
+      type: object
+      additionalProperties: false
+      required: [signIn, staff]
+      properties:
+        signIn:
+          description: The default code is accepted for seeker, specialist and guest sign-in.
+          type: boolean
+        staff:
+          description: The default code is accepted in place of the staff authenticator code.
+          type: boolean
     SignInCode:
       type: object
       additionalProperties: false
