@@ -29,12 +29,29 @@ const REFRESH_MS = 30_000;
         </button>
       </div>
     } @else if (data(); as d) {
-      <p class="sl-muted subtitle">{{ live(d.at) }}</p>
+      <p class="sl-muted subtitle">
+        <span class="dot" aria-hidden="true"></span>{{ live(d.at) }}
+      </p>
 
       @if (d.crisis.unacknowledged > 0) {
-        <section class="sl-card alert" role="alert">
-          <div>
-            <p class="strong">
+        <section class="alert" role="alert">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="4" />
+            <path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6" />
+          </svg>
+          <div class="alert-text">
+            <p class="alert-title">
               {{
                 (d.crisis.unacknowledged === 1
                   ? 'admin.overview.crisisOne'
@@ -49,7 +66,7 @@ const REFRESH_MS = 30_000;
               }
             </p>
           </div>
-          <a class="sl-button sl-button--danger" routerLink="/crisis">
+          <a class="sl-button sl-button--danger-solid" routerLink="/crisis">
             {{ 'admin.overview.openCrisis' | transloco }}
           </a>
         </section>
@@ -57,7 +74,7 @@ const REFRESH_MS = 30_000;
 
       <div class="tiles">
         <div class="sl-card tile">
-          <p class="sl-meta">{{ 'admin.overview.inSession' | transloco }}</p>
+          <p class="tile-label">{{ 'admin.overview.inSession' | transloco }}</p>
           <p class="figure">{{ d.inSession.total }}</p>
           <p class="sl-meta">
             {{
@@ -67,7 +84,7 @@ const REFRESH_MS = 30_000;
           </p>
         </div>
         <div class="sl-card tile">
-          <p class="sl-meta">{{ 'admin.overview.sessionsToday' | transloco }}</p>
+          <p class="tile-label">{{ 'admin.overview.sessionsToday' | transloco }}</p>
           <p class="figure">{{ d.sessionsToday.total }}</p>
           <p class="sl-meta">
             {{
@@ -78,12 +95,12 @@ const REFRESH_MS = 30_000;
           </p>
         </div>
         <div class="sl-card tile">
-          <p class="sl-meta">{{ 'admin.overview.bookingsToday' | transloco }}</p>
+          <p class="tile-label">{{ 'admin.overview.bookingsToday' | transloco }}</p>
           <p class="figure">{{ d.bookingsToday.total }}</p>
           <p class="sl-meta">{{ byLanguage(d) }}</p>
         </div>
         <div class="sl-card tile">
-          <p class="sl-meta">{{ 'admin.overview.paymentsToday' | transloco }}</p>
+          <p class="tile-label">{{ 'admin.overview.paymentsToday' | transloco }}</p>
           <p class="figure">{{ money(d.paymentsToday.captured) }}</p>
           @if (d.paymentsToday.failed > 0) {
             <p class="sl-meta">
@@ -123,7 +140,14 @@ const REFRESH_MS = 30_000;
                     <td>{{ person(s.personRef) }}</td>
                     <td>{{ 'admin.modality.' + s.modality | transloco }}</td>
                     <td>{{ language(s.sessionLanguage) }}</td>
-                    <td>{{ state(s, d.at) }}</td>
+                    <td>
+                      <span
+                        class="sl-pill"
+                        [class.sl-pill--brand]="s.status === 'IN_PROGRESS'"
+                        [class.sl-pill--warning]="!!s.waiting"
+                        >{{ state(s, d.at) }}</span
+                      >
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -136,26 +160,36 @@ const REFRESH_MS = 30_000;
             <h2 id="attention-title" class="section">
               {{ 'admin.overview.attention' | transloco }}
             </h2>
-            <ul class="list">
+            <ul class="list attention">
               <li>
-                <a routerLink="/applications">{{ 'admin.overview.applications' | transloco }}</a
-                ><span class="strong">{{ d.attention.applications }}</span>
+                <a routerLink="/applications"
+                  ><span>{{ 'admin.overview.applications' | transloco }}</span
+                  ><span class="strong">{{ d.attention.applications }}</span></a
+                >
               </li>
               <li>
-                <a routerLink="/payments">{{ 'admin.overview.refunds' | transloco }}</a
-                ><span class="strong">{{ d.attention.refunds }}</span>
+                <a routerLink="/payments"
+                  ><span>{{ 'admin.overview.refunds' | transloco }}</span
+                  ><span class="strong">{{ d.attention.refunds }}</span></a
+                >
               </li>
               <li>
-                <a routerLink="/reviews">{{ 'admin.overview.reviews' | transloco }}</a
-                ><span class="strong">{{ d.attention.reviews }}</span>
+                <a routerLink="/reviews"
+                  ><span>{{ 'admin.overview.reviews' | transloco }}</span
+                  ><span class="strong">{{ d.attention.reviews }}</span></a
+                >
               </li>
               <li>
-                <a routerLink="/bookings">{{ 'admin.overview.disputes' | transloco }}</a
-                ><span class="strong">{{ d.attention.disputes }}</span>
+                <a routerLink="/bookings"
+                  ><span>{{ 'admin.overview.disputes' | transloco }}</span
+                  ><span class="strong">{{ d.attention.disputes }}</span></a
+                >
               </li>
               <li>
-                <a routerLink="/people">{{ 'admin.overview.dataRequests' | transloco }}</a
-                ><span class="strong">{{ d.attention.dataRequestsDue }}</span>
+                <a routerLink="/people"
+                  ><span>{{ 'admin.overview.dataRequests' | transloco }}</span
+                  ><span class="strong">{{ d.attention.dataRequestsDue }}</span></a
+                >
               </li>
             </ul>
           </section>
@@ -183,34 +217,67 @@ const REFRESH_MS = 30_000;
     }
   `,
   styles: `
+    :host {
+      display: block;
+    }
     .subtitle {
-      margin: var(--space-4) 0 var(--space-16);
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      margin: var(--space-4) 0 var(--space-20);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
     }
     .alert {
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-12);
-      border-color: var(--danger);
-      margin-bottom: var(--space-16);
+      gap: var(--space-14);
+      margin-bottom: var(--space-20);
+      padding: var(--space-16) var(--space-18);
+      border: 1px solid var(--danger-line);
+      border-radius: var(--radius-16);
+      background: var(--danger-tint);
+      color: var(--danger);
+    }
+    .alert-text {
+      flex: 1;
+      min-width: 240px;
     }
     .alert p {
-      margin: 0 0 var(--space-4);
+      margin: 0;
+    }
+    .alert-title {
+      font-size: var(--type-body-lg-size);
+      font-weight: 700;
     }
     .tiles {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--space-12);
-      margin-bottom: var(--space-16);
+      gap: var(--space-14);
+      margin-bottom: var(--space-20);
+    }
+    .tile {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      padding: var(--space-16) var(--space-18);
     }
     .tile p {
       margin: 0;
     }
+    .tile-label {
+      color: var(--ink-muted);
+    }
     .figure {
       font-family: var(--font-display);
-      font-size: var(--type-title-md-size);
+      font-size: var(--type-title-lg-size);
+      line-height: var(--type-title-lg-line-height);
       font-weight: 700;
-      margin: var(--space-4) 0 !important;
     }
     .columns {
       display: grid;
@@ -227,16 +294,20 @@ const REFRESH_MS = 30_000;
       overflow-x: auto;
     }
     .pad {
-      padding: var(--space-16) var(--space-16) var(--space-8);
+      padding: var(--space-16) var(--space-18);
     }
     .row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
+    }
+    .row .section {
+      margin: 0;
     }
     .section {
-      margin: 0 0 var(--space-8);
-      font-size: var(--type-title-md-size);
+      margin: 0 0 var(--space-10);
+      font-size: var(--type-heading-sm-size);
+      font-weight: 700;
     }
     .list {
       list-style: none;
@@ -251,6 +322,26 @@ const REFRESH_MS = 30_000;
       gap: var(--space-8);
       min-height: 32px;
       align-items: center;
+    }
+    .attention {
+      gap: 0;
+    }
+    .attention li {
+      display: block;
+    }
+    .attention a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-8);
+      min-height: var(--size-tap);
+      border-bottom: 1px solid var(--surface-sunken);
+      color: var(--ink);
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .attention li:last-child a {
+      border-bottom: 0;
     }
     .strong {
       font-weight: 700;

@@ -71,12 +71,16 @@ type Summary = NonNullable<Row['versions']>[number];
               <tr>
                 <td>
                   <span class="module">
-                    <span
-                      class="swatch"
-                      [attr.data-accent]="m.accentColour"
-                      aria-hidden="true"
+                    <span class="tile" [attr.data-accent]="m.accentColour" aria-hidden="true"
+                      ><span class="tile-mark"></span
                     ></span>
-                    <span class="strong">{{ name(m) }}</span>
+                    @if (current(m); as c) {
+                      <a class="strong name" [routerLink]="['/modules/versions', c.id]">{{
+                        name(m)
+                      }}</a>
+                    } @else {
+                      <span class="strong">{{ name(m) }}</span>
+                    }
                   </span>
                 </td>
                 <td>{{ current(m)?.elements ?? 0 }}</td>
@@ -91,9 +95,23 @@ type Summary = NonNullable<Row['versions']>[number];
                 </td>
                 <td>
                   @if (working(m); as w) {
-                    <a [routerLink]="['/modules/versions', w.id]" class="sl-pill sl-pill--warning">
+                    <a
+                      [routerLink]="['/modules/versions', w.id]"
+                      class="sl-pill"
+                      [class.sl-pill--warning]="state(w) === 'IN_REVIEW'"
+                      [class.sl-pill--brand]="state(w) === 'APPROVED'"
+                    >
                       {{ 'admin.modules.state.' + state(w) | transloco: { n: w.number } }}
                     </a>
+                  } @else if (mayDraft() && published(m)) {
+                    <button
+                      type="button"
+                      class="sl-button"
+                      [disabled]="busy()"
+                      (click)="newDraft(m)"
+                    >
+                      {{ 'admin.modules.newDraft' | transloco }}
+                    </button>
                   } @else {
                     {{ 'admin.modules.nothing' | transloco }}
                   }
@@ -172,10 +190,54 @@ type Summary = NonNullable<Row['versions']>[number];
     .module {
       display: inline-flex;
       align-items: center;
-      gap: var(--space-8);
+      gap: var(--space-12);
     }
     .strong {
       font-weight: 700;
+    }
+    .name {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .name:hover {
+      text-decoration: underline;
+    }
+    /* Modules.dc.html: a tinted tile with the accent colour as a circle in the corner. */
+    .tile {
+      position: relative;
+      flex-shrink: 0;
+      width: 60px;
+      height: 40px;
+      overflow: hidden;
+      border-radius: var(--radius-8);
+      background: var(--brand-tint);
+    }
+    .tile-mark {
+      position: absolute;
+      top: -10px;
+      right: -8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+    .tile[data-accent='track-pink'] {
+      background: var(--track-pink-tint);
+    }
+    .tile[data-accent='track-pink'] .tile-mark {
+      background: var(--track-pink);
+    }
+    .tile[data-accent='track-gold'] {
+      background: var(--warning-tint);
+    }
+    .tile[data-accent='track-gold'] .tile-mark {
+      background: var(--track-gold);
+    }
+    .tile[data-accent='track-blue'] {
+      background: var(--track-blue-tint);
+    }
+    .tile[data-accent='track-blue'] .tile-mark {
+      background: var(--track-blue);
     }
     .swatch {
       display: inline-block;
@@ -272,6 +334,24 @@ export class ModulesPage {
 
   state(v: Summary): string {
     return stateOf(v.status, v.approvedBy);
+  }
+
+  async newDraft(m: Row) {
+    const moduleId = m.id;
+    if (!moduleId) return;
+    this.busy.set(true);
+    try {
+      const draft = orThrow(
+        await this.api.client.POST('/admin/v1/tracking/modules/{moduleId}/versions', {
+          params: { path: { moduleId } },
+        }),
+      );
+      await this.router.navigate(['/modules/versions', draft.id]);
+    } catch {
+      this.error.set(true);
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   openNew() {

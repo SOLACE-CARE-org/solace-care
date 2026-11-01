@@ -40,7 +40,7 @@ const TYPES: ContentType[] = ['CRISIS_RESOURCE', 'ARTICLE', 'FAQ', 'LEGAL'];
     </div>
     <p class="sl-muted subtitle">{{ 'admin.content.subtitle' | transloco }}</p>
 
-    <div class="sl-tabs" role="tablist">
+    <div class="sl-tabs sl-tabs--line" role="tablist">
       <button role="tab" type="button" [attr.aria-selected]="type() === null" (click)="pick(null)">
         {{ 'admin.common.all' | transloco }}
       </button>

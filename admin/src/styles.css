@@ -42,13 +42,18 @@ body {
 /* --- Shared admin pieces (design-system components: Button, Card, Pill, Segmented, DataTable). --- */
 /* Borders, not shadows; controls at least 44px high (design-system README). */
 
+a {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
 .sl-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--type-title-md-size);
-  line-height: var(--type-title-md-line-height);
-  letter-spacing: var(--type-title-md-letter-spacing);
-  font-weight: var(--type-title-md-weight);
+  font-size: var(--type-title-lg-size);
+  line-height: var(--type-title-lg-line-height);
+  letter-spacing: var(--type-title-lg-letter-spacing);
+  font-weight: var(--type-title-lg-weight);
 }
 
 .sl-muted {
@@ -73,6 +78,12 @@ body {
   cursor: pointer;
   white-space: nowrap;
 }
+a.sl-button {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  text-decoration: none;
+}
 .sl-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -85,6 +96,11 @@ body {
 .sl-button--danger {
   border-color: var(--danger-line);
   color: var(--danger);
+}
+.sl-button--danger-solid {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--on-brand);
 }
 .sl-button--quiet {
   border-color: transparent;
@@ -102,10 +118,12 @@ body {
 .sl-pill {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--space-10);
+  min-height: 24px;
+  padding: 0 var(--space-10);
   border-radius: var(--radius-pill);
-  font-size: var(--type-meta-size);
-  font-weight: 700;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  text-decoration: none;
   background: var(--surface-sunken);
   color: var(--ink-soft);
   white-space: nowrap;
@@ -169,13 +187,38 @@ body {
   color: var(--on-brand);
 }
 
+/* Tabs that switch a whole page's sections (Catalogue.dc.html, Content.dc.html). */
+.sl-tabs--line {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+.sl-tabs--line button {
+  min-height: 42px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: var(--ink-muted);
+  font-size: var(--type-label-size);
+}
+.sl-tabs--line button[aria-selected='true'] {
+  background: transparent;
+  border-bottom-color: var(--brand);
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+
 .sl-table {
   width: 100%;
   border-collapse: collapse;
 }
 .sl-table th {
   text-align: left;
-  font-size: var(--type-meta-size);
+  font-size: var(--type-caption-size);
   font-weight: 600;
   color: var(--ink-muted);
   padding: var(--space-10) var(--space-14);

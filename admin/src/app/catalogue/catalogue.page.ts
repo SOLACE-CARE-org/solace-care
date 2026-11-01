@@ -61,7 +61,7 @@ const TERMS: (keyof Terms)[] = [
   template: `
     <h1 class="sl-title">{{ 'admin.catalogue.title' | transloco }}</h1>
 
-    <div class="sl-tabs" role="tablist">
+    <div class="sl-tabs sl-tabs--line" role="tablist">
       @for (t of tabs; track t) {
         <button role="tab" type="button" [attr.aria-selected]="t === tab()" (click)="tab.set(t)">
           {{ 'admin.catalogue.tab.' + t | transloco }}
@@ -226,8 +226,10 @@ const TERMS: (keyof Terms)[] = [
                 </button>
               }
               @if (tab() === 'SPECIALTIES' || tab() === 'PROFESSIONS') {
-                <a routerLink="/practice-requests">{{ 'admin.catalogue.requests' | transloco }}</a>
-                <p class="sl-meta">{{ 'admin.catalogue.linksNote' | transloco }}</p>
+                <a class="sl-button" routerLink="/practice-requests">
+                  {{ 'admin.catalogue.requests' | transloco }}
+                </a>
+                <p class="sl-meta note">{{ 'admin.catalogue.linksNote' | transloco }}</p>
               }
             </div>
           </section>
@@ -321,7 +323,15 @@ const TERMS: (keyof Terms)[] = [
       overflow-x: auto;
     }
     .state {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-8);
       padding: var(--space-16);
+    }
+    .note {
+      flex-basis: 100%;
+      margin: 0;
     }
     .chips {
       list-style: none;
@@ -337,7 +347,8 @@ const TERMS: (keyof Terms)[] = [
     }
     .section {
       margin: 0 0 var(--space-8);
-      font-size: var(--type-title-md-size);
+      font-size: var(--type-heading-sm-size);
+      font-weight: 700;
     }
     .sub {
       margin: var(--space-16) 0 var(--space-4);
