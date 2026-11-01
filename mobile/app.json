@@ -2,6 +2,7 @@
   "expo": {
     "name": "Solace Care",
     "slug": "solace-care",
+    "owner": "solace-care",
     "scheme": "solacecare",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -17,7 +18,8 @@
           "audio",
           "voip"
         ]
-      }
+      },
+      "bitcode": false
     },
     "android": {
       "package": "care.solace.app",
@@ -29,7 +31,16 @@
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_PHONE_CALL",
-        "android.permission.MANAGE_OWN_CALLS"
+        "android.permission.MANAGE_OWN_CALLS",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.INTERNET",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WAKE_LOCK",
+        "android.permission.BLUETOOTH",
+        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.READ_PHONE_NUMBERS",
+        "android.permission.CALL_PHONE"
       ]
     },
     "plugins": [
@@ -57,6 +68,16 @@
     "locales": {
       "en": "./native-locales/en.json",
       "fr": "./native-locales/fr.json"
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "91d650a1-5424-44a3-9e5f-1c9eb4befd31"
+      }
     }
   }
 }
