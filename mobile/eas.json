@@ -17,11 +17,19 @@
     "preview": {
       "extends": "base",
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://services.solacecare.space/api",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://id.solacecare.space"
+      }
     },
     "production": {
       "extends": "base",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://services.solacecare.space/api",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://id.solacecare.space"
+      }
     }
   },
   "submit": {
