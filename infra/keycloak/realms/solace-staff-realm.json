@@ -187,7 +187,7 @@
           "userSetupAllowed": false
         },
         {
-          "authenticator": "auth-otp-form",
+          "authenticator": "solace-staff-otp",
           "requirement": "REQUIRED",
           "priority": 30,
           "userSetupAllowed": false

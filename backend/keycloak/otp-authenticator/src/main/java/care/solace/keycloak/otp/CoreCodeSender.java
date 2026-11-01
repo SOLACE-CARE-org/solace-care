@@ -46,6 +46,7 @@ public final class CoreCodeSender implements CodeSender {
   private static volatile CoreCodeSender instance;
 
   private final URI codesUrl;
+  private final URI testCodesUrl;
   private final URI tokenUrl;
   private final String secret;
   private final HttpClient http;
@@ -55,6 +56,7 @@ public final class CoreCodeSender implements CodeSender {
 
   CoreCodeSender(String coreUrl, String tokenUrl, String secret, HttpClient http, Clock clock) {
     this.codesUrl = URI.create(stripSlash(coreUrl) + "/internal/v1/sign-in-codes");
+    this.testCodesUrl = URI.create(stripSlash(coreUrl) + "/internal/v1/test-codes");
     this.tokenUrl = URI.create(tokenUrl);
     this.secret = secret;
     this.http = http;
@@ -111,6 +113,28 @@ public final class CoreCodeSender implements CodeSender {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+  }
+
+  /** Core's answer to which default test codes are on (D63); empty when it gives none. */
+  Map<?, ?> testCodes() throws IOException, InterruptedException {
+    HttpResponse<String> response = getTestCodes(false);
+    if (response.statusCode() == 401) {
+      response = getTestCodes(true);
+    }
+    return response.statusCode() == 200
+        ? JsonSerialization.readValue(response.body(), Map.class)
+        : Map.of();
+  }
+
+  private HttpResponse<String> getTestCodes(boolean freshToken)
+      throws IOException, InterruptedException {
+    HttpRequest request =
+        HttpRequest.newBuilder(testCodesUrl)
+            .timeout(TIMEOUT)
+            .header("Authorization", "Bearer " + token(freshToken))
+            .GET()
+            .build();
+    return http.send(request, HttpResponse.BodyHandlers.ofString());
   }
 
   private HttpResponse<Void> post(Map<String, Object> body, boolean freshToken)
