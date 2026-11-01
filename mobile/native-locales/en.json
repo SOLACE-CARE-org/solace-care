@@ -1,4 +1,6 @@
 {
-  "NSMicrophoneUsageDescription": "Solace Care uses the microphone during your sessions.",
-  "NSCameraUsageDescription": "Solace Care uses the camera during video sessions."
+  "ios": {
+    "NSMicrophoneUsageDescription": "Solace Care uses the microphone during your sessions.",
+    "NSCameraUsageDescription": "Solace Care uses the camera during video sessions."
+  }
 }
