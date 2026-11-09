@@ -18,8 +18,8 @@
     "breaking:events": "node scripts/check-event-compat.mjs"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.74.0",
-    "@redocly/cli": "^2.64.1",
+    "@bufbuild/buf": "^1.75.0",
+    "@redocly/cli": "^2.76.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   }
