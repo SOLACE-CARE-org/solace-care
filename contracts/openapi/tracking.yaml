@@ -1620,7 +1620,7 @@ components:
                 type: [string, "null"]
               kind:
                 type: string
-                enum: [DAILY, EPISODE]
+                x-extensible-enum: [DAILY, EPISODE]
               labels:
                 description: The episode metric's name, for episode signals
                 $ref: "#/components/schemas/Text"
