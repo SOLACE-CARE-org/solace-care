@@ -1108,25 +1108,16 @@
         "enrolment": "Inscription",
         "minAge": "Âge minimum",
         "reminder": "Rappel suggéré",
-        "question": "Question d'inscription",
-        "questionKind": {
-          "NONE": "Aucune",
-          "YES_NO": "Oui ou non",
-          "CHOICE": "Choix court"
-        },
-        "questionEn": "Question · EN",
-        "questionFr": "Question · FR",
-        "option": "Option {{n}}",
-        "optionCode": "Code",
-        "optionEn": "EN",
-        "optionFr": "FR",
-        "addOption": "Ajouter une option",
-        "removeOption": "Retirer l'option {{n}}",
         "questionNote": "Solace ne demande jamais le sexe à la naissance. Une réponse d'inscription peut seulement désactiver des règles.",
         "preview": "Aperçu · carte du catalogue",
         "add": "Ajouter",
         "save": "Enregistrer le brouillon",
-        "next": "Suivant : éléments"
+        "next": "Suivant : éléments",
+        "questions": "Questions à l'inscription",
+        "questionsNone": "Aucune question de contexte n'est encore publiée.",
+        "questionsHint": "Posées une fois à l'inscription, {{n}} au plus. Chaque réponse peut être passée.",
+        "oldQuestion": "Ancienne question d'inscription, gardée jusqu'à ce que vous la retiriez : {{question}}",
+        "removeOldQuestion": "Retirer l'ancienne question"
       },
       "elements": {
         "library": "Bibliothèque d'éléments",
@@ -1190,7 +1181,7 @@
         "messageEn": "Message · EN",
         "messageFr": "Message · FR",
         "placeholders": "Vous pouvez utiliser {n}, {threshold}, {window}, {count}, {average} et {logged}.",
-        "blockedNote": "Les termes évoquant un diagnostic sont bloqués. Conditions « sauf si » : {{unless}} (les champs du profil et la réponse d'inscription peuvent seulement désactiver une règle).",
+        "blockedNote": "Les termes évoquant un diagnostic sont bloqués. Conditions « sauf si » : {{unless}} (les réponses aux questions de contexte peuvent seulement désactiver une règle).",
         "unlessNone": "aucune",
         "needsFixing": "Cette règle doit être corrigée avant d'envoyer la version.",
         "save": "Enregistrer la règle",
@@ -1216,7 +1207,15 @@
           "sparse_logging": "Saisie irrégulière"
         },
         "back": "Retour",
-        "submit": "Envoyer en revue clinique"
+        "submit": "Envoyer en revue clinique",
+        "unlessTitle": "Désactiver quand",
+        "unlessQuestion": "Question",
+        "unlessAnswer": "Réponse",
+        "unlessOld": "Ancienne condition : {{field}}",
+        "removeUnless": "Retirer la condition {{n}}",
+        "addUnless": "Ajouter une réponse qui la désactive",
+        "yes": "Oui",
+        "no": "Non"
       },
       "problems": {
         "title": "Avant de pouvoir l'envoyer",
@@ -1252,7 +1251,8 @@
           "minAge": "Âge minimum",
           "reminder": "Rappel suggéré",
           "question": "Question d'inscription",
-          "elements": "Éléments"
+          "elements": "Éléments",
+          "questions": "Questions à l'inscription"
         },
         "newImage": "Nouvelle image",
         "ruleField": "{{code}}, {{part}}",

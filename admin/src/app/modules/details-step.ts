@@ -10,13 +10,17 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { ACCENTS, type Accent } from './module-shared';
 
 type Version = TrackingSchemas['ModuleVersion'];
+type ContextQuestion = TrackingSchemas['ContextQuestion'];
+
+/** A module asks at most this many context questions on enrolment (D61). */
+const MAX_QUESTIONS = 3;
 type Kind = 'NONE' | 'YES_NO' | 'CHOICE';
 
 interface Option {
@@ -42,9 +46,8 @@ interface Form {
   questionEn: string;
   questionFr: string;
   options: Option[];
+  questions: string[];
 }
-
-const KINDS: Kind[] = ['NONE', 'YES_NO', 'CHOICE'];
 
 function formOf(v: Version): Form {
   const q = v.enrolmentQuestion;
@@ -69,6 +72,7 @@ function formOf(v: Version): Form {
       en: o.en ?? '',
       fr: o.fr ?? '',
     })),
+    questions: [...(v.questions ?? [])],
   };
 }
 
@@ -257,104 +261,33 @@ function formOf(v: Version): Form {
               />
             </label>
           </div>
-          <fieldset class="kinds">
-            <legend>{{ 'admin.modules.details.question' | transloco }}</legend>
-            @for (k of kinds; track k) {
+          <fieldset class="kinds questions">
+            <legend>{{ 'admin.modules.details.questions' | transloco }}</legend>
+            @for (q of contextQuestions(); track q.code) {
               <label class="accent">
                 <input
-                  type="radio"
-                  name="questionKind"
-                  [value]="k"
-                  [disabled]="!editable()"
-                  [ngModel]="form().questionKind"
-                  (ngModelChange)="set('questionKind', $event)"
+                  type="checkbox"
+                  [disabled]="!editable() || (!chosen(q.code) && form().questions.length >= max)"
+                  [checked]="chosen(q.code)"
+                  (change)="toggleQuestion(q.code)"
                 />
-                {{ 'admin.modules.details.questionKind.' + k | transloco }}
+                {{ questionText(q) }}
               </label>
+            } @empty {
+              <p class="sl-meta">{{ 'admin.modules.details.questionsNone' | transloco }}</p>
             }
           </fieldset>
+          <p class="sl-meta">{{ 'admin.modules.details.questionsHint' | transloco: { n: max } }}</p>
           @if (form().questionKind !== 'NONE') {
-            <div class="pair">
-              <label class="sl-field">
-                <span>{{ 'admin.modules.details.questionEn' | transloco }}</span>
-                <input
-                  class="sl-input"
-                  name="questionEn"
-                  maxlength="200"
-                  lang="en"
-                  [disabled]="!editable()"
-                  [ngModel]="form().questionEn"
-                  (ngModelChange)="set('questionEn', $event)"
-                />
-              </label>
-              <label class="sl-field">
-                <span>{{ 'admin.modules.details.questionFr' | transloco }}</span>
-                <input
-                  class="sl-input"
-                  name="questionFr"
-                  maxlength="200"
-                  lang="fr"
-                  [disabled]="!editable()"
-                  [ngModel]="form().questionFr"
-                  (ngModelChange)="set('questionFr', $event)"
-                />
-              </label>
-            </div>
-          }
-          @if (form().questionKind === 'CHOICE') {
-            @for (o of form().options; track $index; let i = $index) {
-              <fieldset class="option">
-                <legend>{{ 'admin.modules.details.option' | transloco: { n: i + 1 } }}</legend>
-                <label class="sl-field">
-                  <span>{{ 'admin.modules.details.optionCode' | transloco }}</span>
-                  <input
-                    class="sl-input"
-                    [name]="'code' + i"
-                    maxlength="40"
-                    pattern="[a-z][a-z0-9_]*"
-                    [disabled]="!editable()"
-                    [ngModel]="o.code"
-                    (ngModelChange)="setOption(i, 'code', $event)"
-                  />
-                </label>
-                <label class="sl-field">
-                  <span>{{ 'admin.modules.details.optionEn' | transloco }}</span>
-                  <input
-                    class="sl-input"
-                    [name]="'en' + i"
-                    maxlength="80"
-                    lang="en"
-                    [disabled]="!editable()"
-                    [ngModel]="o.en"
-                    (ngModelChange)="setOption(i, 'en', $event)"
-                  />
-                </label>
-                <label class="sl-field">
-                  <span>{{ 'admin.modules.details.optionFr' | transloco }}</span>
-                  <input
-                    class="sl-input"
-                    [name]="'fr' + i"
-                    maxlength="80"
-                    lang="fr"
-                    [disabled]="!editable()"
-                    [ngModel]="o.fr"
-                    (ngModelChange)="setOption(i, 'fr', $event)"
-                  />
-                </label>
-                @if (editable()) {
-                  <button
-                    type="button"
-                    class="sl-button sl-button--quiet"
-                    (click)="removeOption(i)"
-                  >
-                    {{ 'admin.modules.details.removeOption' | transloco: { n: i + 1 } }}
-                  </button>
-                }
-              </fieldset>
-            }
-            @if (editable() && form().options.length < 6) {
-              <button type="button" class="sl-button" (click)="addOption()">
-                {{ 'admin.modules.details.addOption' | transloco }}
+            <p class="sl-meta">
+              {{
+                'admin.modules.details.oldQuestion'
+                  | transloco: { question: form().questionEn + ' / ' + form().questionFr }
+              }}
+            </p>
+            @if (editable()) {
+              <button type="button" class="sl-button sl-button--quiet" (click)="dropOldQuestion()">
+                {{ 'admin.modules.details.removeOldQuestion' | transloco }}
               </button>
             }
           }
@@ -538,6 +471,7 @@ function formOf(v: Version): Form {
 })
 export class DetailsStep {
   private readonly api = inject(TrackingApi);
+  private readonly transloco = inject(TranslocoService);
 
   readonly version = input.required<Version>();
   readonly editable = input(false);
@@ -546,7 +480,8 @@ export class DetailsStep {
   readonly next = output<void>();
 
   readonly accents = ACCENTS;
-  readonly kinds = KINDS;
+  readonly max = MAX_QUESTIONS;
+  readonly contextQuestions = signal<ContextQuestion[]>([]);
   readonly langs = ['en', 'fr'] as const;
   readonly previewLang = signal<'en' | 'fr'>('en');
   readonly form = signal<Form>(formOf({} as Version));
@@ -569,6 +504,44 @@ export class DetailsStep {
       const v = this.version();
       untracked(() => this.form.set(formOf(v)));
     });
+    void this.loadQuestions();
+  }
+
+  /** The published context questions a module may ask (D61). */
+  async loadQuestions() {
+    try {
+      this.contextQuestions.set(
+        orThrow(await this.api.client.GET('/admin/v1/tracking/context-questions')),
+      );
+    } catch {
+      this.failed.set(true);
+    }
+  }
+
+  chosen(code: string): boolean {
+    return this.form().questions.includes(code);
+  }
+
+  toggleQuestion(code: string) {
+    const current = this.form().questions;
+    if (current.includes(code)) {
+      this.set(
+        'questions',
+        current.filter((c) => c !== code),
+      );
+    } else if (current.length < MAX_QUESTIONS) {
+      this.set('questions', [...current, code]);
+    }
+  }
+
+  questionText(q: ContextQuestion): string {
+    const lang = this.transloco.getActiveLang() === 'fr' ? 'fr' : 'en';
+    return q.labels?.[lang]?.question ?? q.code;
+  }
+
+  /** The old single enrolment question goes once its context questions replace it. */
+  dropOldQuestion() {
+    this.set('questionKind', 'NONE');
   }
 
   imageUrl(id: string): string {
@@ -578,21 +551,6 @@ export class DetailsStep {
   set<K extends keyof Form>(key: K, value: Form[K]) {
     this.justSaved.set(false);
     this.form.update((f) => ({ ...f, [key]: value }));
-  }
-
-  setOption(i: number, key: keyof Option, value: string) {
-    this.form.update((f) => ({
-      ...f,
-      options: f.options.map((o, j) => (j === i ? { ...o, [key]: value } : o)),
-    }));
-  }
-
-  addOption() {
-    this.form.update((f) => ({ ...f, options: [...f.options, { code: '', en: '', fr: '' }] }));
-  }
-
-  removeOption(i: number) {
-    this.form.update((f) => ({ ...f, options: f.options.filter((_, j) => j !== i) }));
   }
 
   async upload(event: Event) {
@@ -640,7 +598,17 @@ export class DetailsStep {
           },
         }),
       );
-      this.savedVersion.emit(v);
+      const same =
+        JSON.stringify(v.questions ?? []) === JSON.stringify(f.questions);
+      const saved = same
+        ? v
+        : orThrow(
+            await this.api.client.PUT('/admin/v1/tracking/versions/{versionId}/questions', {
+              params: { path: { versionId: this.version().id! } },
+              body: f.questions,
+            }),
+          );
+      this.savedVersion.emit(saved);
       this.justSaved.set(true);
       if (andNext) this.next.emit();
     } catch {

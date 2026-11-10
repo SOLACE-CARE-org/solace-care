@@ -77,7 +77,20 @@ const vocabulary: TrackingSchemas['RuleVocabulary'] = {
       evidenceKeys: ['average', 'window', 'logged', 'threshold'],
     },
   ],
-  unlessFields: ['enrolment_answer', 'pcos_status', 'treatments', 'trying_to_conceive'],
+  unlessFields: ['trying_to_conceive'],
+  questions: [
+    {
+      code: 'trying_to_conceive',
+      version: 1,
+      type: 'YES_NO',
+      scope: 'PROFILE',
+      labels: {
+        en: { question: 'Are you trying to conceive?' },
+        fr: { question: "Essayez-vous d'avoir un enfant ?" },
+      },
+      options: [],
+    },
+  ],
 };
 
 const rows: TrackingSchemas['ModuleRow'][] = [
@@ -226,6 +239,50 @@ describe('Tracking modules', () => {
     expect(options(1)).toEqual(['days in window']);
     expect(options(2)).toEqual(['equal to', 'one of']);
     expect(button(root, 'Submit for clinical review')!.disabled).toBe(true);
+  });
+
+  it('asks published context questions on enrolment and lets a rule switch off on an answer', async () => {
+    const tracking = {
+      GET: fn(
+        route({
+          '/admin/v1/tracking/versions/{versionId}': () => ok(draft()),
+          '/admin/v1/tracking/elements': () => ok([mood, stress]),
+          '/admin/v1/tracking/context-questions': () => ok(vocabulary.questions),
+          '/admin/v1/tracking/versions/{versionId}/rule-vocabulary': () => ok(vocabulary),
+        }),
+      ),
+      PUT: fn(() => ok(draft())),
+      POST: fn(() => ok(draft())),
+    };
+    setUp(['OPERATIONS'], { GET: fn(() => problem(403, 'access.denied', 'No')) }, { tracking });
+    const { root, settle } = await render(ModuleBuilderPage, { id: 's1' });
+    await sees(root, 'Are you trying to conceive?');
+
+    // Step 1: the module asks the published question once on enrolment (D61).
+    const ask = [...root.querySelectorAll<HTMLLabelElement>('fieldset.questions label')].find(
+      (l) => l.textContent?.includes('Are you trying to conceive?'),
+    )!;
+    ask.querySelector('input')!.click();
+    await settle();
+    button(root, 'Save draft')!.click();
+    await settle();
+    expect(tracking.PUT).toHaveBeenCalledWith('/admin/v1/tracking/versions/{versionId}/questions', {
+      params: { path: { versionId: 's1' } },
+      body: ['trying_to_conceive'],
+    });
+
+    // Step 3: "unless" offers the published questions and their answers, nothing else.
+    button(root, '3 Rules')!.click();
+    await settle();
+    button(root, 'Add a rule')!.click();
+    await settle();
+    button(root, 'Add an answer that switches it off')!.click();
+    await settle();
+    const unless = root.querySelectorAll<HTMLSelectElement>('fieldset.unless select');
+    expect([...unless[0]!.options].map((o) => o.textContent?.trim())).toEqual([
+      'Are you trying to conceive?',
+    ]);
+    expect([...unless[1]!.options].map((o) => o.textContent?.trim())).toEqual(['Yes', 'No']);
   });
 
   it('opens a published version read-only, with a way to start a new draft', async () => {

@@ -23,6 +23,8 @@ type Condition = TrackingSchemas['Condition'];
 type TestResult = TrackingSchemas['TestResult'];
 type Vocabulary = TrackingSchemas['RuleVocabulary'];
 type VocabularySignal = Vocabulary['signals'][number];
+type ContextQuestion = TrackingSchemas['ContextQuestion'];
+type UnlessEntry = NonNullable<Rule['unless']>[number];
 
 const MODES = ['at_least', 'at_most'] as const;
 type Field = 'count' | 'mode' | 'window' | 'minData';
@@ -384,6 +386,62 @@ function blankCondition(): Condition {
             ></textarea>
           </label>
           <p class="sl-meta">{{ 'admin.modules.rules.placeholders' | transloco }}</p>
+
+          <fieldset class="unless">
+            <legend class="sub">{{ 'admin.modules.rules.unlessTitle' | transloco }}</legend>
+            @for (u of r.unless ?? []; track $index; let i = $index) {
+              <div class="row">
+                @if (u.question) {
+                  <label class="sl-field">
+                    <span>{{ 'admin.modules.rules.unlessQuestion' | transloco }}</span>
+                    <select
+                      class="sl-select"
+                      [disabled]="!editable()"
+                      [ngModel]="u.question"
+                      (ngModelChange)="setUnlessQuestion(i, $event)"
+                    >
+                      @for (q of unlessQuestions(); track q.code) {
+                        <option [value]="q.code">{{ questionText(q) }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="sl-field">
+                    <span>{{ 'admin.modules.rules.unlessAnswer' | transloco }}</span>
+                    <select
+                      class="sl-select"
+                      [disabled]="!editable()"
+                      [ngModel]="unlessAnswer(u)"
+                      (ngModelChange)="setUnlessAnswer(i, $event)"
+                    >
+                      @for (a of answersFor(u.question); track a.code) {
+                        <option [value]="a.code">{{ a.label }}</option>
+                      }
+                    </select>
+                  </label>
+                } @else {
+                  <p class="sl-meta">
+                    {{ 'admin.modules.rules.unlessOld' | transloco: { field: u.field } }}
+                  </p>
+                }
+                @if (editable()) {
+                  <button
+                    type="button"
+                    class="sl-button sl-button--quiet"
+                    (click)="removeUnless(i)"
+                  >
+                    {{ 'admin.modules.rules.removeUnless' | transloco: { n: i + 1 } }}
+                  </button>
+                }
+              </div>
+            } @empty {
+              <p class="sl-meta">{{ 'admin.modules.rules.unlessNone' | transloco }}</p>
+            }
+            @if (editable() && unlessQuestions().length) {
+              <button type="button" class="sl-button" (click)="addUnless()">
+                {{ 'admin.modules.rules.addUnless' | transloco }}
+              </button>
+            }
+          </fieldset>
           <p class="sl-meta">
             {{ 'admin.modules.rules.blockedNote' | transloco: { unless: unlessText(r) } }}
           </p>
@@ -517,6 +575,11 @@ function blankCondition(): Condition {
     }
     .small {
       max-width: 9rem;
+    }
+    .unless {
+      border: 0;
+      padding: 0;
+      margin: var(--space-16) 0;
     }
     .check {
       display: inline-flex;
@@ -788,10 +851,83 @@ export class RulesStep {
   }
 
   unlessText(r: Rule): string {
-    const fields = (r.unless ?? []).map((u) => u.field).filter(Boolean);
-    return fields.length
-      ? fields.join(', ')
+    const parts = (r.unless ?? []).map((u) => {
+      if (!u.question) return u.field ?? '';
+      const q = this.unlessQuestions().find((x) => x.code === u.question);
+      const answer = this.answersFor(u.question).find((a) => a.code === this.unlessAnswer(u));
+      return `${q ? this.questionText(q) : u.question} ${answer?.label ?? ''}`.trim();
+    });
+    return parts.filter(Boolean).length
+      ? parts.filter(Boolean).join(', ')
       : this.transloco.translate('admin.modules.rules.unlessNone');
+  }
+
+  /** The published context questions "unless" may read, from the vocabulary (D61). */
+  readonly unlessQuestions = computed<ContextQuestion[]>(() => this.vocabulary()?.questions ?? []);
+
+  questionText(q: ContextQuestion): string {
+    return (this.lang() === 'fr' ? q.labels?.['fr'] : q.labels?.['en'])?.question ?? q.code;
+  }
+
+  /** The answers a question can have, as select values: "true"/"false" or option codes. */
+  answersFor(code: string | undefined): { code: string; label: string }[] {
+    const q = this.unlessQuestions().find((x) => x.code === code);
+    if (!q) return [];
+    if (q.type === 'YES_NO') {
+      return [
+        { code: 'true', label: this.transloco.translate('admin.modules.rules.yes') },
+        { code: 'false', label: this.transloco.translate('admin.modules.rules.no') },
+      ];
+    }
+    return q.options.map((o) => ({
+      code: o.code,
+      label: (this.lang() === 'fr' ? o.labels.fr : o.labels.en) || o.code,
+    }));
+  }
+
+  unlessAnswer(u: UnlessEntry): string {
+    if (u.includes !== undefined) return u.includes;
+    return u.equals === undefined || u.equals === null ? '' : String(u.equals);
+  }
+
+  private unlessEntry(code: string, answer: string | undefined): UnlessEntry {
+    const q = this.unlessQuestions().find((x) => x.code === code);
+    const value = answer ?? this.answersFor(code)[0]?.code ?? '';
+    if (q?.type === 'YES_NO') return { question: code, equals: value === 'true' };
+    if (q?.type === 'MANY_CHOICES') return { question: code, includes: value };
+    return { question: code, equals: value };
+  }
+
+  addUnless() {
+    const first = this.unlessQuestions()[0];
+    if (!first) return;
+    const r = this.draft();
+    if (!r) return;
+    this.patch({ unless: [...(r.unless ?? []), this.unlessEntry(first.code, undefined)] });
+  }
+
+  removeUnless(i: number) {
+    const r = this.draft();
+    if (!r) return;
+    this.patch({ unless: (r.unless ?? []).filter((_, j) => j !== i) });
+  }
+
+  setUnlessQuestion(i: number, code: string) {
+    const r = this.draft();
+    if (!r) return;
+    this.patch({
+      unless: (r.unless ?? []).map((u, j) => (j === i ? this.unlessEntry(code, undefined) : u)),
+    });
+  }
+
+  setUnlessAnswer(i: number, answer: string) {
+    const r = this.draft();
+    if (!r) return;
+    this.patch({
+      unless: (r.unless ?? []).map((u, j) =>
+        j === i && u.question ? this.unlessEntry(u.question, answer) : u,
+      ),
+    });
   }
 
   problemText(p: string): string {
