@@ -58,6 +58,7 @@ class NotesNeverLeaveTest extends TrackingStackTest {
             "/v1/tracking/modules",
             "/v1/tracking/recommendations",
             "/v1/tracking/profile",
+            "/v1/tracking/context-answers",
             "/v1/tracking/shares",
             "/v1/tracking/elements")) {
       assertThat(body(get(path), me)).as(path).doesNotContain(NOTE);

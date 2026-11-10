@@ -3,12 +3,16 @@ package care.solace.tracking.modules;
 import care.solace.audit.AuditLog;
 import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
+import care.solace.tracking.context.ContextQuestion;
+import care.solace.tracking.context.ContextQuestions;
+import care.solace.tracking.context.QuestionView;
 import care.solace.tracking.elements.ElementController;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleEngine;
 import care.solace.tracking.rules.RuleRules;
 import care.solace.tracking.rules.SyntheticHistories;
+import care.solace.tracking.rules.Unless;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
@@ -58,6 +62,7 @@ class AdminModulesController {
   private final ImageAssets images;
   private final AuditLog audit;
   private final EpisodeModels models;
+  private final ContextQuestions questions;
   private final Clock clock;
 
   AdminModulesController(
@@ -68,6 +73,7 @@ class AdminModulesController {
       ImageAssets images,
       AuditLog audit,
       EpisodeModels models,
+      ContextQuestions questions,
       Clock clock) {
     this.gate = gate;
     this.modules = modules;
@@ -76,6 +82,7 @@ class AdminModulesController {
     this.images = images;
     this.audit = audit;
     this.models = models;
+    this.questions = questions;
     this.clock = clock;
   }
 
@@ -137,6 +144,7 @@ class AdminModulesController {
       UUID imageId,
       Integer minAge,
       JsonNode enrolmentQuestion,
+      List<String> questions,
       LocalTime reminderDefault,
       List<BindingView> elements,
       List<RuleView> rules,
@@ -208,7 +216,8 @@ class AdminModulesController {
   record RuleVocabulary(
       List<VocabularySignal> signals,
       List<VocabularyOperator> operators,
-      List<String> unlessFields) {}
+      List<String> unlessFields,
+      List<QuestionView> questions) {}
 
   // --- Library and modules ----------------------------------------------------------------------
 
@@ -369,6 +378,29 @@ class AdminModulesController {
     return view(found(existing.moduleVersionId()), staff);
   }
 
+  /** The published context questions a module may ask and a rule's "unless" may read (D61). */
+  @GetMapping("/admin/v1/tracking/context-questions")
+  List<QuestionView> contextQuestions(@AuthenticationPrincipal Jwt token) {
+    gate.require(token, false);
+    return questions.all().stream().map(QuestionView::of).toList();
+  }
+
+  /** The context questions asked on enrolment, in order; at most three (D61). */
+  @PutMapping("/admin/v1/tracking/versions/{versionId}/questions")
+  VersionView questions(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID versionId,
+      @RequestBody @Size(max = Modules.MAX_QUESTIONS) List<@NotBlank String> codes) {
+    var staff = gate.require(token, true);
+    modules.saveQuestions(versionId, codes, staff);
+    audit.adminAction(
+        "tracking.version.questions",
+        "module-version",
+        versionId.toString(),
+        Map.of("count", String.valueOf(codes.size())));
+    return view(found(versionId), staff);
+  }
+
   @PostMapping(value = "/admin/v1/tracking/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   ImageAssets.Asset upload(
@@ -414,7 +446,8 @@ class AdminModulesController {
         operators.stream()
             .map(o -> new VocabularyOperator(o.code(), o.fields(), o.evidenceKeys()))
             .toList(),
-        RuleRules.UNLESS_FIELDS.stream().sorted().toList());
+        questions.all().stream().map(ContextQuestion::code).toList(),
+        questions.all().stream().map(QuestionView::of).toList());
   }
 
   /** Runs each rule of the draft against the made-up histories; never real people's data. */
@@ -428,9 +461,7 @@ class AdminModulesController {
       var signals = history.signals(today, models.all());
       for (var r : store.rules(v.id())) {
         var result = RuleEngine.evaluate(r.conditions(), signals);
-        boolean unless =
-            care.solace.tracking.rules.PatternCheck.blockedByUnless(
-                r.unless(), history.profile(), null);
+        boolean unless = Unless.blocks(r.unless(), history.answers(), null);
         out.add(
             new TestResult(
                 history.code(),
@@ -533,6 +564,7 @@ class AdminModulesController {
         d.imageAssetId(),
         d.minAge(),
         d.enrolmentQuestion(),
+        store.questions(v.id()),
         d.reminderDefault(),
         elements,
         store.rules(v.id()).stream()
@@ -550,7 +582,8 @@ class AdminModulesController {
                         r.cooldownDays(),
                         r.repeatWithinDays(),
                         r.position(),
-                        RuleRules.problems(r.conditions(), r.unless(), bound, models.all())))
+                        RuleRules.problems(
+                            r.conditions(), r.unless(), bound, models.all(), questions.all())))
             .toList(),
         store.reviews(v.id()).stream()
             .map(x -> new ReviewView(x.reviewerName(), x.decision(), x.comments(), x.decidedAt()))

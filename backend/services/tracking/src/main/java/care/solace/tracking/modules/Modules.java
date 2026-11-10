@@ -4,6 +4,7 @@ import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
 import care.solace.tracking.TrackingError;
+import care.solace.tracking.context.ContextQuestions;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
@@ -51,17 +52,20 @@ public class Modules {
   private final ElementLibrary library;
   private final ApplicationEventPublisher events;
   private final EpisodeModels models;
+  private final ContextQuestions questions;
   private final Clock clock;
 
   Modules(
       ModuleStore store,
       ElementLibrary library,
       EpisodeModels models,
+      ContextQuestions questions,
       ApplicationEventPublisher events,
       Clock clock) {
     this.store = store;
     this.library = library;
     this.models = models;
+    this.questions = questions;
     this.events = events;
     this.clock = clock;
   }
@@ -112,6 +116,7 @@ public class Modules {
         staff.name(),
         clock.instant());
     store.replaceBindings(id, store.bindings(base.id()));
+    store.replaceQuestions(id, store.questions(base.id()));
     for (var r : store.rules(base.id())) {
       store.saveRule(
           new ModuleStore.Rule(
@@ -171,6 +176,21 @@ public class Modules {
     renumber(v);
   }
 
+  /** At most 3 published context questions, asked once on enrolment (D61). */
+  public static final int MAX_QUESTIONS = 3;
+
+  @Transactional
+  public void saveQuestions(UUID versionId, List<String> codes, StaffGate.Staff staff) {
+    requireDrafter(staff);
+    draft(versionId);
+    if (codes.size() > MAX_QUESTIONS
+        || codes.stream().distinct().count() != codes.size()
+        || codes.stream().anyMatch(c -> questions.find(c).isEmpty())) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    store.replaceQuestions(versionId, codes);
+  }
+
   private void renumber(ModuleStore.Version v) {
     var published = store.published(v.moduleId());
     if (published.isEmpty()) {
@@ -197,7 +217,8 @@ public class Modules {
     requireDrafter(staff);
     var v = draft(rule.moduleVersionId());
     var problems =
-        RuleRules.problems(rule.conditions(), rule.unless(), bound(v.id()), models.all());
+        RuleRules.problems(
+            rule.conditions(), rule.unless(), bound(v.id()), models.all(), questions.all());
     if (!problems.isEmpty()) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
@@ -259,7 +280,8 @@ public class Modules {
     }
     var bound = bound(v.id());
     for (var r : store.rules(v.id())) {
-      if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all()).isEmpty()
+      if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all(), questions.all())
+              .isEmpty()
           || r.messageEn().isBlank()
           || r.messageFr().isBlank()) {
         problems.add("rule:" + r.code());

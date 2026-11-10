@@ -3,6 +3,8 @@ package care.solace.tracking.rules;
 import care.solace.tracking.episodes.Episode;
 import care.solace.tracking.episodes.EpisodeModel;
 import care.solace.tracking.episodes.Episodes;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -21,7 +23,7 @@ import java.util.TreeSet;
 public final class SyntheticHistories {
 
   /**
-   * One made-up person: what they logged, and their profile for "unless".
+   * One made-up person: what they logged, and their context answers for "unless".
    *
    * @param daily day-state values per element
    * @param events the days of each event element, such as period_start
@@ -30,7 +32,7 @@ public final class SyntheticHistories {
       String code,
       Map<String, NavigableMap<LocalDate, Object>> daily,
       Map<String, SortedSet<LocalDate>> events,
-      Map<String, Object> profile) {
+      Map<String, JsonNode> answers) {
 
     /** The signals the rules read, with episodes found by each model as the reconciler would. */
     public RuleEngine.Signals signals(LocalDate today, Collection<EpisodeModel> models) {
@@ -66,11 +68,12 @@ public final class SyntheticHistories {
             new int[] {41, 39, 44, 40},
             5,
             0,
-            Map.of("treatments", List.of("hormonal"))),
+            Map.of("hormonal_treatment", BooleanNode.TRUE)),
         cycles("long_periods", today, new int[] {30, 31, 29}, 9, 0, Map.of()),
         cycles("heavy_flow", today, new int[] {28, 30, 29}, 6, 4, Map.of()),
         noPeriod("no_period_90_days", today, Map.of()),
-        noPeriod("no_period_trying_to_conceive", today, Map.of("trying_to_conceive", true)),
+        noPeriod(
+            "no_period_trying_to_conceive", today, Map.of("trying_to_conceive", BooleanNode.TRUE)),
         daily("low_mood_two_weeks", today, "mood", 14, i -> i % 7 == 3 ? 3 : 2),
         daily("good_mood", today, "mood", 14, i -> 4),
         daily("short_sleep", today, "sleep_minutes", 14, i -> 270),
@@ -84,7 +87,7 @@ public final class SyntheticHistories {
       int[] lengths,
       int periodDays,
       int veryHeavy,
-      Map<String, Object> profile) {
+      Map<String, JsonNode> answers) {
     NavigableMap<LocalDate, Object> flow = new TreeMap<>();
     int total = 0;
     for (int l : lengths) {
@@ -109,10 +112,10 @@ public final class SyntheticHistories {
     }
     Map<String, NavigableMap<LocalDate, Object>> daily = new LinkedHashMap<>();
     daily.put("flow_intensity", flow);
-    return new History(code, daily, Map.of("period_start", starts), profile);
+    return new History(code, daily, Map.of("period_start", starts), answers);
   }
 
-  private static History noPeriod(String code, LocalDate today, Map<String, Object> profile) {
+  private static History noPeriod(String code, LocalDate today, Map<String, JsonNode> answers) {
     NavigableMap<LocalDate, Object> flow = new TreeMap<>();
     for (int i = 0; i < 90; i++) {
       if (i % 2 == 0) {
@@ -120,7 +123,7 @@ public final class SyntheticHistories {
       }
     }
     return new History(
-        code, new LinkedHashMap<>(Map.of("flow_intensity", flow)), Map.of(), profile);
+        code, new LinkedHashMap<>(Map.of("flow_intensity", flow)), Map.of(), answers);
   }
 
   private static History daily(
