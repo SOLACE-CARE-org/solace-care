@@ -5,6 +5,7 @@ import care.solace.errors.SolaceException;
 import care.solace.events.Events;
 import care.solace.tracking.TrackingError;
 import care.solace.tracking.elements.ElementLibrary;
+import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
 import java.time.Clock;
 import java.time.Instant;
@@ -49,12 +50,18 @@ public class Modules {
   private final ModuleStore store;
   private final ElementLibrary library;
   private final ApplicationEventPublisher events;
+  private final EpisodeModels models;
   private final Clock clock;
 
   Modules(
-      ModuleStore store, ElementLibrary library, ApplicationEventPublisher events, Clock clock) {
+      ModuleStore store,
+      ElementLibrary library,
+      EpisodeModels models,
+      ApplicationEventPublisher events,
+      Clock clock) {
     this.store = store;
     this.library = library;
+    this.models = models;
     this.events = events;
     this.clock = clock;
   }
@@ -189,7 +196,8 @@ public class Modules {
   public ModuleStore.Rule saveRule(ModuleStore.Rule rule, StaffGate.Staff staff) {
     requireDrafter(staff);
     var v = draft(rule.moduleVersionId());
-    var problems = RuleRules.problems(rule.conditions(), rule.unless(), bound(v.id()));
+    var problems =
+        RuleRules.problems(rule.conditions(), rule.unless(), bound(v.id()), models.all());
     if (!problems.isEmpty()) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
@@ -251,7 +259,7 @@ public class Modules {
     }
     var bound = bound(v.id());
     for (var r : store.rules(v.id())) {
-      if (!RuleRules.problems(r.conditions(), r.unless(), bound).isEmpty()
+      if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all()).isEmpty()
           || r.messageEn().isBlank()
           || r.messageFr().isBlank()) {
         problems.add("rule:" + r.code());

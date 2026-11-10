@@ -608,7 +608,7 @@ export class RulesStep {
             ? this.transloco.translate('admin.modules.rules.daily', {
                 name: e ? this.nameOf(e) : s.element,
               })
-            : this.transloco.translate(`admin.modules.rules.signals.${s.signal}`),
+            : ((this.lang() === 'fr' ? s.labels?.fr : s.labels?.en) ?? s.signal),
       };
     });
   });
@@ -925,13 +925,15 @@ export class RulesStep {
       c.threshold = values ? values.at(-1)?.code : 1;
       return c;
     }
+    // An episode signal: the first operator the vocabulary offers for it, over the last episodes.
+    const offered = this.vocabulary()?.signals.find((s) => s.key === choice.key)?.operators[0];
     return {
       signal: choice.signal,
       element: undefined,
-      operator: 'consecutive_cycles',
-      comparison: 'gt',
-      threshold: 35,
-      count: 3,
+      operator: offered?.code ?? 'consecutive_episodes',
+      comparison: offered?.comparisons.includes('gt') ? 'gt' : offered?.comparisons[0],
+      threshold: 1,
+      count: 2,
       mode: undefined,
       window: undefined,
       minData: undefined,

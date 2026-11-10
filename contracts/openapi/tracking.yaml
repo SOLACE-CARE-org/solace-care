@@ -1030,7 +1030,7 @@ components:
           type: array
           items:
             type: string
-            x-extensible-enum: [daily_value, cycle_length_days, period_days, very_heavy_days, cycle_event]
+            x-extensible-enum: [daily_value]
         labels:
           $ref: "#/components/schemas/ElementLabels"
         minAppVersion:
@@ -1349,7 +1349,7 @@ components:
           description: The rule's template in the app language, filled from the evidence.
           type: string
         evidence:
-          description: The thresholds and the exact cycles or days used, for the chart. Never notes.
+          description: The thresholds and the exact episodes or days used, for the chart. Never notes.
           type: object
         createdAt:
           type: string
@@ -1500,13 +1500,14 @@ components:
       required: [signal, operator, comparison, threshold]
       properties:
         signal:
+          description: daily_value, or an episode signal (<model>.<metric>); the rule vocabulary lists what a version may use
           type: string
-          enum: [daily_value, cycle_length_days, period_days, very_heavy_days]
+          x-extensible-enum: [daily_value, menstrual_cycle.length_days, menstrual_cycle.period_days, menstrual_cycle.very_heavy_days]
         element:
           type: string
         operator:
           type: string
-          enum: [consecutive_cycles, days_in_window, average_in_window]
+          x-extensible-enum: [consecutive_episodes, days_in_window, average_in_window]
         comparison:
           type: string
           enum: [gt, gte, lt, lte, eq, in]
@@ -1609,16 +1610,20 @@ components:
             required: [key, signal, kind, valueType, values, operators]
             properties:
               key:
-                description: daily_value:<element> or the cycle signal's code
+                description: daily_value:<element>, or the episode signal's code
                 type: string
               signal:
+                description: daily_value, or an episode signal (<model>.<metric>)
                 type: string
-                enum: [daily_value, cycle_length_days, period_days, very_heavy_days]
               element:
+                description: The element, for daily signals
                 type: [string, "null"]
               kind:
                 type: string
-                enum: [DAILY, CYCLE]
+                x-extensible-enum: [DAILY, EPISODE]
+              labels:
+                description: The episode metric's name, for episode signals
+                $ref: "#/components/schemas/Text"
               valueType:
                 type: string
                 enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
@@ -1635,7 +1640,7 @@ components:
                   properties:
                     code:
                       type: string
-                      enum: [consecutive_cycles, days_in_window, average_in_window]
+                      x-extensible-enum: [consecutive_episodes, days_in_window, average_in_window]
                     comparisons:
                       type: array
                       items:
@@ -1649,7 +1654,7 @@ components:
             properties:
               code:
                 type: string
-                enum: [consecutive_cycles, days_in_window, average_in_window]
+                x-extensible-enum: [consecutive_episodes, days_in_window, average_in_window]
               fields:
                 description: Condition fields the form shows besides signal, comparison and threshold
                 type: array

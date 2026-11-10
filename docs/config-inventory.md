@@ -86,7 +86,7 @@ So min and max price and the commission **are already live**: the values in `app
 | Tracking | `solace.tracking.nudges.reminder-window` | 2 h | **Yes** | |
 | Tracking | `solace.tracking.nudges.risk-pause` | 14 days | **Yes** | |
 | Tracking | `solace.tracking.nudges.default-zone` | Africa/Douala | Maybe | |
-| Tracking | `solace.tracking.cycle.new-period-gap-days` | 10 | **Yes, Clinical reviewer** | Changes how cycles are counted. |
+| Tracking | `episode_model.gap_days` of `menstrual_cycle` (was `solace.tracking.cycle.new-period-gap-days`) | 10 | **Yes, Clinical reviewer** | Changes how cycles are counted. Part of the reviewed episode model since D61, not a config key. |
 | Tracking | `solace.tracking.pattern-check-cron` | 02:30 daily | Maybe | |
 | Gateway | `solace.gateway.rate-limit` | 20/s, burst 40 | Maybe, Super admin | |
 | Keycloak | member code length / lifetime / tries / resend delay | 6 / 10 min / 3 / 60 s | **Yes** | Set in the Keycloak authenticator's config today, not in Solace. |

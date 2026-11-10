@@ -1152,11 +1152,6 @@
         "conditions": "Conditions: all must hold (1–3)",
         "signal": "Signal",
         "daily": "{{name}}, daily",
-        "signals": {
-          "cycle_length_days": "Cycle length",
-          "period_days": "Period length",
-          "very_heavy_days": "Very heavy days"
-        },
         "operator": "Operator",
         "operators": {
           "days_in_window": "days in window",

@@ -1152,11 +1152,6 @@
         "conditions": "Conditions : toutes doivent être vraies (1 à 3)",
         "signal": "Signal",
         "daily": "{{name}}, quotidien",
-        "signals": {
-          "cycle_length_days": "Durée du cycle",
-          "period_days": "Durée des règles",
-          "very_heavy_days": "Jours très abondants"
-        },
         "operator": "Opérateur",
         "operators": {
           "days_in_window": "jours sur la période",

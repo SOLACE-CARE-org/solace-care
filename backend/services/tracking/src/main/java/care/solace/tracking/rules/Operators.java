@@ -1,7 +1,7 @@
 package care.solace.tracking.rules;
 
-import care.solace.tracking.cycles.CycleModel;
 import care.solace.tracking.elements.ElementLibrary.ValueType;
+import care.solace.tracking.episodes.Episode;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,7 +25,8 @@ public final class Operators {
   private static final Map<String, Operator> ALL = new LinkedHashMap<>();
 
   static {
-    for (Operator o : List.of(new ConsecutiveCycles(), new DaysInWindow(), new AverageInWindow())) {
+    for (Operator o :
+        List.of(new ConsecutiveEpisodes(), new DaysInWindow(), new AverageInWindow())) {
       ALL.put(o.code(), o);
     }
   }
@@ -45,17 +46,20 @@ public final class Operators {
     return Set.of("gt", "gte", "lt", "lte", "eq", "in");
   }
 
-  /** The last N complete cycles each meet the comparison; the newest cycle never counts. */
-  static final class ConsecutiveCycles implements Operator {
+  /**
+   * The last N complete episodes of the signal's model each meet the comparison; the newest episode
+   * never counts.
+   */
+  static final class ConsecutiveEpisodes implements Operator {
 
     @Override
     public String code() {
-      return "consecutive_cycles";
+      return "consecutive_episodes";
     }
 
     @Override
     public boolean accepts(SignalCatalog.Signal signal) {
-      return signal.kind() == SignalCatalog.Kind.CYCLE;
+      return signal.kind() == SignalCatalog.Kind.EPISODE;
     }
 
     @Override
@@ -76,7 +80,7 @@ public final class Operators {
     @Override
     public List<String> problems(JsonNode c) {
       return c.path("count").asInt(0) < 1
-          ? List.of("consecutive_cycles needs a count of at least 1")
+          ? List.of("consecutive_episodes needs a count of at least 1")
           : List.of();
     }
 
@@ -84,26 +88,29 @@ public final class Operators {
     public RuleEngine.ConditionResult evaluate(JsonNode c, RuleEngine.Signals s) {
       int n = c.path("count").asInt();
       String signal = c.path("signal").asText();
-      var complete = s.cycles().stream().filter(CycleModel.Cycle::complete).toList();
+      int dot = signal.indexOf('.');
+      String model = dot < 0 ? signal : signal.substring(0, dot);
+      String metric = dot < 0 ? "" : signal.substring(dot + 1);
+      var complete = s.episodes(model).stream().filter(Episode::complete).toList();
       Map<String, Object> evidence = new LinkedHashMap<>();
       evidence.put("n", n);
       evidence.put("threshold", c.path("threshold"));
       if (n < 1 || complete.size() < n) {
-        evidence.put("cycles", List.of());
+        evidence.put("episodes", List.of());
         return new RuleEngine.ConditionResult(false, evidence);
       }
-      var last = complete.subList(complete.size() - n, complete.size());
       List<Map<String, Object>> used = new ArrayList<>();
       boolean held = true;
-      for (var cycle : last) {
-        Integer value = CycleMetrics.value(signal, cycle);
+      for (var episode : complete.subList(complete.size() - n, complete.size())) {
+        Integer value = episode.metric(metric);
         used.add(
-            Map.of("start", cycle.start().toString(), "value", value == null ? "unknown" : value));
+            Map.of(
+                "start", episode.start().toString(), "value", value == null ? "unknown" : value));
         held &=
             value != null
                 && RuleEngine.compare(value, c.path("comparison").asText(), c.path("threshold"));
       }
-      evidence.put("cycles", used);
+      evidence.put("episodes", used);
       return new RuleEngine.ConditionResult(held, evidence);
     }
   }

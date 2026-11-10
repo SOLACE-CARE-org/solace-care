@@ -2,8 +2,8 @@ package care.solace.tracking.rules;
 
 import care.solace.events.Events;
 import care.solace.tracking.PersonalData;
-import care.solace.tracking.cycles.CycleReconciler;
 import care.solace.tracking.elements.ElementLibrary;
+import care.solace.tracking.episodes.EpisodeReconciler;
 import care.solace.tracking.modules.ModuleStore;
 import care.solace.tracking.sync.Sync;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,7 +37,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The pattern check (Tracking Service Spec, How the pattern check runs; D51). After every push or
- * delete, in the same transaction and right after the cycle reconciler; and nightly, so window
+ * delete, in the same transaction and right after the episode reconciler; and nightly, so window
  * rules stay right as days fall out of the window. Thresholds come from rule rows only; notes are
  * never read. A rule states a fact; it never scores, labels or predicts.
  */
@@ -46,7 +46,6 @@ public class PatternCheck implements PersonalData {
 
   private static final Logger LOG = LoggerFactory.getLogger(PatternCheck.class);
   private static final ObjectMapper JSON = new ObjectMapper();
-  static final Set<String> CYCLE_ELEMENTS = Set.of("flow_intensity", "period_start", "period_end");
   static final ZoneId DEFAULT_ZONE = ZoneId.of("Africa/Douala");
 
   /** Payload of tracking.recommendation.created v1: ids and codes only, never health data. */
@@ -65,7 +64,7 @@ public class PatternCheck implements PersonalData {
 
   private final JdbcClient db;
   private final Sync sync;
-  private final CycleReconciler cycles;
+  private final EpisodeReconciler episodes;
   private final ElementLibrary library;
   private final ModuleStore modules;
   private final ApplicationEventPublisher events;
@@ -75,7 +74,7 @@ public class PatternCheck implements PersonalData {
   PatternCheck(
       JdbcClient db,
       Sync sync,
-      CycleReconciler cycles,
+      EpisodeReconciler episodes,
       ElementLibrary library,
       ModuleStore modules,
       ApplicationEventPublisher events,
@@ -83,7 +82,7 @@ public class PatternCheck implements PersonalData {
       Clock clock) {
     this.db = db;
     this.sync = sync;
-    this.cycles = cycles;
+    this.episodes = episodes;
     this.library = library;
     this.modules = modules;
     this.events = events;
@@ -259,7 +258,7 @@ public class PatternCheck implements PersonalData {
     return false;
   }
 
-  /** Daily values of the bound elements over the last [400] days, and the person's cycles. */
+  /** Daily values of the bound elements over the last [400] days, and the person's episodes. */
   RuleEngine.Signals signals(UUID user, Set<String> bound, LocalDate today) {
     Map<String, NavigableMap<LocalDate, Object>> daily = new HashMap<>();
     Set<String> wanted = new HashSet<>(bound);
@@ -273,7 +272,7 @@ public class PatternCheck implements PersonalData {
         daily.computeIfAbsent(o.elementCode(), k -> new TreeMap<>()).put(o.observedOn(), value);
       }
     }
-    return new RuleEngine.Signals(today, daily, cycles.cycles(user));
+    return new RuleEngine.Signals(today, daily, episodes.episodes(user));
   }
 
   record Enrolment(UUID moduleId, UUID versionId, String answer) {}
