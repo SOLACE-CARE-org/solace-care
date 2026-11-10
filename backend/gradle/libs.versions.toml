@@ -17,7 +17,7 @@ google-java-format = "1.28.0"
 keycloak = "26.3.1"
 testcontainers-keycloak = "3.7.0"
 # 1.21.4+ speaks the Docker API version that Docker Engine 29 requires
-testcontainers = "1.21.4"
+testcontainers = "2.0.5"
 jackson = "2.19.1"
 slf4j = "2.0.17"
 json-schema-validator = "1.5.9"
