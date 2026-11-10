@@ -21,17 +21,21 @@ type Element = TrackingSchemas['Element'];
 type Rule = TrackingSchemas['Rule'];
 type Condition = TrackingSchemas['Condition'];
 type TestResult = TrackingSchemas['TestResult'];
+type Vocabulary = TrackingSchemas['RuleVocabulary'];
+type VocabularySignal = Vocabulary['signals'][number];
 
-const CYCLE_SIGNALS = ['cycle_length_days', 'period_days', 'very_heavy_days'] as const;
-const NUMBER_COMPARISONS = ['gt', 'gte', 'lt', 'lte', 'eq'] as const;
-const ENUM_COMPARISONS = ['eq', 'in'] as const;
 const MODES = ['at_least', 'at_most'] as const;
+type Field = 'count' | 'mode' | 'window' | 'minData';
 
-/** A signal choice: a daily element value, or a cycle signal. */
+/**
+ * A signal choice from the version's rule vocabulary (D61): a daily element value, or a cycle
+ * signal. The vocabulary also says which operators and comparisons each one allows.
+ */
 interface SignalChoice {
   key: string;
   signal: Condition['signal'];
   element?: string;
+  kind: VocabularySignal['kind'];
   label: string;
 }
 
@@ -214,7 +218,7 @@ function blankCondition(): Condition {
                   />
                 </label>
               }
-              @if (c.operator === 'days_in_window') {
+              @if (hasField(c, 'mode')) {
                 <label class="sl-field">
                   <span>{{ 'admin.modules.rules.mode' | transloco }}</span>
                   <select
@@ -231,7 +235,7 @@ function blankCondition(): Condition {
                   </select>
                 </label>
               }
-              @if (c.operator !== 'average_in_window') {
+              @if (hasField(c, 'count')) {
                 <label class="sl-field small">
                   <span>{{ 'admin.modules.rules.count' | transloco }}</span>
                   <input
@@ -244,7 +248,7 @@ function blankCondition(): Condition {
                   />
                 </label>
               }
-              @if (c.operator !== 'consecutive_cycles') {
+              @if (hasField(c, 'window')) {
                 <label class="sl-field small">
                   <span>{{ 'admin.modules.rules.window' | transloco }}</span>
                   <input
@@ -578,6 +582,7 @@ export class RulesStep {
   readonly selectedId = signal<string | null>(null);
   readonly draft = signal<Rule | null>(null);
   readonly results = signal<TestResult[]>([]);
+  readonly vocabulary = signal<Vocabulary | null>(null);
   readonly busy = signal(false);
   readonly testing = signal(false);
   readonly failed = signal(false);
@@ -588,35 +593,24 @@ export class RulesStep {
   readonly selected = computed(() => this.rules().find((r) => r.id === this.selectedId()));
   readonly problems = computed(() => this.version().problems ?? []);
 
-  /** The bound elements, with what each offers rules. */
-  private readonly bound = computed(() => {
-    const codes = new Set((this.version().elements ?? []).map((b) => b.code));
-    return this.library().filter((e) => codes.has(e.code));
-  });
-
+  /** The signals Tracking offers this version's rules, labelled in the admin's language. */
   readonly signalChoices = computed<SignalChoice[]>(() => {
-    const choices: SignalChoice[] = [];
-    for (const e of this.bound()) {
-      // Cycle elements can be read day by day too, as pcos.no_period does (D54).
-      if (e.signals.includes('daily_value') || CYCLE_SIGNALS.some((s) => e.signals.includes(s))) {
-        choices.push({
-          key: `daily_value:${e.code}`,
-          signal: 'daily_value',
-          element: e.code,
-          label: this.transloco.translate('admin.modules.rules.daily', { name: this.nameOf(e) }),
-        });
-      }
-    }
-    for (const s of CYCLE_SIGNALS) {
-      if (this.bound().some((e) => e.signals.includes(s))) {
-        choices.push({
-          key: s,
-          signal: s,
-          label: this.transloco.translate(`admin.modules.rules.signals.${s}`),
-        });
-      }
-    }
-    return choices;
+    this.lang();
+    return (this.vocabulary()?.signals ?? []).map((s) => {
+      const e = s.element ? this.library().find((x) => x.code === s.element) : undefined;
+      return {
+        key: s.key,
+        signal: s.signal,
+        element: s.element ?? undefined,
+        kind: s.kind,
+        label:
+          s.kind === 'DAILY'
+            ? this.transloco.translate('admin.modules.rules.daily', {
+                name: e ? this.nameOf(e) : s.element,
+              })
+            : this.transloco.translate(`admin.modules.rules.signals.${s.signal}`),
+      };
+    });
   });
 
   readonly specialtyChoices = computed(() => {
@@ -633,6 +627,12 @@ export class RulesStep {
 
   constructor() {
     this.transloco.langChanges$.subscribe((lang) => this.lang.set(lang));
+    // The vocabulary follows the version's bound elements, so it is read again with the version.
+    effect(() => {
+      const id = this.version().id;
+      void this.version().elements;
+      if (id) untracked(() => void this.loadVocabulary(id));
+    });
     effect(() => {
       const rules = this.rules();
       untracked(() => {
@@ -717,16 +717,57 @@ export class RulesStep {
     return c.signal === 'daily_value' ? `daily_value:${c.element}` : c.signal;
   }
 
+  private vocabularyFor(c: Condition): VocabularySignal | undefined {
+    const key = this.signalKey(c);
+    return this.vocabulary()?.signals.find((s) => s.key === key);
+  }
+
   operatorsFor(c: Condition): Condition['operator'][] {
-    return c.signal === 'daily_value'
-      ? ['days_in_window', 'average_in_window']
-      : ['consecutive_cycles'];
+    const ops = this.vocabularyFor(c)?.operators.map((o) => o.code) ?? [];
+    // A saved rule whose operator is no longer offered still shows it, so it can be changed.
+    return ops.includes(c.operator) || !c.operator ? ops : [...ops, c.operator];
   }
 
   comparisonsFor(c: Condition): readonly Condition['comparison'][] {
-    return this.valuesOf(c) && c.operator === 'days_in_window'
-      ? ENUM_COMPARISONS
-      : NUMBER_COMPARISONS;
+    const op = this.vocabularyFor(c)?.operators.find((o) => o.code === c.operator);
+    return op?.comparisons ?? [c.comparison];
+  }
+
+  hasField(c: Condition, field: Field): boolean {
+    const op = this.vocabulary()?.operators.find((o) => o.code === c.operator);
+    return op ? (op.fields as string[]).includes(field) : false;
+  }
+
+  async loadVocabulary(versionId: string) {
+    try {
+      this.vocabulary.set(
+        orThrow(
+          await this.api.client.GET('/admin/v1/tracking/versions/{versionId}/rule-vocabulary', {
+            params: { path: { versionId } },
+          }),
+        ),
+      );
+      this.adoptVocabulary();
+    } catch {
+      this.failed.set(true);
+    }
+  }
+
+  /** A new rule drafted before the vocabulary arrived starts on its first signal. */
+  private adoptVocabulary() {
+    const first = this.signalChoices()[0];
+    if (this.selectedId() !== 'new' || !first) return;
+    const known = new Set(this.signalChoices().map((s) => s.key));
+    this.draft.update((r) =>
+      r
+        ? {
+            ...r,
+            conditions: r.conditions.map((c) =>
+              known.has(this.signalKey(c)) ? c : { ...c, ...this.forSignal(first) },
+            ),
+          }
+        : r,
+    );
   }
 
   /** The labelled values of an ENUM element, for a daily condition on it; else null. */
@@ -869,7 +910,7 @@ export class RulesStep {
   }
 
   private forSignal(choice: SignalChoice): Partial<Condition> {
-    if (choice.signal === 'daily_value') {
+    if (choice.kind === 'DAILY') {
       const c: Partial<Condition> = {
         signal: 'daily_value',
         element: choice.element,

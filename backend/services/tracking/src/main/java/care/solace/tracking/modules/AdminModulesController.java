@@ -186,6 +186,28 @@ class AdminModulesController {
   record TestResult(
       String history, String ruleCode, boolean fires, boolean blockedByUnless, JsonNode evidence) {}
 
+  /** One way of reading a signal, and the comparisons it allows there. */
+  record SignalOperator(String code, List<String> comparisons) {}
+
+  /** A signal this version's rules may read (D61). */
+  record VocabularySignal(
+      String key,
+      String signal,
+      String element,
+      String kind,
+      String valueType,
+      List<String> values,
+      List<SignalOperator> operators) {}
+
+  /** An operator, the condition fields the builder shows for it and its message placeholders. */
+  record VocabularyOperator(String code, List<String> fields, List<String> evidenceKeys) {}
+
+  /** Everything the rule form may offer for one version, from the lists the validator uses. */
+  record RuleVocabulary(
+      List<VocabularySignal> signals,
+      List<VocabularyOperator> operators,
+      List<String> unlessFields) {}
+
   // --- Library and modules ----------------------------------------------------------------------
 
   @GetMapping("/admin/v1/tracking/elements")
@@ -355,6 +377,40 @@ class AdminModulesController {
     var asset = images.upload(file.getBytes(), staff.id());
     audit.adminAction("tracking.image.upload", "image", asset.id().toString(), Map.of());
     return asset;
+  }
+
+  /**
+   * What the rule form may offer for this version: its signals, the operators that can read each
+   * and their comparisons, and the "unless" fields (D61). The validator checks against the same
+   * lists, so the builder keeps no copy of its own.
+   */
+  @GetMapping("/admin/v1/tracking/versions/{versionId}/rule-vocabulary")
+  RuleVocabulary ruleVocabulary(@AuthenticationPrincipal Jwt token, @PathVariable UUID versionId) {
+    gate.require(token, false);
+    var v = found(versionId);
+    var operators = care.solace.tracking.rules.Operators.all();
+    var signals =
+        care.solace.tracking.rules.SignalCatalog.forModule(modules.bound(v.id())).stream()
+            .map(
+                s ->
+                    new VocabularySignal(
+                        s.key(),
+                        s.signal(),
+                        s.element(),
+                        s.kind().name(),
+                        s.valueType().name(),
+                        s.values(),
+                        operators.stream()
+                            .filter(o -> o.accepts(s))
+                            .map(o -> new SignalOperator(o.code(), o.comparisons(s)))
+                            .toList()))
+            .toList();
+    return new RuleVocabulary(
+        signals,
+        operators.stream()
+            .map(o -> new VocabularyOperator(o.code(), o.fields(), o.evidenceKeys()))
+            .toList(),
+        RuleRules.UNLESS_FIELDS.stream().sorted().toList());
   }
 
   /** Runs each rule of the draft against the made-up histories; never real people's data. */
