@@ -656,6 +656,29 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/versions/{versionId}/rule-vocabulary:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    get:
+      operationId: getRuleVocabulary
+      summary: What the rule form may offer for this version (D61)
+      description: >-
+        The signals of the version's bound elements, the operators that can read each with the
+        comparisons they allow, and the "unless" fields. Rule validation uses the same lists.
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: The rule vocabulary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleVocabulary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /admin/v1/tracking/versions/{versionId}/submission:
     parameters:
       - $ref: "#/components/parameters/VersionId"
@@ -1575,6 +1598,73 @@ components:
         publishedAt:
           type: string
           format: date-time
+    RuleVocabulary:
+      type: object
+      required: [signals, operators, unlessFields]
+      properties:
+        signals:
+          type: array
+          items:
+            type: object
+            required: [key, signal, kind, valueType, values, operators]
+            properties:
+              key:
+                description: daily_value:<element> or the cycle signal's code
+                type: string
+              signal:
+                type: string
+                enum: [daily_value, cycle_length_days, period_days, very_heavy_days]
+              element:
+                type: [string, "null"]
+              kind:
+                type: string
+                enum: [DAILY, CYCLE]
+              valueType:
+                type: string
+                enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
+              values:
+                description: The allowed values of an ENUM element; empty otherwise
+                type: array
+                items:
+                  type: string
+              operators:
+                type: array
+                items:
+                  type: object
+                  required: [code, comparisons]
+                  properties:
+                    code:
+                      type: string
+                      enum: [consecutive_cycles, days_in_window, average_in_window]
+                    comparisons:
+                      type: array
+                      items:
+                        type: string
+                        enum: [gt, gte, lt, lte, eq, in]
+        operators:
+          type: array
+          items:
+            type: object
+            required: [code, fields, evidenceKeys]
+            properties:
+              code:
+                type: string
+                enum: [consecutive_cycles, days_in_window, average_in_window]
+              fields:
+                description: Condition fields the form shows besides signal, comparison and threshold
+                type: array
+                items:
+                  type: string
+                  enum: [count, mode, window, minData]
+              evidenceKeys:
+                description: Placeholders a message can use; c1., c2. prefixes when a rule has several conditions
+                type: array
+                items:
+                  type: string
+        unlessFields:
+          type: array
+          items:
+            type: string
     TestResult:
       type: object
       properties:
