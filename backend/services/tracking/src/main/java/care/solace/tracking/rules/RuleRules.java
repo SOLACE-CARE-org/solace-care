@@ -71,17 +71,9 @@ public final class RuleRules {
 
   /**
    * Problems with a rule's conditions and unless, given the module's bound elements; empty when it
-   * is fine.
+   * is fine. Signals come from {@link SignalCatalog} and operators from {@link Operators}, the same
+   * lists the builder's rule vocabulary offers (D61).
    */
-  /**
-   * An element read day by day: one that offers daily_value, or a cycle element, whose daily value
-   * the launch rule pcos.no_period counts (Tracking Service Spec, Launch rules; D54).
-   */
-  public static boolean offersDailyValue(Element element) {
-    return element.signals().contains("daily_value")
-        || element.signals().stream().anyMatch(RuleEngine.CYCLE_SIGNALS::contains);
-  }
-
   public static List<String> problems(
       JsonNode conditions, JsonNode unless, Map<String, Element> bound) {
     List<String> problems = new ArrayList<>();
@@ -93,13 +85,13 @@ public final class RuleRules {
       return problems;
     }
     for (JsonNode c : conditions) {
-      String signal = c.path("signal").asText();
-      String operator = c.path("operator").asText();
+      String operatorCode = c.path("operator").asText();
       String comparison = c.path("comparison").asText();
-      if (!RuleEngine.OPERATORS.contains(operator)) {
+      var operator = Operators.find(operatorCode);
+      if (operator.isEmpty()) {
         problems.add("operator");
       }
-      if (!RuleEngine.COMPARISONS.contains(comparison)) {
+      if (!Operators.comparisons().contains(comparison)) {
         problems.add("comparison");
       }
       JsonNode threshold = c.path("threshold");
@@ -108,36 +100,24 @@ public final class RuleRules {
           : threshold.isMissingNode() || threshold.isNull()) {
         problems.add("threshold");
       }
-      if (RuleEngine.CYCLE_SIGNALS.contains(signal)) {
-        Element flow = bound.get("flow_intensity");
-        if (flow == null || !flow.signals().contains(signal)) {
-          problems.add("signal not offered by this module: " + signal);
+      var signal = SignalCatalog.find(c, bound);
+      if (signal.isEmpty()) {
+        String name =
+            c.path("signal").asText().equals("daily_value")
+                ? c.path("element").asText()
+                : c.path("signal").asText();
+        problems.add("signal not offered by this module: " + name);
+      }
+      if (operator.isPresent()) {
+        if (signal.isPresent()) {
+          if (!operator.get().accepts(signal.get())) {
+            problems.add("operator " + operatorCode + " cannot read " + signal.get().key());
+          } else if (Operators.comparisons().contains(comparison)
+              && !operator.get().comparisons(signal.get()).contains(comparison)) {
+            problems.add("comparison " + comparison + " cannot be used here");
+          }
         }
-        if (!operator.equals("consecutive_cycles") || c.path("count").asInt(0) < 1) {
-          problems.add("cycle signals use consecutive_cycles with a count");
-        }
-      } else if (signal.equals("daily_value")) {
-        Element element = bound.get(c.path("element").asText());
-        if (element == null || !offersDailyValue(element)) {
-          problems.add("signal not offered by this module: " + c.path("element").asText());
-        }
-        if (operator.equals("consecutive_cycles")) {
-          problems.add("daily values use a window operator");
-        }
-        int window = c.path("window").asInt(0);
-        if (window < 1 || window > 365) {
-          problems.add("window: 1 to 365 days");
-        }
-        if (c.path("minData").asInt(0) > window) {
-          problems.add("minimum data cannot exceed the window");
-        }
-        if (operator.equals("days_in_window")
-            && (c.path("count").asInt(-1) < 0
-                || !Set.of("at_least", "at_most").contains(c.path("mode").asText()))) {
-          problems.add("days_in_window needs a count and at_least or at_most");
-        }
-      } else {
-        problems.add("signal");
+        problems.addAll(operator.get().problems(c));
       }
     }
     if (unless != null && unless.isArray()) {
@@ -150,7 +130,10 @@ public final class RuleRules {
     return problems;
   }
 
-  /** Fills {n}, {threshold}, {window}, {count}, {average} and {logged} from the evidence. */
+  /**
+   * Fills {n}, {threshold}, {window}, {count}, {average} and {logged} from the evidence, and
+   * {c1.n}, {c2.threshold} and so on for rules with several conditions.
+   */
   public static String render(String template, Map<String, Object> evidence) {
     String out = template;
     for (var e : evidence.entrySet()) {
