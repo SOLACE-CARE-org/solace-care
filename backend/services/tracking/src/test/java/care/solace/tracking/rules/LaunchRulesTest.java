@@ -2,10 +2,13 @@ package care.solace.tracking.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import care.solace.tracking.episodes.EpisodeModel;
+import care.solace.tracking.episodes.TestModels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,17 +22,18 @@ class LaunchRulesTest {
 
   private static final ObjectMapper JSON = new ObjectMapper();
   private static final LocalDate TODAY = LocalDate.of(2026, 10, 18);
+  private static final List<EpisodeModel> MODELS = TestModels.launch().all();
 
   static final Map<String, String> CONDITIONS =
       Map.of(
           "pcos.long_cycles",
-          "[{\"signal\":\"cycle_length_days\",\"operator\":\"consecutive_cycles\",\"comparison\":\"gt\",\"threshold\":35,\"count\":3}]",
+          "[{\"signal\":\"menstrual_cycle.length_days\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gt\",\"threshold\":35,\"count\":3}]",
           "pcos.long_periods",
-          "[{\"signal\":\"period_days\",\"operator\":\"consecutive_cycles\",\"comparison\":\"gte\",\"threshold\":8,\"count\":2}]",
+          "[{\"signal\":\"menstrual_cycle.period_days\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gte\",\"threshold\":8,\"count\":2}]",
           "pcos.no_period",
           "[{\"signal\":\"daily_value\",\"element\":\"flow_intensity\",\"operator\":\"days_in_window\",\"comparison\":\"in\",\"threshold\":[\"light\",\"medium\",\"heavy\",\"very_heavy\"],\"mode\":\"at_most\",\"count\":0,\"window\":90,\"minData\":30}]",
           "pcos.heavy_flow",
-          "[{\"signal\":\"very_heavy_days\",\"operator\":\"consecutive_cycles\",\"comparison\":\"gte\",\"threshold\":3,\"count\":2}]",
+          "[{\"signal\":\"menstrual_cycle.very_heavy_days\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gte\",\"threshold\":3,\"count\":2}]",
           "checkin.low_mood",
           "[{\"signal\":\"daily_value\",\"element\":\"mood\",\"operator\":\"days_in_window\",\"comparison\":\"lte\",\"threshold\":2,\"mode\":\"at_least\",\"count\":10,\"window\":14,\"minData\":10}]",
           "checkin.short_sleep",
@@ -44,7 +48,7 @@ class LaunchRulesTest {
   private Map<String, Set<String>> fired() throws Exception {
     Map<String, Set<String>> fired = new LinkedHashMap<>();
     for (var history : SyntheticHistories.all(TODAY)) {
-      var signals = history.signals(TODAY, 10);
+      var signals = history.signals(TODAY, MODELS);
       for (var rule : CONDITIONS.entrySet()) {
         JsonNode conditions = JSON.readTree(rule.getValue());
         JsonNode unless = JSON.readTree(UNLESS.getOrDefault(rule.getKey(), "[]"));
@@ -77,10 +81,10 @@ class LaunchRulesTest {
             .orElseThrow();
     var result =
         RuleEngine.evaluate(
-            JSON.readTree(CONDITIONS.get("pcos.long_cycles")), history.signals(TODAY, 10));
+            JSON.readTree(CONDITIONS.get("pcos.long_cycles")), history.signals(TODAY, MODELS));
     assertThat(result.held()).isTrue();
     assertThat(result.evidence().get("n")).isEqualTo(3);
-    assertThat((java.util.List<?>) result.evidence().get("cycles")).hasSize(3);
+    assertThat((java.util.List<?>) result.evidence().get("episodes")).hasSize(3);
   }
 
   @Test

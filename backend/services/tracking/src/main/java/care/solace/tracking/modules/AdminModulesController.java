@@ -5,6 +5,7 @@ import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.tracking.elements.ElementController;
 import care.solace.tracking.elements.ElementLibrary;
+import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleEngine;
 import care.solace.tracking.rules.RuleRules;
 import care.solace.tracking.rules.SyntheticHistories;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +57,7 @@ class AdminModulesController {
   private final ElementLibrary library;
   private final ImageAssets images;
   private final AuditLog audit;
-  private final int gapDays;
+  private final EpisodeModels models;
   private final Clock clock;
 
   AdminModulesController(
@@ -67,7 +67,7 @@ class AdminModulesController {
       ElementLibrary library,
       ImageAssets images,
       AuditLog audit,
-      @Value("${solace.tracking.cycle.new-period-gap-days:10}") int gapDays,
+      EpisodeModels models,
       Clock clock) {
     this.gate = gate;
     this.modules = modules;
@@ -75,7 +75,7 @@ class AdminModulesController {
     this.library = library;
     this.images = images;
     this.audit = audit;
-    this.gapDays = gapDays;
+    this.models = models;
     this.clock = clock;
   }
 
@@ -190,6 +190,7 @@ class AdminModulesController {
   record SignalOperator(String code, List<String> comparisons) {}
 
   /** A signal this version's rules may read (D61). */
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   record VocabularySignal(
       String key,
       String signal,
@@ -197,6 +198,7 @@ class AdminModulesController {
       String kind,
       String valueType,
       List<String> values,
+      JsonNode labels,
       List<SignalOperator> operators) {}
 
   /** An operator, the condition fields the builder shows for it and its message placeholders. */
@@ -390,7 +392,8 @@ class AdminModulesController {
     var v = found(versionId);
     var operators = care.solace.tracking.rules.Operators.all();
     var signals =
-        care.solace.tracking.rules.SignalCatalog.forModule(modules.bound(v.id())).stream()
+        care.solace.tracking.rules.SignalCatalog.forModule(modules.bound(v.id()), models.all())
+            .stream()
             .map(
                 s ->
                     new VocabularySignal(
@@ -400,6 +403,7 @@ class AdminModulesController {
                         s.kind().name(),
                         s.valueType().name(),
                         s.values(),
+                        s.labels(),
                         operators.stream()
                             .filter(o -> o.accepts(s))
                             .map(o -> new SignalOperator(o.code(), o.comparisons(s)))
@@ -421,7 +425,7 @@ class AdminModulesController {
     LocalDate today = LocalDate.now(clock);
     List<TestResult> out = new ArrayList<>();
     for (var history : SyntheticHistories.all(today)) {
-      var signals = history.signals(today, gapDays);
+      var signals = history.signals(today, models.all());
       for (var r : store.rules(v.id())) {
         var result = RuleEngine.evaluate(r.conditions(), signals);
         boolean unless =
@@ -546,7 +550,7 @@ class AdminModulesController {
                         r.cooldownDays(),
                         r.repeatWithinDays(),
                         r.position(),
-                        RuleRules.problems(r.conditions(), r.unless(), bound)))
+                        RuleRules.problems(r.conditions(), r.unless(), bound, models.all())))
             .toList(),
         store.reviews(v.id()).stream()
             .map(x -> new ReviewView(x.reviewerName(), x.decision(), x.comments(), x.decidedAt()))

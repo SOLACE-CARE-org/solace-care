@@ -37,7 +37,7 @@ class ModuleBuilderIntegrationTest extends TrackingStackTest {
       staff("cr-1", "Dr. Fomba Grace", "CLINICAL_REVIEWER");
 
   private static final String LONG_CYCLES =
-      "[{\"signal\":\"cycle_length_days\",\"operator\":\"consecutive_cycles\",\"comparison\":\"gt\",\"threshold\":35,\"count\":3}]";
+      "[{\"signal\":\"menstrual_cycle.length_days\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gt\",\"threshold\":35,\"count\":3}]";
 
   @Test
   void aModuleIsDraftedReviewedBySomeoneElseAndPublished() throws Exception {

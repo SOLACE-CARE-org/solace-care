@@ -1,9 +1,11 @@
 package care.solace.tracking.rules;
 
 import care.solace.tracking.elements.ElementLibrary.Element;
+import care.solace.tracking.episodes.EpisodeModel;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,12 +72,15 @@ public final class RuleRules {
   }
 
   /**
-   * Problems with a rule's conditions and unless, given the module's bound elements; empty when it
-   * is fine. Signals come from {@link SignalCatalog} and operators from {@link Operators}, the same
-   * lists the builder's rule vocabulary offers (D61).
+   * Problems with a rule's conditions and unless, given the module's bound elements and the
+   * published episode models; empty when it is fine. Signals come from {@link SignalCatalog} and
+   * operators from {@link Operators}, the same lists the builder's rule vocabulary offers (D61).
    */
   public static List<String> problems(
-      JsonNode conditions, JsonNode unless, Map<String, Element> bound) {
+      JsonNode conditions,
+      JsonNode unless,
+      Map<String, Element> bound,
+      Collection<EpisodeModel> models) {
     List<String> problems = new ArrayList<>();
     if (conditions == null
         || !conditions.isArray()
@@ -100,7 +105,7 @@ public final class RuleRules {
           : threshold.isMissingNode() || threshold.isNull()) {
         problems.add("threshold");
       }
-      var signal = SignalCatalog.find(c, bound);
+      var signal = SignalCatalog.find(c, bound, models);
       if (signal.isEmpty()) {
         String name =
             c.path("signal").asText().equals("daily_value")

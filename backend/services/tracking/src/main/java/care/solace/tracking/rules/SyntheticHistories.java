@@ -1,7 +1,10 @@
 package care.solace.tracking.rules;
 
-import care.solace.tracking.cycles.CycleModel;
+import care.solace.tracking.episodes.Episode;
+import care.solace.tracking.episodes.EpisodeModel;
+import care.solace.tracking.episodes.Episodes;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,22 +20,37 @@ import java.util.TreeSet;
  */
 public final class SyntheticHistories {
 
-  /** One made-up person: what they logged, and their profile for "unless". */
+  /**
+   * One made-up person: what they logged, and their profile for "unless".
+   *
+   * @param daily day-state values per element
+   * @param events the days of each event element, such as period_start
+   */
   public record History(
       String code,
       Map<String, NavigableMap<LocalDate, Object>> daily,
-      SortedSet<LocalDate> starts,
-      SortedSet<LocalDate> ends,
+      Map<String, SortedSet<LocalDate>> events,
       Map<String, Object> profile) {
 
-    public RuleEngine.Signals signals(LocalDate today, int gapDays) {
-      @SuppressWarnings("unchecked")
-      Map<LocalDate, String> flow = new TreeMap<>();
-      daily
-          .getOrDefault("flow_intensity", new TreeMap<>())
-          .forEach((d, v) -> flow.put(d, String.valueOf(v)));
-      List<CycleModel.Cycle> cycles = CycleModel.cycles(flow, starts, ends, gapDays);
-      return new RuleEngine.Signals(today, daily, cycles);
+    /** The signals the rules read, with episodes found by each model as the reconciler would. */
+    public RuleEngine.Signals signals(LocalDate today, Collection<EpisodeModel> models) {
+      Map<String, List<Episode>> episodes = new LinkedHashMap<>();
+      for (EpisodeModel m : models) {
+        Map<LocalDate, String> activity = new TreeMap<>();
+        if (m.activityElement() != null) {
+          daily
+              .getOrDefault(m.activityElement(), new TreeMap<>())
+              .forEach((d, v) -> activity.put(d, String.valueOf(v)));
+        }
+        episodes.put(
+            m.code(),
+            Episodes.find(m, activity, eventDays(m.startElement()), eventDays(m.endElement())));
+      }
+      return new RuleEngine.Signals(today, daily, episodes);
+    }
+
+    private SortedSet<LocalDate> eventDays(String element) {
+      return element == null ? new TreeSet<>() : events.getOrDefault(element, new TreeSet<>());
     }
   }
 
@@ -91,7 +109,7 @@ public final class SyntheticHistories {
     }
     Map<String, NavigableMap<LocalDate, Object>> daily = new LinkedHashMap<>();
     daily.put("flow_intensity", flow);
-    return new History(code, daily, starts, new TreeSet<>(), profile);
+    return new History(code, daily, Map.of("period_start", starts), profile);
   }
 
   private static History noPeriod(String code, LocalDate today, Map<String, Object> profile) {
@@ -102,11 +120,7 @@ public final class SyntheticHistories {
       }
     }
     return new History(
-        code,
-        new LinkedHashMap<>(Map.of("flow_intensity", flow)),
-        new TreeSet<>(),
-        new TreeSet<>(),
-        profile);
+        code, new LinkedHashMap<>(Map.of("flow_intensity", flow)), Map.of(), profile);
   }
 
   private static History daily(
@@ -119,12 +133,7 @@ public final class SyntheticHistories {
     for (int i = 0; i < days; i++) {
       values.put(today.minusDays(i), value.apply(i));
     }
-    return new History(
-        code,
-        new LinkedHashMap<>(Map.of(element, values)),
-        new TreeSet<>(),
-        new TreeSet<>(),
-        Map.of());
+    return new History(code, new LinkedHashMap<>(Map.of(element, values)), Map.of(), Map.of());
   }
 
   private static History sparse(String code, LocalDate today) {
@@ -137,8 +146,7 @@ public final class SyntheticHistories {
     return new History(
         code,
         new LinkedHashMap<>(Map.of("mood", mood, "sleep_minutes", sleep)),
-        new TreeSet<>(),
-        new TreeSet<>(),
+        Map.of(),
         Map.of());
   }
 }

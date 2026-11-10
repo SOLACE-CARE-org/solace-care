@@ -1,6 +1,6 @@
 package care.solace.tracking.rules;
 
-import care.solace.tracking.cycles.CycleModel;
+import care.solace.tracking.episodes.Episode;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,21 +15,30 @@ import java.util.NavigableMap;
  * the rule's row; nothing here is a clinical number. Each condition is read by its operator from
  * the {@link Operators} registry (D61).
  *
- * <p>A condition: {@code signal} (daily_value of an {@code element}, or a cycle signal), {@code
- * operator} (consecutive_cycles, days_in_window, average_in_window), {@code comparison} (gt, gte,
- * lt, lte, eq, in), {@code threshold} (a number, or values for in), {@code count} (cycles, or days
- * for days_in_window), {@code mode} (at_least or at_most, days_in_window), {@code window} (days),
- * {@code minData} (logged days needed in the window).
+ * <p>A condition: {@code signal} (daily_value of an {@code element}, or an episode signal such as
+ * {@code menstrual_cycle.length_days}), {@code operator} (consecutive_episodes, days_in_window,
+ * average_in_window), {@code comparison} (gt, gte, lt, lte, eq, in), {@code threshold} (a number,
+ * or values for in), {@code count} (episodes, or days for days_in_window), {@code mode} (at_least
+ * or at_most, days_in_window), {@code window} (days), {@code minData} (logged days needed in the
+ * window).
  */
 public final class RuleEngine {
 
-  /** What the checker reads: daily values per element (unlogged days absent), and cycles. */
+  /**
+   * What the checker reads: daily values per element (unlogged days absent), and episodes per
+   * episode model, oldest first.
+   */
   public record Signals(
       LocalDate today,
       Map<String, NavigableMap<LocalDate, Object>> daily,
-      List<CycleModel.Cycle> cycles) {}
+      Map<String, List<Episode>> episodes) {
 
-  /** The outcome of one condition, and the exact cycles or days it used. */
+    public List<Episode> episodes(String model) {
+      return episodes.getOrDefault(model, List.of());
+    }
+  }
+
+  /** The outcome of one condition, and the exact episodes or days it used. */
   public record ConditionResult(boolean held, Map<String, Object> evidence) {}
 
   public record Result(boolean held, List<ConditionResult> conditions) {
