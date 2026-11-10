@@ -188,9 +188,16 @@ paths:
               additionalProperties: false
               properties:
                 answer:
-                  description: The code of the chosen answer to the module's enrolment question.
+                  description: The code of the chosen answer to the module's enrolment question. Deprecated; send answers.
+                  deprecated: true
                   type: string
                   maxLength: 40
+                answers:
+                  description: Answers to the module's context questions, by question code; a skipped question is left out.
+                  type: object
+                  maxProperties: 3
+                  additionalProperties:
+                    $ref: "#/components/schemas/ContextAnswerValue"
                 reminderTime:
                   type: string
                   pattern: "^[0-2][0-9]:[0-5][0-9](:[0-5][0-9])?$"
@@ -240,10 +247,90 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /v1/tracking/context-questions:
+    get:
+      operationId: listContextQuestions
+      summary: The published context questions (D61); answers can only switch rules off
+      tags: [modules]
+      responses:
+        "200":
+          description: The questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContextQuestion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/context-answers:
+    get:
+      operationId: getContextAnswers
+      summary: The person's answers by question code; audited
+      tags: [modules]
+      responses:
+        "200":
+          description: The answers; a skipped question is absent
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/ContextAnswerValue"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/tracking/context-answers/{questionCode}:
+    parameters:
+      - name: questionCode
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+    put:
+      operationId: saveContextAnswer
+      summary: Answer a context question; needs tracking consent
+      tags: [modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [value]
+              properties:
+                value:
+                  $ref: "#/components/schemas/ContextAnswerValue"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: skipContextQuestion
+      summary: Skip a question again; the answer is deleted
+      tags: [modules]
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /v1/tracking/profile:
     get:
       operationId: getTrackingProfile
-      summary: Profile answers that can only switch rules off
+      summary: Profile answers that can only switch rules off. Deprecated; use context answers.
+      deprecated: true
       tags: [modules]
       responses:
         "200":
@@ -256,7 +343,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
     put:
       operationId: saveTrackingProfile
-      summary: Save the profile answers
+      summary: Save the profile answers as context answers. Deprecated; use context answers.
+      deprecated: true
       tags: [modules]
       requestBody:
         required: true
@@ -679,6 +767,53 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /admin/v1/tracking/context-questions:
+    get:
+      operationId: adminListContextQuestions
+      summary: The published context questions a module may ask and a rule may read
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: The questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContextQuestion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/versions/{versionId}/questions:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    put:
+      operationId: saveModuleQuestions
+      summary: The context questions asked on enrolment, in order; drafts only
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 3
+              items:
+                type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/tracking/versions/{versionId}/submission:
     parameters:
       - $ref: "#/components/parameters/VersionId"
@@ -1295,7 +1430,15 @@ components:
         minAge:
           type: integer
         enrolmentQuestion:
+          description: Deprecated; modules ask context questions (questions).
+          deprecated: true
           $ref: "#/components/schemas/EnrolmentQuestion"
+        questions:
+          description: Codes of the context questions asked on enrolment, in order (at most 3).
+          type: array
+          maxItems: 3
+          items:
+            type: string
         reminderDefault:
           type: string
         elements:
@@ -1309,7 +1452,53 @@ components:
           type: boolean
         reminderTime:
           type: string
+    ContextAnswerValue:
+      description: true or false, an option code, or a list of option codes, by the question's type.
+      oneOf:
+        - type: boolean
+        - type: string
+          maxLength: 40
+        - type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 40
+    ContextQuestion:
+      type: object
+      required: [code, version, type, scope, labels, options]
+      properties:
+        code:
+          type: string
+        version:
+          type: integer
+        type:
+          type: string
+          x-extensible-enum: [YES_NO, ONE_CHOICE, MANY_CHOICES]
+        scope:
+          description: PROFILE questions are on the "About you for tracking" screen; ENROLMENT ones only when enrolling.
+          type: string
+          x-extensible-enum: [PROFILE, ENROLMENT]
+        labels:
+          description: '{"en": {"question": ...}, "fr": {"question": ...}}'
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              question:
+                type: string
+        options:
+          type: array
+          items:
+            type: object
+            required: [code, labels]
+            properties:
+              code:
+                type: string
+              labels:
+                $ref: "#/components/schemas/Text"
     TrackingProfile:
+      description: Deprecated; use context answers.
+      deprecated: true
       type: object
       additionalProperties: false
       properties:
@@ -1464,7 +1653,12 @@ components:
           items:
             type: object
             properties:
+              question:
+                description: The context question's code; its answer switches the rule off.
+                type: string
               field:
+                description: Deprecated; name a question instead.
+                deprecated: true
                 type: string
                 enum: [pcos_status, trying_to_conceive, treatments, enrolment_answer]
               equals: {}
@@ -1557,7 +1751,15 @@ components:
         minAge:
           type: integer
         enrolmentQuestion:
+          description: Deprecated; modules ask context questions (questions).
+          deprecated: true
           $ref: "#/components/schemas/EnrolmentQuestion"
+        questions:
+          description: Codes of the context questions asked on enrolment, in order (at most 3).
+          type: array
+          maxItems: 3
+          items:
+            type: string
         reminderDefault:
           type: string
         elements:
@@ -1667,9 +1869,14 @@ components:
                 items:
                   type: string
         unlessFields:
+          description: The codes of the published context questions
           type: array
           items:
             type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContextQuestion"
     TestResult:
       type: object
       properties:
