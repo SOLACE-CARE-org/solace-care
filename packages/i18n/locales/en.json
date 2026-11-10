@@ -1108,25 +1108,16 @@
         "enrolment": "Enrolment",
         "minAge": "Minimum age",
         "reminder": "Suggested reminder",
-        "question": "Enrolment question",
-        "questionKind": {
-          "NONE": "None",
-          "YES_NO": "Yes or no",
-          "CHOICE": "Short choice"
-        },
-        "questionEn": "Question · EN",
-        "questionFr": "Question · FR",
-        "option": "Option {{n}}",
-        "optionCode": "Code",
-        "optionEn": "EN",
-        "optionFr": "FR",
-        "addOption": "Add an option",
-        "removeOption": "Remove option {{n}}",
         "questionNote": "Solace never asks for sex at birth. An enrolment answer can only switch rules off.",
         "preview": "Preview · catalogue card",
         "add": "Add",
         "save": "Save draft",
-        "next": "Next: elements"
+        "next": "Next: elements",
+        "questions": "Enrolment questions",
+        "questionsNone": "No context questions are published yet.",
+        "questionsHint": "Asked once when someone enrols, up to {{n}}. Every answer can be skipped.",
+        "oldQuestion": "Older enrolment question, kept until you remove it: {{question}}",
+        "removeOldQuestion": "Remove the older question"
       },
       "elements": {
         "library": "Element library",
@@ -1190,7 +1181,7 @@
         "messageEn": "Message · EN",
         "messageFr": "Message · FR",
         "placeholders": "You can use {n}, {threshold}, {window}, {count}, {average} and {logged}.",
-        "blockedNote": "Words that suggest a diagnosis are blocked. Unless conditions: {{unless}} (profile fields and the enrolment answer can only switch a rule off).",
+        "blockedNote": "Words that suggest a diagnosis are blocked. Unless conditions: {{unless}} (answers to context questions can only switch a rule off).",
         "unlessNone": "none",
         "needsFixing": "This rule needs fixing before the version can be submitted.",
         "save": "Save rule",
@@ -1216,7 +1207,15 @@
           "sparse_logging": "Sparse logging"
         },
         "back": "Back",
-        "submit": "Submit for clinical review"
+        "submit": "Submit for clinical review",
+        "unlessTitle": "Switch off when",
+        "unlessQuestion": "Question",
+        "unlessAnswer": "Answer",
+        "unlessOld": "Older condition: {{field}}",
+        "removeUnless": "Remove condition {{n}}",
+        "addUnless": "Add an answer that switches it off",
+        "yes": "Yes",
+        "no": "No"
       },
       "problems": {
         "title": "Before it can be submitted",
@@ -1252,7 +1251,8 @@
           "minAge": "Minimum age",
           "reminder": "Suggested reminder",
           "question": "Enrolment question",
-          "elements": "Elements"
+          "elements": "Elements",
+          "questions": "Enrolment questions"
         },
         "newImage": "New image",
         "ruleField": "{{code}}, {{part}}",
@@ -2396,6 +2396,14 @@
       "start": "Start tracking {{count}} modules",
       "startOne": "Start tracking 1 module",
       "skip": "Skip for now"
+    },
+    "about": {
+      "title": "About you for tracking",
+      "intro": "A few questions that help pattern checks fit you. Answers stay in tracking, can only stop a check from showing, and you can skip or change them at any time.",
+      "none": "There are no questions for now.",
+      "skip": "Skip this question",
+      "many": "Choose all that apply.",
+      "enrolIntro": "You can skip any of these. Answers can only stop a pattern check from showing."
     }
   },
   "healthCheck": {

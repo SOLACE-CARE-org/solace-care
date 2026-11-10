@@ -26,7 +26,10 @@ export default function SignupModules() {
   const [chosen, setChosen] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const offered = (modules.data ?? []).filter((m) => !m.enrolmentQuestion);
+  // Modules that ask questions on enrolment are added from Track, where the questions are asked.
+  const offered = (modules.data ?? []).filter(
+    (m) => !m.enrolmentQuestion && !(m.questions ?? []).length,
+  );
 
   const start = async () => {
     setBusy(true);

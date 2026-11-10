@@ -5,10 +5,11 @@ import care.solace.errors.SolaceException;
 import care.solace.tracking.Seekers;
 import care.solace.tracking.TrackingError;
 import care.solace.tracking.consent.TrackingConsent;
+import care.solace.tracking.context.ContextAnswers;
+import care.solace.tracking.context.ContextQuestions;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -33,9 +34,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The module catalogue, enrolment and the person's tracking profile (tag modules; D51). Seekers
- * choose modules themselves; a module's minimum age is the only filter, read from Core at
- * enrolment.
+ * The module catalogue and enrolment (tag modules; D51). Seekers choose modules themselves; a
+ * module's minimum age is the only filter, read from Core at enrolment. The context questions a
+ * module asks are answered here once and kept with the patient's other answers (D61).
  */
 @RestController
 class SeekerModulesController {
@@ -45,6 +46,8 @@ class SeekerModulesController {
   private final ModuleStore store;
   private final Modules modules;
   private final AgeCheck age;
+  private final ContextQuestions questions;
+  private final ContextAnswers answers;
   private final JdbcClient db;
   private final Clock clock;
 
@@ -54,6 +57,8 @@ class SeekerModulesController {
       ModuleStore store,
       Modules modules,
       AgeCheck age,
+      ContextQuestions questions,
+      ContextAnswers answers,
       JdbcClient db,
       Clock clock) {
     this.seekers = seekers;
@@ -61,6 +66,8 @@ class SeekerModulesController {
     this.store = store;
     this.modules = modules;
     this.age = age;
+    this.questions = questions;
+    this.answers = answers;
     this.db = db;
     this.clock = clock;
   }
@@ -81,22 +88,23 @@ class SeekerModulesController {
       UUID imageId,
       Integer minAge,
       JsonNode enrolmentQuestion,
+      List<String> questions,
       LocalTime reminderDefault,
       List<BindingView> elements,
       String minAppVersion,
       boolean enrolled,
       LocalTime reminderTime) {}
 
-  record Enrol(@Size(max = 40) String answer, LocalTime reminderTime) {}
+  /**
+   * @param answer the single enrolment question's option (deprecated: use answers)
+   * @param answers answers to the module's context questions, by code; a skipped one is absent
+   */
+  record Enrol(
+      @Size(max = 40) String answer,
+      @Size(max = Modules.MAX_QUESTIONS) Map<String, JsonNode> answers,
+      LocalTime reminderTime) {}
 
   record Reminder(LocalTime reminderTime) {}
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  record Profile(
-      @jakarta.validation.constraints.Pattern(regexp = "DIAGNOSED|NOT_DIAGNOSED|NOT_SURE")
-          String pcosStatus,
-      Boolean tryingToConceive,
-      @Size(max = 10) List<@NotBlank @Size(max = 40) String> treatments) {}
 
   @GetMapping("/v1/tracking/modules")
   List<CatalogueModule> catalogue(@AuthenticationPrincipal Jwt token) {
@@ -138,6 +146,7 @@ class SeekerModulesController {
                   d.imageAssetId(),
                   d.minAge(),
                   d.enrolmentQuestion(),
+                  store.questions(v.id()),
                   d.reminderDefault(),
                   store.bindings(v.id()).stream()
                       .map(
@@ -189,6 +198,15 @@ class SeekerModulesController {
         throw new SolaceException(CommonError.REQUEST_INVALID);
       }
     }
+    var asked = store.questions(version.id());
+    var given = request.answers() == null ? Map.<String, JsonNode>of() : request.answers();
+    for (var entry : given.entrySet()) {
+      var q = questions.find(entry.getKey());
+      if (!asked.contains(entry.getKey()) || q.isEmpty() || !q.get().accepts(entry.getValue())) {
+        throw new SolaceException(CommonError.REQUEST_INVALID);
+      }
+    }
+    given.forEach((questionCode, value) -> answers.save(user, questionCode, value));
     LocalTime reminder =
         request.reminderTime() != null
             ? request.reminderTime()
@@ -246,44 +264,6 @@ class SeekerModulesController {
     if (updated == 0) {
       throw new SolaceException(CommonError.NOT_FOUND);
     }
-  }
-
-  @GetMapping("/v1/tracking/profile")
-  Profile profile(@AuthenticationPrincipal Jwt token) {
-    UUID user = seekers.require(token);
-    return db.sql("SELECT * FROM tracking_profile WHERE user_id = :u")
-        .param("u", user)
-        .query(
-            (rs, n) ->
-                new Profile(
-                    rs.getString("pcos_status"),
-                    (Boolean) rs.getObject("trying_to_conceive"),
-                    List.of((String[]) rs.getArray("treatments").getArray())))
-        .optional()
-        .orElse(new Profile(null, null, List.of()));
-  }
-
-  /** Profile answers can only switch rules off (Tracking Service Spec, What a rule is made of). */
-  @PutMapping("/v1/tracking/profile")
-  Profile saveProfile(@AuthenticationPrincipal Jwt token, @Valid @RequestBody Profile p) {
-    UUID user = seekers.require(token);
-    db.sql(
-            """
-            INSERT INTO tracking_profile (user_id, pcos_status, trying_to_conceive, treatments, updated_at)
-            VALUES (:u, :p, :t, :tr, :now)
-            ON CONFLICT (user_id) DO UPDATE SET pcos_status = EXCLUDED.pcos_status,
-                   trying_to_conceive = EXCLUDED.trying_to_conceive, treatments = EXCLUDED.treatments,
-                   updated_at = EXCLUDED.updated_at
-            """)
-        .param("u", user)
-        .param("p", p.pcosStatus())
-        .param("t", p.tryingToConceive())
-        .param(
-            "tr",
-            (p.treatments() == null ? List.<String>of() : p.treatments()).toArray(String[]::new))
-        .param("now", Timestamp.from(clock.instant()))
-        .update();
-    return profile(token);
   }
 
   /** "1.2.0" against "1.10.0", by number. */

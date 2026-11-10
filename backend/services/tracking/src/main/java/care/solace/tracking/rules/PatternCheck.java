@@ -2,6 +2,7 @@ package care.solace.tracking.rules;
 
 import care.solace.events.Events;
 import care.solace.tracking.PersonalData;
+import care.solace.tracking.context.ContextAnswers;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeReconciler;
 import care.solace.tracking.modules.ModuleStore;
@@ -65,6 +66,7 @@ public class PatternCheck implements PersonalData {
   private final JdbcClient db;
   private final Sync sync;
   private final EpisodeReconciler episodes;
+  private final ContextAnswers answers;
   private final ElementLibrary library;
   private final ModuleStore modules;
   private final ApplicationEventPublisher events;
@@ -75,6 +77,7 @@ public class PatternCheck implements PersonalData {
       JdbcClient db,
       Sync sync,
       EpisodeReconciler episodes,
+      ContextAnswers answers,
       ElementLibrary library,
       ModuleStore modules,
       ApplicationEventPublisher events,
@@ -83,6 +86,7 @@ public class PatternCheck implements PersonalData {
     this.db = db;
     this.sync = sync;
     this.episodes = episodes;
+    this.answers = answers;
     this.library = library;
     this.modules = modules;
     this.events = events;
@@ -118,7 +122,7 @@ public class PatternCheck implements PersonalData {
   public void check(UUID user, Set<String> codes, boolean withdraw) {
     Instant now = clock.instant();
     LocalDate today = LocalDate.now(clock.withZone(zone(user)));
-    var profile = profile(user);
+    var answers = this.answers.answers(user);
     for (var enrolment : enrolments(user)) {
       var version = modules.version(enrolment.versionId()).orElse(null);
       if (version == null || !version.status().equals("PUBLISHED")) {
@@ -133,7 +137,7 @@ public class PatternCheck implements PersonalData {
       }
       var signals = signals(user, bound.keySet(), today);
       for (var rule : modules.rules(version.id())) {
-        evaluate(user, enrolment, version, rule, signals, profile, withdraw, now);
+        evaluate(user, enrolment, version, rule, signals, answers, withdraw, now);
       }
     }
   }
@@ -144,7 +148,7 @@ public class PatternCheck implements PersonalData {
       ModuleStore.Version version,
       ModuleStore.Rule rule,
       RuleEngine.Signals signals,
-      Map<String, Object> profile,
+      Map<String, JsonNode> answers,
       boolean withdraw,
       Instant now) {
     var result = RuleEngine.evaluate(rule.conditions(), signals);
@@ -166,7 +170,7 @@ public class PatternCheck implements PersonalData {
       }
       return;
     }
-    if (blockedByUnless(rule.unless(), profile, enrolment.answer())) {
+    if (Unless.blocks(rule.unless(), answers, enrolment.answer())) {
       log(user, rule, version, result, "BLOCKED_UNLESS", null, now);
       return;
     }
@@ -230,34 +234,6 @@ public class PatternCheck implements PersonalData {
     }
   }
 
-  /** "Unless" can only switch a rule off (Tracking Service Spec, What a rule is made of). */
-  public static boolean blockedByUnless(
-      JsonNode unless, Map<String, Object> profile, String answer) {
-    if (unless == null) {
-      return false;
-    }
-    for (JsonNode u : unless) {
-      String field = u.path("field").asText();
-      Object value = field.equals("enrolment_answer") ? answer : profile.get(field);
-      if (value == null) {
-        continue;
-      }
-      if (u.has("includes")
-          && value instanceof List<?> list
-          && list.contains(u.path("includes").asText())) {
-        return true;
-      }
-      if (u.has("equals")) {
-        JsonNode eq = u.path("equals");
-        if ((eq.isBoolean() && value instanceof Boolean b && b == eq.asBoolean())
-            || (eq.isTextual() && eq.asText().equals(String.valueOf(value)))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   /** Daily values of the bound elements over the last [400] days, and the person's episodes. */
   RuleEngine.Signals signals(UUID user, Set<String> bound, LocalDate today) {
     Map<String, NavigableMap<LocalDate, Object>> daily = new HashMap<>();
@@ -288,25 +264,6 @@ public class PatternCheck implements PersonalData {
                     rs.getObject("module_version_id", UUID.class),
                     rs.getString("enrolment_answer")))
         .list();
-  }
-
-  private Map<String, Object> profile(UUID user) {
-    return db.sql("SELECT * FROM tracking_profile WHERE user_id = :u")
-        .param("u", user)
-        .query(
-            (rs, n) -> {
-              Map<String, Object> p = new HashMap<>();
-              if (rs.getString("pcos_status") != null) {
-                p.put("pcos_status", rs.getString("pcos_status"));
-              }
-              if (rs.getObject("trying_to_conceive") != null) {
-                p.put("trying_to_conceive", rs.getBoolean("trying_to_conceive"));
-              }
-              p.put("treatments", List.of((String[]) rs.getArray("treatments").getArray()));
-              return p;
-            })
-        .optional()
-        .orElse(Map.of());
   }
 
   private ZoneId zone(UUID user) {
@@ -378,7 +335,6 @@ public class PatternCheck implements PersonalData {
     db.sql("SELECT set_config('solace.erasure', 'on', true)").query(String.class).single();
     db.sql("DELETE FROM rule_evaluation WHERE user_id = :u").param("u", userId).update();
     db.sql("DELETE FROM recommendation WHERE user_id = :u").param("u", userId).update();
-    db.sql("DELETE FROM tracking_profile WHERE user_id = :u").param("u", userId).update();
     db.sql("DELETE FROM enrolment WHERE user_id = :u").param("u", userId).update();
   }
 }

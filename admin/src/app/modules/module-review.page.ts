@@ -296,6 +296,7 @@ export class ModuleReviewPage {
       textIn(p?.enrolmentQuestion?.question, lang),
       textIn(v.enrolmentQuestion?.question, lang),
     );
+    add(t('questions'), (p?.questions ?? []).join(', '), (v.questions ?? []).join(', '));
     add(t('elements'), elementsText(p), elementsText(v));
     const before = new Map((p?.rules ?? []).map((r) => [r.code, r]));
     for (const r of v.rules ?? []) {
@@ -468,7 +469,14 @@ function ruleParts(r: Rule, lang: string): Map<string, string> {
     .join('; ');
   return new Map([
     ['conditions', conditions],
-    ['unless', (r.unless ?? []).map((u) => u.field).join(', ')],
+    [
+      'unless',
+      (r.unless ?? [])
+        .map((u) =>
+          u.question ? `${u.question} = ${String(u.equals ?? u.includes)}` : (u.field ?? ''),
+        )
+        .join(', '),
+    ],
     ['outcome', [r.outcome, ...(r.specialtyCodes ?? [])].join(' ')],
     ['message', lang === 'fr' ? r.messageFr : r.messageEn],
     ['cooldown', String(r.cooldownDays)],

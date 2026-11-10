@@ -1,5 +1,6 @@
 package care.solace.tracking.rules;
 
+import care.solace.tracking.context.ContextQuestion;
 import care.solace.tracking.elements.ElementLibrary.Element;
 import care.solace.tracking.episodes.EpisodeModel;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -17,9 +17,6 @@ import java.util.regex.Pattern;
  * facts against thresholds: no OR, no free-form expressions, no diagnostic wording.
  */
 public final class RuleRules {
-
-  public static final Set<String> UNLESS_FIELDS =
-      Set.of("pcos_status", "trying_to_conceive", "treatments", "enrolment_answer");
 
   /**
    * Wording that names a condition, a severity or a prediction. "Not a diagnosis" is allowed, since
@@ -73,14 +70,16 @@ public final class RuleRules {
 
   /**
    * Problems with a rule's conditions and unless, given the module's bound elements and the
-   * published episode models; empty when it is fine. Signals come from {@link SignalCatalog} and
-   * operators from {@link Operators}, the same lists the builder's rule vocabulary offers (D61).
+   * published episode models and context questions; empty when it is fine. Signals come from {@link
+   * SignalCatalog} and operators from {@link Operators}, the same lists the builder's rule
+   * vocabulary offers (D61).
    */
   public static List<String> problems(
       JsonNode conditions,
       JsonNode unless,
       Map<String, Element> bound,
-      Collection<EpisodeModel> models) {
+      Collection<EpisodeModel> models,
+      Collection<ContextQuestion> questions) {
     List<String> problems = new ArrayList<>();
     if (conditions == null
         || !conditions.isArray()
@@ -125,13 +124,7 @@ public final class RuleRules {
         problems.addAll(operator.get().problems(c));
       }
     }
-    if (unless != null && unless.isArray()) {
-      for (JsonNode u : unless) {
-        if (!UNLESS_FIELDS.contains(u.path("field").asText())) {
-          problems.add("unless: " + u.path("field").asText());
-        }
-      }
-    }
+    problems.addAll(Unless.problems(unless, questions));
     return problems;
   }
 

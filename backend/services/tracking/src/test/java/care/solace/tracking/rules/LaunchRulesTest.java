@@ -41,9 +41,9 @@ class LaunchRulesTest {
 
   static final Map<String, String> UNLESS =
       Map.of(
-          "pcos.long_cycles", "[{\"field\":\"treatments\",\"includes\":\"hormonal\"}]",
+          "pcos.long_cycles", "[{\"question\":\"hormonal_treatment\",\"equals\":true}]",
           "pcos.no_period",
-              "[{\"field\":\"trying_to_conceive\",\"equals\":true},{\"field\":\"treatments\",\"includes\":\"hormonal\"}]");
+              "[{\"question\":\"trying_to_conceive\",\"equals\":true},{\"question\":\"hormonal_treatment\",\"equals\":true}]");
 
   private Map<String, Set<String>> fired() throws Exception {
     Map<String, Set<String>> fired = new LinkedHashMap<>();
@@ -53,7 +53,7 @@ class LaunchRulesTest {
         JsonNode conditions = JSON.readTree(rule.getValue());
         JsonNode unless = JSON.readTree(UNLESS.getOrDefault(rule.getKey(), "[]"));
         if (RuleEngine.evaluate(conditions, signals).held()
-            && !PatternCheck.blockedByUnless(unless, history.profile(), null)) {
+            && !Unless.blocks(unless, history.answers(), null)) {
           fired.computeIfAbsent(rule.getKey(), k -> new TreeSet<>()).add(history.code());
         }
       }

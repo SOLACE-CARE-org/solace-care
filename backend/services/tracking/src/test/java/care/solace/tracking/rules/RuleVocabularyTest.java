@@ -89,8 +89,9 @@ class RuleVocabularyTest {
         json(
             "[{\"signal\":\"migraine.length_days\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gte\",\"threshold\":2,\"count\":3}]");
     var both = List.of(TestModels.menstrualCycle(), TestModels.migraine());
-    assertThat(RuleRules.problems(conditions, json("[]"), bound(headache), both)).isEmpty();
-    assertThat(RuleRules.problems(conditions, json("[]"), bound(headache), MODELS))
+    assertThat(RuleRules.problems(conditions, json("[]"), bound(headache), both, List.of()))
+        .isEmpty();
+    assertThat(RuleRules.problems(conditions, json("[]"), bound(headache), MODELS, List.of()))
         .contains("signal not offered by this module: migraine.length_days");
     assertThat(SignalCatalog.forModule(bound(headache), both))
         .extracting(SignalCatalog.Signal::key)
@@ -105,7 +106,7 @@ class RuleVocabularyTest {
     var conditions =
         json(
             "[{\"signal\":\"daily_value\",\"element\":\"mood\",\"operator\":\"consecutive_episodes\",\"comparison\":\"gt\",\"threshold\":3,\"count\":2}]");
-    assertThat(RuleRules.problems(conditions, json("[]"), bound(mood), MODELS))
+    assertThat(RuleRules.problems(conditions, json("[]"), bound(mood), MODELS, List.of()))
         .contains("operator consecutive_episodes cannot read daily_value:mood");
   }
 
@@ -136,12 +137,15 @@ class RuleVocabularyTest {
     var averageOfStress =
         json(
             "[{\"signal\":\"daily_value\",\"element\":\"stress_level\",\"operator\":\"average_in_window\",\"comparison\":\"gt\",\"threshold\":1,\"window\":14,\"minData\":7}]");
-    assertThat(RuleRules.problems(averageOfStress, json("[]"), bound(mood, stress), MODELS))
+    assertThat(
+            RuleRules.problems(averageOfStress, json("[]"), bound(mood, stress), MODELS, List.of()))
         .contains("operator average_in_window cannot read daily_value:stress_level");
     var greaterThanStress =
         json(
             "[{\"signal\":\"daily_value\",\"element\":\"stress_level\",\"operator\":\"days_in_window\",\"comparison\":\"gt\",\"threshold\":1,\"mode\":\"at_least\",\"count\":3,\"window\":14,\"minData\":7}]");
-    assertThat(RuleRules.problems(greaterThanStress, json("[]"), bound(mood, stress), MODELS))
+    assertThat(
+            RuleRules.problems(
+                greaterThanStress, json("[]"), bound(mood, stress), MODELS, List.of()))
         .contains("comparison gt cannot be used here");
   }
 
@@ -160,7 +164,7 @@ class RuleVocabularyTest {
         element("sleep_minutes", Kind.DAY_STATE, ValueType.MINUTES, "{}", List.of("daily_value"));
     var all = bound(flow, start, mood, sleep);
     for (var rule : LaunchRulesTest.CONDITIONS.entrySet()) {
-      assertThat(RuleRules.problems(json(rule.getValue()), json("[]"), all, MODELS))
+      assertThat(RuleRules.problems(json(rule.getValue()), json("[]"), all, MODELS, List.of()))
           .as(rule.getKey())
           .isEmpty();
     }

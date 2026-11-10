@@ -307,6 +307,29 @@ public class ModuleStore {
     }
   }
 
+  /** The context questions asked when enrolling in this version, in order (D61). */
+  public List<String> questions(UUID versionId) {
+    return db.sql(
+            "SELECT question_code FROM module_question WHERE module_version_id = :v ORDER BY position")
+        .param("v", versionId)
+        .query(String.class)
+        .list();
+  }
+
+  public void replaceQuestions(UUID versionId, List<String> codes) {
+    db.sql("DELETE FROM module_question WHERE module_version_id = :v")
+        .param("v", versionId)
+        .update();
+    for (int i = 0; i < codes.size(); i++) {
+      db.sql(
+              "INSERT INTO module_question (module_version_id, question_code, position) VALUES (:v, :q, :p)")
+          .param("v", versionId)
+          .param("q", codes.get(i))
+          .param("p", i)
+          .update();
+    }
+  }
+
   public List<Rule> rules(UUID versionId) {
     return db.sql("SELECT * FROM rule WHERE module_version_id = :v ORDER BY position, code")
         .param("v", versionId)
