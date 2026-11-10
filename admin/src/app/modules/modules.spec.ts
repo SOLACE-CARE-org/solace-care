@@ -42,6 +42,35 @@ const stress: TrackingSchemas['Element'] = {
   },
 };
 
+// What Tracking offers the rules of a draft binding stress_level (D61).
+const vocabulary: TrackingSchemas['RuleVocabulary'] = {
+  signals: [
+    {
+      key: 'daily_value:stress_level',
+      signal: 'daily_value',
+      element: 'stress_level',
+      kind: 'DAILY',
+      valueType: 'ENUM',
+      values: ['low', 'some', 'high'],
+      operators: [{ code: 'days_in_window', comparisons: ['eq', 'in'] }],
+    },
+  ],
+  operators: [
+    { code: 'consecutive_cycles', fields: ['count'], evidenceKeys: ['n', 'threshold'] },
+    {
+      code: 'days_in_window',
+      fields: ['mode', 'count', 'window', 'minData'],
+      evidenceKeys: ['n', 'count', 'window', 'logged', 'threshold'],
+    },
+    {
+      code: 'average_in_window',
+      fields: ['window', 'minData'],
+      evidenceKeys: ['average', 'window', 'logged', 'threshold'],
+    },
+  ],
+  unlessFields: ['enrolment_answer', 'pcos_status', 'treatments', 'trying_to_conceive'],
+};
+
 const rows: TrackingSchemas['ModuleRow'][] = [
   {
     id: 'm1',
@@ -152,6 +181,7 @@ describe('Tracking modules', () => {
         route({
           '/admin/v1/tracking/versions/{versionId}': () => ok(draft()),
           '/admin/v1/tracking/elements': () => ok([mood, stress]),
+          '/admin/v1/tracking/versions/{versionId}/rule-vocabulary': () => ok(vocabulary),
         }),
       ),
       PUT: fn(() => ok(draft())),
@@ -179,6 +209,12 @@ describe('Tracking modules', () => {
 
     await sees(root, 'Before it can be submitted');
     expect(root.textContent).toContain('A card image');
+    // The rule form offers what the version's rule vocabulary says, and nothing else (D61).
+    const selects = root.querySelectorAll<HTMLSelectElement>('fieldset.condition select');
+    const options = (i: number) => [...selects[i]!.options].map((o) => o.textContent?.trim());
+    expect(options(0)).toEqual(['Stress, daily']);
+    expect(options(1)).toEqual(['days in window']);
+    expect(options(2)).toEqual(['equal to', 'one of']);
     expect(button(root, 'Submit for clinical review')!.disabled).toBe(true);
   });
 
