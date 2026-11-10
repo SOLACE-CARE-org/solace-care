@@ -189,7 +189,7 @@ describe('Accepting new bookings', () => {
 
 describe('Urgent help', () => {
   it('starts a text to someone from the safety plan', async () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     useSafetyPlan.setState({
       plan: {
         warningSigns: 'Not sleeping',
