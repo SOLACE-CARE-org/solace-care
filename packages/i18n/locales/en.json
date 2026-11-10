@@ -2396,6 +2396,14 @@
       "start": "Start tracking {{count}} modules",
       "startOne": "Start tracking 1 module",
       "skip": "Skip for now"
+    },
+    "about": {
+      "title": "About you for tracking",
+      "intro": "A few questions that help pattern checks fit you. Answers stay in tracking, can only stop a check from showing, and you can skip or change them at any time.",
+      "none": "There are no questions for now.",
+      "skip": "Skip this question",
+      "many": "Choose all that apply.",
+      "enrolIntro": "You can skip any of these. Answers can only stop a pattern check from showing."
     }
   },
   "healthCheck": {

@@ -169,6 +169,11 @@ export default function Track() {
               label={t('track.addModule')}
               onPress={() => router.push('/track/catalogue')}
             />
+            <Button
+              variant="secondary"
+              label={t('track.about.title')}
+              onPress={() => router.push('/track/about')}
+            />
           </>
         ) : null}
 

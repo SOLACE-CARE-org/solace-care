@@ -6,6 +6,7 @@ import { renderRouter } from 'expo-router/testing-library';
 import { queryClient } from '@/api/query-client';
 import Track from '@/app/(seeker)/track';
 import RecommendationScreen from '@/app/track/recommendation/[id]';
+import AboutYou from '@/app/track/about';
 import Catalogue from '@/app/track/catalogue';
 import LogToday from '@/app/track/log/[code]';
 import { useAuth } from '@/auth/auth';
@@ -301,6 +302,71 @@ describe('Adding a module', () => {
       expect(calls.find((c) => c.path === '/v1/tracking/modules/pcos/enrolment')?.body).toBe(
         JSON.stringify({ answer: 'no', reminderTime: '20:00' }),
       ),
+    );
+  });
+});
+
+const trying = {
+  code: 'trying_to_conceive',
+  version: 1,
+  type: 'YES_NO',
+  scope: 'PROFILE',
+  labels: {
+    en: { question: 'Are you trying to conceive?' },
+    fr: { question: "Essayez-vous d'avoir un enfant ?" },
+  },
+  options: [],
+};
+
+describe('Context questions', () => {
+  it('asks the module questions on enrolment, and each can be skipped', async () => {
+    answers['GET /v1/tracking/modules'] = {
+      status: 200,
+      body: [checkin, { ...pcos, enrolmentQuestion: undefined, questions: ['trying_to_conceive'] }],
+    };
+    answers['GET /v1/tracking/context-questions'] = { status: 200, body: [trying] };
+    answers['POST /v1/tracking/modules/pcos/enrolment'] = { status: 204 };
+    const screen = await renderRouter(
+      { _layout: Layout, 'track/catalogue': Catalogue },
+      { initialUrl: '/track/catalogue' },
+    );
+    expect(await screen.findByText('PCOS & cycle')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Add PCOS & cycle' }));
+    expect(await screen.findByText('Are you trying to conceive?')).toBeTruthy();
+    expect(screen.getByText('Skip this question')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Yes'));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add PCOS & cycle' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/v1/tracking/modules/pcos/enrolment')?.body).toBe(
+        JSON.stringify({ answers: { trying_to_conceive: true }, reminderTime: '20:00' }),
+      ),
+    );
+  });
+
+  it('lets the person answer, change or skip the profile questions', async () => {
+    answers['GET /v1/tracking/context-questions'] = { status: 200, body: [trying] };
+    answers['GET /v1/tracking/context-answers'] = {
+      status: 200,
+      body: { trying_to_conceive: true },
+    };
+    answers['PUT /v1/tracking/context-answers/trying_to_conceive'] = { status: 204 };
+    answers['DELETE /v1/tracking/context-answers/trying_to_conceive'] = { status: 204 };
+    const screen = await renderRouter(
+      { _layout: Layout, 'track/about': AboutYou },
+      { initialUrl: '/track/about' },
+    );
+    expect(await screen.findByText('Are you trying to conceive?')).toBeTruthy();
+    await fireEvent.press(screen.getByText('No'));
+    await waitFor(() =>
+      expect(
+        calls.find((c) => c.method === 'PUT' && c.path.endsWith('/trying_to_conceive'))?.body,
+      ).toBe(JSON.stringify({ value: false })),
+    );
+    await fireEvent.press(screen.getByText('Skip this question'));
+    await waitFor(() =>
+      expect(
+        calls.some((c) => c.method === 'DELETE' && c.path.endsWith('/trying_to_conceive')),
+      ).toBe(true),
     );
   });
 });

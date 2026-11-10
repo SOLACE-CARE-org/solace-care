@@ -2396,6 +2396,14 @@
       "start": "Suivre {{count}} modules",
       "startOne": "Suivre 1 module",
       "skip": "Passer pour l'instant"
+    },
+    "about": {
+      "title": "Vous et votre suivi",
+      "intro": "Quelques questions pour que les vérifications de tendances vous correspondent. Les réponses restent dans le suivi, peuvent seulement empêcher une vérification de s'afficher, et vous pouvez les passer ou les modifier à tout moment.",
+      "none": "Il n'y a pas de question pour le moment.",
+      "skip": "Passer cette question",
+      "many": "Choisissez tout ce qui s’applique.",
+      "enrolIntro": "Vous pouvez passer chacune de ces questions. Les réponses peuvent seulement empêcher une vérification de tendances de s'afficher."
     }
   },
   "healthCheck": {

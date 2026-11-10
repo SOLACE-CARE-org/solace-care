@@ -17,6 +17,8 @@ export type Recommendation = TrackingSchemas['Recommendation'];
 export type Observation = TrackingSchemas['Observation'];
 export type PushEntry = TrackingSchemas['PushEntry'];
 export type CycleSummary = TrackingSchemas['CycleSummary'];
+export type ContextQuestion = TrackingSchemas['ContextQuestion'];
+export type ContextAnswer = TrackingSchemas['ContextAnswerValue'];
 
 const session: Middleware = {
   async onRequest({ request }) {
@@ -48,6 +50,8 @@ export const trackingKeys = {
   observations: ['tracking', 'observations'] as const,
   cycles: ['tracking', 'cycles'] as const,
   matches: (id: string, language: string) => ['tracking', 'matches', id, language] as const,
+  questions: ['tracking', 'context-questions'] as const,
+  answers: ['tracking', 'context-answers'] as const,
 };
 
 /**
@@ -90,17 +94,70 @@ export function useModules(language: string, enabled = true) {
 export function useEnrol() {
   const queries = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { code: string; answer?: string; reminderTime?: string }) =>
+    mutationFn: async (input: {
+      code: string;
+      answer?: string;
+      answers?: Record<string, ContextAnswer>;
+      reminderTime?: string;
+    }) =>
       orThrow(
         await tracking.POST('/v1/tracking/modules/{code}/enrolment', {
           params: { path: { code: input.code } },
           body: {
             ...(input.answer ? { answer: input.answer } : {}),
+            ...(input.answers && Object.keys(input.answers).length
+              ? { answers: input.answers }
+              : {}),
             ...(input.reminderTime ? { reminderTime: input.reminderTime } : {}),
           },
         }),
       ),
     onSuccess: () => queries.invalidateQueries({ queryKey: trackingKeys.all }),
+  });
+}
+
+/**
+ * The published context questions (D61): things about the person that can only switch a pattern
+ * check off. Kept on the phone like the catalogue, so the screens work offline.
+ */
+export function useContextQuestions(enabled = true) {
+  return useQuery({
+    queryKey: trackingKeys.questions,
+    queryFn: () =>
+      cached('context-questions', async () =>
+        orThrow(await tracking.GET('/v1/tracking/context-questions')),
+      ),
+    enabled,
+  });
+}
+
+/** The person's answers by question code; a skipped question is absent. */
+export function useContextAnswers(enabled = true) {
+  return useQuery({
+    queryKey: trackingKeys.answers,
+    queryFn: async () => orThrow(await tracking.GET('/v1/tracking/context-answers')),
+    enabled,
+  });
+}
+
+/** Answers a question, or skips it again with null (the answer is then deleted). */
+export function useAnswerContextQuestion() {
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { code: string; value: ContextAnswer | null }) =>
+      input.value === null
+        ? orThrow(
+            await tracking.DELETE('/v1/tracking/context-answers/{questionCode}', {
+              params: { path: { questionCode: input.code } },
+            }),
+          )
+        : orThrow(
+            await tracking.PUT('/v1/tracking/context-answers/{questionCode}', {
+              params: { path: { questionCode: input.code } },
+              body: { value: input.value },
+            }),
+          ),
+    onSuccess: () => queries.invalidateQueries({ queryKey: trackingKeys.answers }),
   });
 }
 

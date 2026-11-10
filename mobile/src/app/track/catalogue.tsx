@@ -6,8 +6,16 @@ import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiProblem } from '@/api/core';
-import { type CatalogueModule, imageUrl, useEnrol, useModules } from '@/api/tracking';
+import {
+  type CatalogueModule,
+  type ContextAnswer,
+  imageUrl,
+  useContextQuestions,
+  useEnrol,
+  useModules,
+} from '@/api/tracking';
 import i18n from '@/i18n';
+import { ContextQuestionField } from '@/tracking/ContextQuestionField';
 import { moduleDescription, moduleName } from '@/tracking/view';
 import { Button } from '@/ui/Button';
 import { OptionCard } from '@/ui/OptionCard';
@@ -31,7 +39,8 @@ export function supports(appVersion: string, needed: string): boolean {
 
 /**
  * Add a module (ModuleCatalog.dc.html): every published module, with what the person already
- * tracks. A module's enrolment question can only switch rules off; it is asked once, here.
+ * tracks. A module's context questions (D61) can only switch rules off; they are asked once, here,
+ * and each can be skipped. Modules from before context questions may still ask one question.
  */
 export default function Catalogue() {
   const { t } = useTranslation();
@@ -95,9 +104,15 @@ export function ModuleRow({
   const enrol = useEnrol();
   const [open, setOpen] = useState(false);
   const [answer, setAnswer] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, ContextAnswer>>({});
+  const asks = m.questions ?? [];
+  const contextQuestions = useContextQuestions(asks.length > 0);
+  const asked = asks
+    .map((code) => (contextQuestions.data ?? []).find((q) => q.code === code))
+    .filter((q) => q !== undefined);
   const [problem, setProblem] = useState<string | null>(null);
   const name = moduleName(m, lang);
-  const question = m.enrolmentQuestion;
+  const question = asks.length ? undefined : m.enrolmentQuestion;
   const options =
     question?.kind === 'YES_NO'
       ? [
@@ -114,6 +129,7 @@ export function ModuleRow({
       {
         code: m.code,
         ...(answer ? { answer } : {}),
+        ...(asked.length ? { answers } : {}),
         ...(m.reminderDefault ? { reminderTime: m.reminderDefault.slice(0, 5) } : {}),
       },
       {
@@ -152,7 +168,7 @@ export function ModuleRow({
             variant="secondary"
             label={t('track.catalogue.add')}
             accessibilityLabel={t('track.enrol.add', { module: name })}
-            onPress={() => (question ? setOpen(true) : add())}
+            onPress={() => (question || asks.length ? setOpen(true) : add())}
             disabled={enrol.isPending}
           />
         ) : null}
@@ -180,6 +196,40 @@ export function ModuleRow({
             label={t('track.enrol.add', { module: name })}
             disabled={!answer || enrol.isPending}
             accessibilityState={{ disabled: !answer || enrol.isPending, busy: enrol.isPending }}
+            onPress={add}
+          />
+        </View>
+      ) : null}
+      {open && asks.length > 0 && !asked.length && !contextQuestions.isSuccess ? (
+        <Text variant="meta" color={colors.inkMuted}>
+          {contextQuestions.isError ? t('common.checkConnection') : t('common.loading')}
+        </Text>
+      ) : null}
+      {open && asks.length > 0 && (asked.length > 0 || contextQuestions.isSuccess) ? (
+        <View style={styles.question}>
+          <Text variant="meta" color={colors.inkMuted}>
+            {t('track.about.enrolIntro')}
+          </Text>
+          {asked.map((q) => (
+            <ContextQuestionField
+              key={q.code}
+              question={q}
+              lang={lang}
+              value={answers[q.code]}
+              onChange={(value) =>
+                setAnswers((now) => {
+                  const next = { ...now };
+                  if (value === null) delete next[q.code];
+                  else next[q.code] = value;
+                  return next;
+                })
+              }
+            />
+          ))}
+          <Button
+            label={t('track.enrol.add', { module: name })}
+            disabled={enrol.isPending}
+            accessibilityState={{ disabled: enrol.isPending, busy: enrol.isPending }}
             onPress={add}
           />
         </View>
