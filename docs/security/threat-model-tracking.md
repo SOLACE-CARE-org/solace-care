@@ -10,7 +10,8 @@
 | Notes (`entry_note`) | **Health data, free text.** Storage only: never read by rules, never scanned, hard-deleted on delete |
 | Specialist access grants (forward-only, revocable; notes need a separate yes) | Controls who sees health data |
 | Recommendations and their evidence | **Health data** |
-| Modules, elements and rules | Integrity-critical: a bad rule shows a seeker a wrong pattern or invite |
+| Context answers (e.g. trying to conceive, hormonal treatment) | **Health data.** Read only by the "unless" guard, never sent anywhere |
+| Modules, elements, episode models, context questions and rules | Integrity-critical: a bad definition or rule shows a seeker a wrong pattern or invite. Admin-defined since D61 |
 
 ## Trust boundaries and flows
 
@@ -37,6 +38,8 @@
 | TR-11 | T | A rule shows a harmful pattern or invite | Rules state facts against thresholds only, no scores or diagnoses (D10); clinical review by someone other than the author; test runs on synthetic histories | Planned (Phase 2) |
 | TR-12 | I | Recommendation evidence quotes a note | Evidence comes from observations only, never notes | Planned (Phase 2) |
 | TR-13 | I | Staff browse individual seekers' entries in the admin portal | Not specified: the portal has module and rule tools, not entry views | Open; Findings 3 |
+| TR-15 | T | An admin publishes an element, episode model or context question that misleads or collects more than it should | Same review path as modules: drafted by Operations, approved by a Clinical reviewer who did not draft it, published by Operations, every step audited; elements only from registered views; frozen once published (D61) | Planned (Phase 2b) |
+| TR-16 | I | Context answers used for more than switching rules off | Read only by the "unless" guard; never in events, evidence or the AI summary; an unanswered question never switches a rule off (D61) | Planned (Phase 2b) |
 | TR-14 | D | Core down blocks tracking | Seekers keep logging (offline-first, sync later); specialist reads fail closed; taxonomy from cache | Planned (Phase 2) |
 | TR-16 | I | A nudge reveals what someone tracks | `tracking.nudge.requested` carries the kind only; Core sends the neutral copy, push only, and pauses after `ai.risk.flagged` | In place (D52) |
 | TR-15 | I | Erasure misses Tracking | Consumes `core.user.erased`, deletes everything (grants, nudges and pauses too), confirms with `tracking.user.erased`, which Core writes to its audit log | In place (D40, D52) |

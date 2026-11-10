@@ -106,6 +106,22 @@ Phase 2 builds the Tracking service exactly as the spec describes and launches t
 
 The tracking step in sign-up, the Track tab and the tracking cards on Home appear only when this phase ships; until then, sign-up has three steps.
 
+### Phase 2b: Dynamic tracking (D61)
+
+Makes the tracking library data that admins define and clinicians review, so new tracking needs no code unless it needs a new input view. Each step keeps today's behaviour for the launch modules; the existing tests stay green and become the regression suite.
+
+| # | Epic | Where | Delivers |
+| --- | --- | --- | --- |
+| 1 | Rule vocabulary | Tracking, admin | `signal_definition`; operators as a registry with their own validation and form fields; one vocabulary endpoint the builder reads; per-condition message placeholders |
+| 2 | Episode models | Tracking, mobile | `episode_model` and `episode` replace `cycle`; the cycle algorithm generalised and driven by the `menstrual_cycle` v1 definition; gap days in the model |
+| 3 | Context questions | Tracking, admin, mobile | `context_question`, `context_answer` and module questions replace `tracking_profile` and the enrolment question; the "unless" editor; the "About you for tracking" screen |
+| 4 | Presentation | Tracking, admin, mobile | Module presentation and binding groups; the app stops checking module and element codes |
+| 5 | Test histories | Tracking, admin | `synthetic_history` recipes seeded from today's twelve; the fires and does-not-fire check on submit |
+| 6 | Admin-defined elements | Tracking, admin, mobile | `input_view` registry; element drafts, review, publish and retire; the library refreshes on publish instead of at start-up; the app draws view props |
+| 7 | Wording list and settings | Tracking, admin | `wording_rule` and `tracking_setting` with their admin screens |
+
+**Gate:** the launch modules behave exactly as before on the full synthetic-history suite; a new element, episode model and module built only in the portal reach a test phone without a release.
+
 **Gate:** clinicians have set every launch threshold and approved both modules; the evaluator passes the full synthetic-history suite; a test proves no API or event exposes notes.
 
 ## Phases 3 and 4: AI assist, then deeper care

@@ -127,7 +127,7 @@ The health check is how a seeker or guest finds the right type of specialist. It
 
 ## Tracking service
 
-Tracking is its own service with its own database. Engineers seed elements by migration, each with its logging view and icon; admins build modules, with a card image, and set their rules and thresholds in the admin portal. Full detail: Solace — Tracking Service Spec.
+Tracking is its own service with its own database. Engineers ship the input views, rule operators and the episode algorithm in code; admins define elements, episode models and context questions, build modules with a card image, and set their rules and thresholds in the admin portal, with clinical review of each (D61). Full detail: Solace — Tracking Service Spec.
 
 ### What it does and refuses to do
 

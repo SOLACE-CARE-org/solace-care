@@ -397,6 +397,16 @@ Every pair now meets WCAG 2.1 AA.
 - **App lock:** a device-local setting that uses the phone's own lock (PIN, fingerprint or face). Turning it on or off needs that lock. The lock screen keeps Urgent help one tap away and never covers the crisis screen. Signing out turns it off.
 - **Message someone you trust:** Urgent help lists the safety plan's people who have a number. Each button opens a text message with no prefilled words, since the copy has none.
 
+**D61. Dynamic tracking: definitions as data, primitives in code.** Taken 10 Nov 2026 by the owner (admins define elements); the other parts use the recommended defaults from the analysis and are open to the owner's confirmation.
+- **Why:** modules and thresholds were already admin data, but everything under them was code: elements came only by migration and a restart, signals were a fixed list, the cycle model was tied to three element codes, "unless" read fixed PCOS columns no screen could fill, the app checked module and element codes, and test histories were Java fixtures. New tracking needs (Stress, Men's health, headache, energy) would each have needed engineering.
+- **Elements (owner's decision):** admins define elements from the input views the app ships, and a Clinical reviewer who did not draft one approves it before any module can bind it. Engineers register views (value types, props, first app version); only a new view needs a release. The launch nine stay seeded by migration as published v1. This replaces the spec's "admins never define elements".
+- **Signals** become definitions: a daily signal for every element except notes, and the metrics of episode models. The builder and the validator read one vocabulary endpoint, which removes the cycle special case of D54.
+- **Episode models (default):** the cycle model becomes one reviewed definition, `menstrual_cycle` v1, of a general episode algorithm (start, optional end and activity elements, active values, gap days, span, metrics). D50's counting rules are unchanged; `solace.tracking.cycle.new-period-gap-days` moves into the model. `consecutive_cycles` becomes `consecutive_episodes`.
+- **Context questions (default):** reviewed questions scoped to the profile or to enrolment replace `tracking_profile` (pcos status, trying to conceive, treatments) and the single enrolment question; a module asks up to 3 on enrolment. "Unless" names question answers and still only switches rules off. The launch rules use `trying_to_conceive` and `hormonal_treatment`; `pcos_status` is dropped because no launch rule reads it.
+- **Kept in code on purpose:** input views and icons, operators and comparisons (each a tested class; still no OR and no free-form expressions), the guard order, and the rule that notes have no signals.
+- **Also data:** module presentation (logging-screen wording, episode-day header, grouped elements, charted signals), synthetic histories as recipes with a fires and does-not-fire check on submit, the diagnostic word list, and Tracking settings.
+- **Order (default):** the no-spec-change steps first (rule vocabulary, presentation, test histories, wording list and settings), then episode models, context questions and admin-defined elements, as Phase 2b in the implementation plan. Screens 32 to 35 in the admin spec need designs.
+
 ## Still open
 
 None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
@@ -411,3 +421,5 @@ None of these blocks Phase 0 except hosting, which the Phase 0 gate needs.
 | Is Solace the record keeper for signed session notes? | Phase 4 |
 | Team size and target launch date | Phase durations |
 | Every bracketed threshold in the launch rules, set by clinicians | Phase 2 gate |
+| D61 defaults: generalised episode models, context questions in place of the PCOS profile, and the order of work | Phase 2b |
+| Designs for the tracking library screens (admin 32 to 35) and "About you for tracking" | Phase 2b, epics 3 and 6 |
