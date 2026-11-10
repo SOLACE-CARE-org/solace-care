@@ -54,9 +54,18 @@ const vocabulary: TrackingSchemas['RuleVocabulary'] = {
       values: ['low', 'some', 'high'],
       operators: [{ code: 'days_in_window', comparisons: ['eq', 'in'] }],
     },
+    {
+      key: 'menstrual_cycle.length_days',
+      signal: 'menstrual_cycle.length_days',
+      kind: 'EPISODE',
+      valueType: 'INT',
+      values: [],
+      labels: { en: 'Cycle length', fr: 'Durée du cycle' },
+      operators: [{ code: 'consecutive_episodes', comparisons: ['gt', 'gte', 'lt', 'lte', 'eq'] }],
+    },
   ],
   operators: [
-    { code: 'consecutive_cycles', fields: ['count'], evidenceKeys: ['n', 'threshold'] },
+    { code: 'consecutive_episodes', fields: ['count'], evidenceKeys: ['n', 'threshold'] },
     {
       code: 'days_in_window',
       fields: ['mode', 'count', 'window', 'minData'],
@@ -212,7 +221,8 @@ describe('Tracking modules', () => {
     // The rule form offers what the version's rule vocabulary says, and nothing else (D61).
     const selects = root.querySelectorAll<HTMLSelectElement>('fieldset.condition select');
     const options = (i: number) => [...selects[i]!.options].map((o) => o.textContent?.trim());
-    expect(options(0)).toEqual(['Stress, daily']);
+    // Episode signals carry their model's own labels.
+    expect(options(0)).toEqual(['Stress, daily', 'Cycle length']);
     expect(options(1)).toEqual(['days in window']);
     expect(options(2)).toEqual(['equal to', 'one of']);
     expect(button(root, 'Submit for clinical review')!.disabled).toBe(true);

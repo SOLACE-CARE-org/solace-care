@@ -19,7 +19,7 @@ import { Button } from '@/ui/Button';
 import { BackButton } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
 
-type CycleEvidence = { start: string; value: number | string };
+type EpisodeEvidence = { start: string; value: number | string };
 
 /**
  * A pattern or an invitation (Insights.dc.html). It states what was logged against the rule's
@@ -58,8 +58,13 @@ export default function RecommendationScreen() {
     );
   }
 
-  const evidence = r.evidence as { cycles?: CycleEvidence[]; threshold?: number };
-  const cycles = (evidence.cycles ?? []).filter((c) => typeof c.value === 'number') as {
+  // Episodes used by the rule; recommendations made before episode models (D61) call them cycles.
+  const evidence = r.evidence as {
+    episodes?: EpisodeEvidence[];
+    cycles?: EpisodeEvidence[];
+    threshold?: number;
+  };
+  const cycles = (evidence.episodes ?? evidence.cycles ?? []).filter((c) => typeof c.value === 'number') as {
     start: string;
     value: number;
   }[];

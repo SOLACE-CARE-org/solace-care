@@ -98,7 +98,7 @@ const invite = {
   evidence: {
     n: 3,
     threshold: 35,
-    cycles: [
+    episodes: [
       { start: '2026-07-01', value: 41 },
       { start: '2026-08-11', value: 39 },
       { start: '2026-09-19', value: 44 },

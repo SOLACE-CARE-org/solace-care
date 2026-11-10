@@ -6,7 +6,7 @@
       "locale": "en",
       "input": {
         "ruleCode": "pcos.long_cycles",
-        "evidence": { "n": 3, "threshold": 35, "cycles": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
+        "evidence": { "n": 3, "threshold": 35, "episodes": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
         "messageEn": "Each of your last 3 cycles ran longer than 35 days. Patterns like this are worth checking with a specialist. This is not a diagnosis.",
         "messageFr": "Chacun de vos 3 derniers cycles a duré plus de 35 jours. Ce type de schéma mérite d'être vérifié avec un spécialiste. Ce n'est pas un diagnostic."
       },
@@ -17,7 +17,7 @@
       "locale": "fr",
       "input": {
         "ruleCode": "pcos.long_cycles",
-        "evidence": { "n": 3, "threshold": 35, "cycles": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
+        "evidence": { "n": 3, "threshold": 35, "episodes": [{ "start": "2026-07-01", "value": 41 }, { "start": "2026-08-11", "value": 39 }, { "start": "2026-09-19", "value": 44 }] },
         "messageEn": "Each of your last 3 cycles ran longer than 35 days. Patterns like this are worth checking with a specialist. This is not a diagnosis.",
         "messageFr": "Chacun de vos 3 derniers cycles a duré plus de 35 jours. Ce type de schéma mérite d'être vérifié avec un spécialiste. Ce n'est pas un diagnostic."
       },
