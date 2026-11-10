@@ -217,7 +217,7 @@ Legal bases below are proposals for **Counsel**: health data relies on explicit,
 | --- | --- |
 | Purpose | Let registered seekers log their health between sessions, see patterns and invitations to care |
 | People | Registered seekers only |
-| Data | Observations per element, notes (storage only), modules joined, an enrolment answer where a module asks one (no sex at birth, D17), recommendations and their outcomes, sharing grants, the days a tracking push went out and nudge pauses (D52); in Core, open invites (ids and specialty codes) |
+| Data | Observations per element, notes (storage only), modules joined, answers to context questions the seeker chose to answer, on the profile or when enrolling (no sex at birth, D17; D61), recommendations and their outcomes, sharing grants, the days a tracking push went out and nudge pauses (D52); in Core, open invites (ids and specialty codes) |
 | Consent | TRACKING; a separate, revocable, forward-only grant per specialist; a separate yes for notes |
 | Where | Tracking database, pseudonymous ids only; the device (offline, encrypted) |
 | Recipients | Specialists with a live booking and a grant; AI receives a consented summary (Phase 3) |

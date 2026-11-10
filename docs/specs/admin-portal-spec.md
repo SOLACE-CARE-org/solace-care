@@ -72,7 +72,7 @@ The portal has 31 screens. Phase 1 needs 20 of them for the public launch; the r
 | 19 | Team and roles | Staff accounts and their roles | Add staff with a temporary password, change roles, deactivate | 1 |
 | 20 | Settings and flags | Platform settings and feature flags | Change a value with a reason | 1 |
 | 21 | Tracking modules | All modules and their versions | Create a module, open a version | 2 |
-| 22 | Module builder: details | Name, card image, who it's for, enrolment question | Edit the draft, preview | 2 |
+| 22 | Module builder: details | Name, card image, who it's for, enrolment questions, logging-screen presentation | Edit the draft, preview | 2 |
 | 23 | Module builder: elements | Pick elements and their order | Add, mark required, reorder | 2 |
 | 24 | Module builder: rules | Rules and their test runs | Add a rule, run tests, submit for review | 2 |
 | 25 | Clinical review | A submitted version, side by side with the published one | Approve, return with comments | 2 |
@@ -82,6 +82,12 @@ The portal has 31 screens. Phase 1 needs 20 of them for the public launch; the r
 | 29 | Health check: questions | Questions and answers in EN and FR, when each is shown | Add, reorder, set show-if; screener items and the safety question are locked | 2 |
 | 30 | Health check: scoring | Rules that add points to specialties, with the reason seekers read | Add a rule, set the specialty order | 2 |
 | 31 | Health check: test and review | Sample answer sets run against the draft, beside the published version | Run tests, submit, approve, return with comments | 2 |
+| 32 | Tracking library: elements | Elements and their versions, each with its view preview in EN and FR | Draft from a registered view, submit, approve, publish, retire | 2b |
+| 33 | Tracking library: episode models | Episode models, their elements and metrics, with a test run on the synthetic histories | Draft, run tests, submit, approve, publish, retire | 2b |
+| 34 | Tracking library: context questions | Questions that can switch rules off, their scope and options in EN and FR | Draft, submit, approve, publish, retire | 2b |
+| 35 | Tracking library: test histories | Made-up histories the rule and episode test runs use | Add, edit, retire | 2b |
+
+Screens 32 to 35 (D61) have no design yet; they follow the module builder's layout and use the Tracking modules row of the permission matrix.
 
 The element library is not its own screen: the elements step of the builder shows it, read-only. Every screen is drawn on the [Solace Admin Portal](https://claude.ai/artifact/CF8vRe3ntoFM6FVaNgEzvf) canvas, plus a phone layout of the crisis queue for on-call responders.
 
