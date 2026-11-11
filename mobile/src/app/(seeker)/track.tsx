@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConsents } from '@/api/account';
 import {
   type CatalogueModule,
-  useCycles,
+  useEpisodeDays,
   useModules,
   useObservations,
   useRecommendations,
@@ -17,6 +17,7 @@ import {
 import i18n from '@/i18n';
 import { timeOf } from '@/state/format';
 import { startSync, useOutbox } from '@/tracking/outbox';
+import { capitalised, dayLabel, episodeModel } from '@/tracking/presentation';
 import { localDay, moduleName, valuesOn } from '@/tracking/view';
 import { Button } from '@/ui/Button';
 import { CrisisButton } from '@/ui/CrisisButton';
@@ -36,13 +37,16 @@ export default function Track() {
   const modules = useModules(lang, consented === true);
   const recommendations = useRecommendations(lang, consented === true);
   const observations = useObservations(consented === true);
-  const cycles = useCycles(consented === true);
   const pending = useOutbox((s) => s.pending);
 
   useEffect(() => startSync(), []);
 
   const today = localDay();
   const enrolled = (modules.data ?? []).filter((m) => m.enrolled);
+  const days = useEpisodeDays(
+    enrolled.map(episodeModel).filter((m): m is string => Boolean(m)),
+    consented === true,
+  );
   const logged = valuesOn(observations.data ?? [], today);
   const waiting = pending.filter((p) => p.observedOn === today);
   const offline = modules.isError && !modules.data;
@@ -157,11 +161,7 @@ export default function Track() {
                   m.elements.some((b) => logged.has(b.code)) ||
                   waiting.some((p) => m.elements.some((b) => b.code === p.element))
                 }
-                cycleDay={
-                  m.elements.some((b) => b.code === 'flow_intensity')
-                    ? cycles.data?.cycleDay
-                    : undefined
-                }
+                day={days.get(episodeModel(m) ?? '')}
               />
             ))}
             <Button
@@ -187,19 +187,20 @@ export function ModuleCard({
   module: m,
   lang,
   logged,
-  cycleDay,
+  day,
 }: {
   module: CatalogueModule;
   lang: 'en' | 'fr';
   logged: boolean;
-  cycleDay: number | undefined;
+  /** Today's day in the module's episode model, when its presentation shows one (D61). */
+  day: number | undefined;
 }) {
   const { t } = useTranslation();
   const name = moduleName(m, lang);
-  const state =
-    cycleDay !== undefined
-      ? t(logged ? 'track.cycleDayLogged' : 'track.cycleDayNotLogged', { n: cycleDay })
-      : t(logged ? 'track.loggedToday' : 'track.notLoggedToday');
+  const label = dayLabel(m, lang, day);
+  const state = label
+    ? t(logged ? 'track.dayLogged' : 'track.dayNotLogged', { day: capitalised(label) })
+    : t(logged ? 'track.loggedToday' : 'track.notLoggedToday');
   return (
     <View style={[styles.card, { borderLeftColor: accent(m.accentColour) }, styles.module]}>
       <Text variant="titleSm" accessibilityRole="header">

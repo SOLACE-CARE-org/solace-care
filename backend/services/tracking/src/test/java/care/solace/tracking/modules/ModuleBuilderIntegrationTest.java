@@ -63,6 +63,72 @@ class ModuleBuilderIntegrationTest extends TrackingStackTest {
   }
 
   @Test
+  void thePresentationAndGroupsMustFitTheBoundElements() throws Exception {
+    String id = draft("pres_" + UUID.randomUUID().toString().substring(0, 6), ops);
+    // A trend on an element that is not bound is refused.
+    presentation(id, "{\"trends\":[\"daily_value:mood\"]}").andExpect(status().isBadRequest());
+    presentation(
+            id,
+            "{\"episode\":{\"model\":\"menstrual_cycle\","
+                + "\"dayLabel\":{\"en\":\"cycle day {{n}}\",\"fr\":\"jour {{n}} du cycle\"}},"
+                + "\"trends\":[\"menstrual_cycle.length_days\"],"
+                + "\"quickLog\":\"flow_intensity\"}")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.presentation.episode.model").value("menstrual_cycle"))
+        .andExpect(jsonPath("$.problems.length()").value(0));
+    // Saving the details leaves the presentation as it is.
+    mvc.perform(get("/admin/v1/tracking/versions/" + id).with(ops))
+        .andExpect(jsonPath("$.presentation.quickLog").value("flow_intensity"));
+    // A group whose members are apart is refused.
+    String label = "\"labels\":{\"en\":\"Period\",\"fr\":\"Règles\"}";
+    mvc.perform(
+            put("/admin/v1/tracking/versions/" + id + "/elements")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "[{\"code\":\"flow_intensity\",\"version\":\"1\",\"required\":true,"
+                        + "\"group\":{\"code\":\"period\","
+                        + label
+                        + "}},{\"code\":\"note\",\"version\":\"1\",\"required\":false},"
+                        + "{\"code\":\"period_start\",\"version\":\"1\",\"required\":true,"
+                        + "\"group\":{\"code\":\"period\","
+                        + label
+                        + "}}]"))
+        .andExpect(status().isBadRequest());
+    mvc.perform(
+            put("/admin/v1/tracking/versions/" + id + "/elements")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "[{\"code\":\"flow_intensity\",\"version\":\"1\",\"required\":true,"
+                        + "\"group\":{\"code\":\"period\","
+                        + label
+                        + "}},{\"code\":\"period_start\",\"version\":\"1\",\"required\":true,"
+                        + "\"group\":{\"code\":\"period\","
+                        + label
+                        + "}},{\"code\":\"note\",\"version\":\"1\",\"required\":false}]"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.elements[1].group.labels.fr").value("Règles"))
+        .andExpect(jsonPath("$.problems.length()").value(0));
+    // Unbinding the quick-log element leaves the presentation pointing nowhere: not ready.
+    mvc.perform(
+            put("/admin/v1/tracking/versions/" + id + "/elements")
+                .with(ops)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("[{\"code\":\"period_start\",\"version\":\"1\",\"required\":true}]"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.problems[0]").value("presentation"));
+  }
+
+  private ResultActions presentation(String id, String body) throws Exception {
+    return mvc.perform(
+        put("/admin/v1/tracking/versions/" + id + "/presentation")
+            .with(ops)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
   void theDrafterCannotApproveAndOnlyClinicalReviewersCan() throws Exception {
     var both = staff("both-1", "Two Hats", "OPERATIONS", "CLINICAL_REVIEWER");
     String id = draft("same_" + UUID.randomUUID().toString().substring(0, 6), both);

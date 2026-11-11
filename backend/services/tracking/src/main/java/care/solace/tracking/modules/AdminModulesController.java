@@ -88,7 +88,7 @@ class AdminModulesController {
 
   // --- Views ------------------------------------------------------------------------------------
 
-  record Text(String en, String fr) {}
+  public record Text(String en, String fr) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record VersionSummary(
@@ -110,7 +110,25 @@ class AdminModulesController {
       List<VersionSummary> versions,
       Integer enrolled) {}
 
-  record BindingView(String code, String version, boolean required, int position) {}
+  /** Elements shown together under one EN/FR label on the logging screen (D61). */
+  public record Group(
+      @NotBlank @Pattern(regexp = "^[a-z][a-z0-9_]*$") @Size(max = 40) String code,
+      @NotNull Text labels) {
+
+    static Group of(ModuleStore.Binding b) {
+      if (b.groupCode() == null) {
+        return null;
+      }
+      var l = b.groupLabel();
+      return new Group(
+          b.groupCode(),
+          new Text(
+              l == null ? "" : l.path("en").asText(""), l == null ? "" : l.path("fr").asText("")));
+    }
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record BindingView(String code, String version, boolean required, int position, Group group) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record RuleView(
@@ -145,6 +163,7 @@ class AdminModulesController {
       Integer minAge,
       JsonNode enrolmentQuestion,
       List<String> questions,
+      JsonNode presentation,
       LocalTime reminderDefault,
       List<BindingView> elements,
       List<RuleView> rules,
@@ -175,7 +194,8 @@ class AdminModulesController {
       LocalTime reminderDefault,
       String accentColour) {}
 
-  record BindingRequest(@NotBlank String code, @NotBlank String version, boolean required) {}
+  record BindingRequest(
+      @NotBlank String code, @NotBlank String version, boolean required, @Valid Group group) {}
 
   record RuleRequest(
       @NotBlank @Pattern(regexp = "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$") String code,
@@ -313,7 +333,8 @@ class AdminModulesController {
             r.enrolmentQuestion() == null || r.enrolmentQuestion().isNull()
                 ? null
                 : r.enrolmentQuestion(),
-            r.reminderDefault()),
+            r.reminderDefault(),
+            null),
         r.accentColour(),
         staff);
     audit.adminAction("tracking.version.details", "module-version", versionId.toString(), Map.of());
@@ -333,7 +354,14 @@ class AdminModulesController {
           library
               .find(b.code(), b.version())
               .orElseThrow(() -> new SolaceException(CommonError.REQUEST_INVALID));
-      bindings.add(new ModuleStore.Binding(e.id(), b.required(), i + 1));
+      var g = b.group();
+      bindings.add(
+          new ModuleStore.Binding(
+              e.id(),
+              b.required(),
+              i + 1,
+              g == null ? null : g.code(),
+              g == null ? null : ModuleStore.JSON.valueToTree(g.labels())));
     }
     modules.saveBindings(versionId, bindings, staff);
     audit.adminAction(
@@ -383,6 +411,19 @@ class AdminModulesController {
   List<QuestionView> contextQuestions(@AuthenticationPrincipal Jwt token) {
     gate.require(token, false);
     return questions.all().stream().map(QuestionView::of).toList();
+  }
+
+  /** How the app shows the module (D61); an empty body clears it. */
+  @PutMapping("/admin/v1/tracking/versions/{versionId}/presentation")
+  VersionView presentation(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID versionId,
+      @RequestBody JsonNode presentation) {
+    var staff = gate.require(token, true);
+    modules.savePresentation(versionId, presentation, staff);
+    audit.adminAction(
+        "tracking.version.presentation", "module-version", versionId.toString(), Map.of());
+    return view(found(versionId), staff);
   }
 
   /** The context questions asked on enrolment, in order; at most three (D61). */
@@ -548,7 +589,9 @@ class AdminModulesController {
           .byId(b.elementId())
           .ifPresent(
               e ->
-                  elements.add(new BindingView(e.code(), e.version(), b.required(), b.position())));
+                  elements.add(
+                      new BindingView(
+                          e.code(), e.version(), b.required(), b.position(), Group.of(b))));
     }
     return new VersionView(
         v.id(),
@@ -565,6 +608,7 @@ class AdminModulesController {
         d.minAge(),
         d.enrolmentQuestion(),
         store.questions(v.id()),
+        d.presentation(),
         d.reminderDefault(),
         elements,
         store.rules(v.id()).stream()

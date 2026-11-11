@@ -74,7 +74,13 @@ class SeekerModulesController {
 
   record Text(String en, String fr) {}
 
-  record BindingView(String code, String version, boolean required, int position) {}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record BindingView(
+      String code,
+      String version,
+      boolean required,
+      int position,
+      AdminModulesController.Group group) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   record CatalogueModule(
@@ -89,6 +95,7 @@ class SeekerModulesController {
       Integer minAge,
       JsonNode enrolmentQuestion,
       List<String> questions,
+      JsonNode presentation,
       LocalTime reminderDefault,
       List<BindingView> elements,
       String minAppVersion,
@@ -147,6 +154,7 @@ class SeekerModulesController {
                   d.minAge(),
                   d.enrolmentQuestion(),
                   store.questions(v.id()),
+                  d.presentation(),
                   d.reminderDefault(),
                   store.bindings(v.id()).stream()
                       .map(
@@ -157,7 +165,11 @@ class SeekerModulesController {
                                     .findFirst()
                                     .orElseThrow();
                             return new BindingView(
-                                el.code(), el.version(), b.required(), b.position());
+                                el.code(),
+                                el.version(),
+                                b.required(),
+                                b.position(),
+                                AdminModulesController.Group.of(b));
                           })
                       .toList(),
                   minApp,

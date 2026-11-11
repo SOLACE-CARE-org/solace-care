@@ -298,6 +298,8 @@ export class ModuleReviewPage {
     );
     add(t('questions'), (p?.questions ?? []).join(', '), (v.questions ?? []).join(', '));
     add(t('elements'), elementsText(p), elementsText(v));
+    add(t('groups'), groupsText(p, lang), groupsText(v, lang));
+    add(t('presentation'), presentationText(p, lang), presentationText(v, lang));
     const before = new Map((p?.rules ?? []).map((r) => [r.code, r]));
     for (const r of v.rules ?? []) {
       const old = before.get(r.code);
@@ -447,6 +449,30 @@ export class ModuleReviewPage {
 
 function elementsText(v: Version | null): string {
   return (v?.elements ?? []).map((b) => b.code).join(', ');
+}
+
+function groupsText(v: Version | null, lang: string): string {
+  return (v?.elements ?? [])
+    .filter((b) => b.group)
+    .map((b) => `${b.code}: ${textIn(b.group!.labels, lang)}`)
+    .join(', ');
+}
+
+/** What the app shows for the module, as plain text, so two versions can be compared (D61). */
+function presentationText(v: Version | null, lang: string): string {
+  const p = v?.presentation;
+  if (!p) return '';
+  return [
+    p.title ? textIn(p.title, lang) : '',
+    p.saveLabel ? textIn(p.saveLabel, lang) : '',
+    p.episode ? `${p.episode.model}: ${textIn(p.episode.dayLabel, lang)}` : '',
+    p.episode?.historyTitle ? textIn(p.episode.historyTitle, lang) : '',
+    (p.trends ?? []).join(', '),
+    p.quickLog ?? '',
+    p.quickLogTitle ? textIn(p.quickLogTitle, lang) : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 /** A rule's reviewable parts as plain text, so two versions can be compared. */

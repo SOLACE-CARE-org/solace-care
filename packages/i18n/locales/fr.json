@@ -1133,7 +1133,13 @@
         "note": "Un élément partagé avec un autre module n'est demandé qu'une fois par jour aux usagers des deux. Au-delà de 6 éléments, le créateur avertit que la saisie peut dépasser 30 secondes.",
         "tooMany": "Plus de 6 éléments : la saisie peut dépasser 30 secondes.",
         "back": "Retour",
-        "next": "Suivant : règles"
+        "next": "Suivant : règles",
+        "group": "Grouper",
+        "ungroup": "Dégrouper",
+        "groupCode": "Code du groupe",
+        "groupLabelEn": "Libellé du groupe · EN",
+        "groupLabelFr": "Libellé du groupe · FR",
+        "groupNote": "Les éléments groupés s'affichent ensemble sous un même libellé. Les éléments d'un groupe se suivent."
       },
       "rules": {
         "none": "Aucune règle pour l'instant. Un module sans règle sert seulement à noter.",
@@ -1226,7 +1232,9 @@
         "image": "Une image de carte",
         "elements": "Au moins un élément",
         "requiredElement": "Au moins un élément obligatoire",
-        "rule": "Corriger la règle {{code}}"
+        "rule": "Corriger la règle {{code}}",
+        "presentation": "L'affichage correspond aux éléments",
+        "groups": "Éléments groupés côte à côte avec un seul libellé"
       },
       "review": {
         "title": "Revue clinique",
@@ -1252,7 +1260,9 @@
           "reminder": "Rappel suggéré",
           "question": "Question d'inscription",
           "elements": "Éléments",
-          "questions": "Questions à l'inscription"
+          "questions": "Questions à l'inscription",
+          "groups": "Groupes d'éléments",
+          "presentation": "Affichage dans l'application"
         },
         "newImage": "Nouvelle image",
         "ruleField": "{{code}}, {{part}}",
@@ -1279,6 +1289,29 @@
         "publish": "Publier la v{{n}}",
         "retire": "Retirer la v{{n}}",
         "notInReview": "Cette version n'attend pas de revue."
+      },
+      "shown": {
+        "title": "Affichage dans l'application",
+        "note": "Chaque partie est facultative. Un texte doit exister en EN et en FR, 60 caractères au plus.",
+        "titleEn": "Titre de la saisie · EN",
+        "titleFr": "Titre de la saisie · FR",
+        "saveEn": "Bouton d'enregistrement · EN",
+        "saveFr": "Bouton d'enregistrement · FR",
+        "episode": "Jour affiché dans l'en-tête",
+        "noEpisode": "Aucun",
+        "dayEn": "Libellé du jour · EN",
+        "dayFr": "Libellé du jour · FR",
+        "historyEn": "Titre des épisodes passés · EN",
+        "historyFr": "Titre des épisodes passés · FR",
+        "dayHint": "Le libellé du jour doit contenir {{n}} à la place du numéro du jour.",
+        "trends": "Affiché dans Tendances",
+        "noTrends": "Enregistrez d'abord les éléments pour choisir ce que Tendances affiche.",
+        "trendsHint": "12 au plus, dans l'ordre choisi. Sans choix, Tendances affiche tous les éléments possibles.",
+        "quickLog": "Une touche sur l'accueil",
+        "noQuickLog": "Aucun",
+        "refused": "Les éléments sont enregistrés, mais l'affichage ne leur correspond pas. Vérifiez que chaque texte existe en EN et en FR et que le libellé du jour contient {{n}}.",
+        "quickEn": "Question affichée · EN",
+        "quickFr": "Question affichée · FR"
       }
     },
     "healthCheck": {
@@ -2265,7 +2298,6 @@
     "offlineTitle": "Vous êtes hors ligne.",
     "offlineBody": "Réservation, paiement et appels demandent une connexion.",
     "emergencyOffline": "Les numéros d'urgence fonctionnent hors ligne",
-    "feeling": "Comment vous sentez-vous aujourd'hui ?",
     "feelingSaved": "Enregistré pour aujourd'hui. Vous pouvez le changer dans la journée."
   },
   "intro": {
@@ -2302,8 +2334,8 @@
     "addModule": "Ajouter un module",
     "notLoggedToday": "Pas noté aujourd'hui",
     "loggedToday": "Noté aujourd'hui",
-    "cycleDayNotLogged": "Jour {{n}} du cycle · pas noté aujourd'hui",
-    "cycleDayLogged": "Jour {{n}} du cycle · noté aujourd'hui",
+    "dayNotLogged": "{{day}} · pas noté aujourd'hui",
+    "dayLogged": "{{day}} · noté aujourd'hui",
     "seePattern": "{{module}} · voir le schéma",
     "waitingToSync": "En attente de synchro",
     "loggedOnPhone": "Noté aujourd'hui à {{time}} sur ce téléphone",
@@ -2331,18 +2363,15 @@
     },
     "log": {
       "title": "Noter aujourd'hui",
-      "checkinTitle": "Comment s'est passée la journée ?",
       "header": "{{module}} · {{date}}",
-      "headerCycle": "{{module}} · {{date}} · jour {{n}} du cycle",
       "optional": "(facultatif)",
       "notePrivate": "Privée. Un spécialiste ne voit vos notes que si vous acceptez de les partager.",
       "save": "Enregistrer la journée",
-      "saveCheckin": "Enregistrer le bilan",
       "decrease": "Moins",
       "increase": "Plus",
       "hours": "{{h}} h {{m}}",
       "nothingYet": "Choisissez au moins une réponse pour enregistrer.",
-      "periodDates": "Dates des règles"
+      "headerDay": "{{module}} · {{date}} · {{day}}"
     },
     "trend": {
       "title": "Tendances · {{module}}",
@@ -2366,7 +2395,6 @@
       "reminder": "Rappel quotidien",
       "reminderLine": "{{time}} · s'arrête si vous l'ignorez 5 jours de suite",
       "reminderOff": "Désactivé",
-      "cycles": "Vos derniers cycles",
       "cycleLine": "{{days}} jours",
       "leave": "Arrêter de suivre {{module}}",
       "leaveNote": "Vos données restent à vous, et vous pouvez rajouter le module quand vous voulez."

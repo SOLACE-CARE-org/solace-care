@@ -69,6 +69,10 @@ const checkin = {
   audience: { en: 'Anyone', fr: 'Tout le monde' },
   imageAlt: { en: 'Shapes', fr: 'Formes' },
   elements: [{ code: 'mood', version: '1', required: true, position: 0 }],
+  presentation: {
+    quickLog: 'mood',
+    quickLogTitle: { en: 'How are you feeling today?', fr: "Comment vous sentez-vous aujourd'hui ?" },
+  },
   minAppVersion: '1.0.0',
   enrolled: true,
   reminderTime: '20:00',
@@ -103,7 +107,6 @@ beforeEach(async () => {
       status: 200,
       body: { observations: [], deleted: [], cursor: 0, hasMore: false },
     },
-    'GET /v1/tracking/cycles': { status: 200, body: { cycles: [] } },
     'GET /v1/tracking/shares': { status: 200, body: [] },
     'POST /v1/tracking/shares': {
       status: 201,

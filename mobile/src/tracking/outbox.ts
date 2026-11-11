@@ -108,7 +108,7 @@ async function send(): Promise<boolean> {
     }
     // Screens refetch in the background; sending is done once the phone's queue is empty.
     void queryClient.invalidateQueries({ queryKey: trackingKeys.observations });
-    void queryClient.invalidateQueries({ queryKey: trackingKeys.cycles });
+    void queryClient.invalidateQueries({ queryKey: ['tracking', 'episodes'] });
     void queryClient.invalidateQueries({ queryKey: ['tracking', 'recommendations'] });
     return true;
   } catch {

@@ -7,9 +7,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   type Element,
+  type EpisodeSummary,
   type Observation,
-  useCycles,
   useElements,
+  useEpisodes,
   useLeave,
   useModules,
   useObservations,
@@ -31,13 +32,16 @@ import { Segmented } from '@/ui/Segmented';
 import { SwitchRow } from '@/ui/SwitchRow';
 import { Text } from '@/ui/Text';
 
+import { episodeModel } from '@/tracking/presentation';
+
 import { accent } from '../../(seeker)/track';
 
 const CHARTED = new Set(['INT', 'MINUTES', 'ENUM', 'BOOL']);
 
 /**
  * Trends (Trends.dc.html): what the person logged over 2 weeks, a month or 3 months, as facts. No
- * score, no forecast (D50). Notes are counted, never shown here; the reminder and leaving the
+ * score, no forecast (D50). What is charted, in order, is the module's presentation (D61): a daily
+ * element as bars, an episode metric as the last episodes; without one, every element it can. Notes are counted, never shown here; the reminder and leaving the
  * module live here too.
  */
 export default function Trends() {
@@ -51,8 +55,8 @@ export default function Trends() {
   const reminder = useSetReminder();
   const [range, setRange] = useState<Range>('TWO_WEEKS');
   const module = modules.data?.find((m) => m.code === code);
-  const hasFlow = module?.elements.some((b) => b.code === 'flow_intensity') ?? false;
-  const cycles = useCycles(hasFlow);
+  const model = episodeModel(module);
+  const episodes = useEpisodes(model);
 
   const days = RANGES[range];
   const from = daysBack(days);
@@ -64,6 +68,10 @@ export default function Trends() {
     .map((b) => library.data?.find((e) => e.code === b.code))
     .filter((e): e is Element => Boolean(e));
   const notes = elements.find((e) => e.valueType === 'TEXT');
+  const trends: string[] =
+    module?.presentation?.trends ??
+    elements.filter((e) => CHARTED.has(e.valueType)).map((e) => `daily_value:${e.code}`);
+  const historyTitle = module?.presentation?.episode?.historyTitle?.[lang];
   const name = module ? moduleName(module, lang) : '';
   const reminderTime = module?.reminderTime?.slice(0, 5);
   const color = accent(module?.accentColour ?? 'brand');
@@ -98,42 +106,34 @@ export default function Trends() {
           </View>
         ) : null}
 
-        {hasFlow && cycles.data && cycles.data.cycles.length > 0 ? (
-          <View style={styles.card}>
-            <Text variant="titleSm" accessibilityRole="header">
-              {t('track.trend.cycles')}
-            </Text>
-            {cycles.data.cycles
-              .filter((c) => c.complete && c.lengthDays)
-              .slice(-6)
-              .map((c) => (
-                <View key={c.start} style={styles.row}>
-                  <Text variant="body">
-                    {new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(
-                      new Date(`${c.start}T12:00:00`),
-                    )}
-                  </Text>
-                  <Text variant="body" style={styles.bold}>
-                    {t('track.trend.cycleLine', { days: c.lengthDays })}
-                  </Text>
-                </View>
-              ))}
-          </View>
-        ) : null}
-
-        {elements
-          .filter((e) => CHARTED.has(e.valueType) && e.code !== 'flow_intensity')
-          .map((e) => (
-            <Chart
-              key={e.code}
-              element={e}
+        {trends.map((key) => {
+          if (key.startsWith('daily_value:')) {
+            const e = elements.find((x) => `daily_value:${x.code}` === key);
+            if (!e || !CHARTED.has(e.valueType)) return null;
+            return (
+              <Chart
+                key={key}
+                element={e}
+                lang={lang}
+                days={days}
+                from={from}
+                observations={inRange}
+                color={color}
+              />
+            );
+          }
+          const [m, metric] = key.split('.');
+          if (m !== model || !metric || !episodes.data) return null;
+          return (
+            <History
+              key={key}
+              title={historyTitle}
+              summary={episodes.data}
+              metric={metric}
               lang={lang}
-              days={days}
-              from={from}
-              observations={inRange}
-              color={color}
             />
-          ))}
+          );
+        })}
 
         {notes ? (
           <View style={styles.card}>
@@ -181,6 +181,48 @@ export default function Trends() {
         ) : null}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** The last complete episodes, one line each, with the metric's value (D50: facts only). */
+function History({
+  title,
+  summary,
+  metric,
+  lang,
+}: {
+  title: string | undefined;
+  summary: EpisodeSummary;
+  metric: string;
+  lang: 'en' | 'fr';
+}) {
+  const { t } = useTranslation();
+  const done = summary.episodes
+    .filter((ep) => ep.complete && ep.metrics[metric] !== undefined)
+    .slice(-6);
+  if (done.length === 0) return null;
+  return (
+    <View style={styles.card}>
+      {title ? (
+        <Text variant="titleSm" accessibilityRole="header">
+          {title}
+        </Text>
+      ) : null}
+      {done.map((ep) => (
+        <View key={ep.start} style={styles.row}>
+          <Text variant="body">
+            {new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(
+              new Date(`${ep.start}T12:00:00`),
+            )}
+          </Text>
+          <Text variant="body" style={styles.bold}>
+            {metric.endsWith('_days')
+              ? t('track.trend.cycleLine', { days: ep.metrics[metric] })
+              : String(ep.metrics[metric])}
+          </Text>
+        </View>
+      ))}
+    </View>
   );
 }
 

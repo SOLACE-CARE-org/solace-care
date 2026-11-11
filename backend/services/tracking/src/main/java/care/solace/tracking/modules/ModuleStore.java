@@ -36,7 +36,8 @@ public class ModuleStore {
       String audienceEn,
       String audienceFr,
       JsonNode enrolmentQuestion,
-      LocalTime reminderDefault) {}
+      LocalTime reminderDefault,
+      JsonNode presentation) {}
 
   public record Version(
       UUID id,
@@ -59,7 +60,17 @@ public class ModuleStore {
     }
   }
 
-  public record Binding(UUID elementId, boolean required, int position) {}
+  /**
+   * @param groupCode elements with the same group show together on the logging screen
+   * @param groupLabel {"en": "...", "fr": "..."}, with the group
+   */
+  public record Binding(
+      UUID elementId, boolean required, int position, String groupCode, JsonNode groupLabel) {
+
+    public Binding(UUID elementId, boolean required, int position) {
+      this(elementId, required, position, null, null);
+    }
+  }
 
   public record Rule(
       UUID id,
@@ -140,9 +151,9 @@ public class ModuleStore {
             INSERT INTO module_version (id, module_id, major, minor, status, name_en, name_fr,
                    description_en, description_fr, image_asset_id, image_alt_en, image_alt_fr,
                    min_age, audience_en, audience_fr, enrolment_question_json, reminder_default,
-                   drafted_by, drafted_by_name, created_at)
+                   presentation_json, drafted_by, drafted_by_name, created_at)
             VALUES (:id, :m, :maj, :min, 'DRAFT', :ne, :nf, :de, :df, :img, :ae, :af, :age, :aue, :auf,
-                    CAST(:q AS jsonb), :rem, :by, :name, :now)
+                    CAST(:q AS jsonb), :rem, CAST(:pres AS jsonb), :by, :name, :now)
             """)
         .param("id", id)
         .param("m", moduleId)
@@ -160,6 +171,7 @@ public class ModuleStore {
         .param("auf", d.audienceFr())
         .param("q", json(d.enrolmentQuestion()))
         .param("rem", d.reminderDefault() == null ? null : Time.valueOf(d.reminderDefault()))
+        .param("pres", json(d.presentation()))
         .param("by", by)
         .param("name", byName)
         .param("now", Timestamp.from(now))
@@ -188,6 +200,16 @@ public class ModuleStore {
         .param("auf", d.audienceFr())
         .param("q", json(d.enrolmentQuestion()))
         .param("rem", d.reminderDefault() == null ? null : Time.valueOf(d.reminderDefault()))
+        .update();
+  }
+
+  /** The presentation is saved on its own, after the bindings it points at. */
+  public void savePresentation(UUID versionId, JsonNode presentation) {
+    db.sql(
+            "UPDATE module_version SET presentation_json = CAST(:pres AS jsonb)"
+                + " WHERE id = :id AND status = 'DRAFT'")
+        .param("id", versionId)
+        .param("pres", json(presentation))
         .update();
   }
 
@@ -288,7 +310,9 @@ public class ModuleStore {
                 new Binding(
                     rs.getObject("element_id", UUID.class),
                     rs.getBoolean("required"),
-                    rs.getInt("position")))
+                    rs.getInt("position"),
+                    rs.getString("group_code"),
+                    tree(rs.getString("group_label_json"))))
         .list();
   }
 
@@ -298,11 +322,17 @@ public class ModuleStore {
         .update();
     for (Binding b : bindings) {
       db.sql(
-              "INSERT INTO module_binding (module_version_id, element_id, required, position) VALUES (:v, :e, :r, :p)")
+              """
+              INSERT INTO module_binding (module_version_id, element_id, required, position,
+                     group_code, group_label_json)
+              VALUES (:v, :e, :r, :p, :g, CAST(:gl AS jsonb))
+              """)
           .param("v", versionId)
           .param("e", b.elementId())
           .param("r", b.required())
           .param("p", b.position())
+          .param("g", b.groupCode())
+          .param("gl", json(b.groupLabel()))
           .update();
     }
   }
@@ -458,7 +488,8 @@ public class ModuleStore {
             rs.getString("audience_en"),
             rs.getString("audience_fr"),
             tree(rs.getString("enrolment_question_json")),
-            reminder == null ? null : reminder.toLocalTime()),
+            reminder == null ? null : reminder.toLocalTime(),
+            tree(rs.getString("presentation_json"))),
         rs.getString("drafted_by"),
         rs.getString("drafted_by_name"),
         instant(rs.getTimestamp("submitted_at")),

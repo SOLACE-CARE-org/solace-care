@@ -8,6 +8,7 @@ import care.solace.tracking.context.ContextQuestions;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -172,8 +173,26 @@ public class Modules {
           .byId(b.elementId())
           .orElseThrow(() -> new SolaceException(CommonError.REQUEST_INVALID));
     }
+    if (!Presentation.groupProblems(bindings).isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
     store.replaceBindings(versionId, bindings);
     renumber(v);
+  }
+
+  /** How the app shows the module, which must fit the elements bound now (D61). */
+  @Transactional
+  public void savePresentation(UUID versionId, JsonNode presentation, StaffGate.Staff staff) {
+    requireDrafter(staff);
+    draft(versionId);
+    JsonNode saved =
+        presentation == null || presentation.isNull() || presentation.isEmpty()
+            ? null
+            : presentation;
+    if (!Presentation.problems(saved, bound(versionId), models.all()).isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    store.savePresentation(versionId, saved);
   }
 
   /** At most 3 published context questions, asked once on enrolment (D61). */
@@ -279,6 +298,13 @@ public class Modules {
       problems.add("requiredElement");
     }
     var bound = bound(v.id());
+    // Removing an element can leave the presentation pointing at it; the elements step fixes it.
+    if (!Presentation.problems(d.presentation(), bound, models.all()).isEmpty()) {
+      problems.add("presentation");
+    }
+    if (!Presentation.groupProblems(store.bindings(v.id())).isEmpty()) {
+      problems.add("groups");
+    }
     for (var r : store.rules(v.id())) {
       if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all(), questions.all())
               .isEmpty()
@@ -352,6 +378,6 @@ public class Modules {
   }
 
   private static ModuleStore.Details empty() {
-    return new ModuleStore.Details("", "", "", "", null, "", "", null, "", "", null, null);
+    return new ModuleStore.Details("", "", "", "", null, "", "", null, "", "", null, null, null);
   }
 }
