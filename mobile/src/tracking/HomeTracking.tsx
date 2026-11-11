@@ -8,23 +8,23 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useConsents } from '@/api/account';
 import {
   timeZone,
-  useCycles,
   useElements,
+  useEpisodeDays,
   useModules,
   useObservations,
   useRecommendations,
 } from '@/api/tracking';
 import { ModuleCard } from '@/app/(seeker)/track';
 import { newEntryId, saveEntries, useOutbox } from '@/tracking/outbox';
-import { choicesOf, localDay, moduleName, valuesOn } from '@/tracking/view';
+import { episodeModel } from '@/tracking/presentation';
+import { choicesOf, localDay, moduleName, nameOf, valuesOn } from '@/tracking/view';
 import { Chip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
 
-const CHECKIN = 'daily_checkin';
-
 /**
- * Tracking on Home (Home.dc.html), Phase 2: the newest pattern or invitation, a one-tap mood
- * check-in while the daily check-in is tracked, and the tracked modules with today's state. Shown
+ * Tracking on Home (Home.dc.html), Phase 2: the newest pattern or invitation, the one-tap element
+ * of a tracked module that offers one (the check-in's mood; D61), and the tracked modules with
+ * today's state. Shown
  * only with the trackTab flag and the TRACKING consent; logging works offline like the Track tab.
  */
 export function HomeTracking({ lang }: { lang: 'en' | 'fr' }) {
@@ -35,20 +35,30 @@ export function HomeTracking({ lang }: { lang: 'en' | 'fr' }) {
   const modules = useModules(lang, consented);
   const recommendations = useRecommendations(lang, consented);
   const observations = useObservations(consented);
-  const cycles = useCycles(consented);
   const library = useElements();
   const pending = useOutbox((s) => s.pending);
   const [mood, setMood] = useState<string | null>(null);
+  const enrolled = (modules.data ?? []).filter((m) => m.enrolled);
+  const days = useEpisodeDays(
+    enrolled.map(episodeModel).filter((m): m is string => Boolean(m)),
+    consented,
+  );
   if (!consented) return null;
 
   const today = localDay();
   const logged = valuesOn(observations.data ?? [], today);
   const waiting = pending.filter((p) => p.observedOn === today);
-  const enrolled = (modules.data ?? []).filter((m) => m.enrolled);
-  const checkin = enrolled.some((m) => m.code === CHECKIN);
-  const moodElement = library.data?.find((e) => e.code === 'mood');
-  const loggedMood =
-    mood ?? (logged.get('mood')?.value !== undefined ? String(logged.get('mood')?.value) : null);
+  // The first tracked module offering a one-tap element shows it.
+  const quick = enrolled.find((m) =>
+    m.elements.some((b) => b.code === m.presentation?.quickLog),
+  );
+  const quickElement = library.data?.find((e) => e.code === quick?.presentation?.quickLog);
+  // One tap needs a short list of answers, such as the mood scale.
+  const moodElement =
+    quickElement && choicesOf(quickElement, lang).length > 0 ? quickElement : undefined;
+  const quickTitle = quick?.presentation?.quickLogTitle?.[lang];
+  const loggedValue = moodElement ? logged.get(moodElement.code)?.value : undefined;
+  const loggedMood = mood ?? (loggedValue !== undefined ? String(loggedValue) : null);
   const newest = (recommendations.data ?? [])[0];
   const newestModule = modules.data?.find((m) => m.code === newest?.moduleCode);
 
@@ -91,10 +101,10 @@ export function HomeTracking({ lang }: { lang: 'en' | 'fr' }) {
         </Pressable>
       ) : null}
 
-      {checkin && moodElement ? (
+      {moodElement ? (
         <View style={styles.card}>
           <Text variant="titleSm" accessibilityRole="header">
-            {t('home.feeling')}
+            {quickTitle || nameOf(moodElement, lang)}
           </Text>
           <View style={styles.chips}>
             {choicesOf(moodElement, lang).map((c) => (
@@ -124,9 +134,7 @@ export function HomeTracking({ lang }: { lang: 'en' | 'fr' }) {
             m.elements.some((b) => logged.has(b.code)) ||
             waiting.some((p) => m.elements.some((b) => b.code === p.element))
           }
-          cycleDay={
-            m.elements.some((b) => b.code === 'flow_intensity') ? cycles.data?.cycleDay : undefined
-          }
+          day={days.get(episodeModel(m) ?? '')}
         />
       ))}
     </View>

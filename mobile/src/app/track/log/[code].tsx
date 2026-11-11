@@ -9,13 +9,14 @@ import {
   type Element,
   type PushEntry,
   timeZone,
-  useCycles,
   useElements,
+  useEpisodes,
   useModules,
   useObservations,
 } from '@/api/tracking';
 import i18n from '@/i18n';
 import { newEntryId, saveEntries } from '@/tracking/outbox';
+import { dayLabel, episodeModel, sections } from '@/tracking/presentation';
 import {
   choicesOf,
   helpOf,
@@ -34,13 +35,11 @@ import { Text } from '@/ui/Text';
 
 type Value = string | number | boolean;
 
-/** The daily check-in has its own wording (Checkin.dc.html). */
-const CHECKIN = 'daily_checkin';
-
 /**
  * Log today (Tracking.dc.html, Checkin.dc.html): one control per element of the module, from the
- * element library. Saving writes to the phone first and syncs when it can (epic 9); nothing waits
- * for the network.
+ * element library, grouped as the module says. The title, save button and the day in the header
+ * come from the module's presentation (D61). Saving writes to the phone first and syncs when it
+ * can (epic 9); nothing waits for the network.
  */
 export default function LogToday() {
   const { t } = useTranslation();
@@ -49,8 +48,9 @@ export default function LogToday() {
   const modules = useModules(lang);
   const library = useElements();
   const observations = useObservations();
-  const cycles = useCycles();
   const module = modules.data?.find((m) => m.code === code);
+  const presentation = module?.presentation;
+  const episodes = useEpisodes(episodeModel(module));
   const today = localDay();
   const before = useMemo(
     () => valuesOn(observations.data ?? [], today),
@@ -59,17 +59,12 @@ export default function LogToday() {
   const [values, setValues] = useState<Record<string, Value>>({});
   const [busy, setBusy] = useState(false);
 
-  const elements = (module?.elements ?? [])
-    .slice()
-    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-    .map((b) => library.data?.find((e) => e.code === b.code))
-    .filter((e): e is Element => Boolean(e));
-  const events = elements.filter((e) => e.inputView === 'event_marker');
+  const parts = sections(module, library.data, lang);
+  const elements = parts.flatMap((p) => p.elements);
   const valueOf = (e: Element): Value | undefined =>
     e.code in values ? values[e.code] : (before.get(e.code)?.value as Value | undefined);
   const set = (code: string, value: Value) => setValues((v) => ({ ...v, [code]: value }));
   const changed = Object.keys(values).filter((k) => values[k] !== '' && values[k] !== undefined);
-  const checkin = code === CHECKIN;
 
   const date = new Intl.DateTimeFormat(lang, {
     weekday: 'short',
@@ -77,9 +72,7 @@ export default function LogToday() {
     month: 'short',
   }).format(new Date());
   const name = module ? moduleName(module, lang) : '';
-  const cycleDay = elements.some((e) => e.code === 'flow_intensity')
-    ? cycles.data?.cycleDay
-    : undefined;
+  const day = dayLabel(module, lang, episodes.data?.currentDay);
 
   const save = async () => {
     setBusy(true);
@@ -105,7 +98,7 @@ export default function LogToday() {
       top={<BackButton />}
       footer={
         <Button
-          label={t(checkin ? 'track.log.saveCheckin' : 'track.log.save')}
+          label={presentation?.saveLabel?.[lang] || t('track.log.save')}
           disabled={busy || changed.length === 0}
           accessibilityState={{ disabled: busy || changed.length === 0, busy }}
           onPress={() => void save()}
@@ -113,100 +106,119 @@ export default function LogToday() {
       }
     >
       <Text variant="meta" color={colors.inkMuted}>
-        {cycleDay !== undefined
-          ? t('track.log.headerCycle', { module: name, date, n: cycleDay })
+        {day
+          ? t('track.log.headerDay', { module: name, date, day })
           : t('track.log.header', { module: name, date })}
       </Text>
       <Text variant="titleLg" accessibilityRole="header">
-        {t(checkin ? 'track.log.checkinTitle' : 'track.log.title')}
+        {presentation?.title?.[lang] || t('track.log.title')}
       </Text>
 
-      {elements.map((e) => {
-        if (e.inputView === 'event_marker') {
-          // Period start and end share one row, as on the design.
-          if (e !== events[0]) return null;
+      {parts.map((part) => {
+        const marker = (ev: Element) => (
+          <Chip
+            key={ev.code}
+            label={helpOf(ev, lang) ?? nameOf(ev, lang)}
+            on={valueOf(ev) === today}
+            onToggle={() => set(ev.code, valueOf(ev) === today ? '' : today)}
+          />
+        );
+        // Event markers of one group share one row, as period start and end do on the design.
+        if (part.elements.every((e) => e.inputView === 'event_marker')) {
           return (
-            <Field key="events" label={t('track.log.periodDates')}>
-              <View style={styles.chips}>
-                {events.map((ev) => (
-                  <Chip
-                    key={ev.code}
-                    label={helpOf(ev, lang) ?? nameOf(ev, lang)}
-                    on={valueOf(ev) === today}
-                    onToggle={() => set(ev.code, valueOf(ev) === today ? '' : today)}
-                  />
-                ))}
-              </View>
+            <Field key={part.key} label={part.label ?? nameOf(part.elements[0]!, lang)}>
+              <View style={styles.chips}>{part.elements.map(marker)}</View>
             </Field>
           );
         }
-        switch (e.inputView) {
-          case 'scale_5':
-          case 'choice_chips':
-          case 'flow_calendar':
-            return (
-              <Field key={e.code} label={nameOf(e, lang)}>
-                <View
-                  style={styles.chips}
-                  accessibilityRole="radiogroup"
-                  accessibilityLabel={nameOf(e, lang)}
-                >
-                  {choicesOf(e, lang).map((c) => {
-                    const value = e.valueType === 'INT' ? Number(c.value) : c.value;
-                    return (
-                      <Chip
-                        key={c.value}
-                        role="radio"
-                        label={c.label}
-                        on={valueOf(e) === value}
-                        onToggle={() => set(e.code, value)}
-                      />
-                    );
-                  })}
-                </View>
-              </Field>
-            );
-          case 'duration_stepper':
-            return (
-              <Stepper
-                key={e.code}
-                element={e}
-                lang={lang}
-                value={valueOf(e) as number | undefined}
-                onChange={(v) => set(e.code, v)}
-              />
-            );
-          case 'toggle':
-            return (
-              <SwitchRow
-                key={e.code}
-                title={nameOf(e, lang)}
-                on={valueOf(e) === true}
-                onToggle={() => set(e.code, valueOf(e) !== true)}
-              />
-            );
-          case 'free_text':
-            return (
-              <Field key={e.code} label={nameOf(e, lang)} optional>
-                <TextInput
-                  multiline
-                  maxLength={e.constraints.max ?? 4000}
-                  accessibilityLabel={nameOf(e, lang)}
-                  value={String(valueOf(e) ?? '')}
-                  onChangeText={(text) => set(e.code, text)}
-                  style={styles.note}
-                />
-                <Text variant="meta" color={colors.inkMuted}>
-                  {helpOf(e, lang) ?? t('track.log.notePrivate')}
-                </Text>
-              </Field>
-            );
-          default:
-            return null;
-        }
+        const controls = part.elements.map((e) =>
+          e.inputView === 'event_marker' ? (
+            <View key={e.code} style={[styles.chips, styles.field]}>
+              {marker(e)}
+            </View>
+          ) : (
+            control(e)
+          ),
+        );
+        if (!part.label) return controls;
+        return (
+          <View key={part.key}>
+            <Text variant="label" style={[styles.bold, styles.field]}>
+              {part.label}
+            </Text>
+            {controls}
+          </View>
+        );
       })}
     </FlowScreen>
   );
+
+  function control(e: Element) {
+    switch (e.inputView) {
+      case 'scale_5':
+      case 'choice_chips':
+      case 'flow_calendar':
+        return (
+          <Field key={e.code} label={nameOf(e, lang)}>
+            <View
+              style={styles.chips}
+              accessibilityRole="radiogroup"
+              accessibilityLabel={nameOf(e, lang)}
+            >
+              {choicesOf(e, lang).map((c) => {
+                const value = e.valueType === 'INT' ? Number(c.value) : c.value;
+                return (
+                  <Chip
+                    key={c.value}
+                    role="radio"
+                    label={c.label}
+                    on={valueOf(e) === value}
+                    onToggle={() => set(e.code, value)}
+                  />
+                );
+              })}
+            </View>
+          </Field>
+        );
+      case 'duration_stepper':
+        return (
+          <Stepper
+            key={e.code}
+            element={e}
+            lang={lang}
+            value={valueOf(e) as number | undefined}
+            onChange={(v) => set(e.code, v)}
+          />
+        );
+      case 'toggle':
+        return (
+          <SwitchRow
+            key={e.code}
+            title={nameOf(e, lang)}
+            on={valueOf(e) === true}
+            onToggle={() => set(e.code, valueOf(e) !== true)}
+          />
+        );
+      case 'free_text':
+        return (
+          <Field key={e.code} label={nameOf(e, lang)} optional>
+            <TextInput
+              multiline
+              maxLength={e.constraints.max ?? 4000}
+              accessibilityLabel={nameOf(e, lang)}
+              value={String(valueOf(e) ?? '')}
+              onChangeText={(text) => set(e.code, text)}
+              style={styles.note}
+            />
+            <Text variant="meta" color={colors.inkMuted}>
+              {helpOf(e, lang) ?? t('track.log.notePrivate')}
+            </Text>
+          </Field>
+        );
+      default:
+        return null;
+    }
+  }
 }
 
 function Field({

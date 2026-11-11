@@ -2298,7 +2298,6 @@
     "offlineTitle": "You're offline.",
     "offlineBody": "Booking, payments and calls need a connection.",
     "emergencyOffline": "Emergency numbers work offline",
-    "feeling": "How are you feeling today?",
     "feelingSaved": "Saved for today. Change it any time today."
   },
   "intro": {
@@ -2335,8 +2334,8 @@
     "addModule": "Add a module",
     "notLoggedToday": "Not logged today",
     "loggedToday": "Logged today",
-    "cycleDayNotLogged": "Cycle day {{n}} · not logged today",
-    "cycleDayLogged": "Cycle day {{n}} · logged today",
+    "dayNotLogged": "{{day}} · not logged today",
+    "dayLogged": "{{day}} · logged today",
     "seePattern": "{{module}} · see the pattern",
     "waitingToSync": "Waiting to sync",
     "loggedOnPhone": "Logged today at {{time}} on this phone",
@@ -2364,18 +2363,15 @@
     },
     "log": {
       "title": "Log today",
-      "checkinTitle": "How was today?",
       "header": "{{module}} · {{date}}",
-      "headerCycle": "{{module}} · {{date}} · cycle day {{n}}",
       "optional": "(optional)",
       "notePrivate": "Private. A specialist sees notes only if you say yes to sharing them.",
       "save": "Save today's log",
-      "saveCheckin": "Save check-in",
       "decrease": "Less",
       "increase": "More",
       "hours": "{{h}} h {{m}}",
       "nothingYet": "Choose at least one answer to save.",
-      "periodDates": "Period dates"
+      "headerDay": "{{module}} · {{date}} · {{day}}"
     },
     "trend": {
       "title": "{{module}} trends",
@@ -2399,7 +2395,6 @@
       "reminder": "Daily reminder",
       "reminderLine": "{{time}} · stops if you ignore 5 days in a row",
       "reminderOff": "Off",
-      "cycles": "Your last cycles",
       "cycleLine": "{{days}} days",
       "leave": "Stop tracking {{module}}",
       "leaveNote": "What you logged stays yours, and you can add the module again any time."

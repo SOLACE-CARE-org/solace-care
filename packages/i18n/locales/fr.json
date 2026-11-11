@@ -2298,7 +2298,6 @@
     "offlineTitle": "Vous êtes hors ligne.",
     "offlineBody": "Réservation, paiement et appels demandent une connexion.",
     "emergencyOffline": "Les numéros d'urgence fonctionnent hors ligne",
-    "feeling": "Comment vous sentez-vous aujourd'hui ?",
     "feelingSaved": "Enregistré pour aujourd'hui. Vous pouvez le changer dans la journée."
   },
   "intro": {
@@ -2335,8 +2334,8 @@
     "addModule": "Ajouter un module",
     "notLoggedToday": "Pas noté aujourd'hui",
     "loggedToday": "Noté aujourd'hui",
-    "cycleDayNotLogged": "Jour {{n}} du cycle · pas noté aujourd'hui",
-    "cycleDayLogged": "Jour {{n}} du cycle · noté aujourd'hui",
+    "dayNotLogged": "{{day}} · pas noté aujourd'hui",
+    "dayLogged": "{{day}} · noté aujourd'hui",
     "seePattern": "{{module}} · voir le schéma",
     "waitingToSync": "En attente de synchro",
     "loggedOnPhone": "Noté aujourd'hui à {{time}} sur ce téléphone",
@@ -2364,18 +2363,15 @@
     },
     "log": {
       "title": "Noter aujourd'hui",
-      "checkinTitle": "Comment s'est passée la journée ?",
       "header": "{{module}} · {{date}}",
-      "headerCycle": "{{module}} · {{date}} · jour {{n}} du cycle",
       "optional": "(facultatif)",
       "notePrivate": "Privée. Un spécialiste ne voit vos notes que si vous acceptez de les partager.",
       "save": "Enregistrer la journée",
-      "saveCheckin": "Enregistrer le bilan",
       "decrease": "Moins",
       "increase": "Plus",
       "hours": "{{h}} h {{m}}",
       "nothingYet": "Choisissez au moins une réponse pour enregistrer.",
-      "periodDates": "Dates des règles"
+      "headerDay": "{{module}} · {{date}} · {{day}}"
     },
     "trend": {
       "title": "Tendances · {{module}}",
@@ -2399,7 +2395,6 @@
       "reminder": "Rappel quotidien",
       "reminderLine": "{{time}} · s'arrête si vous l'ignorez 5 jours de suite",
       "reminderOff": "Désactivé",
-      "cycles": "Vos derniers cycles",
       "cycleLine": "{{days}} jours",
       "leave": "Arrêter de suivre {{module}}",
       "leaveNote": "Vos données restent à vous, et vous pouvez rajouter le module quand vous voulez."

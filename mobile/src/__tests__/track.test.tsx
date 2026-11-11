@@ -9,6 +9,7 @@ import RecommendationScreen from '@/app/track/recommendation/[id]';
 import AboutYou from '@/app/track/about';
 import Catalogue from '@/app/track/catalogue';
 import LogToday from '@/app/track/log/[code]';
+import Trends from '@/app/track/trends/[code]';
 import { useAuth } from '@/auth/auth';
 import { initI18n } from '@/i18n';
 import { useSession } from '@/state/session';
@@ -70,6 +71,11 @@ const checkin = {
     { code: 'mood', version: '1', required: true, position: 0 },
     { code: 'note', version: '1', required: false, position: 1 },
   ],
+  presentation: {
+    title: { en: 'How was today?', fr: "Comment s'est passée la journée ?" },
+    saveLabel: { en: 'Save check-in', fr: 'Enregistrer le bilan' },
+    quickLog: 'mood',
+  },
   minAppVersion: '1.0.0',
   enrolled: true,
   reminderTime: '20:00',
@@ -80,6 +86,14 @@ const pcos = {
   accentColour: 'track-pink',
   name: { en: 'PCOS & cycle', fr: 'SOPK et cycle' },
   description: { en: 'Periods, flow, skin and hair', fr: 'Règles, flux, peau et pilosité' },
+  presentation: {
+    episode: {
+      model: 'menstrual_cycle',
+      dayLabel: { en: 'cycle day {{n}}', fr: 'jour {{n}} du cycle' },
+      historyTitle: { en: 'Your last cycles', fr: 'Vos derniers cycles' },
+    },
+    trends: ['menstrual_cycle.length_days', 'daily_value:acne_severity'],
+  },
   enrolled: false,
   reminderTime: undefined,
   reminderDefault: '20:00:00',
@@ -144,7 +158,6 @@ beforeEach(async () => {
       status: 200,
       body: { observations: [], deleted: [], cursor: 0, hasMore: false },
     },
-    'GET /v1/tracking/cycles': { status: 200, body: { cycles: [] } },
   };
   globalThis.fetch = jest.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const request = input instanceof Request ? input : new Request(String(input), init);
@@ -282,6 +295,91 @@ describe('Logging today', () => {
     expect(await screen.findByText('Waiting to sync')).toBeTruthy();
     expect(screen.getByText("Saved on this phone. It syncs when you're back online.")).toBeTruthy();
     expect(await screen.findByText('Logged today')).toBeTruthy();
+  });
+});
+
+describe('A module shown as its presentation says (D61)', () => {
+  const marker = (code: string, help: string) => ({
+    ...mood,
+    code,
+    kind: 'EVENT',
+    valueType: 'DATE',
+    constraints: {},
+    inputView: 'event_marker',
+    signals: [],
+    labels: { en: { name: code, help }, fr: { name: code, help } },
+  });
+  const acne = {
+    ...mood,
+    code: 'acne_severity',
+    valueType: 'ENUM',
+    constraints: { values: ['none', 'mild'] },
+    inputView: 'choice_chips',
+    labels: {
+      en: { name: 'Skin', values: { none: 'Clear', mild: 'A few spots' } },
+      fr: { name: 'Peau', values: { none: 'Nette', mild: 'Quelques boutons' } },
+    },
+  };
+  const group = { code: 'period_dates', labels: { en: 'Period dates', fr: 'Dates des règles' } };
+  const tracked = {
+    ...pcos,
+    enrolled: true,
+    elements: [
+      { code: 'period_start', version: '1', required: true, position: 0, group },
+      { code: 'period_end', version: '1', required: true, position: 1, group },
+      { code: 'acne_severity', version: '1', required: false, position: 2 },
+    ],
+  };
+
+  beforeEach(() => {
+    answers['GET /v1/tracking/modules'] = { status: 200, body: [tracked] };
+    answers['GET /v1/tracking/elements'] = {
+      status: 200,
+      body: [
+        marker('period_start', 'My period started today'),
+        marker('period_end', 'My period ended today'),
+        acne,
+      ],
+    };
+    answers['GET /v1/tracking/episodes/menstrual_cycle'] = {
+      status: 200,
+      body: {
+        model: 'menstrual_cycle',
+        currentDay: 12,
+        episodes: [
+          { start: '2026-08-11', end: '2026-09-18', complete: true, metrics: { length_days: 39 } },
+          { start: '2026-09-19', complete: false, metrics: {} },
+        ],
+      },
+    };
+  });
+
+  it('groups the period dates and shows the cycle day', async () => {
+    const screen = await renderRouter(
+      { _layout: Layout, index: Track, 'track/log/[code]': LogToday },
+      { initialUrl: '/track/log/pcos' },
+    );
+    expect(await screen.findByText('Log today')).toBeTruthy();
+    expect(await screen.findByText(/· cycle day 12$/)).toBeTruthy();
+    expect(screen.getByText('Period dates')).toBeTruthy();
+    expect(screen.getByText('My period started today')).toBeTruthy();
+    expect(screen.getByText('My period ended today')).toBeTruthy();
+    expect(screen.getByRole('button', { name: "Save today's log" })).toBeTruthy();
+  });
+
+  it('puts the cycle day on the module card', async () => {
+    const screen = await renderRouter({ _layout: Layout, index: Track }, { initialUrl: '/' });
+    expect(await screen.findByText('Cycle day 12 · not logged today')).toBeTruthy();
+  });
+
+  it('charts on Trends what the presentation lists, in order', async () => {
+    const screen = await renderRouter(
+      { _layout: Layout, 'track/trends/[code]': Trends },
+      { initialUrl: '/track/trends/pcos' },
+    );
+    expect(await screen.findByText('Your last cycles')).toBeTruthy();
+    expect(screen.getByText('39 days')).toBeTruthy();
+    expect(screen.getByText('Skin')).toBeTruthy();
   });
 });
 

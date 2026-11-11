@@ -1,5 +1,5 @@
 import { createTrackingClient, type TrackingSchemas } from '@solace/api-clients/tracking';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Middleware } from 'openapi-fetch';
 
 import { accessToken } from '@/auth/auth';
@@ -16,7 +16,8 @@ export type CatalogueModule = TrackingSchemas['CatalogueModule'];
 export type Recommendation = TrackingSchemas['Recommendation'];
 export type Observation = TrackingSchemas['Observation'];
 export type PushEntry = TrackingSchemas['PushEntry'];
-export type CycleSummary = TrackingSchemas['CycleSummary'];
+export type EpisodeSummary = TrackingSchemas['EpisodeSummary'];
+export type Presentation = TrackingSchemas['Presentation'];
 export type ContextQuestion = TrackingSchemas['ContextQuestion'];
 export type ContextAnswer = TrackingSchemas['ContextAnswerValue'];
 
@@ -48,7 +49,7 @@ export const trackingKeys = {
   modules: (language: string) => ['tracking', 'modules', language] as const,
   recommendations: (language: string) => ['tracking', 'recommendations', language] as const,
   observations: ['tracking', 'observations'] as const,
-  cycles: ['tracking', 'cycles'] as const,
+  episodes: (model: string) => ['tracking', 'episodes', model] as const,
   matches: (id: string, language: string) => ['tracking', 'matches', id, language] as const,
   questions: ['tracking', 'context-questions'] as const,
   answers: ['tracking', 'context-answers'] as const,
@@ -235,16 +236,38 @@ export function useInviteMatches(id: string, language: string, enabled = true) {
   });
 }
 
-/** Cycles and today's cycle day; facts only, never a forecast (D50). */
-export function useCycles(enabled = true) {
+async function episodes(model: string): Promise<EpisodeSummary> {
+  return orThrow(
+    await tracking.GET('/v1/tracking/episodes/{model}', {
+      params: { path: { model }, query: { timeZone: timeZone() } },
+    }),
+  );
+}
+
+/** One episode model's episodes and today's day in the newest; facts only (D50, D61). */
+export function useEpisodes(model: string | undefined, enabled = true) {
   return useQuery({
-    queryKey: trackingKeys.cycles,
-    queryFn: async () =>
-      orThrow(
-        await tracking.GET('/v1/tracking/cycles', { params: { query: { timeZone: timeZone() } } }),
-      ),
-    enabled,
+    queryKey: trackingKeys.episodes(model ?? ''),
+    queryFn: () => episodes(model!),
+    enabled: enabled && Boolean(model),
   });
+}
+
+/** Today's day in each of these episode models, for module cards that show it. */
+export function useEpisodeDays(models: string[], enabled = true): Map<string, number> {
+  const unique = [...new Set(models)];
+  const results = useQueries({
+    queries: unique.map((model) => ({
+      queryKey: trackingKeys.episodes(model),
+      queryFn: () => episodes(model),
+      enabled,
+    })),
+  });
+  const days = new Map<string, number>();
+  results.forEach((r, i) => {
+    if (r.data?.currentDay !== undefined) days.set(unique[i]!, r.data.currentDay);
+  });
+  return days;
 }
 
 /** Everything the person logged, from every phone, pulled page by page. */
