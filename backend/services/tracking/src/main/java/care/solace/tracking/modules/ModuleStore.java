@@ -184,8 +184,7 @@ public class ModuleStore {
             UPDATE module_version SET name_en = :ne, name_fr = :nf, description_en = :de,
                    description_fr = :df, image_asset_id = :img, image_alt_en = :ae, image_alt_fr = :af,
                    min_age = :age, audience_en = :aue, audience_fr = :auf,
-                   enrolment_question_json = CAST(:q AS jsonb), reminder_default = :rem,
-                   presentation_json = CAST(:pres AS jsonb)
+                   enrolment_question_json = CAST(:q AS jsonb), reminder_default = :rem
              WHERE id = :id AND status = 'DRAFT'
             """)
         .param("id", versionId)
@@ -201,7 +200,16 @@ public class ModuleStore {
         .param("auf", d.audienceFr())
         .param("q", json(d.enrolmentQuestion()))
         .param("rem", d.reminderDefault() == null ? null : Time.valueOf(d.reminderDefault()))
-        .param("pres", json(d.presentation()))
+        .update();
+  }
+
+  /** The presentation is saved on its own, after the bindings it points at. */
+  public void savePresentation(UUID versionId, JsonNode presentation) {
+    db.sql(
+            "UPDATE module_version SET presentation_json = CAST(:pres AS jsonb)"
+                + " WHERE id = :id AND status = 'DRAFT'")
+        .param("id", versionId)
+        .param("pres", json(presentation))
         .update();
   }
 

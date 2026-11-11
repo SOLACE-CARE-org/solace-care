@@ -8,6 +8,7 @@ import care.solace.tracking.context.ContextQuestions;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -158,7 +159,6 @@ public class Modules {
       }
       store.setColour(v.moduleId(), accent);
     }
-    // The presentation may name elements bound later, so it is checked on readiness, not here.
     store.saveDetails(versionId, details);
   }
 
@@ -178,6 +178,21 @@ public class Modules {
     }
     store.replaceBindings(versionId, bindings);
     renumber(v);
+  }
+
+  /** How the app shows the module, which must fit the elements bound now (D61). */
+  @Transactional
+  public void savePresentation(UUID versionId, JsonNode presentation, StaffGate.Staff staff) {
+    requireDrafter(staff);
+    draft(versionId);
+    JsonNode saved =
+        presentation == null || presentation.isNull() || presentation.isEmpty()
+            ? null
+            : presentation;
+    if (!Presentation.problems(saved, bound(versionId), models.all()).isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    store.savePresentation(versionId, saved);
   }
 
   /** At most 3 published context questions, asked once on enrolment (D61). */
@@ -283,7 +298,7 @@ public class Modules {
       problems.add("requiredElement");
     }
     var bound = bound(v.id());
-    // Removing an element can leave the presentation pointing at it; the details step fixes it.
+    // Removing an element can leave the presentation pointing at it; the elements step fixes it.
     if (!Presentation.problems(d.presentation(), bound, models.all()).isEmpty()) {
       problems.add("presentation");
     }

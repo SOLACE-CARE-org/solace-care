@@ -845,6 +845,32 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/versions/{versionId}/presentation:
+    parameters:
+      - $ref: "#/components/parameters/VersionId"
+    put:
+      operationId: saveModulePresentation
+      summary: How the app shows the module (D61), checked against its bound elements; drafts only
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Presentation"
+      responses:
+        "200":
+          $ref: "#/components/responses/VersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/tracking/versions/{versionId}/submission:
     parameters:
       - $ref: "#/components/parameters/VersionId"
@@ -1744,8 +1770,6 @@ components:
           maxLength: 120
         enrolmentQuestion:
           $ref: "#/components/schemas/EnrolmentQuestion"
-        presentation:
-          $ref: "#/components/schemas/Presentation"
         reminderDefault:
           type: string
         accentColour:

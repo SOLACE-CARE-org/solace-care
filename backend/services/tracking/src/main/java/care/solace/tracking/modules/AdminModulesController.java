@@ -191,7 +191,6 @@ class AdminModulesController {
       @NotNull @Size(max = 120) String audienceEn,
       @NotNull @Size(max = 120) String audienceFr,
       JsonNode enrolmentQuestion,
-      JsonNode presentation,
       LocalTime reminderDefault,
       String accentColour) {}
 
@@ -335,7 +334,7 @@ class AdminModulesController {
                 ? null
                 : r.enrolmentQuestion(),
             r.reminderDefault(),
-            r.presentation() == null || r.presentation().isNull() ? null : r.presentation()),
+            null),
         r.accentColour(),
         staff);
     audit.adminAction("tracking.version.details", "module-version", versionId.toString(), Map.of());
@@ -412,6 +411,19 @@ class AdminModulesController {
   List<QuestionView> contextQuestions(@AuthenticationPrincipal Jwt token) {
     gate.require(token, false);
     return questions.all().stream().map(QuestionView::of).toList();
+  }
+
+  /** How the app shows the module (D61); an empty body clears it. */
+  @PutMapping("/admin/v1/tracking/versions/{versionId}/presentation")
+  VersionView presentation(
+      @AuthenticationPrincipal Jwt token,
+      @PathVariable UUID versionId,
+      @RequestBody JsonNode presentation) {
+    var staff = gate.require(token, true);
+    modules.savePresentation(versionId, presentation, staff);
+    audit.adminAction(
+        "tracking.version.presentation", "module-version", versionId.toString(), Map.of());
+    return view(found(versionId), staff);
   }
 
   /** The context questions asked on enrolment, in order; at most three (D61). */
