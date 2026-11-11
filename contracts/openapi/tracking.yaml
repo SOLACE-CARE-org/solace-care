@@ -154,6 +154,37 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /v1/tracking/episodes/{model}:
+    get:
+      operationId: getEpisodes
+      summary: My episodes of one model, oldest first, and today's day of the newest; facts only, never a forecast
+      tags: [cycles]
+      parameters:
+        - name: model
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[a-z][a-z0-9_]*$"
+        - name: timeZone
+          in: query
+          description: The phone's time zone, for today's day.
+          schema:
+            type: string
+            default: Africa/Douala
+      responses:
+        "200":
+          description: The episodes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EpisodeSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /v1/tracking/modules:
     get:
       operationId: listModules
@@ -1386,6 +1417,90 @@ components:
           type: boolean
         position:
           type: integer
+        group:
+          $ref: "#/components/schemas/BindingGroup"
+    BindingGroup:
+      description: Elements shown together on the logging screen under one label, such as period start and end as "Period dates".
+      type: object
+      additionalProperties: false
+      required: [code, labels]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        labels:
+          $ref: "#/components/schemas/Text"
+    Presentation:
+      description: >-
+        How the app shows a module (Tracking Service Spec, Modules; D61), so the app never checks
+        module or element codes. Every part is optional; a text has both EN and FR.
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          description: The logging screen's title; the app's default otherwise.
+          $ref: "#/components/schemas/Text"
+        saveLabel:
+          description: The logging screen's save button; the app's default otherwise.
+          $ref: "#/components/schemas/Text"
+        episode:
+          $ref: "#/components/schemas/PresentationEpisode"
+        trends:
+          description: Signal keys the Trends screen charts, in order (daily_value:<element> or <model>.<metric>); every charted element otherwise.
+          type: array
+          maxItems: 12
+          items:
+            type: string
+        quickLog:
+          description: An element of this module offered as one tap on Home.
+          type: string
+    PresentationEpisode:
+      description: An episode model whose current day shows in the logging header and whose past episodes Trends lists.
+      type: object
+      additionalProperties: false
+      required: [model, dayLabel]
+      properties:
+        model:
+          type: string
+        dayLabel:
+          description: 'Header wording with {{n}} for the day, e.g. "cycle day {{n}}".'
+          $ref: "#/components/schemas/Text"
+        historyTitle:
+          description: Title of the past-episodes card on Trends.
+          $ref: "#/components/schemas/Text"
+    EpisodeSummary:
+      type: object
+      required: [model, episodes]
+      properties:
+        model:
+          type: string
+        currentDay:
+          description: Day of the newest episode on the person's local day, counting its first day as 1.
+          type: integer
+        episodes:
+          description: Oldest first; the newest may be incomplete.
+          type: array
+          items:
+            type: object
+            required: [start, complete, metrics]
+            properties:
+              start:
+                type: string
+                format: date
+              end:
+                type: string
+                format: date
+              activeEnd:
+                type: string
+                format: date
+              complete:
+                type: boolean
+              metrics:
+                description: One number per metric of the model, for complete episodes.
+                type: object
+                additionalProperties:
+                  type: integer
     EnrolmentQuestion:
       type: object
       properties:
@@ -1439,6 +1554,8 @@ components:
           maxItems: 3
           items:
             type: string
+        presentation:
+          $ref: "#/components/schemas/Presentation"
         reminderDefault:
           type: string
         elements:
@@ -1627,6 +1744,8 @@ components:
           maxLength: 120
         enrolmentQuestion:
           $ref: "#/components/schemas/EnrolmentQuestion"
+        presentation:
+          $ref: "#/components/schemas/Presentation"
         reminderDefault:
           type: string
         accentColour:
@@ -1760,6 +1879,8 @@ components:
           maxItems: 3
           items:
             type: string
+        presentation:
+          $ref: "#/components/schemas/Presentation"
         reminderDefault:
           type: string
         elements:
