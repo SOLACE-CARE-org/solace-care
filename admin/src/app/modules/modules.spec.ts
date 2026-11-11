@@ -241,6 +241,62 @@ describe('Tracking modules', () => {
     expect(button(root, 'Submit for clinical review')!.disabled).toBe(true);
   });
 
+  it('groups elements under one label and saves how the app shows the module (D61)', async () => {
+    const tracking = {
+      GET: fn(
+        route({
+          '/admin/v1/tracking/versions/{versionId}': () => ok(draft()),
+          '/admin/v1/tracking/elements': () => ok([mood, stress]),
+          '/admin/v1/tracking/versions/{versionId}/rule-vocabulary': () => ok(vocabulary),
+        }),
+      ),
+      PUT: fn(() => ok(draft())),
+      POST: fn(() => ok([])),
+    };
+    setUp(['OPERATIONS'], { GET: fn(() => problem(403, 'access.denied', 'No')) }, { tracking });
+    const { root, settle } = await render(ModuleBuilderPage, { id: 's1' });
+    await sees(root, 'Name and description');
+    button(root, '2 Elements')!.click();
+    await settle();
+    await sees(root, 'How the app shows it');
+    button(root, 'Add')!.click();
+    await settle();
+    // The second element joins the group of the one above it, label and all.
+    button(root, 'Group')!.click();
+    await settle();
+    button(root, 'Group')!.click();
+    await settle();
+    const change = (el: HTMLInputElement | HTMLSelectElement, value: string) => {
+      el.value = value;
+      el.dispatchEvent(new Event('change'));
+      el.dispatchEvent(new Event('input'));
+    };
+    const groupInputs = root.querySelectorAll<HTMLInputElement>('li.group input');
+    change(groupInputs[1]!, 'Feelings');
+    change(groupInputs[2]!, 'Ressenti');
+    await settle();
+    root.querySelector<HTMLInputElement>('fieldset.trends input')!.click();
+    change(root.querySelector<HTMLSelectElement>('select[name=quickLog]')!, 'stress_level');
+    await settle();
+    button(root, 'Next: rules')!.click();
+    await settle();
+    const group = { code: 'stress_level', labels: { en: 'Feelings', fr: 'Ressenti' } };
+    expect(tracking.PUT).toHaveBeenCalledWith('/admin/v1/tracking/versions/{versionId}/elements', {
+      params: { path: { versionId: 's1' } },
+      body: [
+        { code: 'stress_level', version: '1', required: true, group },
+        { code: 'mood', version: '1', required: true, group },
+      ],
+    });
+    expect(tracking.PUT).toHaveBeenCalledWith(
+      '/admin/v1/tracking/versions/{versionId}/presentation',
+      {
+        params: { path: { versionId: 's1' } },
+        body: { trends: ['daily_value:stress_level'], quickLog: 'stress_level' },
+      },
+    );
+  });
+
   it('asks published context questions on enrolment and lets a rule switch off on an answer', async () => {
     const tracking = {
       GET: fn(

@@ -1133,7 +1133,13 @@
         "note": "An element shared with another module is asked once a day for people in both. Above 6 elements the builder warns that logging may take longer than 30 seconds.",
         "tooMany": "More than 6 elements: logging may take longer than 30 seconds.",
         "back": "Back",
-        "next": "Next: rules"
+        "next": "Next: rules",
+        "group": "Group",
+        "ungroup": "Ungroup",
+        "groupCode": "Group code",
+        "groupLabelEn": "Group label · EN",
+        "groupLabelFr": "Group label · FR",
+        "groupNote": "Grouped elements show together under one label. Elements in a group sit next to each other."
       },
       "rules": {
         "none": "No rules yet. A module without rules only logs.",
@@ -1226,7 +1232,9 @@
         "image": "A card image",
         "elements": "At least one element",
         "requiredElement": "At least one required element",
-        "rule": "Fix rule {{code}}"
+        "rule": "Fix rule {{code}}",
+        "presentation": "How the app shows it fits the elements",
+        "groups": "Grouped elements next to each other with one label"
       },
       "review": {
         "title": "Clinical review",
@@ -1252,7 +1260,9 @@
           "reminder": "Suggested reminder",
           "question": "Enrolment question",
           "elements": "Elements",
-          "questions": "Enrolment questions"
+          "questions": "Enrolment questions",
+          "groups": "Element groups",
+          "presentation": "How the app shows it"
         },
         "newImage": "New image",
         "ruleField": "{{code}}, {{part}}",
@@ -1279,6 +1289,27 @@
         "publish": "Publish v{{n}}",
         "retire": "Retire v{{n}}",
         "notInReview": "This version is not waiting for review."
+      },
+      "shown": {
+        "title": "How the app shows it",
+        "note": "Every part is optional. A text needs EN and FR, at most 60 characters.",
+        "titleEn": "Logging title · EN",
+        "titleFr": "Logging title · FR",
+        "saveEn": "Save button · EN",
+        "saveFr": "Save button · FR",
+        "episode": "Day shown in the header",
+        "noEpisode": "None",
+        "dayEn": "Day label · EN",
+        "dayFr": "Day label · FR",
+        "historyEn": "Past episodes title · EN",
+        "historyFr": "Past episodes title · FR",
+        "dayHint": "The day label must contain {{n}} where the day number goes.",
+        "trends": "Charted on Trends",
+        "noTrends": "Save elements first to choose what Trends charts.",
+        "trendsHint": "Up to 12, in the order chosen. With none chosen, Trends charts every element it can.",
+        "quickLog": "One tap on Home",
+        "noQuickLog": "None",
+        "refused": "The elements are saved, but how the app shows it does not fit them. Check that each text has EN and FR, and that the day label contains {{n}}."
       }
     },
     "healthCheck": {
