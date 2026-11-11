@@ -22,7 +22,7 @@ import java.util.Set;
  *   <li>{@code episode}: {@code {model, dayLabel, historyTitle}}, a model of a bound element whose
  *       current day shows in the header ({@code dayLabel} holds {@code {{n}}});
  *   <li>{@code trends}: the module's signal keys the Trends screen charts, in order;
- *   <li>{@code quickLog}: a bound element offered as one tap on Home.
+ *   <li>{@code quickLog}: a bound element offered as one tap on Home, under {@code quickLogTitle}.
  * </ul>
  *
  * Binding groups show elements together under one EN/FR label; a group's elements sit next to each
@@ -46,7 +46,7 @@ public final class Presentation {
       problems.add("presentation");
       return problems;
     }
-    for (String text : List.of("title", "saveLabel")) {
+    for (String text : List.of("title", "saveLabel", "quickLogTitle")) {
       if (presentation.has(text) && !text(presentation.path(text), false)) {
         problems.add("presentation." + text);
       }

@@ -66,7 +66,8 @@ class PresentationTest {
                          "historyTitle": {"en": "Your last cycles", "fr": "Vos derniers cycles"}},
              "trends": ["menstrual_cycle.length_days", "daily_value:acne_severity"],
              "title": {"en": "Log today", "fr": "Noter aujourd'hui"},
-             "quickLog": "acne_severity"}
+             "quickLog": "acne_severity",
+             "quickLogTitle": {"en": "How is your skin today?", "fr": "Comment va votre peau ?"}}
             """);
     assertThat(Presentation.problems(presentation, pcos(), MODELS)).isEmpty();
     assertThat(Presentation.problems(null, pcos(), MODELS)).isEmpty();
@@ -93,6 +94,10 @@ class PresentationTest {
         .containsExactly("presentation.trends");
     assertThat(Presentation.problems(json("{\"quickLog\": \"note\"}"), bound, MODELS))
         .containsExactly("presentation.quickLog");
+    assertThat(
+            Presentation.problems(
+                json("{\"quickLogTitle\": {\"en\": \"How are you?\"}}"), bound, MODELS))
+        .containsExactly("presentation.quickLogTitle");
     // Without a bound start or activity element, the cycle model is not this module's.
     bound.remove("period_start");
     bound.remove("flow_intensity");

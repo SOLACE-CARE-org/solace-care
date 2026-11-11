@@ -35,6 +35,8 @@ interface Shown {
   historyFr: string;
   trends: string[];
   quickLog: string;
+  quickEn: string;
+  quickFr: string;
 }
 
 function shownOf(p: Presentation | undefined): Shown {
@@ -50,6 +52,8 @@ function shownOf(p: Presentation | undefined): Shown {
     historyFr: p?.episode?.historyTitle?.fr ?? '',
     trends: [...(p?.trends ?? [])],
     quickLog: p?.quickLog ?? '',
+    quickEn: p?.quickLogTitle?.en ?? '',
+    quickFr: p?.quickLogTitle?.fr ?? '',
   };
 }
 
@@ -297,6 +301,24 @@ const ELEMENT_WARNING = 6;
           }
         </select>
       </label>
+      @if (shown().quickLog) {
+        <div class="pair">
+          @for (f of quickTexts; track f.key) {
+            <label class="sl-field">
+              <span>{{ f.label | transloco }}</span>
+              <input
+                class="sl-input"
+                maxlength="60"
+                [attr.lang]="f.lang"
+                [name]="f.key"
+                [disabled]="!editable()"
+                [ngModel]="shown()[f.key]"
+                (ngModelChange)="setShown(f.key, $event)"
+              />
+            </label>
+          }
+        </div>
+      }
     </section>
 
     @if (shownRefused()) {
@@ -448,6 +470,10 @@ export class ElementsStep {
     { key: 'historyEn', lang: 'en', label: 'admin.modules.shown.historyEn' },
     { key: 'historyFr', lang: 'fr', label: 'admin.modules.shown.historyFr' },
   ] as const;
+  readonly quickTexts = [
+    { key: 'quickEn', lang: 'en', label: 'admin.modules.shown.quickEn' },
+    { key: 'quickFr', lang: 'fr', label: 'admin.modules.shown.quickFr' },
+  ] as const;
 
   /** Episode models this version's saved elements give, from the vocabulary's episode signals. */
   readonly models = computed(() => {
@@ -545,6 +571,8 @@ export class ElementsStep {
     const title = text(f.titleEn, f.titleFr);
     const saveLabel = text(f.saveEn, f.saveFr);
     const historyTitle = text(f.historyEn, f.historyFr);
+    const quickLog = f.quickLog && codes.has(f.quickLog) ? f.quickLog : '';
+    const quickLogTitle = quickLog ? text(f.quickEn, f.quickFr) : undefined;
     const trends = f.trends.filter(
       (k) => !k.startsWith('daily_value:') || codes.has(k.slice('daily_value:'.length)),
     );
@@ -561,7 +589,8 @@ export class ElementsStep {
           }
         : {}),
       ...(trends.length ? { trends } : {}),
-      ...(f.quickLog && codes.has(f.quickLog) ? { quickLog: f.quickLog } : {}),
+      ...(quickLog ? { quickLog } : {}),
+      ...(quickLogTitle ? { quickLogTitle } : {}),
     };
   }
 

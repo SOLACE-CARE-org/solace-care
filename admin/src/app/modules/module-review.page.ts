@@ -469,6 +469,7 @@ function presentationText(v: Version | null, lang: string): string {
     p.episode?.historyTitle ? textIn(p.episode.historyTitle, lang) : '',
     (p.trends ?? []).join(', '),
     p.quickLog ?? '',
+    p.quickLogTitle ? textIn(p.quickLogTitle, lang) : '',
   ]
     .filter(Boolean)
     .join(' · ');

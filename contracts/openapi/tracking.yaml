@@ -1481,6 +1481,9 @@ components:
         quickLog:
           description: An element of this module offered as one tap on Home.
           type: string
+        quickLogTitle:
+          description: The question over the one-tap element on Home; the element's name otherwise.
+          $ref: "#/components/schemas/Text"
     PresentationEpisode:
       description: An episode model whose current day shows in the logging header and whose past episodes Trends lists.
       type: object

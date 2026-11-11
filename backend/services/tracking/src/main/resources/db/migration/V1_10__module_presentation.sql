@@ -11,14 +11,15 @@ ALTER TABLE module_binding ADD CONSTRAINT module_binding_group_label
     CHECK ((group_code IS NULL) = (group_label_json IS NULL));
 
 -- The launch modules keep exactly what the app showed for them by code until now: the check-in's
--- own title, button and one-tap mood on Home; the cycle day and past cycles for PCOS & cycle, with
+-- own title, button and one-tap mood on Home with its question; the cycle day and past cycles for PCOS & cycle, with
 -- period start and end together as "Period dates". Every version of each gets it, published ones
 -- too, because it describes what the app already did rather than a change.
 UPDATE module_version v SET presentation_json = '{
     "title": {"en": "How was today?", "fr": "Comment s''est passée la journée ?"},
     "saveLabel": {"en": "Save check-in", "fr": "Enregistrer le bilan"},
     "trends": ["daily_value:mood", "daily_value:sleep_minutes"],
-    "quickLog": "mood"
+    "quickLog": "mood",
+    "quickLogTitle": {"en": "How are you feeling today?", "fr": "Comment vous sentez-vous aujourd''hui ?"}
   }'::jsonb
   FROM module m
  WHERE m.id = v.module_id AND m.code = 'daily_checkin' AND v.presentation_json IS NULL;

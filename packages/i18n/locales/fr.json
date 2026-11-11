@@ -1309,7 +1309,9 @@
         "trendsHint": "12 au plus, dans l'ordre choisi. Sans choix, Tendances affiche tous les éléments possibles.",
         "quickLog": "Une touche sur l'accueil",
         "noQuickLog": "Aucun",
-        "refused": "Les éléments sont enregistrés, mais l'affichage ne leur correspond pas. Vérifiez que chaque texte existe en EN et en FR et que le libellé du jour contient {{n}}."
+        "refused": "Les éléments sont enregistrés, mais l'affichage ne leur correspond pas. Vérifiez que chaque texte existe en EN et en FR et que le libellé du jour contient {{n}}.",
+        "quickEn": "Question affichée · EN",
+        "quickFr": "Question affichée · FR"
       }
     },
     "healthCheck": {

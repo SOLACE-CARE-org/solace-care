@@ -1309,7 +1309,9 @@
         "trendsHint": "Up to 12, in the order chosen. With none chosen, Trends charts every element it can.",
         "quickLog": "One tap on Home",
         "noQuickLog": "None",
-        "refused": "The elements are saved, but how the app shows it does not fit them. Check that each text has EN and FR, and that the day label contains {{n}}."
+        "refused": "The elements are saved, but how the app shows it does not fit them. Check that each text has EN and FR, and that the day label contains {{n}}.",
+        "quickEn": "Question over it · EN",
+        "quickFr": "Question over it · FR"
       }
     },
     "healthCheck": {
