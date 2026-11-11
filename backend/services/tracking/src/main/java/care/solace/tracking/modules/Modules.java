@@ -158,6 +158,7 @@ public class Modules {
       }
       store.setColour(v.moduleId(), accent);
     }
+    // The presentation may name elements bound later, so it is checked on readiness, not here.
     store.saveDetails(versionId, details);
   }
 
@@ -171,6 +172,9 @@ public class Modules {
       library
           .byId(b.elementId())
           .orElseThrow(() -> new SolaceException(CommonError.REQUEST_INVALID));
+    }
+    if (!Presentation.groupProblems(bindings).isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
     }
     store.replaceBindings(versionId, bindings);
     renumber(v);
@@ -279,6 +283,13 @@ public class Modules {
       problems.add("requiredElement");
     }
     var bound = bound(v.id());
+    // Removing an element can leave the presentation pointing at it; the details step fixes it.
+    if (!Presentation.problems(d.presentation(), bound, models.all()).isEmpty()) {
+      problems.add("presentation");
+    }
+    if (!Presentation.groupProblems(store.bindings(v.id())).isEmpty()) {
+      problems.add("groups");
+    }
     for (var r : store.rules(v.id())) {
       if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all(), questions.all())
               .isEmpty()
@@ -352,6 +363,6 @@ public class Modules {
   }
 
   private static ModuleStore.Details empty() {
-    return new ModuleStore.Details("", "", "", "", null, "", "", null, "", "", null, null);
+    return new ModuleStore.Details("", "", "", "", null, "", "", null, "", "", null, null, null);
   }
 }
