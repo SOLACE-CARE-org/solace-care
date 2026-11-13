@@ -124,6 +124,7 @@ const STEPS: Step[] = ['details', 'elements', 'rules'];
             [library]="library()"
             [specialties]="specialties()"
             [editable]="editable()"
+            [mayAddHistory]="mayDraft() || mayReview()"
             (changed)="load()"
             (submitted)="replace($event)"
             (back)="go('elements')"
@@ -192,6 +193,7 @@ export class ModuleBuilderPage {
   private readonly lang = signal(this.transloco.getActiveLang());
 
   readonly mayDraft = computed(() => canDraft(this.staff.roles()));
+  readonly mayReview = computed(() => canReview(this.staff.roles()));
   readonly editable = computed(() => this.mayDraft() && this.version()?.status === 'DRAFT');
   readonly state = computed(() => stateOf(this.version()?.status, this.version()?.approvedBy));
   readonly name = computed(() => {

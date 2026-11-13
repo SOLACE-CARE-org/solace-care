@@ -14,6 +14,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
+import { HistoryForm } from './history-form';
 import type { Specialty } from './module-builder.page';
 
 type Version = TrackingSchemas['ModuleVersion'];
@@ -73,7 +74,7 @@ function blankCondition(): Condition {
  */
 @Component({
   selector: 'sl-rules-step',
-  imports: [TranslocoPipe, FormsModule],
+  imports: [TranslocoPipe, FormsModule, HistoryForm],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="sl-tabs" role="tablist">
@@ -490,7 +491,7 @@ function blankCondition(): Condition {
                 <ul class="results">
                   @for (t of results; track t.history) {
                     <li>
-                      <span>{{ 'admin.modules.rules.history.' + t.history | transloco }}</span>
+                      <span>{{ historyName(t) }}</span>
                       <span class="sl-pill" [class.sl-pill--brand]="t.fires">
                         {{
                           (t.blockedByUnless
@@ -505,6 +506,24 @@ function blankCondition(): Condition {
                   }
                 </ul>
               }
+            }
+          }
+          @if (mayAddHistory()) {
+            @if (addingHistory()) {
+              <sl-history-form
+                [library]="library()"
+                [questions]="unlessQuestions()"
+                (added)="historyAdded()"
+                (cancelled)="addingHistory.set(false)"
+              />
+            } @else {
+              <button
+                type="button"
+                class="sl-button sl-button--quiet"
+                (click)="addingHistory.set(true)"
+              >
+                {{ 'admin.modules.history.open' | transloco }}
+              </button>
             }
           }
         </aside>
@@ -636,6 +655,8 @@ export class RulesStep {
   readonly library = input<Element[]>([]);
   readonly specialties = input<Specialty[]>([]);
   readonly editable = input(false);
+  /** Drafters and Clinical reviewers add test histories next to the rules (D61). */
+  readonly mayAddHistory = input(false);
   readonly changed = output<void>();
   readonly submitted = output<Version>();
   readonly back = output<void>();
@@ -648,6 +669,7 @@ export class RulesStep {
   readonly vocabulary = signal<Vocabulary | null>(null);
   readonly busy = signal(false);
   readonly testing = signal(false);
+  readonly addingHistory = signal(false);
   readonly failed = signal(false);
   readonly ruleError = signal<string | null>(null);
   private readonly lang = signal(this.transloco.getActiveLang());
@@ -934,7 +956,22 @@ export class RulesStep {
     if (p.startsWith('rule:')) {
       return this.transloco.translate('admin.modules.problems.rule', { code: p.slice(5) });
     }
+    if (p.startsWith('tests:')) {
+      return this.transloco.translate('admin.modules.problems.tests', { code: p.slice(6) });
+    }
     return this.transloco.translate(`admin.modules.problems.${p}`);
+  }
+
+  /** A history's name in the admin's language, from Tracking (D61). */
+  historyName(t: TestResult): string {
+    return (this.lang() === 'fr' ? t.historyLabels?.fr : t.historyLabels?.en) || t.history || '';
+  }
+
+  /** A new history counts at once: the test run and the submit check both see it. */
+  historyAdded() {
+    this.addingHistory.set(false);
+    this.changed.emit();
+    void this.runTests();
   }
 
   resultsFor(code: string): TestResult[] {

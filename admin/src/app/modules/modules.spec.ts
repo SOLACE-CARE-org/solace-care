@@ -341,6 +341,102 @@ describe('Tracking modules', () => {
     expect([...unless[1]!.options].map((o) => o.textContent?.trim())).toEqual(['Yes', 'No']);
   });
 
+  it('names each test history from Tracking and adds one next to an untested rule (D61)', async () => {
+    const rule = {
+      id: 'r1',
+      code: 'stress.high_days',
+      conditions: [
+        {
+          signal: 'daily_value',
+          element: 'stress_level',
+          operator: 'days_in_window',
+          comparison: 'eq',
+          threshold: 'high',
+          count: 5,
+          window: 14,
+          minData: 7,
+        },
+      ],
+      outcome: 'PATTERN',
+      specialtyCodes: [],
+      messageEn: 'You logged high stress on {n} of the last {window} days.',
+      messageFr: 'Vous avez noté un stress élevé {n} jours sur les {window} derniers.',
+      cooldownDays: 30,
+    } as TrackingSchemas['Rule'];
+    const untested = draft({ rules: [rule], problems: ['tests:stress.high_days'] });
+    const tracking = {
+      GET: fn(
+        route({
+          '/admin/v1/tracking/versions/{versionId}': () => ok(untested),
+          '/admin/v1/tracking/elements': () => ok([mood, stress]),
+          '/admin/v1/tracking/context-questions': () => ok(vocabulary.questions),
+          '/admin/v1/tracking/versions/{versionId}/rule-vocabulary': () => ok(vocabulary),
+        }),
+      ),
+      PUT: fn(() => ok(untested)),
+      POST: fn((path: string) =>
+        path.endsWith('/test-run')
+          ? ok([
+              {
+                history: 'good_mood',
+                historyLabels: { en: 'Good mood', fr: 'Bonne humeur' },
+                ruleCode: 'stress.high_days',
+                fires: false,
+              },
+            ])
+          : ok({ code: 'high_stress', seeded: false }, 201),
+      ),
+    };
+    setUp(['CLINICAL_REVIEWER'], { GET: fn(() => problem(403, 'access.denied', 'No')) }, { tracking });
+    const { root, settle } = await render(ModuleBuilderPage, { id: 's1' });
+    await sees(root, 'Name and description');
+    button(root, '3 Rules')!.click();
+    await settle();
+    button(root, 'Run again')!.click();
+    await settle();
+    await sees(root, 'Good mood');
+
+    button(root, 'Add a test history')!.click();
+    await settle();
+    const form = root.querySelector('sl-history-form')!;
+    const type = (selector: string, value: string) => {
+      const el = form.querySelector<HTMLInputElement | HTMLSelectElement>(selector)!;
+      el.value = value;
+      el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? 'change' : 'input'));
+    };
+    type('input[name=code]', 'high_stress');
+    type('input[name=nameEn]', 'High stress');
+    type('input[name=nameFr]', 'Stress élevé');
+    await settle();
+    // Part 1 holds the pattern and element selects, then the days and value inputs.
+    const part = () => form.querySelectorAll('fieldset.part')[0]!;
+    const set = (el: HTMLInputElement | HTMLSelectElement, value: string) => {
+      el.value = value;
+      el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? 'change' : 'input'));
+    };
+    set(part().querySelectorAll('select')[1]!, 'stress_level');
+    await settle();
+    expect(form.textContent).toContain('Values: low, some, high');
+    set(part().querySelectorAll('input')[1]!, 'high');
+    set(form.querySelectorAll('fieldset.part')[1]!.querySelector('select')!, 'false');
+    await settle();
+    button(root, 'Add history')!.click();
+    await settle();
+    expect(tracking.POST).toHaveBeenCalledWith('/admin/v1/tracking/synthetic-histories', {
+      body: {
+        code: 'high_stress',
+        labels: { en: 'High stress', fr: 'Stress élevé' },
+        recipe: {
+          parts: [{ pattern: 'constant', element: 'stress_level', days: 14, value: 'high' }],
+        },
+        context: { trying_to_conceive: false },
+      },
+    });
+    // The form closes and the rule is tested again against the new history.
+    await settle();
+    expect(root.querySelector('sl-history-form')).toBeNull();
+  });
+
   it('opens a published version read-only, with a way to start a new draft', async () => {
     setUp(
       ['OPERATIONS'],
