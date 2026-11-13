@@ -1,26 +1,47 @@
 package care.solace.tracking.rules;
 
+import care.solace.tracking.context.ContextQuestion;
+import care.solace.tracking.elements.ElementLibrary.Element;
+import care.solace.tracking.elements.ElementLibrary.Kind;
+import care.solace.tracking.elements.ElementLibrary.ValueType;
 import care.solace.tracking.episodes.Episode;
 import care.solace.tracking.episodes.EpisodeModel;
 import care.solace.tracking.episodes.Episodes;
+import care.solace.tracking.sync.Sync;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 /**
  * Made-up patient histories the builder tests drafts against (Tracking Service Spec, Testing before
- * publishing). Real patient data is never used. Each history is built back from today, so window
- * rules see it as recent.
+ * publishing; D61). Real patient data is never used. A history is data: a recipe of parts, each a
+ * pattern for one element, built back from today so window rules see it as recent.
+ *
+ * <ul>
+ *   <li>{@code constant}: {@code value} on each of the last {@code days} days;
+ *   <li>{@code alternating}: {@code values} in turn, today first, over {@code days} days;
+ *   <li>{@code sparse}: {@code value} on one day in {@code every}, today first, over {@code days};
+ *   <li>{@code episodes}: complete episodes of {@code lengths}, oldest first, then an open one
+ *       whose day today is {@code currentDay}. Each starts with the {@code start} event; {@code
+ *       activity} is logged as the {@code active} runs from its first day, then the {@code after}
+ *       run, cut at the next start.
+ * </ul>
  */
 public final class SyntheticHistories {
+
+  static final int MAX_PARTS = 8;
+  static final int MAX_DAYS = 366;
 
   /**
    * One made-up person: what they logged, and their context answers for "unless".
@@ -58,98 +79,212 @@ public final class SyntheticHistories {
 
   private SyntheticHistories() {}
 
-  public static List<History> all(LocalDate today) {
-    return List.of(
-        cycles("regular_cycles", today, new int[] {28, 29, 27, 28, 28}, 5, 0, Map.of()),
-        cycles("long_cycles", today, new int[] {41, 39, 44, 40}, 5, 0, Map.of()),
-        cycles(
-            "long_cycles_hormonal_treatment",
-            today,
-            new int[] {41, 39, 44, 40},
-            5,
-            0,
-            Map.of("hormonal_treatment", BooleanNode.TRUE)),
-        cycles("long_periods", today, new int[] {30, 31, 29}, 9, 0, Map.of()),
-        cycles("heavy_flow", today, new int[] {28, 30, 29}, 6, 4, Map.of()),
-        noPeriod("no_period_90_days", today, Map.of()),
-        noPeriod(
-            "no_period_trying_to_conceive", today, Map.of("trying_to_conceive", BooleanNode.TRUE)),
-        daily("low_mood_two_weeks", today, "mood", 14, i -> i % 7 == 3 ? 3 : 2),
-        daily("good_mood", today, "mood", 14, i -> 4),
-        daily("short_sleep", today, "sleep_minutes", 14, i -> 270),
-        daily("enough_sleep", today, "sleep_minutes", 14, i -> 450),
-        sparse("sparse_logging", today));
-  }
-
-  private static History cycles(
-      String code,
-      LocalDate today,
-      int[] lengths,
-      int periodDays,
-      int veryHeavy,
-      Map<String, JsonNode> answers) {
-    NavigableMap<LocalDate, Object> flow = new TreeMap<>();
-    int total = 0;
-    for (int l : lengths) {
-      total += l;
-    }
-    // The last cycle starts a few days ago and is incomplete, as in life.
-    LocalDate start = today.minusDays(total + 5L);
-    SortedSet<LocalDate> starts = new TreeSet<>();
-    for (int i = 0; i <= lengths.length; i++) {
-      starts.add(start);
-      for (int d = 0; d < periodDays; d++) {
-        flow.put(start.plusDays(d), d < veryHeavy ? "very_heavy" : "medium");
-      }
-      for (int d = periodDays;
-          d < Math.min(periodDays + 3, i < lengths.length ? lengths[i] : 0);
-          d++) {
-        flow.put(start.plusDays(d), "none");
-      }
-      if (i < lengths.length) {
-        start = start.plusDays(lengths[i]);
-      }
-    }
+  /** Builds a checked recipe into a history ending today. */
+  public static History build(String code, JsonNode recipe, JsonNode context, LocalDate today) {
     Map<String, NavigableMap<LocalDate, Object>> daily = new LinkedHashMap<>();
-    daily.put("flow_intensity", flow);
-    return new History(code, daily, Map.of("period_start", starts), answers);
-  }
-
-  private static History noPeriod(String code, LocalDate today, Map<String, JsonNode> answers) {
-    NavigableMap<LocalDate, Object> flow = new TreeMap<>();
-    for (int i = 0; i < 90; i++) {
-      if (i % 2 == 0) {
-        flow.put(today.minusDays(i), "none");
+    Map<String, SortedSet<LocalDate>> events = new LinkedHashMap<>();
+    for (JsonNode part : recipe.path("parts")) {
+      switch (part.path("pattern").asText()) {
+        case "constant" -> {
+          var values = daily.computeIfAbsent(part.path("element").asText(), k -> new TreeMap<>());
+          for (int i = 0; i < part.path("days").asInt(); i++) {
+            values.put(today.minusDays(i), value(part.path("value")));
+          }
+        }
+        case "alternating" -> {
+          var values = daily.computeIfAbsent(part.path("element").asText(), k -> new TreeMap<>());
+          JsonNode turn = part.path("values");
+          for (int i = 0; i < part.path("days").asInt(); i++) {
+            values.put(today.minusDays(i), value(turn.get(i % turn.size())));
+          }
+        }
+        case "sparse" -> {
+          var values = daily.computeIfAbsent(part.path("element").asText(), k -> new TreeMap<>());
+          for (int i = 0; i < part.path("days").asInt(); i += part.path("every").asInt()) {
+            values.put(today.minusDays(i), value(part.path("value")));
+          }
+        }
+        case "episodes" -> episodes(part, today, daily, events);
+        default -> throw new IllegalArgumentException("Unchecked recipe");
       }
     }
-    return new History(
-        code, new LinkedHashMap<>(Map.of("flow_intensity", flow)), Map.of(), answers);
+    Map<String, JsonNode> answers = new LinkedHashMap<>();
+    if (context != null) {
+      context.properties().forEach(e -> answers.put(e.getKey(), e.getValue()));
+    }
+    return new History(code, daily, events, answers);
   }
 
-  private static History daily(
-      String code,
+  private static void episodes(
+      JsonNode part,
       LocalDate today,
-      String element,
-      int days,
-      java.util.function.IntFunction<Object> value) {
-    NavigableMap<LocalDate, Object> values = new TreeMap<>();
-    for (int i = 0; i < days; i++) {
-      values.put(today.minusDays(i), value.apply(i));
+      Map<String, NavigableMap<LocalDate, Object>> daily,
+      Map<String, SortedSet<LocalDate>> events) {
+    List<Integer> lengths = new ArrayList<>();
+    part.path("lengths").forEach(l -> lengths.add(l.asInt()));
+    int total = lengths.stream().mapToInt(Integer::intValue).sum();
+    // The newest episode is open: it started currentDay - 1 days ago.
+    LocalDate start = today.minusDays(total + part.path("currentDay").asInt() - 1L);
+    var starts = events.computeIfAbsent(part.path("start").asText(), k -> new TreeSet<>());
+    NavigableMap<LocalDate, Object> activity =
+        part.hasNonNull("activity")
+            ? daily.computeIfAbsent(part.path("activity").asText(), k -> new TreeMap<>())
+            : null;
+    for (int i = 0; i <= lengths.size(); i++) {
+      starts.add(start);
+      // The open episode has no next start to cut it, so its "after" run is not logged.
+      int length = i < lengths.size() ? lengths.get(i) : 0;
+      if (activity != null) {
+        int d = 0;
+        for (JsonNode run : part.path("active")) {
+          for (int n = 0; n < run.path("days").asInt(); n++, d++) {
+            activity.put(start.plusDays(d), value(run.path("value")));
+          }
+        }
+        JsonNode after = part.path("after");
+        for (int n = 0; n < after.path("days").asInt() && d < length; n++, d++) {
+          activity.put(start.plusDays(d), value(after.path("value")));
+        }
+      }
+      start = start.plusDays(length);
     }
-    return new History(code, new LinkedHashMap<>(Map.of(element, values)), Map.of(), Map.of());
   }
 
-  private static History sparse(String code, LocalDate today) {
-    NavigableMap<LocalDate, Object> mood = new TreeMap<>();
-    NavigableMap<LocalDate, Object> sleep = new TreeMap<>();
-    for (int i = 0; i < 14; i += 3) {
-      mood.put(today.minusDays(i), 1);
-      sleep.put(today.minusDays(i), 200);
+  /** The value as the rules read it: a number, a code or a yes or no. */
+  private static Object value(JsonNode v) {
+    if (v.isIntegralNumber()) {
+      return v.asInt();
     }
-    return new History(
-        code,
-        new LinkedHashMap<>(Map.of("mood", mood, "sleep_minutes", sleep)),
-        Map.of(),
-        Map.of());
+    if (v.isBoolean()) {
+      return v.asBoolean();
+    }
+    return v.asText();
+  }
+
+  /**
+   * What is wrong with a recipe and its context answers, given the published elements and context
+   * questions; empty when it can be built. Notes and dates are never logged by a recipe, since no
+   * rule reads notes and events come only from episodes.
+   */
+  public static List<String> problems(
+      JsonNode recipe,
+      JsonNode context,
+      Function<String, Element> elements,
+      Function<String, ContextQuestion> questions) {
+    List<String> problems = new ArrayList<>();
+    JsonNode parts = recipe == null ? null : recipe.path("parts");
+    if (parts == null || !parts.isArray() || parts.isEmpty() || parts.size() > MAX_PARTS) {
+      problems.add("recipe");
+      return problems;
+    }
+    Set<String> logged = new TreeSet<>();
+    for (int i = 0; i < parts.size(); i++) {
+      JsonNode part = parts.get(i);
+      if (!partFine(part, elements, logged)) {
+        problems.add("recipe.parts[" + i + "]");
+      }
+    }
+    if (context != null && !context.isNull()) {
+      if (!context.isObject()) {
+        problems.add("context");
+      } else {
+        for (Iterator<String> it = context.fieldNames(); it.hasNext(); ) {
+          String code = it.next();
+          ContextQuestion q = questions.apply(code);
+          if (q == null || !q.accepts(context.get(code))) {
+            problems.add("context." + code);
+          }
+        }
+      }
+    }
+    return problems;
+  }
+
+  private static boolean partFine(
+      JsonNode part, Function<String, Element> elements, Set<String> logged) {
+    String pattern = part.path("pattern").asText();
+    if (pattern.equals("episodes")) {
+      Element start = elements.apply(part.path("start").asText());
+      if (start == null || start.kind() != Kind.EVENT || !logged.add(start.code())) {
+        return false;
+      }
+      JsonNode lengths = part.path("lengths");
+      int currentDay = part.path("currentDay").asInt(0);
+      if (!lengths.isArray()
+          || lengths.isEmpty()
+          || lengths.size() > 24
+          || currentDay < 1
+          || currentDay > 180) {
+        return false;
+      }
+      int total = currentDay;
+      for (JsonNode l : lengths) {
+        if (!l.isIntegralNumber() || l.asInt() < 1 || l.asInt() > 180) {
+          return false;
+        }
+        total += l.asInt();
+      }
+      if (total > MAX_DAYS * 2) {
+        return false;
+      }
+      if (!part.hasNonNull("activity")) {
+        return !part.has("active") && !part.has("after");
+      }
+      Element activity = dayState(elements.apply(part.path("activity").asText()));
+      if (activity == null || !logged.add(activity.code())) {
+        return false;
+      }
+      JsonNode active = part.path("active");
+      if (!active.isArray() || active.isEmpty() || active.size() > 4) {
+        return false;
+      }
+      for (JsonNode run : active) {
+        if (!run(run, activity)) {
+          return false;
+        }
+      }
+      return !part.has("after") || run(part.path("after"), activity);
+    }
+    Element e = dayState(elements.apply(part.path("element").asText()));
+    int days = part.path("days").asInt(0);
+    if (e == null || days < 1 || days > MAX_DAYS || !logged.add(e.code())) {
+      return false;
+    }
+    return switch (pattern) {
+      case "constant" -> fits(e, part.get("value"));
+      case "sparse" -> {
+        int every = part.path("every").asInt(0);
+        yield every >= 2 && every <= 30 && fits(e, part.get("value"));
+      }
+      case "alternating" -> {
+        JsonNode values = part.path("values");
+        boolean fine = values.isArray() && values.size() >= 2 && values.size() <= 14;
+        for (JsonNode v : values) {
+          fine &= fits(e, v);
+        }
+        yield fine;
+      }
+      default -> false;
+    };
+  }
+
+  /** A day-state element a rule can read: not a note, not a date. */
+  private static Element dayState(Element e) {
+    return e == null
+            || e.kind() != Kind.DAY_STATE
+            || e.isNote()
+            || e.valueType() == ValueType.DATE
+            || e.valueType() == ValueType.TEXT
+        ? null
+        : e;
+  }
+
+  private static boolean run(JsonNode run, Element e) {
+    int days = run.path("days").asInt(0);
+    return run.isObject() && days >= 1 && days <= 60 && fits(e, run.get("value"));
+  }
+
+  private static boolean fits(Element e, JsonNode value) {
+    return value != null && Sync.parse(e, value).isPresent();
   }
 }
