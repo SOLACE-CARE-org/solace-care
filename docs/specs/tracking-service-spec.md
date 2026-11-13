@@ -275,7 +275,7 @@ Every table is new. User ids come from Core's tokens; no table has a foreign key
 | `context_question` | id, code, version, status, type, scope, labels\_json, options\_json, drafted\_by, approved\_by | Admin API |
 | `context_answer` | user\_id, question\_code, value\_json, answered\_at | Patients |
 | `module_question` | module\_version\_id, question\_code, position | Admin API |
-| `synthetic_history` | id, code, recipe\_json, context\_json, created\_by | Seeded; Admin API |
+| `synthetic_history` | id, code, labels\_json (EN/FR name), recipe\_json, context\_json, seeded, created\_by, created\_at | Seeded; Admin API (add only, never edited) |
 | `wording_rule` | id, language, pattern, kind (BLOCK, ALLOW) | Clinical reviewers |
 | `tracking_setting` | key, value, updated\_by, updated\_at | Admin API |
 | `module` | id, code, accent\_colour, created\_by | Admin API |
