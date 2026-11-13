@@ -816,6 +816,49 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/synthetic-histories:
+    get:
+      operationId: listSyntheticHistories
+      summary: The made-up histories rules are tested against (recipes, never real patient data)
+      tags: [admin-modules]
+      responses:
+        "200":
+          description: The histories, seeded ones first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SyntheticHistory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: addSyntheticHistory
+      summary: Adds a history from a recipe; histories are kept, never edited, so past test runs stay explainable
+      tags: [admin-modules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyntheticHistoryRequest"
+      responses:
+        "201":
+          description: The history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyntheticHistory"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/tracking/versions/{versionId}/questions:
     parameters:
       - $ref: "#/components/parameters/VersionId"
@@ -2030,6 +2073,9 @@ components:
       properties:
         history:
           type: string
+        historyLabels:
+          description: The history's name in EN and FR.
+          $ref: "#/components/schemas/Text"
         ruleCode:
           type: string
         fires:
@@ -2037,6 +2083,132 @@ components:
         blockedByUnless:
           type: boolean
         evidence: {}
+    SyntheticHistoryRequest:
+      type: object
+      additionalProperties: false
+      required: [code, labels, recipe]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]{1,59}$"
+        labels:
+          $ref: "#/components/schemas/Text"
+        recipe:
+          $ref: "#/components/schemas/HistoryRecipe"
+        context:
+          description: Context question answers, by question code, that "unless" reads.
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ContextAnswerValue"
+    SyntheticHistory:
+      type: object
+      required: [code, labels, recipe, context, seeded]
+      properties:
+        code:
+          type: string
+        labels:
+          $ref: "#/components/schemas/Text"
+        recipe:
+          $ref: "#/components/schemas/HistoryRecipe"
+        context:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ContextAnswerValue"
+        seeded:
+          description: One of the launch histories.
+          type: boolean
+        createdByName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    HistoryRecipe:
+      description: >-
+        How a made-up history is built back from today (Tracking Service Spec, Testing before
+        publishing): one or more parts, each a pattern for one element.
+      type: object
+      additionalProperties: false
+      required: [parts]
+      properties:
+        parts:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/HistoryPart"
+    HistoryPart:
+      description: >-
+        constant: value on each of the last days. alternating: values in turn, today first.
+        sparse: value every few days. episodes: episodes of the given lengths, oldest first, each
+        starting with the start element, its first days logged as active, then after; the newest is
+        open and today is its currentDay.
+      type: object
+      additionalProperties: false
+      required: [pattern]
+      properties:
+        pattern:
+          type: string
+          enum: [constant, alternating, sparse, episodes]
+        element:
+          description: The day-state element logged (constant, alternating, sparse).
+          type: string
+        days:
+          description: How many days back from today (constant, alternating, sparse).
+          type: integer
+          minimum: 1
+          maximum: 366
+        value:
+          description: The value logged (constant, sparse).
+        values:
+          description: The values logged in turn (alternating).
+          type: array
+          minItems: 2
+          maxItems: 14
+          items: {}
+        every:
+          description: Logs one day in this many (sparse).
+          type: integer
+          minimum: 2
+          maximum: 30
+        start:
+          description: The event element that starts each episode (episodes).
+          type: string
+        activity:
+          description: The day-state element logged during and after each episode start (episodes).
+          type: string
+        lengths:
+          description: Lengths in days of the complete episodes, oldest first (episodes).
+          type: array
+          minItems: 1
+          maxItems: 24
+          items:
+            type: integer
+            minimum: 1
+            maximum: 180
+        currentDay:
+          description: Today's day in the open newest episode (episodes).
+          type: integer
+          minimum: 1
+          maximum: 180
+        active:
+          description: Values logged from each episode's first day, in order (episodes).
+          type: array
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/HistoryRun"
+        after:
+          $ref: "#/components/schemas/HistoryRun"
+    HistoryRun:
+      description: A value logged on this many days in a row.
+      type: object
+      additionalProperties: false
+      required: [value, days]
+      properties:
+        value: {}
+        days:
+          type: integer
+          minimum: 1
+          maximum: 60
     ShareGrant:
       type: object
       additionalProperties: false
