@@ -9,10 +9,10 @@ import care.solace.tracking.context.QuestionView;
 import care.solace.tracking.elements.ElementController;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
-import care.solace.tracking.rules.RuleEngine;
+import care.solace.tracking.rules.HistoryLibrary;
 import care.solace.tracking.rules.RuleRules;
 import care.solace.tracking.rules.SyntheticHistories;
-import care.solace.tracking.rules.Unless;
+import care.solace.tracking.rules.TestRuns;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
@@ -25,7 +25,6 @@ import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +62,8 @@ class AdminModulesController {
   private final AuditLog audit;
   private final EpisodeModels models;
   private final ContextQuestions questions;
+  private final HistoryLibrary histories;
+  private final TestRuns testRuns;
   private final Clock clock;
 
   AdminModulesController(
@@ -74,6 +75,8 @@ class AdminModulesController {
       AuditLog audit,
       EpisodeModels models,
       ContextQuestions questions,
+      HistoryLibrary histories,
+      TestRuns testRuns,
       Clock clock) {
     this.gate = gate;
     this.modules = modules;
@@ -83,6 +86,8 @@ class AdminModulesController {
     this.audit = audit;
     this.models = models;
     this.questions = questions;
+    this.histories = histories;
+    this.testRuns = testRuns;
     this.clock = clock;
   }
 
@@ -212,7 +217,40 @@ class AdminModulesController {
   record ReviewRequest(@NotNull Boolean approve, @Size(max = 4000) String comments) {}
 
   record TestResult(
-      String history, String ruleCode, boolean fires, boolean blockedByUnless, JsonNode evidence) {}
+      String history,
+      JsonNode historyLabels,
+      String ruleCode,
+      boolean fires,
+      boolean blockedByUnless,
+      JsonNode evidence) {}
+
+  /** A made-up history: its recipe and the answers "unless" reads (D61). */
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record HistoryView(
+      String code,
+      JsonNode labels,
+      JsonNode recipe,
+      JsonNode context,
+      boolean seeded,
+      String createdByName,
+      Instant createdAt) {
+    static HistoryView of(HistoryLibrary.Stored h) {
+      return new HistoryView(
+          h.code(),
+          h.labels(),
+          h.recipe(),
+          h.context(),
+          h.seeded(),
+          h.createdByName(),
+          h.createdAt());
+    }
+  }
+
+  record HistoryRequest(
+      @NotBlank @Pattern(regexp = "^[a-z][a-z0-9_]{1,59}$") String code,
+      @NotNull @Valid Text labels,
+      @NotNull JsonNode recipe,
+      JsonNode context) {}
 
   /** One way of reading a signal, and the comparisons it allows there. */
   record SignalOperator(String code, List<String> comparisons) {}
@@ -496,23 +534,74 @@ class AdminModulesController {
   List<TestResult> testRun(@AuthenticationPrincipal Jwt token, @PathVariable UUID versionId) {
     gate.require(token, false);
     var v = found(versionId);
-    LocalDate today = LocalDate.now(clock);
-    List<TestResult> out = new ArrayList<>();
-    for (var history : SyntheticHistories.all(today)) {
-      var signals = history.signals(today, models.all());
-      for (var r : store.rules(v.id())) {
-        var result = RuleEngine.evaluate(r.conditions(), signals);
-        boolean unless = Unless.blocks(r.unless(), history.answers(), null);
-        out.add(
-            new TestResult(
-                history.code(),
-                r.code(),
-                result.held() && !unless,
-                result.held() && unless,
-                ModuleStore.JSON.valueToTree(result.conditions())));
-      }
+    return testRuns.run(Modules.testable(store.rules(v.id()))).stream()
+        .map(
+            r ->
+                new TestResult(
+                    r.history(),
+                    r.historyLabels(),
+                    r.rule(),
+                    r.fires(),
+                    r.blockedByUnless(),
+                    ModuleStore.JSON.valueToTree(r.conditions())))
+        .toList();
+  }
+
+  /** The made-up histories rules are tested against, seeded ones first (D61). */
+  @GetMapping("/admin/v1/tracking/synthetic-histories")
+  List<HistoryView> histories(@AuthenticationPrincipal Jwt token) {
+    gate.require(token, false);
+    return histories.all().stream().map(HistoryView::of).toList();
+  }
+
+  /**
+   * Adds a history from a recipe. Drafters and Clinical reviewers add them next to the rules they
+   * write or review; a history is never edited, so a past test run stays explainable.
+   */
+  @PostMapping("/admin/v1/tracking/synthetic-histories")
+  @ResponseStatus(HttpStatus.CREATED)
+  HistoryView addHistory(@AuthenticationPrincipal Jwt token, @Valid @RequestBody HistoryRequest r) {
+    var staff = gate.require(token, true);
+    if (!staff.clinicalReviewer()
+        && !staff.roles().contains("OPERATIONS")
+        && !staff.roles().contains("SUPER_ADMIN")) {
+      throw new SolaceException(CommonError.ACCESS_DENIED);
     }
-    return out;
+    String en = r.labels().en() == null ? "" : r.labels().en().trim();
+    String fr = r.labels().fr() == null ? "" : r.labels().fr().trim();
+    JsonNode context =
+        r.context() == null || r.context().isNull()
+            ? ModuleStore.JSON.createObjectNode()
+            : r.context();
+    if (en.isEmpty()
+        || fr.isEmpty()
+        || en.length() > 80
+        || fr.length() > 80
+        || !SyntheticHistories.problems(
+                r.recipe(),
+                context,
+                code -> library.latest(code).orElse(null),
+                code -> questions.find(code).orElse(null))
+            .isEmpty()) {
+      throw new SolaceException(CommonError.REQUEST_INVALID);
+    }
+    if (histories.exists(r.code())) {
+      throw new SolaceException(CommonError.CONFLICT);
+    }
+    histories.add(
+        r.code(),
+        ModuleStore.JSON.valueToTree(new Text(en, fr)),
+        r.recipe(),
+        context,
+        staff.id(),
+        staff.name(),
+        clock.instant());
+    audit.adminAction("tracking.history.add", "synthetic-history", r.code(), Map.of());
+    return histories.all().stream()
+        .filter(h -> h.code().equals(r.code()))
+        .findFirst()
+        .map(HistoryView::of)
+        .orElseThrow();
   }
 
   @PostMapping("/admin/v1/tracking/versions/{versionId}/submission")

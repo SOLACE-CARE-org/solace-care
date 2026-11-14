@@ -8,6 +8,7 @@ import care.solace.tracking.context.ContextQuestions;
 import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
+import care.solace.tracking.rules.TestRuns;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
@@ -54,6 +55,7 @@ public class Modules {
   private final ApplicationEventPublisher events;
   private final EpisodeModels models;
   private final ContextQuestions questions;
+  private final TestRuns testRuns;
   private final Clock clock;
 
   Modules(
@@ -61,12 +63,14 @@ public class Modules {
       ElementLibrary library,
       EpisodeModels models,
       ContextQuestions questions,
+      TestRuns testRuns,
       ApplicationEventPublisher events,
       Clock clock) {
     this.store = store;
     this.library = library;
     this.models = models;
     this.questions = questions;
+    this.testRuns = testRuns;
     this.events = events;
     this.clock = clock;
   }
@@ -313,7 +317,17 @@ public class Modules {
         problems.add("rule:" + r.code());
       }
     }
+    // Each rule needs a made-up history that fires it and one that does not (Spec, Testing).
+    for (String code : testRuns.untested(testable(store.rules(v.id())))) {
+      problems.add("tests:" + code);
+    }
     return new Readiness(problems, warnings);
+  }
+
+  static List<TestRuns.Rule> testable(List<ModuleStore.Rule> rules) {
+    return rules.stream()
+        .map(r -> new TestRuns.Rule(r.code(), r.conditions(), r.unless()))
+        .toList();
   }
 
   @Transactional

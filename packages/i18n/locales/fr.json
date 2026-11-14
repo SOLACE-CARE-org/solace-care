@@ -1198,20 +1198,6 @@
         "fires": "Se déclenche",
         "doesNotFire": "Ne se déclenche pas",
         "switchedOff": "Désactivée par « sauf si »",
-        "history": {
-          "regular_cycles": "Cycles réguliers",
-          "long_cycles": "Cycles longs",
-          "long_cycles_hormonal_treatment": "Cycles longs, traitement hormonal",
-          "long_periods": "Règles longues",
-          "heavy_flow": "Flux abondant",
-          "no_period": "Pas de règles",
-          "no_period_trying_to_conceive": "Pas de règles, projet de grossesse",
-          "low_mood_two_weeks": "Humeur basse pendant deux semaines",
-          "good_mood": "Bonne humeur",
-          "short_sleep": "Sommeil court",
-          "enough_sleep": "Sommeil suffisant",
-          "sparse_logging": "Saisie irrégulière"
-        },
         "back": "Retour",
         "submit": "Envoyer en revue clinique",
         "unlessTitle": "Désactiver quand",
@@ -1234,7 +1220,8 @@
         "requiredElement": "Au moins un élément obligatoire",
         "rule": "Corriger la règle {{code}}",
         "presentation": "L'affichage correspond aux éléments",
-        "groups": "Éléments groupés côte à côte avec un seul libellé"
+        "groups": "Éléments groupés côte à côte avec un seul libellé",
+        "tests": "La règle {{code}} doit avoir un historique de test qui la déclenche et un qui ne la déclenche pas"
       },
       "review": {
         "title": "Revue clinique",
@@ -1312,6 +1299,46 @@
         "refused": "Les éléments sont enregistrés, mais l'affichage ne leur correspond pas. Vérifiez que chaque texte existe en EN et en FR et que le libellé du jour contient {{n}}.",
         "quickEn": "Question affichée · EN",
         "quickFr": "Question affichée · FR"
+      },
+      "history": {
+        "open": "Ajouter un historique de test",
+        "title": "Ajouter un historique de test",
+        "note": "Inventé, jamais une vraie personne. Construit à partir d'aujourd'hui. Une fois ajouté, il est gardé tel quel.",
+        "code": "Code",
+        "nameEn": "Nom · EN",
+        "nameFr": "Nom · FR",
+        "part": "Partie {{n}}",
+        "pattern": "Modèle",
+        "patterns": {
+          "constant": "La même valeur chaque jour",
+          "alternating": "Des valeurs à tour de rôle",
+          "sparse": "Un jour sur quelques-uns",
+          "episodes": "Des épisodes, comme des cycles"
+        },
+        "element": "Élément",
+        "start": "Commence par",
+        "lengths": "Durées des épisodes passés en jours, du plus ancien au plus récent, séparées par des virgules",
+        "currentDay": "Jour de l'épisode en cours aujourd'hui",
+        "activity": "Noté pendant chaque épisode",
+        "activeValue": "Valeur au début de chaque épisode",
+        "activeDays": "Pendant combien de jours",
+        "afterValue": "Valeur ensuite",
+        "afterDays": "Pendant combien de jours (0 pour aucun)",
+        "days": "Jours avant aujourd'hui",
+        "value": "Valeur",
+        "values": "Valeurs à tour de rôle, séparées par des virgules",
+        "every": "Un jour sur",
+        "choices": "Valeurs : {{values}}",
+        "remove": "Retirer",
+        "removePart": "Retirer la partie {{n}}",
+        "addPart": "Ajouter un autre élément",
+        "answers": "Réponses pour « sauf si »",
+        "notAnswered": "Sans réponse",
+        "cancel": "Annuler",
+        "add": "Ajouter l'historique",
+        "codeTaken": "Un historique avec ce code existe déjà.",
+        "refused": "Tracking ne peut pas construire cet historique. Vérifiez que chaque valeur convient à son élément et que chaque nom existe en EN et en FR.",
+        "notAllowed": "Seuls les rédacteurs et les relecteurs cliniques peuvent ajouter des historiques de test."
       }
     },
     "healthCheck": {

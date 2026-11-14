@@ -340,7 +340,7 @@ public class Sync implements care.solace.tracking.PersonalData {
   }
 
   /** Validates a value against its element's type and constraints (Spec: validated on push). */
-  static Optional<Value> parse(Element element, JsonNode value) {
+  public static Optional<Value> parse(Element element, JsonNode value) {
     if (value == null || value.isNull()) {
       return Optional.empty();
     }

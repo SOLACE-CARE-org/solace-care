@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The launch rules from the Tracking Service Spec, with its bracketed placeholder thresholds,
- * against the synthetic histories: which fire, and which "unless" switches off (D51).
+ * against the seeded synthetic histories: which fire, and which "unless" switches off (D51, D61).
  */
 class LaunchRulesTest {
 
@@ -47,7 +47,7 @@ class LaunchRulesTest {
 
   private Map<String, Set<String>> fired() throws Exception {
     Map<String, Set<String>> fired = new LinkedHashMap<>();
-    for (var history : SyntheticHistories.all(TODAY)) {
+    for (var history : SeededHistories.built(TODAY)) {
       var signals = history.signals(TODAY, MODELS);
       for (var rule : CONDITIONS.entrySet()) {
         JsonNode conditions = JSON.readTree(rule.getValue());
@@ -75,7 +75,7 @@ class LaunchRulesTest {
   @Test
   void theEvidenceNamesTheExactCyclesUsed() throws Exception {
     var history =
-        SyntheticHistories.all(TODAY).stream()
+        SeededHistories.built(TODAY).stream()
             .filter(h -> h.code().equals("long_cycles"))
             .findFirst()
             .orElseThrow();

@@ -1198,20 +1198,6 @@
         "fires": "Fires",
         "doesNotFire": "Does not fire",
         "switchedOff": "Switched off by unless",
-        "history": {
-          "regular_cycles": "Regular cycles",
-          "long_cycles": "Long cycles",
-          "long_cycles_hormonal_treatment": "Long cycles, hormonal treatment",
-          "long_periods": "Long periods",
-          "heavy_flow": "Heavy flow",
-          "no_period": "No period",
-          "no_period_trying_to_conceive": "No period, trying to conceive",
-          "low_mood_two_weeks": "Low mood for two weeks",
-          "good_mood": "Good mood",
-          "short_sleep": "Short sleep",
-          "enough_sleep": "Enough sleep",
-          "sparse_logging": "Sparse logging"
-        },
         "back": "Back",
         "submit": "Submit for clinical review",
         "unlessTitle": "Switch off when",
@@ -1234,7 +1220,8 @@
         "requiredElement": "At least one required element",
         "rule": "Fix rule {{code}}",
         "presentation": "How the app shows it fits the elements",
-        "groups": "Grouped elements next to each other with one label"
+        "groups": "Grouped elements next to each other with one label",
+        "tests": "Rule {{code}} needs a test history that fires it and one that does not"
       },
       "review": {
         "title": "Clinical review",
@@ -1312,6 +1299,46 @@
         "refused": "The elements are saved, but how the app shows it does not fit them. Check that each text has EN and FR, and that the day label contains {{n}}.",
         "quickEn": "Question over it · EN",
         "quickFr": "Question over it · FR"
+      },
+      "history": {
+        "open": "Add a test history",
+        "title": "Add a test history",
+        "note": "Made up, never a real person. Built back from today. Once added, it is kept as it is.",
+        "code": "Code",
+        "nameEn": "Name · EN",
+        "nameFr": "Name · FR",
+        "part": "Part {{n}}",
+        "pattern": "Pattern",
+        "patterns": {
+          "constant": "The same value every day",
+          "alternating": "Values in turn",
+          "sparse": "One day in a few",
+          "episodes": "Episodes, such as cycles"
+        },
+        "element": "Element",
+        "start": "Starts with",
+        "lengths": "Lengths of past episodes in days, oldest first, separated by commas",
+        "currentDay": "Day of the current episode today",
+        "activity": "Logged during each episode",
+        "activeValue": "Value at the start of each episode",
+        "activeDays": "For how many days",
+        "afterValue": "Value after that",
+        "afterDays": "For how many days (0 for none)",
+        "days": "Days back from today",
+        "value": "Value",
+        "values": "Values in turn, separated by commas",
+        "every": "One day in",
+        "choices": "Values: {{values}}",
+        "remove": "Remove",
+        "removePart": "Remove part {{n}}",
+        "addPart": "Add another element",
+        "answers": "Answers for unless",
+        "notAnswered": "Not answered",
+        "cancel": "Cancel",
+        "add": "Add history",
+        "codeTaken": "A history with this code already exists.",
+        "refused": "Tracking cannot build this history. Check each value fits its element and every name has EN and FR.",
+        "notAllowed": "Only drafters and Clinical reviewers can add test histories."
       }
     },
     "healthCheck": {

@@ -129,6 +129,71 @@ class ModuleBuilderIntegrationTest extends TrackingStackTest {
   }
 
   @Test
+  void eachRuleNeedsAHistoryThatFiresItAndOneThatDoesNot() throws Exception {
+    String id = draft("tests_" + UUID.randomUUID().toString().substring(0, 6), ops);
+    String lightFlow =
+        "[{\"signal\":\"daily_value\",\"element\":\"flow_intensity\",\"operator\":\"days_in_window\","
+            + "\"comparison\":\"eq\",\"threshold\":\"light\",\"mode\":\"at_least\",\"count\":5,"
+            + "\"window\":14,\"minData\":5}]";
+    rule(
+            id,
+            "test.light_flow",
+            lightFlow,
+            "You logged light flow on {count} of the last {window} days.",
+            "Vous avez noté un flux léger {count} jours sur les {window} derniers.")
+        .andExpect(status().isCreated());
+    // No seeded history logs light flow, so the rule is untested and cannot be submitted.
+    mvc.perform(get("/admin/v1/tracking/versions/" + id).with(ops))
+        .andExpect(jsonPath("$.problems[0]").value("tests:test.light_flow"));
+    mvc.perform(post("/admin/v1/tracking/versions/" + id + "/submission").with(ops))
+        .andExpect(status().isConflict());
+
+    // The seeds are there, named in EN and FR.
+    mvc.perform(get("/admin/v1/tracking/synthetic-histories").with(reviewer))
+        .andExpect(jsonPath("$[?(@.code == 'long_cycles')].labels.fr").value("Cycles longs"))
+        .andExpect(jsonPath("$[?(@.code == 'long_cycles')].seeded").value(true));
+    String code = "light_flow_" + UUID.randomUUID().toString().substring(0, 6);
+    String body =
+        "{\"code\":\""
+            + code
+            + "\",\"labels\":{\"en\":\"Light flow\",\"fr\":\"Flux léger\"},"
+            + "\"recipe\":{\"parts\":[{\"pattern\":\"constant\",\"element\":\"flow_intensity\","
+            + "\"value\":\"light\",\"days\":14}]},\"context\":{\"trying_to_conceive\":false}}";
+    // A value the element cannot take is refused.
+    mvc.perform(
+            post("/admin/v1/tracking/synthetic-histories")
+                .with(reviewer)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.replace("\"light\",\"days\"", "\"pale\",\"days\"")))
+        .andExpect(status().isBadRequest());
+    // A Clinical reviewer adds one next to the rule; the code is then taken.
+    mvc.perform(
+            post("/admin/v1/tracking/synthetic-histories")
+                .with(reviewer)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.createdByName").value("Dr. Fomba Grace"))
+        .andExpect(jsonPath("$.seeded").value(false));
+    mvc.perform(
+            post("/admin/v1/tracking/synthetic-histories")
+                .with(reviewer)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isConflict());
+
+    mvc.perform(post("/admin/v1/tracking/versions/" + id + "/test-run").with(ops))
+        .andExpect(jsonPath("$[?(@.history == '%s')].fires".formatted(code)).value(true))
+        .andExpect(
+            jsonPath("$[?(@.history == '%s')].historyLabels.en".formatted(code))
+                .value("Light flow"));
+    mvc.perform(get("/admin/v1/tracking/versions/" + id).with(ops))
+        .andExpect(jsonPath("$.problems.length()").value(0));
+    mvc.perform(post("/admin/v1/tracking/versions/" + id + "/submission").with(ops))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void theDrafterCannotApproveAndOnlyClinicalReviewersCan() throws Exception {
     var both = staff("both-1", "Two Hats", "OPERATIONS", "CLINICAL_REVIEWER");
     String id = draft("same_" + UUID.randomUUID().toString().substring(0, 6), both);
