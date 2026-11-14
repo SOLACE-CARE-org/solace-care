@@ -25,6 +25,8 @@ tags:
     description: The element builder for staff (admin screen 32, provisional; D61)
   - name: admin-episode-models
     description: The episode model builder for staff (admin screen 33, provisional; D61)
+  - name: admin-context-questions
+    description: The context question builder for staff (admin screen 34, provisional; D61)
   - name: sync
     description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
   - name: cycles
@@ -906,6 +908,168 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions:
+    get:
+      operationId: adminListContextQuestionVersions
+      summary: Every context question version in every state, newest first within a code
+      tags: [admin-context-questions]
+      responses:
+        "200":
+          description: The versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContextQuestionVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: draftContextQuestion
+      summary: Draft a new context question at v1, or the next version of one
+      description: |
+        A code with versions starts the next number. Only one draft or version in review per code.
+        Operations or a Super admin.
+      tags: [admin-context-questions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContextQuestionDraft"
+      responses:
+        "201":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions/{contextQuestionVersionId}:
+    parameters:
+      - $ref: "#/components/parameters/ContextQuestionVersionId"
+    get:
+      operationId: adminGetContextQuestionVersion
+      summary: One context question version with what stops it being submitted
+      tags: [admin-context-questions]
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: saveContextQuestionDraft
+      summary: Save a draft; the code and version cannot change
+      tags: [admin-context-questions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContextQuestionDraft"
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions/{contextQuestionVersionId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/ContextQuestionVersionId"
+    post:
+      operationId: submitContextQuestionVersion
+      summary: Send a complete draft for clinical review
+      tags: [admin-context-questions]
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions/{contextQuestionVersionId}/review:
+    parameters:
+      - $ref: "#/components/parameters/ContextQuestionVersionId"
+    post:
+      operationId: reviewContextQuestionVersion
+      summary: A Clinical reviewer who did not draft it approves, or returns it with comments
+      tags: [admin-context-questions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [approve]
+              properties:
+                approve:
+                  type: boolean
+                comments:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions/{contextQuestionVersionId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/ContextQuestionVersionId"
+    post:
+      operationId: publishContextQuestionVersion
+      summary: Publish an approved version; it replaces the code's published one
+      description: |
+        The older published version of the code is retired. Stored answers stay, because a new
+        version keeps the type and every option of the published one.
+      tags: [admin-context-questions]
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/context-question-versions/{contextQuestionVersionId}/retirement:
+    parameters:
+      - $ref: "#/components/parameters/ContextQuestionVersionId"
+    post:
+      operationId: retireContextQuestionVersion
+      summary: Stop asking a published question; refused while a module version that is not retired asks or reads it
+      tags: [admin-context-questions]
+      responses:
+        "200":
+          $ref: "#/components/responses/ContextQuestionVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/tracking/modules:
     get:
       operationId: adminListModules
@@ -1696,6 +1860,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/EpisodeModelVersion"
+    ContextQuestionVersionResponse:
+      description: The context question version after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContextQuestionVersion"
     VersionResponse:
       description: The version after the change
       content:
@@ -1732,6 +1902,13 @@ components:
         format: uuid
     EpisodeModelVersionId:
       name: episodeModelVersionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ContextQuestionVersionId:
+      name: contextQuestionVersionId
       in: path
       required: true
       schema:
@@ -2641,6 +2818,96 @@ components:
                 type: string
               labels:
                 $ref: "#/components/schemas/Text"
+    ContextQuestionOption:
+      type: object
+      additionalProperties: false
+      required: [code, labels]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        labels:
+          $ref: "#/components/schemas/Text"
+    ContextQuestionDraft:
+      type: object
+      additionalProperties: false
+      required: [code, type, scope, question, options]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        type:
+          type: string
+          enum: [YES_NO, ONE_CHOICE, MANY_CHOICES]
+        scope:
+          type: string
+          enum: [PROFILE, ENROLMENT]
+        question:
+          $ref: "#/components/schemas/Text"
+        options:
+          description: The choices of a ONE_CHOICE or MANY_CHOICES question; empty for YES_NO.
+          type: array
+          maxItems: 12
+          items:
+            $ref: "#/components/schemas/ContextQuestionOption"
+    ContextQuestionVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        version:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        type:
+          type: string
+          enum: [YES_NO, ONE_CHOICE, MANY_CHOICES]
+        scope:
+          type: string
+          enum: [PROFILE, ENROLMENT]
+        question:
+          $ref: "#/components/schemas/Text"
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContextQuestionOption"
+        problems:
+          description: "What stops submission: code, type, question, options."
+          type: array
+          items:
+            type: string
+        usedBy:
+          description: How many module versions that are not retired ask this question or read it in a rule's "unless".
+          type: integer
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer:
+                type: string
+              decision:
+                type: string
+              comments:
+                type: string
+              decidedAt:
+                type: string
+                format: date-time
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        canApprove:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
     TrackingProfile:
       description: Deprecated; use context answers.
       deprecated: true
