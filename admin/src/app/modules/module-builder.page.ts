@@ -18,6 +18,7 @@ import { DetailsStep } from './details-step';
 import { ElementsStep } from './elements-step';
 import { canDraft, canReview, stateOf, textIn } from './module-shared';
 import { RulesStep } from './rules-step';
+import { BackLink } from '../shared/back-link';
 
 type Version = TrackingSchemas['ModuleVersion'];
 type Element = TrackingSchemas['Element'];
@@ -37,12 +38,10 @@ const STEPS: Step[] = ['details', 'elements', 'rules'];
  */
 @Component({
   selector: 'sl-module-builder',
-  imports: [TranslocoPipe, RouterLink, DetailsStep, ElementsStep, RulesStep],
+  imports: [BackLink, TranslocoPipe, RouterLink, DetailsStep, ElementsStep, RulesStep],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="crumbs sl-meta" [attr.aria-label]="'admin.modules.builder' | transloco">
-      <a routerLink="/modules">{{ 'admin.modules.title' | transloco }}</a>
-    </nav>
+    <sl-back-link to="/modules" [label]="'admin.modules.title' | transloco" />
 
     @if (error()) {
       <div class="sl-card">
@@ -136,9 +135,6 @@ const STEPS: Step[] = ['details', 'elements', 'rules'];
     }
   `,
   styles: `
-    .crumbs {
-      margin-bottom: var(--space-8);
-    }
     .head {
       display: flex;
       align-items: center;

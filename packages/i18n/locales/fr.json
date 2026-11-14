@@ -1734,7 +1734,10 @@
           "APPROVED": "{{who}} a approuvé",
           "RETURNED": "{{who}} l'a renvoyé"
         }
-      }
+      },
+      "basics": "Élément",
+      "names": "Noms et aide",
+      "remove": "Retirer"
     },
     "wording": {
       "title": "Liste de mots et réglages",
@@ -1767,17 +1770,12 @@
         "tryText": "Message",
         "check": "Vérifier",
         "passes": "Ce message passe la liste de mots.",
-        "blocked": "Bloqué par : {{patterns}}"
+        "blocked": "Bloqué par : {{patterns}}",
+        "removeCol": "Retirer"
       },
       "settings": {
         "title": "Réglages",
         "help": "Les Opérations et les Super admins les modifient. Chaque modification demande une raison et est inscrite au journal d'audit.",
-        "col": {
-          "setting": "Réglage",
-          "value": "Valeur",
-          "default": "Par défaut",
-          "changed": "Dernière modification"
-        },
         "name": {
           "snooze_days": "Durée pendant laquelle une carte reportée reste masquée",
           "nudge_reminder_window_hours": "Retard maximal d'un rappel après son heure",
@@ -1787,7 +1785,6 @@
           "days": "{{n}} jours",
           "hours": "{{n}} heures"
         },
-        "never": "Jamais modifié",
         "changedBy": "{{who}}, {{when}}",
         "edit": "Modifier : {{name}}",
         "newValue": "Nouvelle valeur ({{min}} à {{max}})",
@@ -1795,7 +1792,8 @@
         "save": "Enregistrer",
         "cancel": "Annuler",
         "outOfRange": "Choisissez une valeur de {{min}} à {{max}}.",
-        "change": "Modifier"
+        "change": "Modifier",
+        "defaultIs": "Par défaut : {{value}}"
       }
     }
   },

@@ -55,6 +55,29 @@ body {
   color: var(--ink-muted);
 }
 
+/* Links are the brand colour (design-system README, Colour: brand marks links). */
+a {
+  color: var(--brand);
+}
+
+/* The way back to a list: chevron and the list's name (ModuleDetails, ModuleReview .dc.html). */
+.sl-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: var(--size-tap);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* A card's heading (ModuleDetails, Settings .dc.html: 16px, bold). */
+.sl-section {
+  margin: 0 0 var(--space-12);
+  font-size: var(--type-body-lg-size);
+  line-height: var(--type-body-lg-line-height);
+  font-weight: 700;
+}
+
 .sl-meta {
   font-size: var(--type-meta-size);
   line-height: var(--type-meta-line-height);
@@ -62,7 +85,13 @@ body {
 }
 
 .sl-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  box-sizing: border-box;
   min-height: var(--size-control-admin);
+  text-decoration: none;
   padding: 0 var(--space-16);
   border-radius: var(--radius-12);
   border: 1px solid var(--line-control);
@@ -110,6 +139,9 @@ body {
   color: var(--ink-soft);
   white-space: nowrap;
 }
+a.sl-pill {
+  text-decoration: none;
+}
 .sl-pill--brand {
   background: var(--brand-tint);
   color: var(--brand-deep);
@@ -127,6 +159,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+/* Field labels are weight 600 (ModuleDetails.dc.html). */
+.sl-field > span:first-child {
+  font-weight: var(--type-label-weight);
 }
 .sl-input,
 .sl-select,

@@ -16,6 +16,7 @@ import { orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
 import { canDraft, canReview, textIn } from './module-shared';
+import { BackLink } from '../shared/back-link';
 
 type Version = TrackingSchemas['ModuleVersion'];
 type Rule = TrackingSchemas['Rule'];
@@ -36,12 +37,10 @@ const CHECKS = ['thresholds', 'wording', 'languages', 'specialty'] as const;
  */
 @Component({
   selector: 'sl-module-review',
-  imports: [TranslocoPipe, FormsModule, RouterLink],
+  imports: [BackLink, TranslocoPipe, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="crumbs sl-meta" [attr.aria-label]="'admin.modules.review.title' | transloco">
-      <a routerLink="/modules">{{ 'admin.modules.title' | transloco }}</a>
-    </nav>
+    <sl-back-link to="/modules" [label]="'admin.modules.title' | transloco" />
     @if (error()) {
       <div class="sl-card">
         <p>{{ 'common.checkConnection' | transloco }}</p>
@@ -191,9 +190,6 @@ const CHECKS = ['thresholds', 'wording', 'languages', 'specialty'] as const;
     }
   `,
   styles: `
-    .crumbs {
-      margin-bottom: var(--space-8);
-    }
     .heading {
       font-weight: 600;
       margin: var(--space-4) 0;

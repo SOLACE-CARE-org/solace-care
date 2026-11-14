@@ -9,12 +9,13 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
+import { BackLink } from '../shared/back-link';
 import { canDraft, canReview, stateOf } from './module-shared';
 
 type Version = TrackingSchemas['ElementVersion'];
@@ -160,12 +161,10 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
  */
 @Component({
   selector: 'sl-element-editor',
-  imports: [TranslocoPipe, FormsModule, RouterLink],
+  imports: [TranslocoPipe, FormsModule, BackLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="crumbs sl-meta" [attr.aria-label]="'admin.elements.title' | transloco">
-      <a routerLink="/modules/elements">{{ 'admin.elements.back' | transloco }}</a>
-    </nav>
+    <sl-back-link to="/modules/elements" [label]="'admin.elements.back' | transloco" />
     @if (error()) {
       <div class="sl-card">
         <p>{{ 'common.checkConnection' | transloco }}</p>
@@ -198,6 +197,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
       <div class="layout">
         <form class="main" (ngSubmit)="save()">
           <fieldset class="sl-card" [disabled]="!editable()">
+            <legend class="sl-section">{{ 'admin.elements.basics' | transloco }}</legend>
             <label class="sl-field">
               <span>{{ 'admin.elements.code' | transloco }}</span>
               <input
@@ -216,7 +216,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
             <label class="sl-field">
               <span>{{ 'admin.elements.valueType' | transloco }}</span>
               <select
-                class="sl-input"
+                class="sl-select"
                 name="valueType"
                 [(ngModel)]="form.valueType"
                 (ngModelChange)="typeChanged()"
@@ -229,7 +229,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
             <label class="sl-field">
               <span>{{ 'admin.elements.view' | transloco }}</span>
               <select
-                class="sl-input"
+                class="sl-select"
                 name="inputView"
                 [(ngModel)]="form.inputView"
                 (ngModelChange)="touch()"
@@ -245,7 +245,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
             <label class="sl-field">
               <span>{{ 'admin.elements.icon' | transloco }}</span>
               <select
-                class="sl-input"
+                class="sl-select"
                 name="icon"
                 [(ngModel)]="form.icon"
                 (ngModelChange)="touch()"
@@ -259,9 +259,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
           </fieldset>
 
           <fieldset class="sl-card" [disabled]="!editable()">
-            <legend>
-              {{ 'admin.elements.nameEn' | transloco }} / {{ 'admin.elements.nameFr' | transloco }}
-            </legend>
+            <legend class="sl-section">{{ 'admin.elements.names' | transloco }}</legend>
             <div class="pair">
               <label class="sl-field">
                 <span>{{ 'admin.elements.nameEn' | transloco }}</span>
@@ -310,7 +308,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
             form.valueType === 'INT' || form.valueType === 'MINUTES' || form.valueType === 'TEXT'
           ) {
             <fieldset class="sl-card" [disabled]="!editable()">
-              <legend>{{ 'admin.elements.limits' | transloco }}</legend>
+              <legend class="sl-section">{{ 'admin.elements.limits' | transloco }}</legend>
               <div class="pair">
                 @if (form.valueType === 'TEXT') {
                   <label class="sl-field">
@@ -363,7 +361,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
 
           @if (form.valueType === 'ENUM' || form.valueType === 'INT') {
             <fieldset class="sl-card choices" [disabled]="!editable()">
-              <legend>
+              <legend class="sl-section">
                 {{
                   (form.valueType === 'ENUM' ? 'admin.elements.choices' : 'admin.elements.points')
                     | transloco
@@ -411,19 +409,19 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
                   @if (form.valueType === 'ENUM') {
                     <button
                       type="button"
-                      class="sl-button"
+                      class="sl-button sl-button--danger"
                       [attr.aria-label]="
                         'admin.elements.removeChoice' | transloco: { code: c.code || i + 1 }
                       "
                       (click)="removeChoice(i)"
                     >
-                      ×
+                      {{ 'admin.elements.remove' | transloco }}
                     </button>
                   }
                 </div>
               }
               @if (form.valueType === 'ENUM') {
-                <button type="button" class="sl-button" (click)="addChoice()">
+                <button type="button" class="sl-button add" (click)="addChoice()">
                   {{ 'admin.elements.addChoice' | transloco }}
                 </button>
               }
@@ -432,7 +430,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
 
           @if (view()?.props?.['start']) {
             <fieldset class="sl-card" [disabled]="!editable()">
-              <legend>{{ 'admin.elements.props' | transloco }}</legend>
+              <legend class="sl-section">{{ 'admin.elements.props' | transloco }}</legend>
               <label class="sl-field">
                 <span>{{ 'admin.elements.prop.start' | transloco }}</span>
                 <input
@@ -473,7 +471,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
 
         <aside class="side">
           <section class="sl-card" aria-labelledby="preview-title">
-            <h2 id="preview-title" class="sl-subtitle">
+            <h2 id="preview-title" class="sl-section">
               {{ 'admin.elements.preview' | transloco }}
             </h2>
             @for (l of langs; track l) {
@@ -516,7 +514,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
             @if (v.status === 'DRAFT' || v.status === 'IN_REVIEW') {
               @if ((v.problems?.length ?? 0) > 0) {
                 <section class="sl-card" aria-labelledby="problems-title">
-                  <h2 id="problems-title" class="sl-subtitle">
+                  <h2 id="problems-title" class="sl-section">
                     {{ 'admin.elements.problems.title' | transloco }}
                   </h2>
                   <ul>
@@ -530,7 +528,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
 
             @if (v.status === 'IN_REVIEW') {
               <section class="sl-card" aria-labelledby="review-title">
-                <h2 id="review-title" class="sl-subtitle">
+                <h2 id="review-title" class="sl-section">
                   {{ 'admin.elements.review.title' | transloco }}
                 </h2>
                 @if (v.approvedBy) {
@@ -630,9 +628,6 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
     }
   `,
   styles: `
-    .crumbs {
-      margin-bottom: var(--space-8);
-    }
     .head {
       display: flex;
       align-items: center;
@@ -654,7 +649,23 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
       gap: var(--space-16);
     }
     fieldset {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-14);
+      min-width: 0;
       margin: 0;
+    }
+    /* The heading sits inside the card, as on ModuleDetails.dc.html, not on its border. */
+    legend {
+      float: left;
+      width: 100%;
+      padding: 0;
+    }
+    legend + * {
+      clear: both;
+    }
+    .add {
+      align-self: start;
     }
     .pair {
       display: grid;
@@ -685,23 +696,32 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
       align-items: start;
     }
     .phone {
-      border: 1px solid var(--color-line, currentColor);
-      border-radius: var(--radius-md, 8px);
-      padding: var(--space-12);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-14);
+      background: var(--surface-page);
+      padding: var(--space-12) var(--space-14);
       margin-top: var(--space-12);
+    }
+    .phone p {
+      margin: 0 0 var(--space-8);
     }
     .chips {
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-8);
     }
+    /* Chip, off (design-system Chip): the preview is not interactive. */
     .chip {
       display: inline-flex;
       align-items: center;
-      min-height: 44px;
+      min-height: var(--size-chip);
+      min-width: var(--size-chip);
+      box-sizing: border-box;
       padding: 0 var(--space-12);
-      border: 1px solid var(--color-line, currentColor);
-      border-radius: 999px;
+      border: 1px solid var(--line-control);
+      border-radius: var(--radius-pill);
+      background: var(--surface-card);
+      font-weight: 600;
     }
     .stepper {
       display: flex;
@@ -710,8 +730,9 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
     }
     .note {
       min-height: 4rem;
-      border: 1px solid var(--color-line, currentColor);
-      border-radius: var(--radius-sm, 4px);
+      border: 1px solid var(--line-control);
+      border-radius: var(--radius-12);
+      background: var(--surface-card);
     }
     .strong {
       font-weight: 700;
@@ -726,6 +747,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
     }
     .error {
       color: var(--danger);
+      font-weight: 600;
     }
   `,
 })

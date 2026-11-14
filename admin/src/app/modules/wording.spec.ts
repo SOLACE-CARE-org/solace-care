@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { TrackingSchemas } from '../api/tracking-api';
-import { button, fn, ok, render, route, sees, setUp } from '../testing/harness';
+import { button, fn, ok, render, route, sees, setUp, stubDialogs } from '../testing/harness';
 import { fold, PATTERN, WordingPage } from './wording.page';
 
 const rules: TrackingSchemas['WordingRule'][] = [
@@ -75,8 +75,12 @@ describe('Word list and settings', () => {
     expect(root.textContent).toContain('N. Ebai');
     // Operations does not edit the word list.
     expect(button(root, 'Add')).toBeUndefined();
+    stubDialogs(root);
     const page = fixture.componentInstance;
     page.edit(settings[0]!);
+    await settle();
+    // The dialog asks for a reason, and shows the default.
+    expect(root.querySelector('dialog')?.textContent).toContain('Default 7 days');
     page.value = 10;
     page.reason = 'Seekers asked for longer';
     await settle();
