@@ -9,12 +9,12 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { ApiProblem, CoreApi, type CoreSchemas, orThrow } from '../api/core-api';
 import { StaffSession } from '../auth/staff-session';
 import { canWrite, hcState, specialtyNames } from './health-check-shared';
+import { BackLink } from '../shared/back-link';
 
 type Version = CoreSchemas['HealthCheckVersion'];
 type Question = CoreSchemas['HealthCheckQuestion'];
@@ -44,12 +44,10 @@ const TOPICS = [
  */
 @Component({
   selector: 'sl-health-check-version',
-  imports: [TranslocoPipe, FormsModule, RouterLink],
+  imports: [BackLink, TranslocoPipe, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="crumbs sl-meta" [attr.aria-label]="'admin.healthCheck.title' | transloco">
-      <a routerLink="/health-check">{{ 'admin.healthCheck.title' | transloco }}</a>
-    </nav>
+    <sl-back-link to="/health-check" [label]="'admin.healthCheck.title' | transloco" />
     @if (error()) {
       <div class="sl-card">
         <p>{{ 'common.checkConnection' | transloco }}</p>
@@ -934,9 +932,6 @@ const TOPICS = [
     }
   `,
   styles: `
-    .crumbs {
-      margin-bottom: var(--space-8);
-    }
     .head {
       display: flex;
       align-items: center;

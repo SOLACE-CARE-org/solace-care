@@ -5,6 +5,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
+import { BackLink } from '../shared/back-link';
 import { canDraft, stateOf } from './module-shared';
 
 type Version = TrackingSchemas['ElementVersion'];
@@ -18,18 +19,16 @@ interface Row {
 }
 
 /**
- * Admin screen 32: the element library (D61). No design yet, so layout and copy are provisional
- * and follow the modules list (Modules.dc.html). Every version of every element: what is published
+ * Admin screen 32: the element library (D61). No design of its own yet, so copy is provisional;
+ * the layout is the modules list's (Modules.dc.html). Every version of every element: what is published
  * and what is being worked on.
  */
 @Component({
   selector: 'sl-elements',
-  imports: [TranslocoPipe, RouterLink],
+  imports: [TranslocoPipe, RouterLink, BackLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="crumbs sl-meta" [attr.aria-label]="'admin.elements.title' | transloco">
-      <a routerLink="/modules">{{ 'admin.modules.title' | transloco }}</a>
-    </nav>
+    <sl-back-link to="/modules" [label]="'admin.modules.title' | transloco" />
     <div class="head">
       <div>
         <h1 class="sl-title">{{ 'admin.elements.title' | transloco }}</h1>
@@ -96,9 +95,6 @@ interface Row {
     </section>
   `,
   styles: `
-    .crumbs {
-      margin-bottom: var(--space-8);
-    }
     .head {
       display: flex;
       justify-content: space-between;

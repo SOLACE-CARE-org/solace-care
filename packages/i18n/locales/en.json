@@ -1734,7 +1734,10 @@
           "APPROVED": "{{who}} approved",
           "RETURNED": "{{who}} returned it"
         }
-      }
+      },
+      "basics": "Element",
+      "names": "Names and help",
+      "remove": "Remove"
     },
     "wording": {
       "title": "Word list and settings",
@@ -1767,17 +1770,12 @@
         "tryText": "Message",
         "check": "Check",
         "passes": "This message passes the word list.",
-        "blocked": "Blocked by: {{patterns}}"
+        "blocked": "Blocked by: {{patterns}}",
+        "removeCol": "Remove"
       },
       "settings": {
         "title": "Settings",
         "help": "Operations and Super admins change these. Each change needs a reason and is recorded in the audit log.",
-        "col": {
-          "setting": "Setting",
-          "value": "Value",
-          "default": "Default",
-          "changed": "Last changed"
-        },
         "name": {
           "snooze_days": "How long a snoozed card stays hidden",
           "nudge_reminder_window_hours": "How late a logging reminder may go after its time",
@@ -1787,7 +1785,6 @@
           "days": "{{n}} days",
           "hours": "{{n}} hours"
         },
-        "never": "Not changed",
         "changedBy": "{{who}}, {{when}}",
         "edit": "Change {{name}}",
         "newValue": "New value ({{min}} to {{max}})",
@@ -1795,7 +1792,8 @@
         "save": "Save",
         "cancel": "Cancel",
         "outOfRange": "Choose a value from {{min}} to {{max}}.",
-        "change": "Change"
+        "change": "Change",
+        "defaultIs": "Default {{value}}"
       }
     }
   },
