@@ -106,6 +106,12 @@ class AdminElementsController {
         .toList();
   }
 
+  @GetMapping("/admin/v1/tracking/element-icons")
+  List<String> icons(@AuthenticationPrincipal Jwt token) {
+    gate.require(token, false);
+    return List.copyOf(ElementRules.ICONS);
+  }
+
   @GetMapping("/admin/v1/tracking/element-versions")
   List<ElementVersionView> list(@AuthenticationPrincipal Jwt token) {
     var staff = gate.require(token, false);

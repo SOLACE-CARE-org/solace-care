@@ -45,6 +45,8 @@ class ElementBuilderIntegrationTest extends TrackingStackTest {
         .andExpect(jsonPath("$.length()").value(7))
         .andExpect(jsonPath("$[1].key").value("duration_stepper"))
         .andExpect(jsonPath("$[1].props.start.type").value("integer"));
+    mvc.perform(get("/admin/v1/tracking/element-icons").with(ops))
+        .andExpect(jsonPath("$[?(@ == 'moon')]").isNotEmpty());
     // The stepper's start is a view prop now, not app code.
     mvc.perform(get("/v1/tracking/elements").with(seeker(UUID.randomUUID())))
         .andExpect(jsonPath("$[?(@.code == 'sleep_minutes')].viewProps.start").value(420));

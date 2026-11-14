@@ -536,6 +536,24 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/element-icons:
+    get:
+      operationId: adminListElementIcons
+      summary: The icon keys the app ships for elements, read-only
+      tags: [admin-elements]
+      responses:
+        "200":
+          description: Icon keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /admin/v1/tracking/element-versions:
     get:
       operationId: adminListElementVersions
@@ -1569,7 +1587,9 @@ components:
           type: string
           enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
         constraints:
+          description: As the draft has them; a draft's may not fit its value type yet (see problems).
           type: object
+          additionalProperties: true
         inputView:
           type: string
         viewProps:
