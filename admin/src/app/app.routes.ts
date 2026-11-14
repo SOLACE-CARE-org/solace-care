@@ -18,6 +18,8 @@ import { CrisisQueuePage } from './crisis/crisis-queue.page';
 import { environment } from '../environments/environment';
 import { HealthCheckVersionPage } from './health-check/health-check-version.page';
 import { HealthCheckPage } from './health-check/health-check.page';
+import { ElementEditorPage } from './modules/element-editor.page';
+import { ElementsPage } from './modules/elements.page';
 import { ModuleBuilderPage } from './modules/module-builder.page';
 import { ModuleReviewPage } from './modules/module-review.page';
 import { ModulesPage } from './modules/modules.page';
@@ -107,6 +109,17 @@ export const routes: Routes = [
       // The module builder ships behind its Phase 2 flag, like its sidebar entry.
       ...(environment.flags.trackingModules
         ? [
+            // Admin-defined elements (D61), opened from the modules list.
+            {
+              path: 'modules/elements',
+              component: ElementsPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            {
+              path: 'modules/elements/:id',
+              component: ElementEditorPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
             {
               path: 'modules/versions/:id',
               component: ModuleBuilderPage,
