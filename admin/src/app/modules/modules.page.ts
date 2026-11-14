@@ -35,6 +35,9 @@ type Summary = NonNullable<Row['versions']>[number];
         <p class="sl-muted subtitle">{{ 'admin.modules.subtitle' | transloco }}</p>
       </div>
       <div class="head-actions">
+        <a class="sl-button" routerLink="/modules/wording">
+          {{ 'admin.wording.manage' | transloco }}
+        </a>
         <a class="sl-button" routerLink="/modules/elements">
           {{ 'admin.elements.manage' | transloco }}
         </a>

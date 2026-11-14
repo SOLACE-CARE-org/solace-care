@@ -1794,7 +1794,8 @@
         "reason": "Raison",
         "save": "Enregistrer",
         "cancel": "Annuler",
-        "outOfRange": "Choisissez une valeur de {{min}} à {{max}}."
+        "outOfRange": "Choisissez une valeur de {{min}} à {{max}}.",
+        "change": "Modifier"
       }
     }
   },

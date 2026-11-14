@@ -64,18 +64,27 @@ export function fold(text: string): string {
               <th scope="col">{{ 'admin.wording.settings.col.value' | transloco }}</th>
               <th scope="col">{{ 'admin.wording.settings.col.default' | transloco }}</th>
               <th scope="col">{{ 'admin.wording.settings.col.changed' | transloco }}</th>
-              <th scope="col"><span class="sr-only">{{ 'admin.wording.settings.save' | transloco }}</span></th>
+              <th scope="col">
+                <span class="sr-only">{{ 'admin.wording.settings.save' | transloco }}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             @for (s of settings() ?? []; track s.key) {
               <tr>
                 <td>{{ 'admin.wording.settings.name.' + s.key | transloco }}</td>
-                <td class="strong">{{ 'admin.wording.settings.unit.' + s.unit | transloco: { n: s.value } }}</td>
-                <td>{{ 'admin.wording.settings.unit.' + s.unit | transloco: { n: s.defaultValue } }}</td>
+                <td class="strong">
+                  {{ 'admin.wording.settings.unit.' + s.unit | transloco: { n: s.value } }}
+                </td>
+                <td>
+                  {{ 'admin.wording.settings.unit.' + s.unit | transloco: { n: s.defaultValue } }}
+                </td>
                 <td>
                   @if (s.updatedBy) {
-                    {{ 'admin.wording.settings.changedBy' | transloco: { who: s.updatedBy, when: date(s.updatedAt) } }}
+                    {{
+                      'admin.wording.settings.changedBy'
+                        | transloco: { who: s.updatedBy, when: date(s.updatedAt) }
+                    }}
                   } @else {
                     {{ 'admin.wording.settings.never' | transloco }}
                   }
@@ -85,10 +94,14 @@ export function fold(text: string): string {
                     <button
                       type="button"
                       class="sl-button"
-                      [attr.aria-label]="'admin.wording.settings.edit' | transloco: { name: ('admin.wording.settings.name.' + s.key | transloco) }"
+                      [attr.aria-label]="
+                        'admin.wording.settings.edit'
+                          | transloco
+                            : { name: ('admin.wording.settings.name.' + s.key | transloco) }
+                      "
                       (click)="edit(s)"
                     >
-                      {{ 'admin.wording.settings.save' | transloco }}
+                      {{ 'admin.wording.settings.change' | transloco }}
                     </button>
                   }
                 </td>
@@ -98,12 +111,26 @@ export function fold(text: string): string {
                   <td colspan="5">
                     <form class="edit" (ngSubmit)="saveSetting(s)">
                       <label class="sl-field">
-                        <span>{{ 'admin.wording.settings.newValue' | transloco: { min: s.min, max: s.max } }}</span>
-                        <input class="sl-input" type="number" name="value" [min]="s.min" [max]="s.max" [(ngModel)]="value" />
+                        <span>{{
+                          'admin.wording.settings.newValue' | transloco: { min: s.min, max: s.max }
+                        }}</span>
+                        <input
+                          class="sl-input"
+                          type="number"
+                          name="value"
+                          [min]="s.min"
+                          [max]="s.max"
+                          [(ngModel)]="value"
+                        />
                       </label>
                       <label class="sl-field reason">
                         <span>{{ 'admin.wording.settings.reason' | transloco }}</span>
-                        <input class="sl-input" name="reason" maxlength="500" [(ngModel)]="reason" />
+                        <input
+                          class="sl-input"
+                          name="reason"
+                          maxlength="500"
+                          [(ngModel)]="reason"
+                        />
                       </label>
                       <button type="button" class="sl-button" (click)="editing.set(null)">
                         {{ 'admin.wording.settings.cancel' | transloco }}
@@ -111,7 +138,13 @@ export function fold(text: string): string {
                       <button
                         type="submit"
                         class="sl-button sl-button--primary"
-                        [disabled]="busy() || !reason.trim() || value === null || value < s.min || value > s.max"
+                        [disabled]="
+                          busy() ||
+                          !reason.trim() ||
+                          value === null ||
+                          value < s.min ||
+                          value > s.max
+                        "
                       >
                         {{ 'admin.wording.settings.save' | transloco }}
                       </button>
@@ -159,7 +192,13 @@ export function fold(text: string): string {
           <form class="add" (ngSubmit)="add()">
             <label class="sl-field grow">
               <span>{{ 'admin.wording.words.pattern' | transloco }}</span>
-              <input class="sl-input" name="pattern" maxlength="60" autocomplete="off" [(ngModel)]="pattern" />
+              <input
+                class="sl-input"
+                name="pattern"
+                maxlength="60"
+                autocomplete="off"
+                [(ngModel)]="pattern"
+              />
             </label>
             <label class="sl-field">
               <span>{{ 'admin.wording.words.col.language' | transloco }}</span>
@@ -176,7 +215,11 @@ export function fold(text: string): string {
                 <option value="ALLOW">{{ 'admin.wording.words.kind.ALLOW' | transloco }}</option>
               </select>
             </label>
-            <button type="submit" class="sl-button sl-button--primary" [disabled]="busy() || !pattern.trim()">
+            <button
+              type="submit"
+              class="sl-button sl-button--primary"
+              [disabled]="busy() || !pattern.trim()"
+            >
               {{ 'admin.wording.words.add' | transloco }}
             </button>
           </form>
@@ -192,7 +235,9 @@ export function fold(text: string): string {
               <th scope="col">{{ 'admin.wording.words.col.language' | transloco }}</th>
               <th scope="col">{{ 'admin.wording.words.col.kind' | transloco }}</th>
               <th scope="col">{{ 'admin.wording.words.col.addedBy' | transloco }}</th>
-              <th scope="col"><span class="sr-only">{{ 'admin.wording.words.add' | transloco }}</span></th>
+              <th scope="col">
+                <span class="sr-only">{{ 'admin.wording.words.add' | transloco }}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -208,7 +253,9 @@ export function fold(text: string): string {
                       type="button"
                       class="sl-button"
                       [disabled]="busy()"
-                      [attr.aria-label]="'admin.wording.words.remove' | transloco: { pattern: r.pattern }"
+                      [attr.aria-label]="
+                        'admin.wording.words.remove' | transloco: { pattern: r.pattern }
+                      "
                       (click)="remove(r)"
                     >
                       ×

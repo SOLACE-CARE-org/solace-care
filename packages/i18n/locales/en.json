@@ -1794,7 +1794,8 @@
         "reason": "Reason",
         "save": "Save",
         "cancel": "Cancel",
-        "outOfRange": "Choose a value from {{min}} to {{max}}."
+        "outOfRange": "Choose a value from {{min}} to {{max}}.",
+        "change": "Change"
       }
     }
   },
