@@ -9,6 +9,7 @@ import care.solace.tracking.elements.ElementLibrary;
 import care.solace.tracking.episodes.EpisodeModels;
 import care.solace.tracking.rules.RuleRules;
 import care.solace.tracking.rules.TestRuns;
+import care.solace.tracking.wording.WordingRules;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
@@ -56,6 +57,7 @@ public class Modules {
   private final EpisodeModels models;
   private final ContextQuestions questions;
   private final TestRuns testRuns;
+  private final WordingRules wording;
   private final Clock clock;
 
   Modules(
@@ -64,6 +66,7 @@ public class Modules {
       EpisodeModels models,
       ContextQuestions questions,
       TestRuns testRuns,
+      WordingRules wording,
       ApplicationEventPublisher events,
       Clock clock) {
     this.store = store;
@@ -71,6 +74,7 @@ public class Modules {
     this.models = models;
     this.questions = questions;
     this.testRuns = testRuns;
+    this.wording = wording;
     this.events = events;
     this.clock = clock;
   }
@@ -246,8 +250,7 @@ public class Modules {
     if (!problems.isEmpty()) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
     }
-    if (!RuleRules.wordingAllowed(rule.messageEn())
-        || !RuleRules.wordingAllowed(rule.messageFr())) {
+    if (!wording.allowed(rule.messageEn(), "en") || !wording.allowed(rule.messageFr(), "fr")) {
       throw new SolaceException(TrackingError.BLOCKED_WORDING);
     }
     boolean invites = rule.outcome().equals("INVITE") || rule.repeatWithinDays() != null;
@@ -314,11 +317,15 @@ public class Modules {
     if (!Presentation.groupProblems(store.bindings(v.id())).isEmpty()) {
       problems.add("groups");
     }
+    // The word list as it is now: a word blocked since a rule was saved holds the rule back.
+    var words = wording.current();
     for (var r : store.rules(v.id())) {
       if (!RuleRules.problems(r.conditions(), r.unless(), bound, models.all(), questions.all())
               .isEmpty()
           || r.messageEn().isBlank()
-          || r.messageFr().isBlank()) {
+          || r.messageFr().isBlank()
+          || !words.allowed(r.messageEn(), "en")
+          || !words.allowed(r.messageFr(), "fr")) {
         problems.add("rule:" + r.code());
       }
     }

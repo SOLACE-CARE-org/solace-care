@@ -86,15 +86,4 @@ class LaunchRulesTest {
     assertThat(result.evidence().get("n")).isEqualTo(3);
     assertThat((java.util.List<?>) result.evidence().get("episodes")).hasSize(3);
   }
-
-  @Test
-  void theWordListBlocksDiagnosticWording() {
-    assertThat(RuleRules.wordingAllowed("Your last {n} cycles were longer than {threshold} days."))
-        .isTrue();
-    assertThat(RuleRules.wordingAllowed("This is not a diagnosis.")).isTrue();
-    assertThat(RuleRules.wordingAllowed("You may have PCOS.")).isFalse();
-    assertThat(RuleRules.wordingAllowed("Signs of depression")).isFalse();
-    assertThat(RuleRules.wordingAllowed("Un trouble du cycle")).isFalse();
-    assertThat(RuleRules.wordingAllowed("Sévère")).isFalse();
-  }
 }

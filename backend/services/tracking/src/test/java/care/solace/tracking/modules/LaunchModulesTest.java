@@ -5,17 +5,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import care.solace.tracking.TrackingStackTest;
-import care.solace.tracking.rules.RuleRules;
+import care.solace.tracking.wording.WordingRules;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The launch modules (Phase 2, epic 10; D54) are seeded as drafts with the spec's bindings and
  * rules. Only the card image and its alt text stand between them and clinical review.
  */
 class LaunchModulesTest extends TrackingStackTest {
+
+  @Autowired private WordingRules words;
 
   @Test
   void bothLaunchModulesWaitAsDraftsWithEveryRuleValid() throws Exception {
@@ -47,8 +50,8 @@ class LaunchModulesTest extends TrackingStackTest {
       }
       for (JsonNode r : v.path("rules")) {
         assertThat(r.path("problems")).isEmpty();
-        assertThat(RuleRules.wordingAllowed(r.path("messageEn").asText())).isTrue();
-        assertThat(RuleRules.wordingAllowed(r.path("messageFr").asText())).isTrue();
+        assertThat(words.allowed(r.path("messageEn").asText(), "en")).isTrue();
+        assertThat(words.allowed(r.path("messageFr").asText(), "fr")).isTrue();
       }
       assertThat(v.path("rules").size()).isEqualTo(code.equals("pcos") ? 4 : 2);
       assertThat(v.path("elements").size()).isEqualTo(code.equals("pcos") ? 6 : 3);
