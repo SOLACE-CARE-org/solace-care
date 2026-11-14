@@ -3,6 +3,7 @@ package care.solace.tracking.nudges;
 import care.solace.events.EventEnvelope;
 import care.solace.events.Events;
 import care.solace.tracking.PersonalData;
+import care.solace.tracking.settings.TrackingSettings;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Duration;
@@ -43,19 +44,19 @@ public class Nudges implements PersonalData {
   private final ApplicationEventPublisher events;
   private final Clock clock;
   private final ZoneId defaultZone;
-  private final Duration window;
+  private final TrackingSettings settings;
 
   Nudges(
       JdbcClient db,
       ApplicationEventPublisher events,
       Clock clock,
       @Value("${solace.tracking.nudges.default-zone:Africa/Douala}") ZoneId defaultZone,
-      @Value("${solace.tracking.nudges.reminder-window:PT2H}") Duration window) {
+      TrackingSettings settings) {
     this.db = db;
     this.events = events;
     this.clock = clock;
     this.defaultZone = defaultZone;
-    this.window = window;
+    this.settings = settings;
   }
 
   /**
@@ -79,6 +80,7 @@ public class Nudges implements PersonalData {
                     new Due(
                         rs.getObject("user_id", UUID.class), rs.getObject("at", LocalTime.class)))
             .list();
+    Duration window = Duration.ofHours(settings.get(TrackingSettings.REMINDER_WINDOW_HOURS));
     int sent = 0;
     for (Due d : due) {
       ZoneId zone = zone(d.user());
