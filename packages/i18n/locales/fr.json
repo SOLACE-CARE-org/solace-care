@@ -1735,6 +1735,67 @@
           "RETURNED": "{{who}} l'a renvoyé"
         }
       }
+    },
+    "wording": {
+      "title": "Liste de mots et réglages",
+      "subtitle": "Ce que les messages des règles ne peuvent pas dire, et les valeurs avec lesquelles le suivi fonctionne.",
+      "manage": "Liste de mots et réglages",
+      "words": {
+        "title": "Liste de mots",
+        "help": "Un message de règle ne peut pas être enregistré ni envoyé s'il contient un mot bloqué. Un mot qui se termine par * bloque toutes les terminaisons. Les expressions autorisées, comme « pas un diagnostic », sont retirées d'abord. Les relecteurs cliniques tiennent cette liste.",
+        "col": {
+          "pattern": "Mot ou expression",
+          "language": "Langue",
+          "kind": "Type",
+          "addedBy": "Ajouté par"
+        },
+        "kind": {
+          "BLOCK": "Bloqué",
+          "ALLOW": "Autorisé"
+        },
+        "language": {
+          "en": "Anglais",
+          "fr": "Français"
+        },
+        "launch": "Liste de lancement",
+        "add": "Ajouter",
+        "pattern": "Mot ou expression",
+        "remove": "Retirer {{pattern}}",
+        "invalid": "Utilisez des lettres, des chiffres, des espaces, des apostrophes ou des tirets, et au plus une * à la fin.",
+        "taken": "Ceci est déjà dans la liste.",
+        "try": "Essayer un message",
+        "tryText": "Message",
+        "check": "Vérifier",
+        "passes": "Ce message passe la liste de mots.",
+        "blocked": "Bloqué par : {{patterns}}"
+      },
+      "settings": {
+        "title": "Réglages",
+        "help": "Les Opérations et les Super admins les modifient. Chaque modification demande une raison et est inscrite au journal d'audit.",
+        "col": {
+          "setting": "Réglage",
+          "value": "Valeur",
+          "default": "Par défaut",
+          "changed": "Dernière modification"
+        },
+        "name": {
+          "snooze_days": "Durée pendant laquelle une carte reportée reste masquée",
+          "nudge_reminder_window_hours": "Retard maximal d'un rappel après son heure",
+          "nudge_risk_pause_days": "Durée de la pause des rappels après une alerte de sécurité"
+        },
+        "unit": {
+          "days": "{{n}} jours",
+          "hours": "{{n}} heures"
+        },
+        "never": "Jamais modifié",
+        "changedBy": "{{who}}, {{when}}",
+        "edit": "Modifier : {{name}}",
+        "newValue": "Nouvelle valeur ({{min}} à {{max}})",
+        "reason": "Raison",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "outOfRange": "Choisissez une valeur de {{min}} à {{max}}."
+      }
     }
   },
   "roleChoice": {
