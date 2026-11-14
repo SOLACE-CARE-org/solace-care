@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +42,7 @@ public class InputViews {
 
   private final List<InputView> views;
 
+  @Autowired
   InputViews(JdbcClient db) {
     this.views =
         db.sql("SELECT * FROM input_view ORDER BY position")
