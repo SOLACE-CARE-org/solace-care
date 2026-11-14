@@ -47,7 +47,11 @@ import org.testcontainers.kafka.KafkaContainer;
 /** The outbox and consumer path against real PostgreSQL and Kafka. */
 @SpringBootTest(
     classes = OutboxIntegrationTest.App.class,
-    properties = "spring.application.name=events-test")
+    properties = {
+      "spring.application.name=events-test",
+      // As in every service: listeners must still get platform threads.
+      "spring.threads.virtual.enabled=true"
+    })
 @Testcontainers
 class OutboxIntegrationTest {
 
@@ -148,6 +152,16 @@ class OutboxIntegrationTest {
   }
 
   @Test
+  void listenersRunOnPlatformThreadsWhileVirtualThreadsAreOn() {
+    EventEnvelope sent =
+        producer.publish(
+            Events.envelope("core.test.happened", 1, "seeker-6", "en", Map.of()), false);
+    received.awaitRecord(sent.eventId());
+
+    assertThat(received.virtualThreads).isFalse();
+  }
+
+  @Test
   void envelopeRejectsValuesTheSchemaWouldRefuse() {
     assertThatThrownBy(() -> Events.envelope("booking.confirmed", 1, null, null, Map.of()))
         .isInstanceOf(IllegalArgumentException.class);
@@ -244,6 +258,7 @@ class OutboxIntegrationTest {
         new ConcurrentHashMap<>();
     private final Map<UUID, Integer> deliveries = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> handled = new ConcurrentHashMap<>();
+    volatile boolean virtualThreads;
 
     Received(IdempotentConsumer once) {
       this.once = once;
@@ -253,6 +268,9 @@ class OutboxIntegrationTest {
         topics = {"core.test", "core.system"},
         groupId = "typed")
     void on(ConsumerRecord<String, EventEnvelope> record) {
+      if (Thread.currentThread().isVirtual()) {
+        virtualThreads = true;
+      }
       UUID id = record.value().eventId();
       deliveries.merge(id, 1, Integer::sum);
       once.handle(
