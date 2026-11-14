@@ -17,38 +17,63 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
  * The published episode models (Tracking Service Spec, Episode models; D61): the newest published
- * version of each code. Models change only by migration until the admin editor arrives, so they are
- * read once at start.
+ * version of each code. Admins publish and retire models in the portal, so this instance reads them
+ * again after each change and every {@code solace.tracking.elements.refresh-seconds} so other
+ * instances catch up, as the element library does.
  */
 @Component
 public class EpisodeModels {
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
-  private final Map<String, EpisodeModel> byCode = new LinkedHashMap<>();
+  private final JdbcClient db;
+  private volatile Map<String, EpisodeModel> byCode;
 
   @Autowired
   EpisodeModels(JdbcClient db) {
-    this(
-        db.sql("SELECT * FROM episode_model WHERE status = 'PUBLISHED' ORDER BY code, version")
-            .query(EpisodeModels::row)
-            .list());
+    this.db = db;
+    reload();
   }
 
   private EpisodeModels(Collection<EpisodeModel> models) {
-    // Ordered by version, so the newest of each code is put last and wins.
-    models.forEach(m -> byCode.put(m.code(), m));
+    this.db = null;
+    this.byCode = index(models);
   }
 
   /** A fixed set of models, for tests and test runs that do not read the database. */
   public static EpisodeModels of(Collection<EpisodeModel> models) {
     return new EpisodeModels(models);
+  }
+
+  /** Reads the published models again; readers keep the old set until the new one is complete. */
+  @Scheduled(
+      fixedDelayString = "${solace.tracking.elements.refresh-seconds:30}",
+      initialDelayString = "${solace.tracking.elements.refresh-seconds:30}",
+      timeUnit = TimeUnit.SECONDS)
+  public void reload() {
+    if (db == null) {
+      return;
+    }
+    byCode =
+        index(
+            db.sql("SELECT * FROM episode_model WHERE status = 'PUBLISHED' ORDER BY code, version")
+                .query(EpisodeModels::row)
+                .list());
+  }
+
+  private static Map<String, EpisodeModel> index(Collection<EpisodeModel> models) {
+    Map<String, EpisodeModel> out = new LinkedHashMap<>();
+    // Ordered by version, so the newest of each code is put last and wins.
+    models.forEach(m -> out.put(m.code(), m));
+    return java.util.Collections.unmodifiableMap(out);
   }
 
   public List<EpisodeModel> all() {

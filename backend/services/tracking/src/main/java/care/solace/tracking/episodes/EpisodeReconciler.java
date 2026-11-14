@@ -1,6 +1,7 @@
 package care.solace.tracking.episodes;
 
 import care.solace.tracking.PersonalData;
+import care.solace.tracking.consent.TrackingConsent;
 import care.solace.tracking.sync.Sync;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,6 +23,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Rebuilds a person's episodes for every model that reads an element they changed, in the same
@@ -39,12 +42,15 @@ public class EpisodeReconciler implements PersonalData {
   private final Sync sync;
   private final EpisodeModels models;
   private final Clock clock;
+  private final TrackingConsent consent;
 
-  EpisodeReconciler(JdbcClient db, Sync sync, EpisodeModels models, Clock clock) {
+  EpisodeReconciler(
+      JdbcClient db, Sync sync, EpisodeModels models, Clock clock, TrackingConsent consent) {
     this.db = db;
     this.sync = sync;
     this.models = models;
     this.clock = clock;
+    this.consent = consent;
   }
 
   @EventListener
@@ -53,6 +59,28 @@ public class EpisodeReconciler implements PersonalData {
     for (var model : models.reading(changed.elementCodes())) {
       rebuild(changed.userId(), model);
     }
+  }
+
+  /**
+   * Rebuilds a newly published model's episodes for everyone who logged one of its elements and
+   * still consents to tracking, so a model built in the portal works on what people logged before.
+   *
+   * @return how many people's episodes were rebuilt
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public int rebuildAll(EpisodeModel model) {
+    int n = 0;
+    for (UUID user :
+        db.sql("SELECT DISTINCT user_id FROM observation WHERE element_code IN (:codes)")
+            .param("codes", List.copyOf(model.elements()))
+            .query(UUID.class)
+            .list()) {
+      if (consent.granted(user)) {
+        rebuild(user, model);
+        n++;
+      }
+    }
+    return n;
   }
 
   public List<Episode> rebuild(UUID user, EpisodeModel model) {
