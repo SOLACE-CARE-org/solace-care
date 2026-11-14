@@ -1,6 +1,7 @@
 package care.solace.tracking.sync;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,9 +25,23 @@ class SyncIntegrationTest extends TrackingStackTest {
 
   @Test
   void theLibraryHasTheNineLaunchElementsInBothLanguages() throws Exception {
+    // Other tests in this context publish elements of their own, so the launch nine are checked by
+    // code rather than by count.
     mvc.perform(get("/v1/tracking/elements").with(seeker(UUID.randomUUID())))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(9))
+        .andExpect(
+            jsonPath("$[*].code")
+                .value(
+                    hasItems(
+                        "mood",
+                        "sleep_minutes",
+                        "note",
+                        "flow_intensity",
+                        "period_start",
+                        "period_end",
+                        "acne_severity",
+                        "excess_hair",
+                        "stress_level")))
         .andExpect(jsonPath("$[?(@.code == 'mood')].labels.fr.values.1").value("Très mal"))
         .andExpect(jsonPath("$[?(@.code == 'note')].signals[0]").doesNotExist());
   }
