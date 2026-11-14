@@ -1812,6 +1812,69 @@
         "labels": "Des noms pour le modèle et chaque mesure en anglais et en français"
       }
     },
+    "questions": {
+      "title": "Questions de contexte",
+      "manage": "Questions de contexte",
+      "subtitle": "Des questions sur la personne qui peuvent désactiver une règle, par exemple si elle essaie d'avoir un enfant. Les réponses restent dans le suivi et peuvent être passées. Un relecteur clinique approuve chaque version.",
+      "new": "Nouvelle question de contexte",
+      "empty": "Aucune question de contexte pour l'instant.",
+      "col": {
+        "question": "Question",
+        "asked": "Posée",
+        "published": "Publiée",
+        "workingOn": "En cours"
+      },
+      "back": "Questions de contexte",
+      "newTitle": "Nouvelle question de contexte",
+      "heading": "{{code}} v{{n}}",
+      "basics": "Question",
+      "code": "Code",
+      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les modules et les règles lisent la question par son code, il ne change donc jamais.",
+      "codeTaken": "Cette question a déjà une version en cours.",
+      "questionEn": "Question en anglais",
+      "questionFr": "Question en français",
+      "type": "Type de réponse",
+      "types": {
+        "YES_NO": "Oui ou non",
+        "ONE_CHOICE": "Un seul choix",
+        "MANY_CHOICES": "Plusieurs choix"
+      },
+      "scope": "Où elle est posée",
+      "scopes": {
+        "PROFILE": "Sur l'écran À propos de vous, modifiable",
+        "ENROLMENT": "À l'inscription à un module qui la pose"
+      },
+      "scopeShort": {
+        "PROFILE": "À propos de vous",
+        "ENROLMENT": "À l'inscription"
+      },
+      "options": "Choix",
+      "optionsHint": "De deux à douze choix. Les règles lisent un choix par son code.",
+      "optionCode": "Code",
+      "optionEn": "Choix en anglais",
+      "optionFr": "Choix en français",
+      "addOption": "Ajouter un choix",
+      "removeOption": "Retirer {{code}}",
+      "remove": "Retirer",
+      "save": "Enregistrer le brouillon",
+      "saved": "Enregistré.",
+      "submit": "Soumettre à la relecture",
+      "readOnly": "Cette version ne peut pas changer. Commencez une nouvelle version pour modifier la question.",
+      "publishHint": "La publication remplace la version en service. Les réponses déjà données restent.",
+      "usedBy": "{{n}} versions de module posent cette question ou la lisent dans une règle, elle ne peut donc pas encore être retirée.",
+      "preview": {
+        "title": "Sur le téléphone",
+        "yes": "Oui",
+        "no": "Non",
+        "skip": "Passer"
+      },
+      "problems": {
+        "title": "Avant de pouvoir la soumettre",
+        "type": "Le même type de réponse que la version publiée",
+        "question": "La question en anglais et en français, 200 caractères au plus",
+        "options": "Pour une question à choix, de deux à douze choix aux codes différents, nommés en anglais et en français, en gardant chaque choix de la version publiée ; aucun pour oui ou non"
+      }
+    },
     "wording": {
       "title": "Liste de mots et réglages",
       "subtitle": "Ce que les messages des règles ne peuvent pas dire, et les valeurs avec lesquelles le suivi fonctionne.",
