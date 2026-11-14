@@ -4,13 +4,10 @@ import care.solace.tracking.context.ContextQuestion;
 import care.solace.tracking.elements.ElementLibrary.Element;
 import care.solace.tracking.episodes.EpisodeModel;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * What a rule may say and read (Tracking Service Spec, What a rule is made of; D51). Rules state
@@ -18,55 +15,7 @@ import java.util.regex.Pattern;
  */
 public final class RuleRules {
 
-  /**
-   * Wording that names a condition, a severity or a prediction. "Not a diagnosis" is allowed, since
-   * saying so is the point. The reviewer checks everything else.
-   */
-  private static final List<Pattern> BLOCKED =
-      List.of(
-          Pattern.compile("\\bdiagnos"),
-          Pattern.compile("\\byou have\\b"),
-          Pattern.compile("\\bvous avez (un|une|le|la|des)\\b"),
-          Pattern.compile("\\b(disorder|disease|syndrome|illness)\\b"),
-          Pattern.compile("\\b(trouble|maladie|syndrome)\\b"),
-          Pattern.compile("\\b(severe|severity|serious|critical)\\b"),
-          Pattern.compile("\\b(severe|gravite|grave|critique)\\b"),
-          Pattern.compile("\\b(predict|prediction|forecast|likely to|risk score)\\b"),
-          Pattern.compile("\\b(predire|prediction|prevision|risque de)\\b"),
-          Pattern.compile("\\btriage\\b"),
-          Pattern.compile("\\b(depression|depressed|depressive|anxiety disorder|bipolar)\\b"),
-          Pattern.compile("\\b(depressif|depressive|bipolaire)\\b"),
-          Pattern.compile("\\bpcos\\b|\\bsopk\\b"));
-
-  private static final List<String> ALLOWED_PHRASES =
-      List.of(
-          "this is not a diagnosis",
-          "not a diagnosis",
-          "ce n'est pas un diagnostic",
-          "pas un diagnostic");
-
   private RuleRules() {}
-
-  /** True when the message passes the word list. */
-  public static boolean wordingAllowed(String message) {
-    String text = fold(message);
-    for (String allowed : ALLOWED_PHRASES) {
-      text = text.replace(allowed, " ");
-    }
-    for (Pattern p : BLOCKED) {
-      if (p.matcher(text).find()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private static String fold(String text) {
-    String noAccents =
-        Normalizer.normalize(text == null ? "" : text, Normalizer.Form.NFD)
-            .replaceAll("\\p{M}", "");
-    return noAccents.toLowerCase(Locale.ROOT).replace('’', '\'');
-  }
 
   /**
    * Problems with a rule's conditions and unless, given the module's bound elements and the

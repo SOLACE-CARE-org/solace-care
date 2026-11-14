@@ -3,10 +3,10 @@ package care.solace.tracking.nudges;
 import care.solace.events.EventEnvelope;
 import care.solace.events.IdempotentConsumer;
 import care.solace.tracking.rules.PatternCheck;
+import care.solace.tracking.settings.TrackingSettings;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,17 +21,13 @@ class NudgeTriggers {
   private final Nudges nudges;
   private final IdempotentConsumer once;
   private final Clock clock;
-  private final Duration riskPause;
+  private final TrackingSettings settings;
 
-  NudgeTriggers(
-      Nudges nudges,
-      IdempotentConsumer once,
-      Clock clock,
-      @Value("${solace.tracking.nudges.risk-pause:P14D}") Duration riskPause) {
+  NudgeTriggers(Nudges nudges, IdempotentConsumer once, Clock clock, TrackingSettings settings) {
     this.nudges = nudges;
     this.once = once;
     this.clock = clock;
-    this.riskPause = riskPause;
+    this.settings = settings;
   }
 
   @Scheduled(
@@ -62,6 +58,11 @@ class NudgeTriggers {
     once.handle(
         RISK_CONSUMER,
         event,
-        () -> nudges.pause(UUID.fromString(event.subjectId()), clock.instant().plus(riskPause)));
+        () ->
+            nudges.pause(
+                UUID.fromString(event.subjectId()),
+                clock
+                    .instant()
+                    .plus(Duration.ofDays(settings.get(TrackingSettings.RISK_PAUSE_DAYS)))));
   }
 }

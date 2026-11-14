@@ -5,6 +5,7 @@ import care.solace.errors.CommonError;
 import care.solace.errors.SolaceException;
 import care.solace.events.Events;
 import care.solace.tracking.Seekers;
+import care.solace.tracking.settings.TrackingSettings;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -46,7 +46,7 @@ class RecommendationsController {
   private final JdbcClient db;
   private final ApplicationEventPublisher events;
   private final AuditLog audit;
-  private final int snoozeDays;
+  private final TrackingSettings settings;
   private final Clock clock;
 
   RecommendationsController(
@@ -54,13 +54,13 @@ class RecommendationsController {
       JdbcClient db,
       ApplicationEventPublisher events,
       AuditLog audit,
-      @Value("${solace.tracking.snooze-days:7}") int snoozeDays,
+      TrackingSettings settings,
       Clock clock) {
     this.seekers = seekers;
     this.db = db;
     this.events = events;
     this.audit = audit;
-    this.snoozeDays = snoozeDays;
+    this.settings = settings;
     this.clock = clock;
   }
 
@@ -155,7 +155,9 @@ class RecommendationsController {
       @RequestBody(required = false) Snooze body) {
     UUID user = seekers.require(token);
     int days =
-        body != null && body.days() != null ? Math.max(1, Math.min(body.days(), 90)) : snoozeDays;
+        body != null && body.days() != null
+            ? Math.max(1, Math.min(body.days(), 90))
+            : settings.get(TrackingSettings.SNOOZE_DAYS);
     Instant now = clock.instant();
     int n =
         db.sql(

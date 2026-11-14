@@ -1735,6 +1735,68 @@
           "RETURNED": "{{who}} returned it"
         }
       }
+    },
+    "wording": {
+      "title": "Word list and settings",
+      "subtitle": "What rule messages may not say, and the numbers Tracking runs with.",
+      "manage": "Word list and settings",
+      "words": {
+        "title": "Word list",
+        "help": "A rule message cannot be saved or submitted if it uses a blocked word. A word ending in * blocks every ending. Allowed phrases, such as \"not a diagnosis\", are taken out first. Clinical reviewers keep this list.",
+        "col": {
+          "pattern": "Word or phrase",
+          "language": "Language",
+          "kind": "Kind",
+          "addedBy": "Added by"
+        },
+        "kind": {
+          "BLOCK": "Blocked",
+          "ALLOW": "Allowed"
+        },
+        "language": {
+          "en": "English",
+          "fr": "French"
+        },
+        "launch": "Launch list",
+        "add": "Add",
+        "pattern": "Word or phrase",
+        "remove": "Remove {{pattern}}",
+        "invalid": "Use letters, digits, spaces, apostrophes or hyphens, and at most one * at the end.",
+        "taken": "This is already on the list.",
+        "try": "Try a message",
+        "tryText": "Message",
+        "check": "Check",
+        "passes": "This message passes the word list.",
+        "blocked": "Blocked by: {{patterns}}"
+      },
+      "settings": {
+        "title": "Settings",
+        "help": "Operations and Super admins change these. Each change needs a reason and is recorded in the audit log.",
+        "col": {
+          "setting": "Setting",
+          "value": "Value",
+          "default": "Default",
+          "changed": "Last changed"
+        },
+        "name": {
+          "snooze_days": "How long a snoozed card stays hidden",
+          "nudge_reminder_window_hours": "How late a logging reminder may go after its time",
+          "nudge_risk_pause_days": "How long reminders pause after a safety flag"
+        },
+        "unit": {
+          "days": "{{n}} days",
+          "hours": "{{n}} hours"
+        },
+        "never": "Not changed",
+        "changedBy": "{{who}}, {{when}}",
+        "edit": "Change {{name}}",
+        "newValue": "New value ({{min}} to {{max}})",
+        "reason": "Reason",
+        "save": "Save",
+        "cancel": "Cancel",
+        "outOfRange": "Choose a value from {{min}} to {{max}}.",
+        "change": "Change"
+      }
     }
   },
   "roleChoice": {

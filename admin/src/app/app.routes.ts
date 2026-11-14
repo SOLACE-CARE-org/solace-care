@@ -23,6 +23,7 @@ import { ElementsPage } from './modules/elements.page';
 import { ModuleBuilderPage } from './modules/module-builder.page';
 import { ModuleReviewPage } from './modules/module-review.page';
 import { ModulesPage } from './modules/modules.page';
+import { WordingPage } from './modules/wording.page';
 import { Shell } from './layout/shell';
 import { ALL_ENTRIES } from './nav/nav';
 import { NoAccess } from './pages/no-access';
@@ -110,6 +111,12 @@ export const routes: Routes = [
       ...(environment.flags.trackingModules
         ? [
             // Admin-defined elements (D61), opened from the modules list.
+            // The word list and Tracking settings (D61), opened from the modules list.
+            {
+              path: 'modules/wording',
+              component: WordingPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
             {
               path: 'modules/elements',
               component: ElementsPage,

@@ -19,6 +19,8 @@ tags:
     description: Platform plumbing, no user data
   - name: elements
     description: The element library (Tracking Service Spec, Elements); published and retired versions
+  - name: admin-wording
+    description: The diagnostic word list and Tracking settings for staff (provisional screens; D61)
   - name: admin-elements
     description: The element builder for staff (admin screens 32 and 33, provisional; D61)
   - name: sync
@@ -1193,6 +1195,173 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/wording-rules:
+    get:
+      operationId: adminListWordingRules
+      summary: The word list that rule messages are checked against
+      tags: [admin-wording]
+      responses:
+        "200":
+          description: Every rule, by language then kind
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WordingRule"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: addWordingRule
+      summary: A Clinical reviewer adds a word or phrase to block, or a phrase to allow
+      description: |
+        A pattern is a word or phrase, matched as whole words without case or accents. A trailing
+        * matches any ending (diagnos* blocks diagnosis and diagnostic). An ALLOW phrase is
+        removed before the BLOCK patterns are checked, so "not a diagnosis" can be said.
+      tags: [admin-wording]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WordingRuleRequest"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WordingRule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/wording-rules/{wordingRuleId}:
+    parameters:
+      - name: wordingRuleId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: deleteWordingRule
+      summary: A Clinical reviewer removes a rule
+      tags: [admin-wording]
+      responses:
+        "204":
+          description: Removed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/tracking/wording-check:
+    post:
+      operationId: checkWording
+      summary: Try a message against the word list, as saving a rule would
+      tags: [admin-wording]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [text, language]
+              properties:
+                text:
+                  type: string
+                  maxLength: 1000
+                language:
+                  type: string
+                  enum: [en, fr]
+      responses:
+        "200":
+          description: Whether it passes, and the patterns that block it
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [allowed, blockedBy]
+                properties:
+                  allowed:
+                    type: boolean
+                  blockedBy:
+                    type: array
+                    items:
+                      type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/settings:
+    get:
+      operationId: adminListTrackingSettings
+      summary: Tracking settings, their defaults and limits
+      tags: [admin-wording]
+      responses:
+        "200":
+          description: Every setting
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrackingSetting"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/settings/{settingKey}:
+    parameters:
+      - name: settingKey
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+    put:
+      operationId: changeTrackingSetting
+      summary: Operations or a Super admin changes a setting, with a reason for the audit log
+      tags: [admin-wording]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [value, reason]
+              properties:
+                value:
+                  type: integer
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: The setting after the change
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSetting"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /v1/tracking/shares:
     get:
       operationId: listShares
@@ -1635,6 +1804,65 @@ components:
         canApprove:
           type: boolean
         publishedAt:
+          type: string
+          format: date-time
+    WordingRuleRequest:
+      type: object
+      additionalProperties: false
+      required: [language, pattern, kind]
+      properties:
+        language:
+          type: string
+          enum: [en, fr]
+        pattern:
+          type: string
+          minLength: 2
+          maxLength: 60
+        kind:
+          type: string
+          enum: [BLOCK, ALLOW]
+    WordingRule:
+      type: object
+      required: [id, language, pattern, kind]
+      properties:
+        id:
+          type: string
+          format: uuid
+        language:
+          type: string
+          enum: [en, fr]
+        pattern:
+          type: string
+        kind:
+          type: string
+          enum: [BLOCK, ALLOW]
+        createdBy:
+          description: Empty for the launch list, which came by migration.
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TrackingSetting:
+      type: object
+      required: [key, value, defaultValue, min, max, unit]
+      properties:
+        key:
+          type: string
+          x-extensible-enum: [snooze_days, nudge_reminder_window_hours, nudge_risk_pause_days]
+        value:
+          type: integer
+        defaultValue:
+          type: integer
+        min:
+          type: integer
+        max:
+          type: integer
+        unit:
+          type: string
+          enum: [days, hours]
+        updatedBy:
+          type: string
+        updatedAt:
           type: string
           format: date-time
     ElementLabels:
