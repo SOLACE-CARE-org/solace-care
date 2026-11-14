@@ -172,10 +172,11 @@ public class Modules {
       UUID versionId, List<ModuleStore.Binding> bindings, StaffGate.Staff staff) {
     requireDrafter(staff);
     var v = draft(versionId);
+    // Only published elements can be bound; drafts and retired versions cannot (D61).
     for (var b : bindings) {
-      library
-          .byId(b.elementId())
-          .orElseThrow(() -> new SolaceException(CommonError.REQUEST_INVALID));
+      if (!library.byId(b.elementId()).map(ElementLibrary.Element::published).orElse(false)) {
+        throw new SolaceException(CommonError.REQUEST_INVALID);
+      }
     }
     if (!Presentation.groupProblems(bindings).isEmpty()) {
       throw new SolaceException(CommonError.REQUEST_INVALID);
@@ -302,6 +303,10 @@ public class Modules {
       problems.add("requiredElement");
     }
     var bound = bound(v.id());
+    // A version copied from an old one can still bind an element retired since.
+    if (bound.values().stream().anyMatch(e -> !e.published())) {
+      problems.add("retiredElement");
+    }
     // Removing an element can leave the presentation pointing at it; the elements step fixes it.
     if (!Presentation.problems(d.presentation(), bound, models.all()).isEmpty()) {
       problems.add("presentation");
