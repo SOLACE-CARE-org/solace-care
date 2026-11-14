@@ -40,9 +40,9 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  *       recommendation, with no migration, no restart and no app release.
  * </ol>
  *
- * The gate's new episode model, built only in the portal and reaching a phone without a release,
- * is proved in {@code EpisodeModelBuilderIntegrationTest}. Context questions have no admin
- * authoring yet.
+ * The gate's new episode model, built only in the portal and reaching a phone without a release, is
+ * proved in {@code EpisodeModelBuilderIntegrationTest}. Context questions have no admin authoring
+ * yet.
  */
 class PhaseGateIntegrationTest extends TrackingStackTest {
 
