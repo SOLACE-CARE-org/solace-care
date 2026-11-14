@@ -367,6 +367,39 @@ describe('A module shown as its presentation says (D61)', () => {
     expect(screen.getByRole('button', { name: "Save today's log" })).toBeTruthy();
   });
 
+  it('starts a stepper where its view props say, without saving it', async () => {
+    const nap = {
+      ...mood,
+      code: 'nap_minutes',
+      valueType: 'MINUTES',
+      constraints: { min: 0, max: 240, step: 15 },
+      inputView: 'duration_stepper',
+      viewProps: { start: 30 },
+      labels: { en: { name: 'Nap' }, fr: { name: 'Sieste' } },
+    };
+    answers['GET /v1/tracking/modules'] = {
+      status: 200,
+      body: [
+        {
+          ...tracked,
+          elements: [
+            ...tracked.elements,
+            { code: 'nap_minutes', version: '1', required: false, position: 3 },
+          ],
+        },
+      ],
+    };
+    (answers['GET /v1/tracking/elements']!.body as unknown[]).push(nap);
+    const screen = await renderRouter(
+      { _layout: Layout, index: Track, 'track/log/[code]': LogToday },
+      { initialUrl: '/track/log/pcos' },
+    );
+    expect(await screen.findByText('Nap')).toBeTruthy();
+    expect(screen.getByText('0 h 30')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'More, Nap' }));
+    expect(await screen.findByText('0 h 45')).toBeTruthy();
+  });
+
   it('puts the cycle day on the module card', async () => {
     const screen = await renderRouter({ _layout: Layout, index: Track }, { initialUrl: '/' });
     expect(await screen.findByText('Cycle day 12 · not logged today')).toBeTruthy();

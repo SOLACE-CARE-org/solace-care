@@ -18,7 +18,9 @@ tags:
   - name: system
     description: Platform plumbing, no user data
   - name: elements
-    description: The engineer-seeded element library (Tracking Service Spec, Elements)
+    description: The element library (Tracking Service Spec, Elements); published and retired versions
+  - name: admin-elements
+    description: The element builder for staff (admin screens 32 and 33, provisional; D61)
   - name: sync
     description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
   - name: cycles
@@ -501,11 +503,11 @@ paths:
   /admin/v1/tracking/elements:
     get:
       operationId: adminListElements
-      summary: The element library, read-only
+      summary: The published elements a module may bind, read-only
       tags: [admin-modules]
       responses:
         "200":
-          description: Elements, as the phone sees them
+          description: Published elements, as the phone sees them
           content:
             application/json:
               schema:
@@ -516,6 +518,205 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/input-views:
+    get:
+      operationId: adminListInputViews
+      summary: The input views the app ships, read-only (registered by migration)
+      tags: [admin-elements]
+      responses:
+        "200":
+          description: The views, in the order the builder offers them
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InputView"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/element-icons:
+    get:
+      operationId: adminListElementIcons
+      summary: The icon keys the app ships for elements, read-only
+      tags: [admin-elements]
+      responses:
+        "200":
+          description: Icon keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/v1/tracking/element-versions:
+    get:
+      operationId: adminListElementVersions
+      summary: Every element version in every state, newest first within a code
+      tags: [admin-elements]
+      responses:
+        "200":
+          description: The versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ElementVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: draftElement
+      summary: Draft a new element at v1, or a new version of a published one
+      description: |
+        A code no element has yet starts at v1. A code with a published version starts a new
+        version from the content sent; it is numbered when saved (adding enum values is a minor
+        version, any other change to the kind, value type or constraints a major one). Only one
+        draft or version in review per code. Operations or a Super admin.
+      tags: [admin-elements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElementDraft"
+      responses:
+        "201":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/element-versions/{elementVersionId}:
+    parameters:
+      - $ref: "#/components/parameters/ElementVersionId"
+    get:
+      operationId: adminGetElementVersion
+      summary: One element version with what stops it being submitted
+      tags: [admin-elements]
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: saveElementDraft
+      summary: Save a draft; the code cannot change
+      tags: [admin-elements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElementDraft"
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/element-versions/{elementVersionId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/ElementVersionId"
+    post:
+      operationId: submitElementVersion
+      summary: Send a complete draft for clinical review
+      tags: [admin-elements]
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/element-versions/{elementVersionId}/review:
+    parameters:
+      - $ref: "#/components/parameters/ElementVersionId"
+    post:
+      operationId: reviewElementVersion
+      summary: A Clinical reviewer who did not draft it approves, or returns it with comments
+      tags: [admin-elements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [approve]
+              properties:
+                approve:
+                  type: boolean
+                comments:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/element-versions/{elementVersionId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/ElementVersionId"
+    post:
+      operationId: publishElementVersion
+      summary: Publish an approved version; modules can bind it and the library refreshes
+      description: Older published versions stay published, because modules bind a version; retire them when nothing binds them.
+      tags: [admin-elements]
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/element-versions/{elementVersionId}/retirement:
+    parameters:
+      - $ref: "#/components/parameters/ElementVersionId"
+    post:
+      operationId: retireElementVersion
+      summary: Stop new modules binding a published version; what people logged stays readable
+      description: Refused while a module version that is not retired binds it.
+      tags: [admin-elements]
+      responses:
+        "200":
+          $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /admin/v1/tracking/modules:
     get:
       operationId: adminListModules
@@ -1127,6 +1328,12 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+    ElementVersionResponse:
+      description: The element version after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ElementVersion"
     VersionResponse:
       description: The version after the change
       content:
@@ -1149,6 +1356,13 @@ components:
         pattern: "^[a-z][a-z0-9_]*$"
     ModuleId:
       name: moduleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ElementVersionId:
+      name: elementVersionId
       in: path
       required: true
       schema:
@@ -1259,6 +1473,8 @@ components:
         inputView:
           type: string
           x-extensible-enum: [scale_5, duration_stepper, choice_chips, toggle, flow_calendar, event_marker, free_text]
+        viewProps:
+          $ref: "#/components/schemas/ViewProps"
         icon:
           type: string
         signals:
@@ -1270,6 +1486,157 @@ components:
           $ref: "#/components/schemas/ElementLabels"
         minAppVersion:
           type: string
+    ViewProps:
+      description: "The settings the element's input view takes, as the view's props schema allows (for example start for duration_stepper: where the stepper opens, in minutes)."
+      type: object
+      additionalProperties: true
+    InputView:
+      type: object
+      additionalProperties: false
+      required: [key, valueTypes, kinds, props, minAppVersion]
+      properties:
+        key:
+          type: string
+        valueTypes:
+          type: array
+          items:
+            type: string
+            enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
+        kinds:
+          type: array
+          items:
+            type: string
+            enum: [DAY_STATE, EVENT]
+        props:
+          description: "Each prop the view takes: its type (integer, string or boolean) and, for an integer, minimum and maximum."
+          type: object
+          additionalProperties:
+            type: object
+            required: [type]
+            properties:
+              type:
+                type: string
+                enum: [integer, string, boolean]
+              minimum:
+                type: integer
+              maximum:
+                type: integer
+        minAppVersion:
+          description: The oldest app build that ships the view.
+          type: string
+    ElementDraft:
+      type: object
+      additionalProperties: false
+      required: [code, kind, valueType, constraints, inputView, icon, labels]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        kind:
+          type: string
+          enum: [DAY_STATE, EVENT]
+        valueType:
+          type: string
+          enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
+        constraints:
+          description: "min/max for INT and MINUTES, step for MINUTES, values for ENUM (2 to 12), max length for TEXT."
+          type: object
+          additionalProperties: false
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+            step:
+              type: integer
+            values:
+              type: array
+              maxItems: 12
+              items:
+                type: string
+                pattern: "^[a-z][a-z0-9_]*$"
+                maxLength: 40
+        inputView:
+          type: string
+          maxLength: 40
+        viewProps:
+          $ref: "#/components/schemas/ViewProps"
+        icon:
+          type: string
+          maxLength: 40
+        labels:
+          $ref: "#/components/schemas/ElementLabels"
+    ElementVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        kind:
+          type: string
+          enum: [DAY_STATE, EVENT]
+        valueType:
+          type: string
+          enum: [INT, MINUTES, ENUM, BOOL, DATE, TEXT]
+        constraints:
+          description: As the draft has them; a draft's may not fit its value type yet (see problems).
+          type: object
+          additionalProperties: true
+        inputView:
+          type: string
+        viewProps:
+          $ref: "#/components/schemas/ViewProps"
+        icon:
+          type: string
+        signals:
+          description: Derived, never typed in.
+          type: array
+          items:
+            type: string
+        labels:
+          $ref: "#/components/schemas/ElementLabels"
+        minAppVersion:
+          description: From the input view registry.
+          type: string
+        problems:
+          description: "What stops submission: labels, values, inputView, viewProps, icon, constraints."
+          type: array
+          items:
+            type: string
+        boundBy:
+          description: How many module versions that are not retired bind this version.
+          type: integer
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer:
+                type: string
+              decision:
+                type: string
+              comments:
+                type: string
+              decidedAt:
+                type: string
+                format: date-time
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        canApprove:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
     ElementLabels:
       type: object
       additionalProperties: false

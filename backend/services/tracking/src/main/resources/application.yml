@@ -72,3 +72,8 @@ solace:
     client-registration: keycloak
   storage:
     endpoint: ${SOLACE_STORAGE_ENDPOINT:http://localhost:9000}
+  tracking:
+    elements:
+      # How often each instance reads the element library again, so an element published or
+      # retired on another instance reaches it (the publishing instance reads it at once).
+      refresh-seconds: ${SOLACE_TRACKING_ELEMENTS_REFRESH_SECONDS:30}

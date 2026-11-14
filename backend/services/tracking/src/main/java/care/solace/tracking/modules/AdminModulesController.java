@@ -282,7 +282,7 @@ class AdminModulesController {
   @GetMapping("/admin/v1/tracking/elements")
   List<ElementController.ElementView> elements(@AuthenticationPrincipal Jwt token) {
     gate.require(token, false);
-    return library.all().stream().map(ElementController::view).toList();
+    return library.published().stream().map(ElementController::view).toList();
   }
 
   @GetMapping("/admin/v1/tracking/modules")

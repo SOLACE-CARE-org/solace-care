@@ -34,11 +34,16 @@ type Summary = NonNullable<Row['versions']>[number];
         <h1 class="sl-title">{{ 'admin.modules.title' | transloco }}</h1>
         <p class="sl-muted subtitle">{{ 'admin.modules.subtitle' | transloco }}</p>
       </div>
-      @if (mayDraft()) {
-        <button type="button" class="sl-button sl-button--primary" (click)="openNew()">
-          {{ 'admin.modules.new' | transloco }}
-        </button>
-      }
+      <div class="head-actions">
+        <a class="sl-button" routerLink="/modules/elements">
+          {{ 'admin.elements.manage' | transloco }}
+        </a>
+        @if (mayDraft()) {
+          <button type="button" class="sl-button sl-button--primary" (click)="openNew()">
+            {{ 'admin.modules.new' | transloco }}
+          </button>
+        }
+      </div>
     </div>
 
     <section class="sl-card table-card" aria-live="polite">
@@ -155,6 +160,10 @@ type Summary = NonNullable<Row['versions']>[number];
       align-items: start;
       gap: var(--space-16);
       margin-bottom: var(--space-20);
+    }
+    .head-actions {
+      display: flex;
+      gap: var(--space-8);
     }
     .subtitle {
       margin: var(--space-4) 0 0;

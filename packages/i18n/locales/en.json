@@ -1221,7 +1221,8 @@
         "rule": "Fix rule {{code}}",
         "presentation": "How the app shows it fits the elements",
         "groups": "Grouped elements next to each other with one label",
-        "tests": "Rule {{code}} needs a test history that fires it and one that does not"
+        "tests": "Rule {{code}} needs a test history that fires it and one that does not",
+        "retiredElement": "Only published elements"
       },
       "review": {
         "title": "Clinical review",
@@ -1634,6 +1635,106 @@
       "openAnalytics": "Open in Analytics",
       "ask": "Ask a question",
       "askButton": "Ask"
+    },
+    "elements": {
+      "title": "Elements",
+      "subtitle": "The things people can log. Draft one from a view the app already has; a clinical reviewer approves it before any module can use it.",
+      "manage": "Elements",
+      "new": "New element",
+      "empty": "No elements yet.",
+      "col": {
+        "element": "Element",
+        "view": "How the app asks",
+        "published": "Published",
+        "workingOn": "Working on"
+      },
+      "back": "Elements",
+      "newTitle": "New element",
+      "heading": "{{name}} v{{n}}",
+      "code": "Code",
+      "codeHint": "Lower case letters, digits and underscores. It never changes.",
+      "codeTaken": "This element already has a version being worked on.",
+      "valueType": "What it records",
+      "type": {
+        "INT": "A point on a scale",
+        "MINUTES": "A length of time",
+        "ENUM": "One choice from a list",
+        "BOOL": "Yes or no",
+        "DATE": "A dated event",
+        "TEXT": "A private note"
+      },
+      "view": "How the app asks",
+      "views": {
+        "scale_5": "Five labelled buttons",
+        "duration_stepper": "Hours and minutes stepper",
+        "choice_chips": "Choice chips",
+        "toggle": "Yes or no switch",
+        "flow_calendar": "Day by day on a calendar",
+        "event_marker": "One tap marks the day",
+        "free_text": "Private note"
+      },
+      "noView": "No view in the app takes this. A new view is app work.",
+      "limits": "Limits",
+      "min": "Lowest",
+      "max": "Highest",
+      "step": "Step (minutes)",
+      "maxLength": "Longest note (characters)",
+      "choices": "Choices",
+      "points": "A label for each point",
+      "point": "Point {{n}}",
+      "valueCode": "Code",
+      "labelEn": "English",
+      "labelFr": "French",
+      "addChoice": "Add a choice",
+      "removeChoice": "Remove {{code}}",
+      "props": "View settings",
+      "prop": {
+        "start": "Where the stepper starts (minutes)"
+      },
+      "icon": "Icon",
+      "nameEn": "Name in English",
+      "nameFr": "Name in French",
+      "helpEn": "Help in English (optional)",
+      "helpFr": "Help in French (optional)",
+      "preview": "Preview",
+      "previewIn": {
+        "en": "In English",
+        "fr": "In French"
+      },
+      "hours": "{{h}} h {{m}}",
+      "yes": "Yes",
+      "save": "Save draft",
+      "saved": "Saved.",
+      "submit": "Submit for review",
+      "minApp": "Shown on app {{v}} and later.",
+      "readOnly": "This version cannot change. Start a new version to change the element.",
+      "newVersion": "Start a new version",
+      "openWorking": "Open v{{n}}",
+      "boundBy": "{{n}} module versions use this version, so it cannot be retired yet.",
+      "publish": "Publish v{{n}}",
+      "retire": "Retire v{{n}}",
+      "problems": {
+        "title": "Before it can be submitted",
+        "labels": "A name in EN and FR, and help in both or neither",
+        "values": "A label for every choice in EN and FR",
+        "inputView": "A view the app has that takes this",
+        "viewProps": "View settings the view takes, within the limits",
+        "icon": "An icon from the app's set",
+        "constraints": "Limits that fit what it records"
+      },
+      "review": {
+        "title": "Clinical review",
+        "approve": "Approve",
+        "return": "Return with comments",
+        "comments": "Comments",
+        "approved": "Approved by {{who}}.",
+        "drafter": "You drafted this version, so another reviewer approves it.",
+        "waiting": "Waiting for a clinical reviewer.",
+        "decision": {
+          "APPROVED": "{{who}} approved",
+          "RETURNED": "{{who}} returned it"
+        }
+      }
     }
   },
   "roleChoice": {

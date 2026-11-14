@@ -8,7 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The element library for the phone's offline cache (tag elements). */
+/**
+ * The element library for the phone's offline cache (tag elements): published versions, and retired
+ * ones so what people logged stays readable.
+ */
 @RestController
 public class ElementController {
 
@@ -26,6 +29,7 @@ public class ElementController {
       String valueType,
       JsonNode constraints,
       String inputView,
+      JsonNode viewProps,
       String icon,
       List<String> signals,
       JsonNode labels,
@@ -39,6 +43,7 @@ public class ElementController {
         e.valueType().name(),
         e.constraints(),
         e.inputView(),
+        e.viewProps(),
         e.icon(),
         e.signals(),
         e.labels(),

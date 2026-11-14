@@ -1221,7 +1221,8 @@
         "rule": "Corriger la règle {{code}}",
         "presentation": "L'affichage correspond aux éléments",
         "groups": "Éléments groupés côte à côte avec un seul libellé",
-        "tests": "La règle {{code}} doit avoir un historique de test qui la déclenche et un qui ne la déclenche pas"
+        "tests": "La règle {{code}} doit avoir un historique de test qui la déclenche et un qui ne la déclenche pas",
+        "retiredElement": "Uniquement des éléments publiés"
       },
       "review": {
         "title": "Revue clinique",
@@ -1634,6 +1635,106 @@
       "openAnalytics": "Ouvrir dans Statistiques",
       "ask": "Poser une question",
       "askButton": "Demander"
+    },
+    "elements": {
+      "title": "Éléments",
+      "subtitle": "Ce que les personnes peuvent noter. Créez-en un à partir d'une vue que l'application possède déjà ; un relecteur clinique l'approuve avant qu'un module puisse l'utiliser.",
+      "manage": "Éléments",
+      "new": "Nouvel élément",
+      "empty": "Aucun élément pour l'instant.",
+      "col": {
+        "element": "Élément",
+        "view": "Comment l'application demande",
+        "published": "Publiée",
+        "workingOn": "En cours"
+      },
+      "back": "Éléments",
+      "newTitle": "Nouvel élément",
+      "heading": "{{name}} v{{n}}",
+      "code": "Code",
+      "codeHint": "Lettres minuscules, chiffres et tirets bas. Il ne change jamais.",
+      "codeTaken": "Une version de cet élément est déjà en cours.",
+      "valueType": "Ce qu'il enregistre",
+      "type": {
+        "INT": "Un point sur une échelle",
+        "MINUTES": "Une durée",
+        "ENUM": "Un choix dans une liste",
+        "BOOL": "Oui ou non",
+        "DATE": "Un événement daté",
+        "TEXT": "Une note privée"
+      },
+      "view": "Comment l'application demande",
+      "views": {
+        "scale_5": "Cinq boutons nommés",
+        "duration_stepper": "Sélecteur d'heures et de minutes",
+        "choice_chips": "Puces de choix",
+        "toggle": "Interrupteur oui ou non",
+        "flow_calendar": "Jour par jour sur un calendrier",
+        "event_marker": "Un appui marque le jour",
+        "free_text": "Note privée"
+      },
+      "noView": "Aucune vue de l'application ne prend cela. Une nouvelle vue demande du travail sur l'application.",
+      "limits": "Limites",
+      "min": "Minimum",
+      "max": "Maximum",
+      "step": "Pas (minutes)",
+      "maxLength": "Note la plus longue (caractères)",
+      "choices": "Choix",
+      "points": "Un libellé par point",
+      "point": "Point {{n}}",
+      "valueCode": "Code",
+      "labelEn": "Anglais",
+      "labelFr": "Français",
+      "addChoice": "Ajouter un choix",
+      "removeChoice": "Retirer {{code}}",
+      "props": "Réglages de la vue",
+      "prop": {
+        "start": "Valeur de départ du sélecteur (minutes)"
+      },
+      "icon": "Icône",
+      "nameEn": "Nom en anglais",
+      "nameFr": "Nom en français",
+      "helpEn": "Aide en anglais (facultatif)",
+      "helpFr": "Aide en français (facultatif)",
+      "preview": "Aperçu",
+      "previewIn": {
+        "en": "En anglais",
+        "fr": "En français"
+      },
+      "hours": "{{h}} h {{m}}",
+      "yes": "Oui",
+      "save": "Enregistrer le brouillon",
+      "saved": "Enregistré.",
+      "submit": "Envoyer en relecture",
+      "minApp": "Affiché à partir de la version {{v}} de l'application.",
+      "readOnly": "Cette version ne peut plus changer. Créez une nouvelle version pour modifier l'élément.",
+      "newVersion": "Créer une nouvelle version",
+      "openWorking": "Ouvrir v{{n}}",
+      "boundBy": "{{n}} versions de module utilisent cette version, elle ne peut donc pas encore être retirée.",
+      "publish": "Publier v{{n}}",
+      "retire": "Retirer v{{n}}",
+      "problems": {
+        "title": "Avant de pouvoir l'envoyer",
+        "labels": "Un nom en anglais et en français, et l'aide dans les deux langues ou dans aucune",
+        "values": "Un libellé pour chaque choix en anglais et en français",
+        "inputView": "Une vue de l'application qui prend cela",
+        "viewProps": "Des réglages que la vue accepte, dans les limites",
+        "icon": "Une icône de l'application",
+        "constraints": "Des limites adaptées à ce qu'il enregistre"
+      },
+      "review": {
+        "title": "Relecture clinique",
+        "approve": "Approuver",
+        "return": "Renvoyer avec des commentaires",
+        "comments": "Commentaires",
+        "approved": "Approuvé par {{who}}.",
+        "drafter": "Vous avez rédigé cette version, un autre relecteur l'approuve donc.",
+        "waiting": "En attente d'un relecteur clinique.",
+        "decision": {
+          "APPROVED": "{{who}} a approuvé",
+          "RETURNED": "{{who}} l'a renvoyé"
+        }
+      }
     }
   },
   "roleChoice": {

@@ -262,8 +262,10 @@ function Stepper({
   const step = e.constraints.step ?? 15;
   const min = e.constraints.min ?? 0;
   const max = e.constraints.max ?? 1440;
-  // Untouched, the stepper starts from 7 hours, a common night, without saving it.
-  const shown = value ?? 420;
+  // Untouched, the stepper shows where the element's view props start it (sleep: 7 hours),
+  // without saving it (D61).
+  const start = typeof e.viewProps?.['start'] === 'number' ? e.viewProps['start'] : min;
+  const shown = value ?? start;
   const hm = hoursAndMinutes(shown);
   const label = t('track.log.hours', { h: hm.h, m: hm.m });
   return (
