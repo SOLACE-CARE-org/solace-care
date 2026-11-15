@@ -1638,7 +1638,7 @@
     },
     "elements": {
       "title": "Elements",
-      "subtitle": "The things people can log. Draft one from a view the app already has; a clinical reviewer approves it before any module can use it.",
+      "subtitle": "The things people can log. Draft one from a view the app already has. A clinical reviewer approves it before any module can use it.",
       "manage": "Elements",
       "new": "New element",
       "empty": "No elements yet.",
@@ -1652,9 +1652,9 @@
       "newTitle": "New element",
       "heading": "{{name}} v{{n}}",
       "code": "Code",
-      "codeHint": "Lower case letters, digits and underscores. It never changes.",
+      "codeHint": "Lower case letters, digits and underscores. Modules and rules refer to the element by this code, so it cannot change later.",
       "codeTaken": "This element already has a version being worked on.",
-      "valueType": "What it records",
+      "valueType": "Type of answer",
       "type": {
         "INT": "A point on a scale",
         "MINUTES": "A length of time",
@@ -1696,7 +1696,7 @@
       "nameFr": "Name in French",
       "helpEn": "Help in English (optional)",
       "helpFr": "Help in French (optional)",
-      "preview": "Preview",
+      "preview": "On the phone",
       "previewIn": {
         "en": "In English",
         "fr": "In French"
@@ -1705,9 +1705,9 @@
       "yes": "Yes",
       "save": "Save draft",
       "saved": "Saved.",
-      "submit": "Submit for review",
-      "minApp": "Shown on app {{v}} and later.",
-      "readOnly": "This version cannot change. Start a new version to change the element.",
+      "submit": "Submit for clinical review",
+      "minApp": "Shown on app {{v}} and later",
+      "readOnly": "Start a new version to change the element.",
       "newVersion": "Start a new version",
       "openWorking": "Open v{{n}}",
       "boundBy": "{{n}} module versions use this version, so it cannot be retired yet.",
@@ -1715,12 +1715,12 @@
       "retire": "Retire v{{n}}",
       "problems": {
         "title": "Before it can be submitted",
-        "labels": "A name in EN and FR, and help in both or neither",
-        "values": "A label for every choice in EN and FR",
-        "inputView": "A view the app has that takes this",
-        "viewProps": "View settings the view takes, within the limits",
+        "labels": "A name in English and French, and help in both or neither",
+        "values": "A label for every choice in English and French",
+        "inputView": "A view the app has that takes this type of answer",
+        "viewProps": "View settings that the view accepts, within the limits",
         "icon": "An icon from the app's set",
-        "constraints": "Limits that fit what it records"
+        "constraints": "Limits that fit the type of answer"
       },
       "review": {
         "title": "Clinical review",
@@ -1733,16 +1733,30 @@
         "decision": {
           "APPROVED": "{{who}} approved",
           "RETURNED": "{{who}} returned it"
-        }
+        },
+        "commentsHint": "Needed to return it. The drafter sees them.",
+        "history": "Review history"
       },
-      "basics": "Element",
-      "names": "Names and help",
-      "remove": "Remove"
+      "basics": "What it records",
+      "names": "Name and help",
+      "remove": "Remove",
+      "emptyBody": "Elements are the things people log, such as sleep or pain. Draft one from a view the app already has.",
+      "meta": "Code {{code}} · Drafted by {{who}}",
+      "newIntro": "Name it in English and French, then choose what it records and how the app asks.",
+      "helpHint": "Help is one short line under the name. Give it in both languages or in neither.",
+      "chooseIcon": "Choose an icon",
+      "choicesHint": "Rules refer to a choice by its code. Every choice needs a label in both languages.",
+      "pointsHint": "One label for each point of the scale, in both languages.",
+      "pointCol": "Point",
+      "choiceEnN": "{{n}} in English",
+      "choiceFrN": "{{n}} in French",
+      "choiceCodeN": "Choice {{n}} code",
+      "publishHint": "Publishing makes this version available to modules. Modules keep the version they were built with until they publish again."
     },
     "episodes": {
       "title": "Episode models",
       "manage": "Episode models",
-      "subtitle": "How the app finds episodes, such as a cycle or a migraine attack, in what people log, and what it measures for each one. Built from published elements; a clinical reviewer approves each version.",
+      "subtitle": "How the app finds episodes, such as a cycle or a migraine attack, in what people log, and what it measures in each. Built from published elements. A clinical reviewer approves each version.",
       "new": "New episode model",
       "empty": "No episode models yet.",
       "col": {
@@ -1754,27 +1768,27 @@
       "back": "Episode models",
       "newTitle": "New episode model",
       "heading": "{{name}} v{{n}}",
-      "basics": "Model",
+      "basics": "Name",
       "code": "Code",
-      "codeHint": "Lower case letters, digits and underscores. Rules read its measures as code.measure, so it never changes.",
+      "codeHint": "Lower case letters, digits and underscores. Rules read its measures as code.measure, so it cannot change later.",
       "codeTaken": "This model already has a version being worked on.",
       "nameEn": "Name in English",
       "nameFr": "Name in French",
       "finding": "How episodes are found",
       "start": "What marks a start",
       "end": "What marks an end (optional)",
-      "activity": "Day by day activity (optional)",
+      "activity": "Day-by-day activity (optional)",
       "none": "None",
-      "active": "Which values count as active",
-      "gap": "Gap (days)",
-      "gapHint": "After this many days with no activity, the next active day starts a new episode.",
+      "active": "Values that count as active",
+      "gap": "Days without activity before it ends",
+      "gapHint": "After this many quiet days, the next active day starts a new episode.",
       "span": "How long an episode lasts",
       "spans": {
         "UNTIL_NEXT_START": "Until the next one starts, as a cycle does",
         "UNTIL_END": "Until its end, as an attack does"
       },
       "metrics": "What each episode measures",
-      "metricsHint": "Each complete episode gives one number per measure. The newest episode never counts.",
+      "metricsHint": "Each complete episode gives one number per measure. The episode still under way is never counted.",
       "metricCode": "Code",
       "metricKind": "Measure",
       "metricValue": "Value counted",
@@ -1783,39 +1797,46 @@
         "ACTIVE_DAYS": "Active days",
         "DAYS_WITH_VALUE": "Days with one value"
       },
-      "labelEn": "Name in English",
-      "labelFr": "Name in French",
+      "labelEn": "English",
+      "labelFr": "French",
       "addMetric": "Add a measure",
       "removeMetric": "Remove {{code}}",
       "remove": "Remove",
       "save": "Save draft",
       "saved": "Saved.",
-      "submit": "Submit for review",
-      "readOnly": "This version cannot change. Start a new version to change the model.",
+      "submit": "Submit for clinical review",
+      "readOnly": "Start a new version to change the model.",
       "publishHint": "Publishing replaces the version in use and rebuilds everyone's episodes from what they logged.",
       "usedBy": "{{n}} module versions read this model, so it cannot be retired yet.",
       "tests": {
         "title": "Test histories",
-        "hint": "See the episodes this version finds in each made-up history. Nothing is stored.",
+        "hint": "See what this version finds in each made-up history. Nothing is stored.",
         "run": "Run on the test histories",
         "found": "{{n}} episodes, {{c}} complete",
-        "afterSave": "Save the draft to run it on the test histories."
+        "afterSave": "Save the draft to run it on the test histories.",
+        "again": "Run again"
       },
       "problems": {
         "title": "Before it can be submitted",
-        "start": "A published event element that marks a start",
-        "end": "An end that is a published event element, not the start",
+        "start": "A published event element that marks the start",
+        "end": "An end that is a published event element, other than the start",
         "activity": "An activity element that is published and records one choice from a list",
-        "activeValues": "At least one active value, from the activity element's choices",
+        "activeValues": "At least one active value from the activity element's choices",
         "span": "An end or an activity element, so an episode that lasts until its end can end",
-        "metrics": "One to eight measures with different codes, each fitting the elements, keeping every measure the published version has",
-        "labels": "Names for the model and each measure in EN and FR"
-      }
+        "metrics": "One to eight measures with different codes that fit the elements, keeping every published measure",
+        "labels": "Names for the model and each measure in English and French"
+      },
+      "emptyBody": "An episode model finds stretches such as a cycle or an attack in what people log, and measures each one.",
+      "meta": "Code {{code}} · Drafted by {{who}}",
+      "newIntro": "Choose the elements that mark an episode and what to measure in each one.",
+      "findingHint": "An episode starts on the day the start element is logged. It ends at the end element, or after a run of days with no activity.",
+      "choose": "Choose",
+      "metricN": "Measure {{n}}"
     },
     "questions": {
       "title": "Context questions",
       "manage": "Context questions",
-      "subtitle": "Questions about the person that can switch a rule off, such as whether they are trying to conceive. Answers stay in Tracking and can be skipped. A clinical reviewer approves each version.",
+      "subtitle": "Questions about the person that can switch a rule off for them, such as whether they are trying to get pregnant. Every answer is optional and stays in Tracking. A clinical reviewer approves each version.",
       "new": "New context question",
       "empty": "No context questions yet.",
       "col": {
@@ -1829,59 +1850,71 @@
       "heading": "{{code}} v{{n}}",
       "basics": "Question",
       "code": "Code",
-      "codeHint": "Lower case letters, digits and underscores. Modules and rules read the question by its code, so it never changes.",
+      "codeHint": "Lower case letters, digits and underscores. Modules and rules refer to the question by this code, so it cannot change later.",
       "codeTaken": "This question already has a version being worked on.",
       "questionEn": "Question in English",
       "questionFr": "Question in French",
-      "type": "Answer type",
+      "type": "How it is answered",
       "types": {
         "YES_NO": "Yes or no",
         "ONE_CHOICE": "One choice",
         "MANY_CHOICES": "Several choices"
       },
-      "scope": "Where it is asked",
+      "scope": "Where the app asks it",
       "scopes": {
-        "PROFILE": "On the About you screen, where it can be changed",
-        "ENROLMENT": "When joining a module that asks it"
+        "PROFILE": "On About you, where people can change it",
+        "ENROLMENT": "When joining a module that uses it"
       },
       "scopeShort": {
         "PROFILE": "About you",
         "ENROLMENT": "On joining"
       },
       "options": "Choices",
-      "optionsHint": "Two to twelve choices. Rules read a choice by its code.",
+      "optionsHint": "Two to twelve choices. Rules refer to a choice by its code.",
       "optionCode": "Code",
-      "optionEn": "Choice in English",
-      "optionFr": "Choice in French",
+      "optionEn": "English",
+      "optionFr": "French",
       "addOption": "Add a choice",
       "removeOption": "Remove {{code}}",
       "remove": "Remove",
       "save": "Save draft",
       "saved": "Saved.",
-      "submit": "Submit for review",
-      "readOnly": "This version cannot change. Start a new version to change the question.",
-      "publishHint": "Publishing replaces the version in use. Answers people already gave stay.",
+      "submit": "Submit for clinical review",
+      "readOnly": "Start a new version to change the question.",
+      "publishHint": "Publishing replaces the version in use. Answers people already gave are kept.",
       "usedBy": "{{n}} module versions ask this question or read it in a rule, so it cannot be retired yet.",
       "preview": {
         "title": "On the phone",
         "yes": "Yes",
         "no": "No",
-        "skip": "Skip"
+        "skip": "Skip",
+        "where": {
+          "PROFILE": "Shown on About you.",
+          "ENROLMENT": "Shown when someone joins a module that uses it."
+        },
+        "optional": "Optional. People can leave it unanswered.",
+        "optionalMany": "Optional. People can choose several, or none."
       },
       "problems": {
         "title": "Before it can be submitted",
-        "type": "The same answer type as the published version",
-        "question": "The question in EN and FR, up to 200 characters",
-        "options": "For a choice question, two to twelve choices with different codes and names in EN and FR, keeping every choice the published version has; none for yes or no"
-      }
+        "type": "Answered the same way as the published version",
+        "question": "The question in English and French, up to 200 characters",
+        "options": "Two to twelve choices with different codes and names in both languages, keeping every choice already published (none for yes or no)"
+      },
+      "emptyBody": "Context questions let a person say something about themselves, such as using contraception, so a rule can stay quiet for them.",
+      "meta": "Code {{code}} · Drafted by {{who}}",
+      "newIntro": "Write the question in English and French, choose how it is answered and where the app asks it.",
+      "optionEnN": "Choice {{n}} in English",
+      "optionFrN": "Choice {{n}} in French",
+      "optionCodeN": "Choice {{n}} code"
     },
     "wording": {
       "title": "Word list and settings",
-      "subtitle": "What rule messages may not say, and the numbers Tracking runs with.",
+      "subtitle": "The words rule messages may not use, and the numbers Tracking runs with.",
       "manage": "Word list and settings",
       "words": {
         "title": "Word list",
-        "help": "A rule message cannot be saved or submitted if it uses a blocked word. A word ending in * blocks every ending. Allowed phrases, such as \"not a diagnosis\", are taken out first. Clinical reviewers keep this list.",
+        "help": "A rule message cannot be saved or submitted if it uses a blocked word. A word ending in * blocks every ending. Allowed phrases, such as \"not a diagnosis\", are set aside first. Clinical reviewers keep this list.",
         "col": {
           "pattern": "Word or phrase",
           "language": "Language",
@@ -1906,31 +1939,82 @@
         "tryText": "Message",
         "check": "Check",
         "passes": "This message passes the word list.",
-        "blocked": "Blocked by: {{patterns}}",
-        "removeCol": "Remove"
+        "blocked": "It uses: {{patterns}}",
+        "removeCol": "Remove",
+        "count": "{{n}} entries",
+        "filter": "Show",
+        "all": "All",
+        "addTitle": "Add a word or phrase",
+        "tryHint": "Paste a rule message to see whether the word list lets it through.",
+        "blockedLead": "Blocked.",
+        "none": "Nothing on the list matches."
       },
       "settings": {
-        "title": "Settings",
-        "help": "Operations and Super admins change these. Each change needs a reason and is recorded in the audit log.",
+        "title": "Tracking settings",
+        "help": "Operations and Super admins change these. Every change needs a reason and is kept in the audit log.",
         "name": {
-          "snooze_days": "How long a snoozed card stays hidden",
-          "nudge_reminder_window_hours": "How late a logging reminder may go after its time",
-          "nudge_risk_pause_days": "How long reminders pause after a safety flag"
+          "snooze_days": "Snoozed card stays hidden for",
+          "nudge_reminder_window_hours": "A late logging reminder may still go out for",
+          "nudge_risk_pause_days": "Reminders pause after a safety flag for"
         },
         "unit": {
           "days": "{{n}} days",
           "hours": "{{n}} hours"
         },
-        "changedBy": "{{who}}, {{when}}",
+        "changedBy": "Changed by {{who}}, {{when}}",
         "edit": "Change {{name}}",
-        "newValue": "New value ({{min}} to {{max}})",
-        "reason": "Reason",
-        "save": "Save",
+        "newValue": "New value",
+        "reason": "Reason for the change",
+        "save": "Save change",
         "cancel": "Cancel",
         "outOfRange": "Choose a value from {{min}} to {{max}}.",
         "change": "Change",
-        "defaultIs": "Default {{value}}"
+        "defaultIs": "Default {{value}}",
+        "hint": {
+          "snooze_days": "When someone snoozes a suggestion card.",
+          "nudge_reminder_window_hours": "After the time the person chose. Later than this, the reminder is skipped.",
+          "nudge_risk_pause_days": "No logging reminders while a safety flag is open, and for this long after."
+        },
+        "dialogTitle": "Change: {{name}}",
+        "current": "Now {{value}}. Default {{default}}.",
+        "range": "From {{min}} to {{max}}.",
+        "reasonHint": "Kept in the audit log with your name.",
+        "unitName": {
+          "days": "days",
+          "hours": "hours"
+        }
       }
+    },
+    "trackingNav": {
+      "label": "Tracking setup",
+      "modules": "Modules",
+      "elements": "Elements",
+      "episodes": "Episode models",
+      "questions": "Context questions",
+      "wording": "Word list and settings"
+    },
+    "versionSteps": {
+      "label": "Where this version is",
+      "done": "Done:",
+      "DRAFT": "Draft",
+      "REVIEW": "Clinical review",
+      "PUBLISHED": "Published"
+    },
+    "requirements": {
+      "title": "Before it can be submitted",
+      "afterSave": "Save the draft and the checks appear here.",
+      "ready": "Everything is in place. It can go to clinical review.",
+      "left": "{{n}} of {{total}} still to do",
+      "met": "Done:",
+      "notMet": "To do:"
+    },
+    "versionLocked": {
+      "IN_REVIEW": "In clinical review.",
+      "PUBLISHED": "Published.",
+      "RETIRED": "Retired."
+    },
+    "versionChange": {
+      "title": "Change it"
     }
   },
   "roleChoice": {
@@ -2750,12 +2834,18 @@
       "skip": "Skip for now"
     },
     "about": {
-      "title": "About you for tracking",
-      "intro": "A few questions that help pattern checks fit you. Answers stay in tracking, can only stop a check from showing, and you can skip or change them at any time.",
-      "none": "There are no questions for now.",
-      "skip": "Skip this question",
+      "title": "About you",
+      "intro": "A few optional questions so your recommendations fit you. An answer can only stop a recommendation from showing, never add one. Change or clear an answer whenever you like.",
+      "none": "Questions appear here when something you track uses them.",
       "many": "Choose all that apply.",
-      "enrolIntro": "You can skip any of these. Answers can only stop a pattern check from showing."
+      "enrolIntro": "These are optional. An answer can only stop a recommendation from showing.",
+      "clear": "Clear answer",
+      "clearFor": "Clear your answer to: {{question}}",
+      "unanswered": "Not answered",
+      "saved": "Saved.",
+      "notSaved": "Your answer wasn't saved. Check your connection and try again.",
+      "noneTitle": "Nothing to answer for now",
+      "privacy": "Your answers stay in your tracking. They are only used to decide which recommendations to leave out."
     }
   },
   "healthCheck": {

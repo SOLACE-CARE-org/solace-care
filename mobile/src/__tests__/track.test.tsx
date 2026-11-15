@@ -464,7 +464,7 @@ describe('Context questions', () => {
     expect(await screen.findByText('PCOS & cycle')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Add PCOS & cycle' }));
     expect(await screen.findByText('Are you trying to conceive?')).toBeTruthy();
-    expect(screen.getByText('Skip this question')).toBeTruthy();
+    expect(screen.getByText('Not answered')).toBeTruthy();
     await fireEvent.press(screen.getByText('Yes'));
     await fireEvent.press(screen.getByRole('button', { name: 'Add PCOS & cycle' }));
     await waitFor(() =>
@@ -474,7 +474,7 @@ describe('Context questions', () => {
     );
   });
 
-  it('lets the person answer, change or skip the profile questions', async () => {
+  it('lets the person answer, change or clear the profile questions', async () => {
     answers['GET /v1/tracking/context-questions'] = { status: 200, body: [trying] };
     answers['GET /v1/tracking/context-answers'] = {
       status: 200,
@@ -493,7 +493,7 @@ describe('Context questions', () => {
         calls.find((c) => c.method === 'PUT' && c.path.endsWith('/trying_to_conceive'))?.body,
       ).toBe(JSON.stringify({ value: false })),
     );
-    await fireEvent.press(screen.getByText('Skip this question'));
+    await fireEvent.press(screen.getByText('Clear answer'));
     await waitFor(() =>
       expect(
         calls.some((c) => c.method === 'DELETE' && c.path.endsWith('/trying_to_conceive')),

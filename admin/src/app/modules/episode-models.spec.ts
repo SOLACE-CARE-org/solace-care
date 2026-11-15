@@ -165,13 +165,13 @@ describe('Tracking episode models', () => {
     const api = tracking();
     setUp(['CLINICAL_REVIEWER'], {}, { tracking: api });
     const { root, settle } = await render(EpisodeModelEditorPage, { id: 'm1' });
-    await sees(root, 'Migraine attack v1');
+    await sees(root, 'Migraine attack');
     expect(root.textContent).toContain('Strong');
     button(root, 'Run on the test histories')!.click();
     await settle();
     await sees(root, 'Three attacks');
     expect(root.textContent).toContain('3 episodes, 2 complete');
-    expect(root.textContent).toContain('Strong days: 3, 2');
+    expect(root.textContent).toMatch(/Strong days\s*3, 2/);
     button(root, 'Approve')!.click();
     await settle();
     expect(api.POST).toHaveBeenCalledWith(
@@ -214,7 +214,7 @@ describe('Tracking episode models', () => {
       { tracking: tracking({ ...migraine, status: 'PUBLISHED', usedBy: 1 }) },
     );
     const { root } = await render(EpisodeModelEditorPage, { id: 'm1' });
-    await sees(root, 'This version cannot change.');
+    await sees(root, 'Published.');
     expect(button(root, 'Start a new version')).toBeDefined();
     expect(root.textContent).toContain('1 module versions read this model');
     expect(button(root, 'Retire v1')).toBeUndefined();

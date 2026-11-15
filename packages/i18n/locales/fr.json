@@ -1061,7 +1061,7 @@
       "notApplicable": "s.o.",
       "state": {
         "DRAFT": "brouillon v{{n}}",
-        "IN_REVIEW": "v{{n}} en revue",
+        "IN_REVIEW": "v{{n}} en relecture",
         "APPROVED": "v{{n}} approuvée",
         "PUBLISHED": "v{{n}}",
         "RETIRED": "v{{n}} retirée"
@@ -1638,7 +1638,7 @@
     },
     "elements": {
       "title": "Éléments",
-      "subtitle": "Ce que les personnes peuvent noter. Créez-en un à partir d'une vue que l'application possède déjà ; un relecteur clinique l'approuve avant qu'un module puisse l'utiliser.",
+      "subtitle": "Ce que les personnes peuvent noter. Créez-en un à partir d'un affichage que l'application connaît déjà. Un relecteur clinique l'approuve avant qu'un module puisse l'utiliser.",
       "manage": "Éléments",
       "new": "Nouvel élément",
       "empty": "Aucun élément pour l'instant.",
@@ -1652,9 +1652,9 @@
       "newTitle": "Nouvel élément",
       "heading": "{{name}} v{{n}}",
       "code": "Code",
-      "codeHint": "Lettres minuscules, chiffres et tirets bas. Il ne change jamais.",
+      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les modules et les règles désignent l'élément par ce code : il ne pourra plus changer.",
       "codeTaken": "Une version de cet élément est déjà en cours.",
-      "valueType": "Ce qu'il enregistre",
+      "valueType": "Type de réponse",
       "type": {
         "INT": "Un point sur une échelle",
         "MINUTES": "Une durée",
@@ -1696,7 +1696,7 @@
       "nameFr": "Nom en français",
       "helpEn": "Aide en anglais (facultatif)",
       "helpFr": "Aide en français (facultatif)",
-      "preview": "Aperçu",
+      "preview": "Sur le téléphone",
       "previewIn": {
         "en": "En anglais",
         "fr": "En français"
@@ -1705,9 +1705,9 @@
       "yes": "Oui",
       "save": "Enregistrer le brouillon",
       "saved": "Enregistré.",
-      "submit": "Envoyer en relecture",
-      "minApp": "Affiché à partir de la version {{v}} de l'application.",
-      "readOnly": "Cette version ne peut plus changer. Créez une nouvelle version pour modifier l'élément.",
+      "submit": "Envoyer en relecture clinique",
+      "minApp": "Affiché à partir de l'application {{v}}",
+      "readOnly": "Créez une nouvelle version pour modifier l'élément.",
       "newVersion": "Créer une nouvelle version",
       "openWorking": "Ouvrir v{{n}}",
       "boundBy": "{{n}} versions de module utilisent cette version, elle ne peut donc pas encore être retirée.",
@@ -1715,12 +1715,12 @@
       "retire": "Retirer v{{n}}",
       "problems": {
         "title": "Avant de pouvoir l'envoyer",
-        "labels": "Un nom en anglais et en français, et l'aide dans les deux langues ou dans aucune",
+        "labels": "Un nom en anglais et en français, et une aide dans les deux langues ou dans aucune",
         "values": "Un libellé pour chaque choix en anglais et en français",
-        "inputView": "Une vue de l'application qui prend cela",
-        "viewProps": "Des réglages que la vue accepte, dans les limites",
+        "inputView": "Un affichage de l'application qui accepte ce type de réponse",
+        "viewProps": "Des réglages que l'affichage accepte, dans les limites",
         "icon": "Une icône de l'application",
-        "constraints": "Des limites adaptées à ce qu'il enregistre"
+        "constraints": "Des limites adaptées au type de réponse"
       },
       "review": {
         "title": "Relecture clinique",
@@ -1733,16 +1733,30 @@
         "decision": {
           "APPROVED": "{{who}} a approuvé",
           "RETURNED": "{{who}} l'a renvoyé"
-        }
+        },
+        "commentsHint": "Obligatoires pour la renvoyer. La personne qui l'a rédigée les verra.",
+        "history": "Historique de la relecture"
       },
-      "basics": "Élément",
-      "names": "Noms et aide",
-      "remove": "Retirer"
+      "basics": "Ce qu'il enregistre",
+      "names": "Nom et aide",
+      "remove": "Retirer",
+      "emptyBody": "Les éléments sont ce que les personnes notent, comme le sommeil ou la douleur. Créez-en un à partir d'un affichage que l'application connaît déjà.",
+      "meta": "Code {{code}} · Rédigé par {{who}}",
+      "newIntro": "Nommez-le en anglais et en français, puis choisissez ce qu'il enregistre et comment l'application le demande.",
+      "helpHint": "L'aide tient en une ligne courte sous le nom. Donnez-la dans les deux langues ou dans aucune.",
+      "chooseIcon": "Choisir une icône",
+      "choicesHint": "Les règles désignent un choix par son code. Chaque choix a besoin d'un libellé dans les deux langues.",
+      "pointsHint": "Un libellé pour chaque point de l'échelle, dans les deux langues.",
+      "pointCol": "Point",
+      "choiceEnN": "{{n}} en anglais",
+      "choiceFrN": "{{n}} en français",
+      "choiceCodeN": "Code du choix {{n}}",
+      "publishHint": "La publication rend cette version disponible pour les modules. Chaque module garde la version avec laquelle il a été construit jusqu'à sa prochaine publication."
     },
     "episodes": {
       "title": "Modèles d'épisodes",
       "manage": "Modèles d'épisodes",
-      "subtitle": "Comment l'application repère des épisodes, comme un cycle ou une crise de migraine, dans ce que les personnes notent, et ce qu'elle mesure pour chacun. Construits à partir d'éléments publiés ; un relecteur clinique approuve chaque version.",
+      "subtitle": "Comment l'application repère des épisodes, comme un cycle ou une crise de migraine, dans ce que les personnes notent, et ce qu'elle mesure dans chacun. Construit à partir d'éléments publiés. Un relecteur clinique approuve chaque version.",
       "new": "Nouveau modèle d'épisode",
       "empty": "Aucun modèle d'épisode pour l'instant.",
       "col": {
@@ -1754,27 +1768,27 @@
       "back": "Modèles d'épisodes",
       "newTitle": "Nouveau modèle d'épisode",
       "heading": "{{name}} v{{n}}",
-      "basics": "Modèle",
+      "basics": "Nom",
       "code": "Code",
-      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les règles lisent ses mesures sous la forme code.mesure, il ne change donc jamais.",
+      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les règles lisent ses mesures sous la forme code.mesure : il ne pourra plus changer.",
       "codeTaken": "Ce modèle a déjà une version en cours.",
       "nameEn": "Nom en anglais",
       "nameFr": "Nom en français",
       "finding": "Comment les épisodes sont repérés",
-      "start": "Ce qui marque un début",
-      "end": "Ce qui marque une fin (facultatif)",
-      "activity": "Activité jour par jour (facultatif)",
+      "start": "Ce qui marque le début",
+      "end": "Ce qui marque la fin (facultatif)",
+      "activity": "Activité au jour le jour (facultatif)",
       "none": "Aucun",
-      "active": "Quelles valeurs comptent comme actives",
-      "gap": "Écart (jours)",
-      "gapHint": "Après ce nombre de jours sans activité, le jour actif suivant commence un nouvel épisode.",
+      "active": "Valeurs qui comptent comme actives",
+      "gap": "Jours sans activité avant la fin",
+      "gapHint": "Après ce nombre de jours calmes, le jour actif suivant ouvre un nouvel épisode.",
       "span": "Durée d'un épisode",
       "spans": {
         "UNTIL_NEXT_START": "Jusqu'au début du suivant, comme un cycle",
         "UNTIL_END": "Jusqu'à sa fin, comme une crise"
       },
       "metrics": "Ce que mesure chaque épisode",
-      "metricsHint": "Chaque épisode terminé donne un nombre par mesure. L'épisode le plus récent ne compte jamais.",
+      "metricsHint": "Chaque épisode terminé donne un nombre par mesure. L'épisode en cours n'est jamais compté.",
       "metricCode": "Code",
       "metricKind": "Mesure",
       "metricValue": "Valeur comptée",
@@ -1783,39 +1797,46 @@
         "ACTIVE_DAYS": "Jours actifs",
         "DAYS_WITH_VALUE": "Jours avec une valeur"
       },
-      "labelEn": "Nom en anglais",
-      "labelFr": "Nom en français",
+      "labelEn": "Anglais",
+      "labelFr": "Français",
       "addMetric": "Ajouter une mesure",
       "removeMetric": "Retirer {{code}}",
       "remove": "Retirer",
       "save": "Enregistrer le brouillon",
       "saved": "Enregistré.",
-      "submit": "Envoyer en relecture",
-      "readOnly": "Cette version ne peut pas changer. Commencez une nouvelle version pour modifier le modèle.",
+      "submit": "Envoyer en relecture clinique",
+      "readOnly": "Créez une nouvelle version pour modifier le modèle.",
       "publishHint": "La publication remplace la version utilisée et reconstruit les épisodes de chacun à partir de ce qu'il a noté.",
       "usedBy": "{{n}} versions de modules lisent ce modèle, il ne peut donc pas encore être retiré.",
       "tests": {
         "title": "Historiques de test",
-        "hint": "Voyez les épisodes que cette version repère dans chaque historique fictif. Rien n'est enregistré.",
+        "hint": "Voyez ce que cette version repère dans chaque historique fictif. Rien n'est enregistré.",
         "run": "Lancer sur les historiques de test",
         "found": "{{n}} épisodes, {{c}} terminés",
-        "afterSave": "Enregistrez le brouillon pour le lancer sur les historiques de test."
+        "afterSave": "Enregistrez le brouillon pour le lancer sur les historiques de test.",
+        "again": "Relancer"
       },
       "problems": {
         "title": "Avant de pouvoir l'envoyer",
-        "start": "Un élément événement publié qui marque un début",
-        "end": "Une fin qui est un élément événement publié, différent du début",
+        "start": "Un élément de type événement, publié, qui marque le début",
+        "end": "Une fin qui soit un élément de type événement publié, autre que le début",
         "activity": "Un élément d'activité publié qui enregistre un choix dans une liste",
-        "activeValues": "Au moins une valeur active, parmi les choix de l'élément d'activité",
-        "span": "Une fin ou un élément d'activité, pour qu'un épisode qui dure jusqu'à sa fin puisse finir",
-        "metrics": "Une à huit mesures aux codes différents, chacune adaptée aux éléments, en gardant toutes les mesures de la version publiée",
-        "labels": "Des noms pour le modèle et chaque mesure en anglais et en français"
-      }
+        "activeValues": "Au moins une valeur active parmi les choix de l'élément d'activité",
+        "span": "Une fin ou un élément d'activité, pour qu'un épisode qui dure jusqu'à sa fin puisse se terminer",
+        "metrics": "Une à huit mesures aux codes différents, adaptées aux éléments, en gardant chaque mesure publiée",
+        "labels": "Un nom en anglais et en français pour le modèle et pour chaque mesure"
+      },
+      "emptyBody": "Un modèle d'épisode repère des périodes, comme un cycle ou une crise, dans ce que les personnes notent, et mesure chacune.",
+      "meta": "Code {{code}} · Rédigé par {{who}}",
+      "newIntro": "Choisissez les éléments qui marquent un épisode et ce qu'il faut mesurer dans chacun.",
+      "findingHint": "Un épisode commence le jour où l'élément de début est noté. Il se termine à l'élément de fin, ou après une série de jours sans activité.",
+      "choose": "Choisir",
+      "metricN": "Mesure {{n}}"
     },
     "questions": {
       "title": "Questions de contexte",
       "manage": "Questions de contexte",
-      "subtitle": "Des questions sur la personne qui peuvent désactiver une règle, par exemple si elle essaie d'avoir un enfant. Les réponses restent dans le suivi et peuvent être passées. Un relecteur clinique approuve chaque version.",
+      "subtitle": "Des questions sur la personne qui peuvent désactiver une règle pour elle, par exemple si elle essaie d'avoir un enfant. Chaque réponse est facultative et reste dans le Suivi. Un relecteur clinique approuve chaque version.",
       "new": "Nouvelle question de contexte",
       "empty": "Aucune question de contexte pour l'instant.",
       "col": {
@@ -1829,7 +1850,7 @@
       "heading": "{{code}} v{{n}}",
       "basics": "Question",
       "code": "Code",
-      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les modules et les règles lisent la question par son code, il ne change donc jamais.",
+      "codeHint": "Lettres minuscules, chiffres et tirets bas. Les modules et les règles désignent la question par ce code : il ne pourra plus changer.",
       "codeTaken": "Cette question a déjà une version en cours.",
       "questionEn": "Question en anglais",
       "questionFr": "Question en français",
@@ -1839,49 +1860,61 @@
         "ONE_CHOICE": "Un seul choix",
         "MANY_CHOICES": "Plusieurs choix"
       },
-      "scope": "Où elle est posée",
+      "scope": "Où l'application la pose",
       "scopes": {
-        "PROFILE": "Sur l'écran À propos de vous, modifiable",
-        "ENROLMENT": "À l'inscription à un module qui la pose"
+        "PROFILE": "Sur À propos de vous, où l'on peut la modifier",
+        "ENROLMENT": "À l'inscription à un module qui l'utilise"
       },
       "scopeShort": {
         "PROFILE": "À propos de vous",
         "ENROLMENT": "À l'inscription"
       },
       "options": "Choix",
-      "optionsHint": "De deux à douze choix. Les règles lisent un choix par son code.",
+      "optionsHint": "De deux à douze choix. Les règles désignent un choix par son code.",
       "optionCode": "Code",
-      "optionEn": "Choix en anglais",
-      "optionFr": "Choix en français",
+      "optionEn": "Anglais",
+      "optionFr": "Français",
       "addOption": "Ajouter un choix",
       "removeOption": "Retirer {{code}}",
       "remove": "Retirer",
       "save": "Enregistrer le brouillon",
       "saved": "Enregistré.",
-      "submit": "Soumettre à la relecture",
-      "readOnly": "Cette version ne peut pas changer. Commencez une nouvelle version pour modifier la question.",
-      "publishHint": "La publication remplace la version en service. Les réponses déjà données restent.",
+      "submit": "Envoyer en relecture clinique",
+      "readOnly": "Créez une nouvelle version pour modifier la question.",
+      "publishHint": "La publication remplace la version en service. Les réponses déjà données sont conservées.",
       "usedBy": "{{n}} versions de module posent cette question ou la lisent dans une règle, elle ne peut donc pas encore être retirée.",
       "preview": {
         "title": "Sur le téléphone",
         "yes": "Oui",
         "no": "Non",
-        "skip": "Passer"
+        "skip": "Passer",
+        "where": {
+          "PROFILE": "Affichée sur À propos de vous.",
+          "ENROLMENT": "Affichée à l'inscription à un module qui l'utilise."
+        },
+        "optional": "Facultatif. On peut ne pas répondre.",
+        "optionalMany": "Facultatif. On peut en choisir plusieurs, ou aucun."
       },
       "problems": {
-        "title": "Avant de pouvoir la soumettre",
+        "title": "Avant de pouvoir l'envoyer",
         "type": "Le même type de réponse que la version publiée",
         "question": "La question en anglais et en français, 200 caractères au plus",
-        "options": "Pour une question à choix, de deux à douze choix aux codes différents, nommés en anglais et en français, en gardant chaque choix de la version publiée ; aucun pour oui ou non"
-      }
+        "options": "De deux à douze choix, avec des codes différents et un nom dans les deux langues, en gardant chaque choix déjà publié (aucun pour oui ou non)"
+      },
+      "emptyBody": "Les questions de contexte permettent à une personne de préciser sa situation, par exemple une contraception, pour qu'une règle ne s'affiche pas pour elle.",
+      "meta": "Code {{code}} · Rédigée par {{who}}",
+      "newIntro": "Rédigez la question en anglais et en français, choisissez comment on y répond et où l'application la pose.",
+      "optionEnN": "Choix {{n}} en anglais",
+      "optionFrN": "Choix {{n}} en français",
+      "optionCodeN": "Code du choix {{n}}"
     },
     "wording": {
       "title": "Liste de mots et réglages",
-      "subtitle": "Ce que les messages des règles ne peuvent pas dire, et les valeurs avec lesquelles le suivi fonctionne.",
+      "subtitle": "Les mots que les messages des règles ne peuvent pas employer, et les valeurs avec lesquelles fonctionne le Suivi.",
       "manage": "Liste de mots et réglages",
       "words": {
         "title": "Liste de mots",
-        "help": "Un message de règle ne peut pas être enregistré ni envoyé s'il contient un mot bloqué. Un mot qui se termine par * bloque toutes les terminaisons. Les expressions autorisées, comme « pas un diagnostic », sont retirées d'abord. Les relecteurs cliniques tiennent cette liste.",
+        "help": "Un message de règle ne peut pas être enregistré ni envoyé s'il emploie un mot bloqué. Un mot terminé par * bloque toutes les terminaisons. Les expressions autorisées, comme « pas un diagnostic », sont mises de côté en premier. Les relecteurs cliniques tiennent cette liste.",
         "col": {
           "pattern": "Mot ou expression",
           "language": "Langue",
@@ -1902,35 +1935,86 @@
         "remove": "Retirer {{pattern}}",
         "invalid": "Utilisez des lettres, des chiffres, des espaces, des apostrophes ou des tirets, et au plus une * à la fin.",
         "taken": "Ceci est déjà dans la liste.",
-        "try": "Essayer un message",
+        "try": "Tester un message",
         "tryText": "Message",
         "check": "Vérifier",
         "passes": "Ce message passe la liste de mots.",
-        "blocked": "Bloqué par : {{patterns}}",
-        "removeCol": "Retirer"
+        "blocked": "Il emploie : {{patterns}}",
+        "removeCol": "Retirer",
+        "count": "{{n}} entrées",
+        "filter": "Afficher",
+        "all": "Tout",
+        "addTitle": "Ajouter un mot ou une expression",
+        "tryHint": "Collez un message de règle pour voir si la liste de mots le laisse passer.",
+        "blockedLead": "Bloqué.",
+        "none": "Rien dans la liste ne correspond."
       },
       "settings": {
-        "title": "Réglages",
-        "help": "Les Opérations et les Super admins les modifient. Chaque modification demande une raison et est inscrite au journal d'audit.",
+        "title": "Réglages du suivi",
+        "help": "Les Opérations et les Super admins les modifient. Chaque modification demande une raison et reste dans le journal d'audit.",
         "name": {
-          "snooze_days": "Durée pendant laquelle une carte reportée reste masquée",
-          "nudge_reminder_window_hours": "Retard maximal d'un rappel après son heure",
-          "nudge_risk_pause_days": "Durée de la pause des rappels après une alerte de sécurité"
+          "snooze_days": "Une carte reportée reste masquée pendant",
+          "nudge_reminder_window_hours": "Un rappel de saisie en retard peut encore partir pendant",
+          "nudge_risk_pause_days": "Les rappels s'arrêtent après un signalement de sécurité pendant"
         },
         "unit": {
           "days": "{{n}} jours",
           "hours": "{{n}} heures"
         },
-        "changedBy": "{{who}}, {{when}}",
+        "changedBy": "Modifié par {{who}}, {{when}}",
         "edit": "Modifier : {{name}}",
-        "newValue": "Nouvelle valeur ({{min}} à {{max}})",
-        "reason": "Raison",
+        "newValue": "Nouvelle valeur",
+        "reason": "Raison de la modification",
         "save": "Enregistrer",
         "cancel": "Annuler",
         "outOfRange": "Choisissez une valeur de {{min}} à {{max}}.",
         "change": "Modifier",
-        "defaultIs": "Par défaut : {{value}}"
+        "defaultIs": "Par défaut {{value}}",
+        "hint": {
+          "snooze_days": "Quand une personne reporte une carte de suggestion.",
+          "nudge_reminder_window_hours": "Après l'heure choisie par la personne. Au-delà, le rappel n'est pas envoyé.",
+          "nudge_risk_pause_days": "Aucun rappel de saisie tant qu'un signalement de sécurité est ouvert, puis pendant cette durée."
+        },
+        "dialogTitle": "Modifier : {{name}}",
+        "current": "Actuellement {{value}}. Par défaut {{default}}.",
+        "range": "De {{min}} à {{max}}.",
+        "reasonHint": "Conservée dans le journal d'audit avec votre nom.",
+        "unitName": {
+          "days": "jours",
+          "hours": "heures"
+        }
       }
+    },
+    "trackingNav": {
+      "label": "Paramétrage du suivi",
+      "modules": "Modules",
+      "elements": "Éléments",
+      "episodes": "Modèles d'épisodes",
+      "questions": "Questions de contexte",
+      "wording": "Mots et réglages"
+    },
+    "versionSteps": {
+      "label": "Où en est cette version",
+      "done": "Terminé :",
+      "DRAFT": "Brouillon",
+      "REVIEW": "Relecture clinique",
+      "PUBLISHED": "Publiée"
+    },
+    "requirements": {
+      "title": "Avant de pouvoir l'envoyer",
+      "afterSave": "Enregistrez le brouillon pour voir les vérifications ici.",
+      "ready": "Tout est en place. Elle peut partir en relecture clinique.",
+      "left": "{{n}} sur {{total}} restent à faire",
+      "met": "Fait :",
+      "notMet": "À faire :"
+    },
+    "versionLocked": {
+      "IN_REVIEW": "En relecture clinique.",
+      "PUBLISHED": "Publiée.",
+      "RETIRED": "Retirée."
+    },
+    "versionChange": {
+      "title": "Modifier"
     }
   },
   "roleChoice": {
@@ -2750,12 +2834,18 @@
       "skip": "Passer pour l'instant"
     },
     "about": {
-      "title": "Vous et votre suivi",
-      "intro": "Quelques questions pour que les vérifications de tendances vous correspondent. Les réponses restent dans le suivi, peuvent seulement empêcher une vérification de s'afficher, et vous pouvez les passer ou les modifier à tout moment.",
-      "none": "Il n'y a pas de question pour le moment.",
-      "skip": "Passer cette question",
-      "many": "Choisissez tout ce qui s’applique.",
-      "enrolIntro": "Vous pouvez passer chacune de ces questions. Les réponses peuvent seulement empêcher une vérification de tendances de s'afficher."
+      "title": "À propos de vous",
+      "intro": "Quelques questions facultatives pour que vos recommandations vous correspondent. Une réponse peut seulement empêcher une recommandation de s'afficher, jamais en ajouter. Modifiez ou effacez une réponse quand vous voulez.",
+      "none": "Des questions apparaîtront ici quand un élément de votre suivi les utilise.",
+      "many": "Choisissez tout ce qui s'applique.",
+      "enrolIntro": "Ces questions sont facultatives. Une réponse peut seulement empêcher une recommandation de s'afficher.",
+      "clear": "Effacer la réponse",
+      "clearFor": "Effacer votre réponse à : {{question}}",
+      "unanswered": "Sans réponse",
+      "saved": "Enregistré.",
+      "notSaved": "Votre réponse n'a pas été enregistrée. Vérifiez votre connexion et réessayez.",
+      "noneTitle": "Rien à répondre pour le moment",
+      "privacy": "Vos réponses restent dans votre suivi. Elles servent seulement à choisir les recommandations à ne pas afficher."
     }
   },
   "healthCheck": {

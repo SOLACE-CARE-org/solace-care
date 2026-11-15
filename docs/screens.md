@@ -64,6 +64,7 @@ PNG renders use fallback fonts and a dashed "logo" placeholder: the real faces a
 | Seeker home | 1 | `design/screens/mobile/source/Home.dc.html` | `design/screens/mobile/png/Home.png` | Tracking cards ship in Phase 2; Phase 1 Home shows sessions only. |
 | Track tab | 2 | `design/screens/mobile/source/TrackHub.dc.html` | `design/screens/mobile/png/TrackHub.png` |  |
 | Add a tracking module | 2 | `design/screens/mobile/source/ModuleCatalog.dc.html` | `design/screens/mobile/png/ModuleCatalog.png` |  |
+| About you (context questions) | 2 | None | `design/screens/mobile/png/AboutYou.png` | Designed in the build (D61): no canvas source; the PNG is a render of the app screen. Chips as on HealthCheckPrefs, title row as on PrivacyCentre. |
 | Log today (PCOS & cycle) | 2 | `design/screens/mobile/source/Tracking.dc.html` | `design/screens/mobile/png/Tracking.png` |  |
 | Log today (daily check-in) | 2 | `design/screens/mobile/source/Checkin.dc.html` | `design/screens/mobile/png/Checkin.png` |  |
 | Daily check-in trends | 2 | `design/screens/mobile/source/Trends.dc.html` | `design/screens/mobile/png/Trends.png` |  |
@@ -148,6 +149,14 @@ PNG renders use fallback fonts and a dashed "logo" placeholder: the real faces a
 | 23 · Builder: elements | 2 | `design/screens/admin/source/ModuleElements.dc.html` | `design/screens/admin/png/ModuleElements.png` |  |
 | 24 · Builder: rules | 2 | `design/screens/admin/source/ModuleRules.dc.html` | `design/screens/admin/png/ModuleRules.png` |  |
 | 25 · Clinical review | 2 | `design/screens/admin/source/ModuleReview.dc.html` | `design/screens/admin/png/ModuleReview.png` |  |
+| 32 · Elements | 2 | None | `design/screens/admin/png/TrackingElements.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 32 · Element version | 2 | None | `design/screens/admin/png/TrackingElementEditor.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 33 · Episode models | 2 | None | `design/screens/admin/png/EpisodeModels.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 33 · Episode model version | 2 | None | `design/screens/admin/png/EpisodeModelEditor.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 34 · Context questions | 2 | None | `design/screens/admin/png/ContextQuestions.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 34 · Context question version | 2 | None | `design/screens/admin/png/ContextQuestionEditor.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 35 · Word list and settings | 2 | None | `design/screens/admin/png/TrackingWording.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
+| 35 · Change a Tracking setting | 2 | None | `design/screens/admin/png/TrackingWordingChange.png` | Designed in the build (D61): no canvas source; the PNG is a render of the portal. |
 | 28 · Health check | 2 | `design/screens/admin/source/HealthCheck.dc.html` | `design/screens/admin/png/HealthCheck.png` |  |
 | 29 · Health check: questions | 2 | `design/screens/admin/source/HealthCheckQuestions.dc.html` | `design/screens/admin/png/HealthCheckQuestions.png` |  |
 | 30 · Health check: scoring | 2 | `design/screens/admin/source/HealthCheckScoring.dc.html` | `design/screens/admin/png/HealthCheckScoring.png` |  |

@@ -11,11 +11,14 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { LucideDynamicIcon, LucideLock } from '@lucide/angular';
 
 import { ApiProblem, orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
 import { BackLink } from '../shared/back-link';
+import { Requirements } from './requirements';
+import { VersionSteps } from './version-steps';
 import { canDraft, canReview, stateOf } from './module-shared';
 
 type Version = TrackingSchemas['ElementVersion'];
@@ -154,118 +157,80 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
 }
 
 /**
- * Admin screen 33: one element version (D61). No design yet, so layout and copy are provisional
- * and follow the module builder. Operations and Super admins draft from a view the app ships; a
- * Clinical reviewer who did not draft it approves or returns it; then it is published. A preview
- * shows the logging row in EN and FR.
+ * Admin screen 32: one element version (D61; design/screens/admin/png/TrackingElementEditor.png).
+ * The form on the left; on the right how the phone shows it in EN and FR, what is still needed
+ * before submission, and the clinical review. Operations and Super admins draft from a view the app
+ * ships; a Clinical reviewer who did not draft it approves or returns it; then it is published.
  */
 @Component({
   selector: 'sl-element-editor',
-  imports: [TranslocoPipe, FormsModule, BackLink],
+  imports: [TranslocoPipe, FormsModule, BackLink, LucideDynamicIcon, VersionSteps, Requirements],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sl-back-link to="/modules/elements" [label]="'admin.elements.back' | transloco" />
     @if (error()) {
-      <div class="sl-card">
+      <div class="sl-notice sl-notice--danger" role="alert">
         <p>{{ 'common.checkConnection' | transloco }}</p>
         <button class="sl-button" type="button" (click)="load()">
           {{ 'common.tryAgain' | transloco }}
         </button>
       </div>
     } @else if (loaded()) {
-      <div class="head">
-        <h1 class="sl-title">
-          @if (version(); as v) {
-            {{ 'admin.elements.heading' | transloco: { name: nameIn(lang()), n: v.version } }}
-          } @else {
-            {{ 'admin.elements.newTitle' | transloco }}
-          }
-        </h1>
-        @if (version(); as v) {
-          <span class="sl-pill">
-            {{ 'admin.modules.state.' + state(v) | transloco: { n: v.version } }}
-          </span>
-        }
-      </div>
-      @if (version()?.minAppVersion; as app) {
-        <p class="sl-meta">{{ 'admin.elements.minApp' | transloco: { v: app } }}</p>
-      }
-      @if (!editable() && version()) {
-        <p class="sl-card notice">{{ 'admin.elements.readOnly' | transloco }}</p>
-      }
-
-      <div class="layout">
-        <form class="main" (ngSubmit)="save()">
-          <fieldset class="sl-card" [disabled]="!editable()">
-            <legend class="sl-section">{{ 'admin.elements.basics' | transloco }}</legend>
-            <label class="sl-field">
-              <span>{{ 'admin.elements.code' | transloco }}</span>
-              <input
-                class="sl-input"
-                name="code"
-                required
-                maxlength="40"
-                pattern="[a-z][a-z0-9_]*"
-                autocomplete="off"
-                [disabled]="!!version() || !!from()"
-                [(ngModel)]="form.code"
-                (ngModelChange)="touch()"
-              />
-              <span class="sl-meta">{{ 'admin.elements.codeHint' | transloco }}</span>
-            </label>
-            <label class="sl-field">
-              <span>{{ 'admin.elements.valueType' | transloco }}</span>
-              <select
-                class="sl-select"
-                name="valueType"
-                [(ngModel)]="form.valueType"
-                (ngModelChange)="typeChanged()"
-              >
-                @for (t of types; track t) {
-                  <option [value]="t">{{ 'admin.elements.type.' + t | transloco }}</option>
-                }
-              </select>
-            </label>
-            <label class="sl-field">
-              <span>{{ 'admin.elements.view' | transloco }}</span>
-              <select
-                class="sl-select"
-                name="inputView"
-                [(ngModel)]="form.inputView"
-                (ngModelChange)="touch()"
-              >
-                @for (v of fitting(); track v.key) {
-                  <option [value]="v.key">{{ 'admin.elements.views.' + v.key | transloco }}</option>
-                }
-              </select>
-              @if (fitting().length === 0) {
-                <span class="sl-meta">{{ 'admin.elements.noView' | transloco }}</span>
+      <div class="sl-head">
+        <div>
+          <div class="sl-head__title">
+            <h1 class="sl-title">
+              @if (version()) {
+                {{ nameIn(lang()) || version()?.code }}
+              } @else {
+                {{ nameIn(lang()) || ('admin.elements.newTitle' | transloco) }}
               }
-            </label>
-            <label class="sl-field">
-              <span>{{ 'admin.elements.icon' | transloco }}</span>
-              <select
-                class="sl-select"
-                name="icon"
-                [(ngModel)]="form.icon"
-                (ngModelChange)="touch()"
+            </h1>
+            @if (version(); as v) {
+              <span
+                class="sl-pill"
+                [class.sl-pill--warning]="v.status !== 'PUBLISHED'"
+                [class.sl-pill--brand]="v.status === 'PUBLISHED'"
               >
-                <option value=""></option>
-                @for (i of icons(); track i) {
-                  <option [value]="i">{{ i }}</option>
-                }
-              </select>
-            </label>
-          </fieldset>
+                {{ 'admin.modules.state.' + state(v) | transloco: { n: v.version } }}
+              </span>
+            }
+          </div>
+          @if (version(); as v) {
+            <p class="sl-head__intro">
+              {{ 'admin.elements.meta' | transloco: { code: v.code, who: v.draftedBy || '' } }}
+              @if (v.minAppVersion) {
+                · {{ 'admin.elements.minApp' | transloco: { v: v.minAppVersion } }}
+              }
+            </p>
+          } @else {
+            <p class="sl-head__intro">{{ 'admin.elements.newIntro' | transloco }}</p>
+          }
+        </div>
+        <sl-version-steps [status]="version()?.status" />
+      </div>
 
+      @if (!editable() && version(); as v) {
+        <div class="sl-notice sl-notice--warning notice" role="status">
+          <svg [lucideIcon]="lockIcon" [size]="20" [strokeWidth]="1.8" aria-hidden="true"></svg>
+          <p>
+            <strong>{{ 'admin.versionLocked.' + v.status | transloco }}</strong>
+            {{ 'admin.elements.readOnly' | transloco }}
+          </p>
+        </div>
+      }
+
+      <div class="sl-editor">
+        <form class="sl-editor__main" (ngSubmit)="save()">
           <fieldset class="sl-card" [disabled]="!editable()">
             <legend class="sl-section">{{ 'admin.elements.names' | transloco }}</legend>
-            <div class="pair">
+            <div class="sl-fields">
               <label class="sl-field">
                 <span>{{ 'admin.elements.nameEn' | transloco }}</span>
                 <input
                   class="sl-input"
                   name="nameEn"
+                  lang="en"
                   maxlength="60"
                   [(ngModel)]="form.nameEn"
                   (ngModelChange)="touch()"
@@ -276,6 +241,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
                 <input
                   class="sl-input"
                   name="nameFr"
+                  lang="fr"
                   maxlength="60"
                   [(ngModel)]="form.nameFr"
                   (ngModelChange)="touch()"
@@ -286,6 +252,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
                 <input
                   class="sl-input"
                   name="helpEn"
+                  lang="en"
                   maxlength="200"
                   [(ngModel)]="form.helpEn"
                   (ngModelChange)="touch()"
@@ -296,11 +263,83 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
                 <input
                   class="sl-input"
                   name="helpFr"
+                  lang="fr"
                   maxlength="200"
                   [(ngModel)]="form.helpFr"
                   (ngModelChange)="touch()"
                 />
               </label>
+              <span class="sl-hint sl-field--wide">{{
+                'admin.elements.helpHint' | transloco
+              }}</span>
+            </div>
+          </fieldset>
+
+          <fieldset class="sl-card" [disabled]="!editable()">
+            <legend class="sl-section">{{ 'admin.elements.basics' | transloco }}</legend>
+            <div class="sl-fields">
+              <label class="sl-field">
+                <span>{{ 'admin.elements.valueType' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="valueType"
+                  [(ngModel)]="form.valueType"
+                  (ngModelChange)="typeChanged()"
+                >
+                  @for (t of types; track t) {
+                    <option [value]="t">{{ 'admin.elements.type.' + t | transloco }}</option>
+                  }
+                </select>
+              </label>
+              <label class="sl-field">
+                <span>{{ 'admin.elements.view' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="inputView"
+                  [(ngModel)]="form.inputView"
+                  (ngModelChange)="touch()"
+                >
+                  @for (v of fitting(); track v.key) {
+                    <option [value]="v.key">
+                      {{ 'admin.elements.views.' + v.key | transloco }}
+                    </option>
+                  }
+                </select>
+                @if (fitting().length === 0) {
+                  <span class="sl-hint">{{ 'admin.elements.noView' | transloco }}</span>
+                }
+              </label>
+              <label class="sl-field">
+                <span>{{ 'admin.elements.icon' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="icon"
+                  [(ngModel)]="form.icon"
+                  (ngModelChange)="touch()"
+                >
+                  <option value="">{{ 'admin.elements.chooseIcon' | transloco }}</option>
+                  @for (i of icons(); track i) {
+                    <option [value]="i">{{ i }}</option>
+                  }
+                </select>
+              </label>
+              <label class="sl-field">
+                <span>{{ 'admin.elements.code' | transloco }}</span>
+                <input
+                  class="sl-input code"
+                  name="code"
+                  required
+                  maxlength="40"
+                  pattern="[a-z][a-z0-9_]*"
+                  autocomplete="off"
+                  [disabled]="!!version() || !!from()"
+                  [(ngModel)]="form.code"
+                  (ngModelChange)="touch()"
+                />
+              </label>
+              <span class="sl-hint sl-field--wide">{{
+                'admin.elements.codeHint' | transloco
+              }}</span>
             </div>
           </fieldset>
 
@@ -309,7 +348,7 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
           ) {
             <fieldset class="sl-card" [disabled]="!editable()">
               <legend class="sl-section">{{ 'admin.elements.limits' | transloco }}</legend>
-              <div class="pair">
+              <div class="sl-fields limits">
                 @if (form.valueType === 'TEXT') {
                   <label class="sl-field">
                     <span>{{ 'admin.elements.maxLength' | transloco }}</span>
@@ -355,102 +394,124 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
                     />
                   </label>
                 }
+                @if (view()?.props?.['start']) {
+                  <label class="sl-field">
+                    <span>{{ 'admin.elements.prop.start' | transloco }}</span>
+                    <input
+                      class="sl-input"
+                      type="number"
+                      name="start"
+                      [(ngModel)]="form.start"
+                      (ngModelChange)="touch()"
+                    />
+                  </label>
+                }
               </div>
             </fieldset>
           }
 
           @if (form.valueType === 'ENUM' || form.valueType === 'INT') {
-            <fieldset class="sl-card choices" [disabled]="!editable()">
+            <fieldset class="sl-card" [disabled]="!editable()">
               <legend class="sl-section">
                 {{
                   (form.valueType === 'ENUM' ? 'admin.elements.choices' : 'admin.elements.points')
                     | transloco
                 }}
               </legend>
-              @for (c of form.choices; track $index; let i = $index) {
-                <div class="choice">
-                  @if (form.valueType === 'ENUM') {
-                    <label class="sl-field">
-                      <span>{{ 'admin.elements.valueCode' | transloco }}</span>
-                      <input
-                        class="sl-input"
-                        [name]="'code' + i"
-                        maxlength="40"
-                        pattern="[a-z][a-z0-9_]*"
-                        [(ngModel)]="c.code"
-                        (ngModelChange)="touch()"
-                      />
-                    </label>
-                  } @else {
-                    <span class="point">{{
-                      'admin.elements.point' | transloco: { n: c.code }
-                    }}</span>
-                  }
-                  <label class="sl-field">
-                    <span>{{ 'admin.elements.labelEn' | transloco }}</span>
+              <p class="sl-hint">
+                {{
+                  (form.valueType === 'ENUM'
+                    ? 'admin.elements.choicesHint'
+                    : 'admin.elements.pointsHint'
+                  ) | transloco
+                }}
+              </p>
+              <div class="sl-rows" [class.points]="form.valueType === 'INT'">
+                <div class="sl-rows__head" aria-hidden="true">
+                  <span>{{ 'admin.elements.labelEn' | transloco }}</span>
+                  <span>{{ 'admin.elements.labelFr' | transloco }}</span>
+                  <span>
+                    {{
+                      (form.valueType === 'ENUM'
+                        ? 'admin.elements.valueCode'
+                        : 'admin.elements.pointCol'
+                      ) | transloco
+                    }}
+                  </span>
+                  <span></span>
+                </div>
+                @for (c of form.choices; track $index; let i = $index) {
+                  <div class="sl-rows__row">
                     <input
                       class="sl-input"
+                      lang="en"
                       [name]="'en' + i"
                       maxlength="60"
+                      [attr.aria-label]="
+                        'admin.elements.choiceEnN' | transloco: { n: c.code || i + 1 }
+                      "
                       [(ngModel)]="c.en"
                       (ngModelChange)="touch()"
                     />
-                  </label>
-                  <label class="sl-field">
-                    <span>{{ 'admin.elements.labelFr' | transloco }}</span>
                     <input
                       class="sl-input"
+                      lang="fr"
                       [name]="'fr' + i"
                       maxlength="60"
+                      [attr.aria-label]="
+                        'admin.elements.choiceFrN' | transloco: { n: c.code || i + 1 }
+                      "
                       [(ngModel)]="c.fr"
                       (ngModelChange)="touch()"
                     />
-                  </label>
-                  @if (form.valueType === 'ENUM') {
-                    <button
-                      type="button"
-                      class="sl-button sl-button--danger"
-                      [attr.aria-label]="
-                        'admin.elements.removeChoice' | transloco: { code: c.code || i + 1 }
-                      "
-                      (click)="removeChoice(i)"
-                    >
-                      {{ 'admin.elements.remove' | transloco }}
-                    </button>
-                  }
-                </div>
-              }
-              @if (form.valueType === 'ENUM') {
-                <button type="button" class="sl-button add" (click)="addChoice()">
-                  {{ 'admin.elements.addChoice' | transloco }}
-                </button>
-              }
-            </fieldset>
-          }
-
-          @if (view()?.props?.['start']) {
-            <fieldset class="sl-card" [disabled]="!editable()">
-              <legend class="sl-section">{{ 'admin.elements.props' | transloco }}</legend>
-              <label class="sl-field">
-                <span>{{ 'admin.elements.prop.start' | transloco }}</span>
-                <input
-                  class="sl-input"
-                  type="number"
-                  name="start"
-                  [(ngModel)]="form.start"
-                  (ngModelChange)="touch()"
-                />
-              </label>
+                    @if (form.valueType === 'ENUM') {
+                      <input
+                        class="sl-input code"
+                        [name]="'code' + i"
+                        maxlength="40"
+                        pattern="[a-z][a-z0-9_]*"
+                        [attr.aria-label]="'admin.elements.choiceCodeN' | transloco: { n: i + 1 }"
+                        [(ngModel)]="c.code"
+                        (ngModelChange)="touch()"
+                      />
+                      @if (editable()) {
+                        <button
+                          type="button"
+                          class="sl-link-button sl-link-button--danger"
+                          [attr.aria-label]="
+                            'admin.elements.removeChoice' | transloco: { code: c.code || i + 1 }
+                          "
+                          (click)="removeChoice(i)"
+                        >
+                          {{ 'admin.elements.remove' | transloco }}
+                        </button>
+                      } @else {
+                        <span></span>
+                      }
+                    } @else {
+                      <span class="point">{{ c.code }}</span>
+                      <span></span>
+                    }
+                  </div>
+                }
+                @if (form.valueType === 'ENUM' && editable()) {
+                  <button type="button" class="sl-button sl-rows__add" (click)="addChoice()">
+                    {{ 'admin.elements.addChoice' | transloco }}
+                  </button>
+                }
+              </div>
             </fieldset>
           }
 
           @if (editable()) {
-            <div class="actions">
+            <div class="sl-actions">
               @if (saved()) {
-                <span class="sl-meta" role="status">{{ 'admin.elements.saved' | transloco }}</span>
+                <span class="sl-status" role="status">{{
+                  'admin.elements.saved' | transloco
+                }}</span>
               }
               @if (problem()) {
-                <span class="error" role="alert">{{ problem()! | transloco }}</span>
+                <span class="sl-error" role="alert">{{ problem()! | transloco }}</span>
               }
               <button type="submit" class="sl-button" [disabled]="busy() || !validCode()">
                 {{ 'admin.elements.save' | transloco }}
@@ -469,155 +530,175 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
           }
         </form>
 
-        <aside class="side">
+        <aside class="sl-editor__rail">
           <section class="sl-card" aria-labelledby="preview-title">
             <h2 id="preview-title" class="sl-section">
               {{ 'admin.elements.preview' | transloco }}
             </h2>
             @for (l of langs; track l) {
-              <div class="phone" [attr.lang]="l">
-                <p class="sl-meta">{{ 'admin.elements.previewIn.' + l | transloco }}</p>
-                <p class="strong">{{ nameIn(l) }}</p>
+              <div class="sl-phone" [attr.lang]="l">
+                <span class="sl-phone__lang">{{
+                  'admin.elements.previewIn.' + l | transloco
+                }}</span>
+                <p class="sl-phone__title">{{ nameIn(l) || '…' }}</p>
                 @switch (previewKind()) {
                   @case ('chips') {
-                    <div class="chips">
+                    <div class="sl-phone__chips">
                       @for (c of form.choices; track $index) {
-                        <span class="chip">{{ l === 'en' ? c.en : c.fr }}</span>
+                        <span
+                          class="sl-phone__chip"
+                          [class.sl-phone__chip--empty]="!(l === 'en' ? c.en : c.fr)"
+                          >{{ l === 'en' ? c.en : c.fr }}</span
+                        >
                       }
                     </div>
                   }
                   @case ('stepper') {
-                    <p class="stepper">
-                      <span class="chip" aria-hidden="true">−</span>
-                      {{ 'admin.elements.hours' | transloco: hours() }}
-                      <span class="chip" aria-hidden="true">+</span>
-                    </p>
+                    <div class="sl-phone__chips stepper">
+                      <span class="sl-phone__chip" aria-hidden="true">−</span>
+                      <span class="strong">{{ 'admin.elements.hours' | transloco: hours() }}</span>
+                      <span class="sl-phone__chip" aria-hidden="true">+</span>
+                    </div>
                   }
                   @case ('toggle') {
-                    <p class="chip">{{ 'admin.elements.yes' | transloco }}</p>
+                    <div class="sl-phone__chips">
+                      <span class="sl-phone__chip">{{ 'admin.elements.yes' | transloco }}</span>
+                    </div>
                   }
                   @case ('marker') {
-                    <span class="chip">{{ helpIn(l) || nameIn(l) }}</span>
+                    <div class="sl-phone__chips">
+                      <span class="sl-phone__chip">{{ helpIn(l) || nameIn(l) }}</span>
+                    </div>
                   }
                   @case ('note') {
                     <div class="note" aria-hidden="true"></div>
                   }
                 }
                 @if (previewKind() !== 'marker' && helpIn(l)) {
-                  <p class="sl-meta">{{ helpIn(l) }}</p>
+                  <p class="sl-phone__help">{{ helpIn(l) }}</p>
                 }
               </div>
             }
           </section>
 
-          @if (version(); as v) {
-            @if (v.status === 'DRAFT' || v.status === 'IN_REVIEW') {
-              @if ((v.problems?.length ?? 0) > 0) {
-                <section class="sl-card" aria-labelledby="problems-title">
-                  <h2 id="problems-title" class="sl-section">
-                    {{ 'admin.elements.problems.title' | transloco }}
-                  </h2>
-                  <ul>
-                    @for (p of v.problems; track p) {
-                      <li>{{ 'admin.elements.problems.' + p | transloco }}</li>
-                    }
-                  </ul>
-                </section>
-              }
-            }
+          @if (editable() || version()?.status === 'IN_REVIEW') {
+            <sl-requirements
+              [codes]="requirementCodes()"
+              [problems]="version()?.problems ?? null"
+              prefix="admin.elements.problems."
+            />
+          }
 
-            @if (v.status === 'IN_REVIEW') {
+          @if (version(); as v) {
+            @if (v.status === 'IN_REVIEW' || (v.reviews?.length ?? 0) > 0) {
               <section class="sl-card" aria-labelledby="review-title">
                 <h2 id="review-title" class="sl-section">
                   {{ 'admin.elements.review.title' | transloco }}
                 </h2>
-                @if (v.approvedBy) {
-                  <p>{{ 'admin.elements.review.approved' | transloco: { who: v.approvedBy } }}</p>
-                  @if (mayDraft()) {
-                    <button
-                      type="button"
-                      class="sl-button sl-button--primary"
-                      [disabled]="busy()"
-                      (click)="act('publication')"
-                    >
-                      {{ 'admin.elements.publish' | transloco: { n: v.version } }}
-                    </button>
+                @if (v.status === 'IN_REVIEW') {
+                  @if (v.approvedBy) {
+                    <p>{{ 'admin.elements.review.approved' | transloco: { who: v.approvedBy } }}</p>
+                    @if (mayDraft()) {
+                      <p class="sl-hint">{{ 'admin.elements.publishHint' | transloco }}</p>
+                      <button
+                        type="button"
+                        class="sl-button sl-button--primary wide"
+                        [disabled]="busy()"
+                        (click)="act('publication')"
+                      >
+                        {{ 'admin.elements.publish' | transloco: { n: v.version } }}
+                      </button>
+                    }
+                  } @else if (v.canApprove) {
+                    <label class="sl-field">
+                      <span>{{ 'admin.elements.review.comments' | transloco }}</span>
+                      <textarea
+                        class="sl-textarea"
+                        name="comments"
+                        rows="3"
+                        maxlength="4000"
+                        [(ngModel)]="comments"
+                      ></textarea>
+                      <span class="sl-hint">{{
+                        'admin.elements.review.commentsHint' | transloco
+                      }}</span>
+                    </label>
+                    <div class="sl-actions review-actions">
+                      <button
+                        type="button"
+                        class="sl-button"
+                        [disabled]="busy() || !comments.trim()"
+                        (click)="review(false)"
+                      >
+                        {{ 'admin.elements.review.return' | transloco }}
+                      </button>
+                      <button
+                        type="button"
+                        class="sl-button sl-button--primary"
+                        [disabled]="busy()"
+                        (click)="review(true)"
+                      >
+                        {{ 'admin.elements.review.approve' | transloco }}
+                      </button>
+                    </div>
+                  } @else if (mayReview()) {
+                    <p class="sl-hint">{{ 'admin.elements.review.drafter' | transloco }}</p>
+                  } @else {
+                    <p class="sl-hint">{{ 'admin.elements.review.waiting' | transloco }}</p>
                   }
-                } @else if (v.canApprove) {
-                  <label class="sl-field">
-                    <span>{{ 'admin.elements.review.comments' | transloco }}</span>
-                    <textarea
-                      class="sl-input"
-                      name="comments"
-                      maxlength="4000"
-                      [(ngModel)]="comments"
-                    ></textarea>
-                  </label>
-                  <div class="actions">
-                    <button
-                      type="button"
-                      class="sl-button"
-                      [disabled]="busy() || !comments.trim()"
-                      (click)="review(false)"
-                    >
-                      {{ 'admin.elements.review.return' | transloco }}
-                    </button>
-                    <button
-                      type="button"
-                      class="sl-button sl-button--primary"
-                      [disabled]="busy()"
-                      (click)="review(true)"
-                    >
-                      {{ 'admin.elements.review.approve' | transloco }}
-                    </button>
-                  </div>
-                } @else if (mayReview()) {
-                  <p>{{ 'admin.elements.review.drafter' | transloco }}</p>
-                } @else {
-                  <p>{{ 'admin.elements.review.waiting' | transloco }}</p>
                 }
-              </section>
-            }
-
-            @if ((v.reviews?.length ?? 0) > 0) {
-              <section class="sl-card">
-                <ul class="reviews">
-                  @for (r of v.reviews; track $index) {
-                    <li>
-                      <span class="strong">
-                        {{
-                          'admin.elements.review.decision.' + r.decision
-                            | transloco: { who: r.reviewer }
-                        }}
-                      </span>
-                      @if (r.comments) {
-                        <span>{{ r.comments }}</span>
-                      }
-                    </li>
-                  }
-                </ul>
+                @if ((v.reviews?.length ?? 0) > 0) {
+                  <ul
+                    class="sl-history"
+                    [attr.aria-label]="'admin.elements.review.history' | transloco"
+                  >
+                    @for (r of v.reviews; track $index) {
+                      <li>
+                        <span class="strong">
+                          {{
+                            'admin.elements.review.decision.' + r.decision
+                              | transloco: { who: r.reviewer }
+                          }}
+                        </span>
+                        @if (r.comments) {
+                          <span class="sl-hint">{{ r.comments }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
               </section>
             }
 
             @if (v.status === 'PUBLISHED' && mayDraft()) {
-              <section class="sl-card actions-card">
-                <button type="button" class="sl-button" [disabled]="busy()" (click)="newVersion()">
-                  {{ 'admin.elements.newVersion' | transloco }}
-                </button>
-                @if ((v.boundBy ?? 0) > 0) {
-                  <p class="sl-meta">
-                    {{ 'admin.elements.boundBy' | transloco: { n: v.boundBy } }}
-                  </p>
-                } @else {
+              <section class="sl-card" aria-labelledby="change-title">
+                <h2 id="change-title" class="sl-section">
+                  {{ 'admin.versionChange.title' | transloco }}
+                </h2>
+                <div class="stack">
                   <button
                     type="button"
                     class="sl-button"
                     [disabled]="busy()"
-                    (click)="act('retirement')"
+                    (click)="newVersion()"
                   >
-                    {{ 'admin.elements.retire' | transloco: { n: v.version } }}
+                    {{ 'admin.elements.newVersion' | transloco }}
                   </button>
-                }
+                  @if ((v.boundBy ?? 0) > 0) {
+                    <p class="sl-hint">
+                      {{ 'admin.elements.boundBy' | transloco: { n: v.boundBy } }}
+                    </p>
+                  } @else {
+                    <button
+                      type="button"
+                      class="sl-button sl-button--danger"
+                      [disabled]="busy()"
+                      (click)="act('retirement')"
+                    >
+                      {{ 'admin.elements.retire' | transloco: { n: v.version } }}
+                    </button>
+                  }
+                </div>
               </section>
             }
           }
@@ -628,126 +709,29 @@ export function draftOf(f: ElementForm, views: View[]): Draft {
     }
   `,
   styles: `
-    .head {
-      display: flex;
-      align-items: center;
-      gap: var(--space-12);
-    }
     .notice {
-      margin: var(--space-12) 0;
+      margin-bottom: var(--space-16);
     }
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
-      gap: var(--space-20);
-      margin-top: var(--space-16);
+    .limits {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    .main,
-    .side {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-16);
-    }
-    fieldset {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-14);
-      min-width: 0;
-      margin: 0;
-    }
-    /* The heading sits inside the card, as on ModuleDetails.dc.html, not on its border. */
-    legend {
-      float: left;
-      width: 100%;
-      padding: 0;
-    }
-    legend + * {
-      clear: both;
-    }
-    .add {
-      align-self: start;
-    }
-    .pair {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-12);
-    }
-    .choice {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      gap: var(--space-8);
-      align-items: end;
-      margin-bottom: var(--space-8);
+    .points {
+      --sl-rows-cols: 1fr 1fr 4rem 0;
     }
     .point {
-      align-self: center;
       font-weight: 700;
-    }
-    .actions {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      gap: var(--space-8);
-    }
-    .actions-card {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-8);
-      align-items: start;
-    }
-    .phone {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-14);
-      background: var(--surface-page);
-      padding: var(--space-12) var(--space-14);
-      margin-top: var(--space-12);
-    }
-    .phone p {
-      margin: 0 0 var(--space-8);
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-8);
-    }
-    /* Chip, off (design-system Chip): the preview is not interactive. */
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      min-height: var(--size-chip);
-      min-width: var(--size-chip);
-      box-sizing: border-box;
-      padding: 0 var(--space-12);
-      border: 1px solid var(--line-control);
-      border-radius: var(--radius-pill);
-      background: var(--surface-card);
-      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
     }
     .stepper {
-      display: flex;
       align-items: center;
       gap: var(--space-12);
     }
     .note {
-      min-height: 4rem;
+      height: 64px;
       border: 1px solid var(--line-control);
-      border-radius: var(--radius-12);
+      border-radius: var(--radius-14);
       background: var(--surface-card);
-    }
-    .strong {
-      font-weight: 700;
-    }
-    .reviews {
-      margin: 0;
-      padding-left: var(--space-16);
-    }
-    .reviews li {
-      display: flex;
-      flex-direction: column;
-    }
-    .error {
-      color: var(--danger);
-      font-weight: 600;
     }
   `,
 })
@@ -778,6 +762,7 @@ export class ElementEditorPage {
   readonly lang = signal<Lang>(this.transloco.getActiveLang() === 'fr' ? 'fr' : 'en');
 
   form: ElementForm = emptyForm();
+  protected readonly lockIcon = LucideLock;
   comments = '';
 
   readonly mayDraft = computed(() => canDraft(this.staff.roles()));
@@ -792,6 +777,19 @@ export class ElementEditorPage {
   readonly view = computed(() => {
     this.edits();
     return this.views().find((v) => v.key === this.form.inputView);
+  });
+  /** What a version must meet; only the checks that apply to what it records are listed. */
+  readonly requirementCodes = computed(() => {
+    this.edits();
+    const t = this.form.valueType;
+    return [
+      'labels',
+      ...(t === 'ENUM' || t === 'INT' ? ['values'] : []),
+      'inputView',
+      ...(this.view()?.props?.['start'] ? ['viewProps'] : []),
+      ...(t === 'INT' || t === 'MINUTES' || t === 'TEXT' || t === 'ENUM' ? ['constraints'] : []),
+      'icon',
+    ];
   });
   readonly validCode = computed(() => {
     this.edits();
