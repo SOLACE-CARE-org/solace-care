@@ -236,3 +236,400 @@ a.sl-pill {
 .sl-dialog::backdrop {
   background: rgb(20 32 28 / 0.35);
 }
+
+/* --- Tracking setup pages (D61): shared layout for the lists and version editors. --- */
+
+.sl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Page head: title and intro on the left, actions or steps on the right (ModuleElements.dc.html). */
+.sl-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-bottom: var(--space-20);
+}
+.sl-head__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+}
+.sl-head__intro {
+  margin: var(--space-4) 0 0;
+  max-width: 72ch;
+  color: var(--ink-muted);
+}
+.sl-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+/* Notice (design-system components/Notice): bold lead, one sentence, 20px icon. */
+.sl-notice {
+  display: flex;
+  gap: var(--space-10);
+  align-items: flex-start;
+  padding: var(--space-12) var(--space-14);
+  border-radius: var(--radius-14);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.sl-notice > svg {
+  flex-shrink: 0;
+}
+.sl-notice p {
+  margin: 0;
+}
+.sl-notice strong {
+  font-weight: 700;
+}
+.sl-notice--warning {
+  background: var(--warning-tint);
+  border: 1px solid var(--accent);
+  color: var(--warning-ink-deep);
+}
+.sl-notice--danger {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+.sl-notice--brand {
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+}
+
+/* EmptyState (design-system components/EmptyState), at the panel's width. */
+.sl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-12);
+  padding: var(--space-28) var(--space-16);
+}
+.sl-empty__icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sl-empty__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+.sl-empty__body {
+  margin: 0;
+  max-width: 360px;
+  color: var(--ink-muted);
+}
+
+/* A version editor: the form on the left, preview, checks and review on the right. */
+.sl-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  gap: var(--space-16);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .sl-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sl-editor__main,
+.sl-editor__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  min-width: 0;
+}
+.sl-editor fieldset.sl-card {
+  margin: 0;
+  min-width: 0;
+}
+/* A card's fields: two columns where they pair (English and French), one otherwise. */
+.sl-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-14) var(--space-12);
+}
+.sl-fields > .sl-field--wide {
+  grid-column: 1 / -1;
+}
+.sl-card > .sl-section + .sl-meta,
+.sl-card > legend + .sl-meta {
+  margin: calc(var(--space-8) * -1) 0 var(--space-14);
+}
+legend.sl-section {
+  float: left;
+  width: 100%;
+  padding: 0;
+}
+legend.sl-section + * {
+  clear: both;
+}
+.sl-hint {
+  font-size: var(--type-meta-size);
+  line-height: var(--type-meta-line-height);
+  color: var(--ink-muted);
+}
+.sl-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+.sl-status {
+  font-size: var(--type-meta-size);
+  color: var(--ink-muted);
+}
+.sl-error {
+  font-size: var(--type-meta-size);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Rows that repeat (choices, measures): an inset box, column labels once (ModuleRules.dc.html). */
+.sl-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-14);
+  border-radius: var(--radius-14);
+  background: var(--surface-sunken);
+}
+.sl-rows__head,
+.sl-rows__row {
+  display: grid;
+  grid-template-columns: var(--sl-rows-cols, 1fr 1fr 1fr auto);
+  gap: var(--space-8);
+  align-items: center;
+}
+.sl-rows__head {
+  font-size: var(--type-meta-size);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.sl-rows__row + .sl-rows__row {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line);
+}
+.sl-rows .sl-input,
+.sl-rows .sl-select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.sl-rows__add {
+  align-self: flex-start;
+  border-style: dashed;
+}
+.sl-link-button {
+  min-height: var(--size-tap);
+  padding: 0 var(--space-8);
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sl-link-button--danger {
+  color: var(--danger);
+}
+.sl-link-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Where a version is: Draft, Clinical review, Published (step pills as on ModuleElements.dc.html). */
+.sl-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+}
+.sl-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: var(--size-control-admin);
+  padding: 0 var(--space-14);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.sl-steps li[data-state='done'] {
+  color: var(--brand-deep);
+  border-color: var(--line);
+}
+.sl-steps li[aria-current='step'] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+
+/* What still blocks submission: every requirement, met or not. */
+.sl-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+.sl-checklist li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+.sl-checklist li[data-met='true'] {
+  color: var(--ink-muted);
+}
+.sl-checklist li[data-met='true'] svg {
+  color: var(--brand);
+}
+.sl-checklist li[data-met='false'] svg {
+  color: var(--warning);
+}
+
+/* How the phone shows it: the app's own surfaces and chips, in both languages. */
+.sl-phone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding: var(--space-14);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-14);
+  background: var(--surface-page);
+}
+.sl-phone + .sl-phone {
+  margin-top: var(--space-10);
+}
+.sl-phone__lang {
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.sl-phone__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 15px;
+}
+.sl-phone__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+.sl-phone__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 var(--space-12);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.sl-phone__chip--empty {
+  min-width: 48px;
+  border-style: dashed;
+  border-color: var(--line-strong);
+}
+.sl-phone__help {
+  margin: 0;
+  font-size: var(--type-meta-size);
+  color: var(--ink-muted);
+}
+
+/* Review history: who decided what, newest last. */
+.sl-history {
+  list-style: none;
+  margin: var(--space-14) 0 0;
+  padding: var(--space-12) 0 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+.sl-history li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Small pieces the version editors share. */
+.sl-editor .strong {
+  font-weight: 700;
+}
+.sl-editor .code,
+.sl-code {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.sl-editor__rail .sl-card > p {
+  margin: 0 0 var(--space-10);
+}
+.sl-editor__rail .sl-card > p:last-child {
+  margin-bottom: 0;
+}
+.sl-editor__rail .sl-field {
+  margin-bottom: var(--space-10);
+}
+.sl-editor__rail .wide {
+  width: 100%;
+}
+.sl-editor__rail .stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-8);
+}
+.sl-editor__rail .stack p {
+  margin: 0;
+}
+.sl-editor fieldset > .sl-hint {
+  margin: calc(var(--space-6) * -1) 0 var(--space-12);
+}
+.sl-editor__rail .sl-card > .sl-hint:first-of-type {
+  margin-top: calc(var(--space-6) * -1);
+}
+/* A locked version reads as text in a box, not as a field waiting for input. */
+.sl-editor fieldset:disabled .sl-input,
+.sl-editor fieldset:disabled .sl-select,
+.sl-editor fieldset:disabled .sl-textarea {
+  background: var(--surface-page);
+  border-color: var(--line);
+  color: var(--ink);
+  opacity: 1;
+  appearance: none;
+}
+.sl-editor .review-actions {
+  flex-direction: column-reverse;
+  align-items: stretch;
+}
