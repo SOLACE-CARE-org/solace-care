@@ -1,9 +1,9 @@
 import { colors, space } from '@solace/tokens/native';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { ContextAnswer, ContextQuestion } from '@/api/tracking';
-import { OptionCard } from '@/ui/OptionCard';
+import { Chip } from '@/ui/Chip';
 import { Text } from '@/ui/Text';
 
 /** The question in the app language, falling back to the code. */
@@ -12,8 +12,10 @@ export function questionText(q: ContextQuestion, lang: 'en' | 'fr'): string {
 }
 
 /**
- * One context question (D61): yes or no, one choice, or several. Every question can be skipped;
- * "Skip" leaves it unanswered, and an unanswered question never switches a pattern check off.
+ * One context question (D61), answered with chips as on the health check preferences
+ * (HealthCheckPrefs): yes or no, one choice, or several. Every question is optional: until it is
+ * answered it says so, and "Clear answer" takes an answer back. An unanswered question never
+ * switches a pattern check off.
  */
 export function ContextQuestionField({
   question: q,
@@ -52,34 +54,56 @@ export function ContextQuestionField({
     onChange(next.length ? next : null);
   };
   const title = questionText(q, lang);
+  const answered = value !== undefined && !(Array.isArray(value) && value.length === 0);
 
   return (
-    <View style={styles.question} accessibilityRole={many ? undefined : 'radiogroup'}>
-      <Text variant="label">{title}</Text>
-      {options.map((o) => (
-        <OptionCard
-          key={o.code}
-          kind={many ? 'checkbox' : 'radio'}
-          title={o.label}
-          selected={chosen(o.code)}
-          onPress={() => pick(o.code)}
-        />
-      ))}
-      <OptionCard
-        kind={many ? 'checkbox' : 'radio'}
-        title={t('track.about.skip')}
-        selected={value === undefined}
-        onPress={() => !disabled && onChange(null)}
-      />
+    <View style={styles.question}>
+      <Text variant="label" nativeID={`q-${q.code}`}>
+        {title}
+      </Text>
       {many ? (
         <Text variant="meta" color={colors.inkMuted}>
           {t('track.about.many')}
         </Text>
       ) : null}
+      <View
+        style={styles.chips}
+        accessibilityRole={many ? undefined : 'radiogroup'}
+        accessibilityLabel={title}
+      >
+        {options.map((o) => (
+          <Chip
+            key={o.code}
+            label={o.label}
+            on={chosen(o.code)}
+            role={many ? 'checkbox' : 'radio'}
+            onToggle={() => pick(o.code)}
+          />
+        ))}
+      </View>
+      {answered ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('track.about.clearFor', { question: title })}
+          onPress={() => !disabled && onChange(null)}
+          hitSlop={8}
+          style={styles.clear}
+        >
+          <Text variant="label" color={colors.brand}>
+            {t('track.about.clear')}
+          </Text>
+        </Pressable>
+      ) : (
+        <Text variant="meta" color={colors.inkMuted}>
+          {t('track.about.unanswered')}
+        </Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  question: { gap: space.space8 },
+  question: { gap: space.space10 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.space8 },
+  clear: { alignSelf: 'flex-start', minHeight: 24, justifyContent: 'center' },
 });

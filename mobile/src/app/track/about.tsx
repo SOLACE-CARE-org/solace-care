@@ -1,13 +1,10 @@
 import { colors, radius, space } from '@solace/tokens/native';
+import { Lock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  useAnswerContextQuestion,
-  useContextAnswers,
-  useContextQuestions,
-} from '@/api/tracking';
+import { useAnswerContextQuestion, useContextAnswers, useContextQuestions } from '@/api/tracking';
 import i18n from '@/i18n';
 import { ContextQuestionField } from '@/tracking/ContextQuestionField';
 import { Button } from '@/ui/Button';
@@ -15,10 +12,10 @@ import { BackButton } from '@/ui/ProgressSteps';
 import { Text } from '@/ui/Text';
 
 /**
- * About you for tracking (Tracking Service Spec, App): the published profile-scoped context
- * questions. Every answer can be skipped or changed, and an answer can only switch a pattern
- * check off. No screen design exists yet, so the layout follows the catalogue and the copy is
- * provisional.
+ * About you (Tracking Service Spec, App; D61): the published profile-scoped context questions,
+ * answered with chips. Every answer is optional, can be cleared or changed at any time, and can
+ * only switch a pattern check off. Layout follows Privacy & data (title row) and the health check
+ * preferences (questions as chip groups).
  */
 export default function AboutYou() {
   const { t } = useTranslation();
@@ -30,16 +27,17 @@ export default function AboutYou() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.top}>
-        <BackButton />
-      </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLg" accessibilityRole="header">
-          {t('track.about.title')}
-        </Text>
+        <View style={styles.titleRow}>
+          <BackButton />
+          <Text variant="titleMd" accessibilityRole="header">
+            {t('track.about.title')}
+          </Text>
+        </View>
         <Text variant="body" color={colors.inkMuted}>
           {t('track.about.intro')}
         </Text>
+
         {questions.isError || answers.isError ? (
           <View style={styles.card}>
             <Text variant="body">{t('common.checkConnection')}</Text>
@@ -57,27 +55,46 @@ export default function AboutYou() {
             {t('common.loading')}
           </Text>
         ) : profile.length === 0 ? (
-          <Text variant="body" color={colors.inkMuted}>
-            {t('track.about.none')}
-          </Text>
+          <View style={styles.card}>
+            <Text variant="label">{t('track.about.noneTitle')}</Text>
+            <Text variant="meta" color={colors.inkMuted}>
+              {t('track.about.none')}
+            </Text>
+          </View>
         ) : (
-          profile.map((q) => (
-            <View key={q.code} style={styles.card}>
-              <ContextQuestionField
-                question={q}
-                lang={lang}
-                value={answers.data?.[q.code]}
-                disabled={answer.isPending}
-                onChange={(value) => answer.mutate({ code: q.code, value })}
-              />
-            </View>
-          ))
+          <View style={styles.card}>
+            {profile.map((q, i) => (
+              <View key={q.code} style={[styles.row, i > 0 && styles.divider]}>
+                <ContextQuestionField
+                  question={q}
+                  lang={lang}
+                  value={answers.data?.[q.code]}
+                  disabled={answer.isPending}
+                  onChange={(value) => answer.mutate({ code: q.code, value })}
+                />
+              </View>
+            ))}
+          </View>
         )}
-        {answer.isError ? (
-          <Text variant="meta" color={colors.danger} accessibilityRole="alert">
-            {t('common.checkConnection')}
+
+        <View accessibilityLiveRegion="polite">
+          {answer.isError ? (
+            <Text variant="meta" color={colors.danger} accessibilityRole="alert">
+              {t('track.about.notSaved')}
+            </Text>
+          ) : answer.isSuccess ? (
+            <Text variant="meta" color={colors.brand}>
+              {t('track.about.saved')}
+            </Text>
+          ) : null}
+        </View>
+
+        <View style={styles.privacy}>
+          <Lock size={18} strokeWidth={1.8} color={colors.inkMuted} aria-hidden />
+          <Text variant="meta" color={colors.inkMuted} style={styles.privacyText}>
+            {t('track.about.privacy')}
           </Text>
-        ) : null}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -85,14 +102,19 @@ export default function AboutYou() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surfacePage },
-  top: { paddingHorizontal: space.space12 },
   content: { padding: space.space20, gap: space.space16 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.space4 },
   card: {
     gap: space.space12,
-    padding: space.space16,
+    paddingHorizontal: space.space16,
+    paddingVertical: space.space4,
     borderRadius: radius.radius16,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.surfaceCard,
   },
+  row: { paddingVertical: space.space14 },
+  divider: { borderTopWidth: 1, borderTopColor: colors.line },
+  privacy: { flexDirection: 'row', gap: space.space8, alignItems: 'flex-start' },
+  privacyText: { flex: 1 },
 });
