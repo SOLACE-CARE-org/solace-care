@@ -38,11 +38,10 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  *       synthetic histories: each rule fires only on the history it describes, and "unless" holds.
  *   <li>A new element and a new module built only through the admin API reach a phone and fire a
  *       recommendation, with no migration, no restart and no app release.
+ *   <li>A new episode model and a new context question, built the same way, reach a phone too: a
+ *       rule reads the model's episodes, fires on what one person logged, and the question's answer
+ *       switches it off for another.
  * </ol>
- *
- * The gate's new episode model and context question, each built only in the portal and reaching a
- * phone without a release, are proved in {@code EpisodeModelBuilderIntegrationTest} and {@code
- * ContextQuestionBuilderIntegrationTest}.
  */
 class PhaseGateIntegrationTest extends TrackingStackTest {
 
@@ -221,6 +220,221 @@ class PhaseGateIntegrationTest extends TrackingStackTest {
         .isEqualTo("Vous avez noté un très fort mal de tête 3 jours sur les 7 derniers.");
   }
 
+  // --- 3. An episode model and a context question, built in the portal, on a phone ---------
+
+  @Test
+  void anEpisodeModelAndAContextQuestionBuiltOnlyInThePortalReachAPhone() throws Exception {
+    String sfx = UUID.randomUUID().toString().substring(0, 6);
+    String start = "attack_" + sfx;
+    String pain = "pain_" + sfx;
+    String model = "attacks_" + sfx;
+    String question = "preventive_" + sfx;
+    String module = "attacks_mod_" + sfx;
+
+    // Two elements from views the app already ships.
+    publish(
+        "/admin/v1/tracking/element-versions",
+        """
+        {"code":"%s","kind":"EVENT","valueType":"DATE","constraints":{},"inputView":"event_marker",
+         "viewProps":{},"icon":"brain",
+         "labels":{"en":{"name":"Attack started"},"fr":{"name":"Début de crise"}}}
+        """
+            .formatted(start));
+    publish(
+        "/admin/v1/tracking/element-versions",
+        """
+        {"code":"%s","kind":"DAY_STATE","valueType":"ENUM",
+         "constraints":{"values":["none","mild","strong"]},"inputView":"choice_chips",
+         "viewProps":{},"icon":"brain",
+         "labels":{"en":{"name":"Pain","values":{"none":"None","mild":"Mild","strong":"Strong"}},
+                   "fr":{"name":"Douleur","values":{"none":"Aucune","mild":"Légère","strong":"Forte"}}}}
+        """
+            .formatted(pain));
+
+    // The episode model: an attack starts when marked and lasts while there is pain.
+    publish(
+        "/admin/v1/tracking/episode-model-versions",
+        """
+        {"code":"%s","startElement":"%s","activityElement":"%s","activeValues":["mild","strong"],
+         "gapDays":2,"span":"UNTIL_END",
+         "metrics":[{"code":"length_days","kind":"LENGTH_DAYS","labels":{"en":"Attack length","fr":"Durée de la crise"}},
+                    {"code":"strong_days","kind":"DAYS_WITH_VALUE","value":"strong",
+                     "labels":{"en":"Strong days","fr":"Jours forts"}}],
+         "labels":{"en":"Attack","fr":"Crise"}}
+        """
+            .formatted(model, start, pain));
+
+    // The context question, asked when joining the module.
+    publish(
+        "/admin/v1/tracking/context-question-versions",
+        """
+        {"code":"%s","type":"YES_NO","scope":"ENROLMENT",
+         "question":{"en":"Are you taking a preventive treatment?",
+                     "fr":"Prenez-vous un traitement préventif ?"},"options":[]}
+        """
+            .formatted(question));
+
+    // Made-up histories: strong attacks fire; the same attacks on a preventive treatment, and a
+    // calm month, do not.
+    String attacks =
+        """
+        {"parts":[{"pattern":"episodes","start":"%s","activity":"%s","lengths":[10,10,10],
+                   "currentDay":2,"active":[{"value":"strong","days":3}],
+                   "after":{"value":"none","days":2}}]}
+        """
+            .formatted(start, pain);
+    syntheticHistory("strong_" + sfx, attacks, "{}", "Strong attacks", "Crises fortes");
+    syntheticHistory(
+        "treated_" + sfx,
+        attacks,
+        "{\"" + question + "\":true}",
+        "Strong attacks, preventive treatment",
+        "Crises fortes, traitement préventif");
+    history("calm_" + sfx, pain, "none", "No pain", "Pas de douleur");
+
+    // The module: both elements, the model's day on the card, the question on joining, one rule.
+    String version = moduleDraft(module, start, pain);
+    send(
+            put("/admin/v1/tracking/versions/" + version + "/presentation"),
+            ops,
+            """
+            {"episode":{"model":"%s","dayLabel":{"en":"attack day {{n}}","fr":"jour {{n}} de la crise"}},
+             "trends":["%s.strong_days"]}
+            """
+                .formatted(model, model))
+        .andExpect(status().isOk());
+    send(
+            put("/admin/v1/tracking/versions/" + version + "/questions"),
+            ops,
+            "[\"" + question + "\"]")
+        .andExpect(status().isOk());
+    send(
+            post("/admin/v1/tracking/versions/" + version + "/rules"),
+            ops,
+            """
+            {"code":"attacks.strong",
+             "conditions":[{"signal":"%s.strong_days","operator":"consecutive_episodes",
+                            "comparison":"gte","threshold":2,"count":2}],
+             "unless":[{"question":"%s","equals":true}],
+             "outcome":"INVITE","specialtyCodes":["neurology"],
+             "messageEn":"Your last {n} attacks each had at least {threshold} strong days.",
+             "messageFr":"Vos {n} dernières crises ont chacune eu au moins {threshold} jours forts.",
+             "cooldownDays":30}
+            """
+                .formatted(model, question))
+        .andExpect(status().isCreated());
+    Map<String, Boolean> fires = new LinkedHashMap<>();
+    Map<String, Boolean> blocked = new LinkedHashMap<>();
+    for (JsonNode r :
+        json(mvc.perform(post("/admin/v1/tracking/versions/" + version + "/test-run").with(ops)))) {
+      fires.put(r.path("history").asText(), r.path("fires").asBoolean());
+      blocked.put(r.path("history").asText(), r.path("blockedByUnless").asBoolean());
+    }
+    assertThat(fires).containsEntry("strong_" + sfx, true);
+    assertThat(fires).containsEntry("treated_" + sfx, false);
+    assertThat(blocked).containsEntry("treated_" + sfx, true);
+    assertThat(fires).containsEntry("calm_" + sfx, false);
+    mvc.perform(get("/admin/v1/tracking/versions/" + version).with(ops))
+        .andExpect(jsonPath("$.problems.length()").value(0));
+    mvc.perform(post("/admin/v1/tracking/versions/" + version + "/submission").with(ops))
+        .andExpect(status().isOk());
+    send(post("/admin/v1/tracking/versions/" + version + "/review"), reviewer, "{\"approve\":true}")
+        .andExpect(status().isOk());
+    mvc.perform(post("/admin/v1/tracking/versions/" + version + "/publication").with(ops))
+        .andExpect(status().isOk());
+
+    // On the phone: the question to ask, and the module that asks it.
+    UUID untreated = UUID.randomUUID();
+    mvc.perform(get("/v1/tracking/context-questions").with(seeker(untreated)))
+        .andExpect(
+            jsonPath("$[?(@.code == '%s')].labels.fr.question".formatted(question))
+                .value("Prenez-vous un traitement préventif ?"));
+    mvc.perform(get("/v1/tracking/modules").with(seeker(untreated)))
+        .andExpect(jsonPath("$[?(@.code == '%s')].questions[0]".formatted(module)).value(question));
+
+    // Two people log the same three strong attacks; one is on a preventive treatment.
+    UUID treated = UUID.randomUUID();
+    LocalDate first = LocalDate.now().minusDays(32);
+    List<Map<String, Object>> entries = new ArrayList<>();
+    for (LocalDate s : List.of(first, first.plusDays(10), first.plusDays(20))) {
+      entries.add(entry(start, s.toString(), s.toString()));
+      for (int d = 0; d < 3; d++) {
+        entries.add(entry(pain, s.plusDays(d).toString(), "strong"));
+      }
+      entries.add(entry(pain, s.plusDays(3).toString(), "none"));
+    }
+    for (var who : Map.of(untreated, false, treated, true).entrySet()) {
+      consent(who.getKey());
+      send(
+              post("/v1/tracking/modules/" + module + "/enrolment"),
+              seeker(who.getKey()),
+              "{\"answers\":{\"" + question + "\":" + who.getValue() + "}}")
+          .andExpect(status().isNoContent());
+      List<Map<String, Object>> fresh = new ArrayList<>();
+      entries.forEach(
+          e -> {
+            Map<String, Object> copy = new LinkedHashMap<>(e);
+            copy.put("clientEntryId", UUID.randomUUID().toString());
+            fresh.add(copy);
+          });
+      send(
+              post("/v1/tracking/sync/push"),
+              seeker(who.getKey()),
+              JSON.writeValueAsString(
+                  Map.of("deviceId", "p", "entries", fresh, "deletions", List.of())))
+          .andExpect(status().isOk());
+    }
+
+    // The model finds the attacks on the phone.
+    var episodes =
+        json(mvc.perform(get("/v1/tracking/episodes/" + model).with(seeker(untreated))))
+            .path("episodes");
+    assertThat(episodes).hasSize(3);
+    assertThat(episodes.get(0).path("metrics").path("strong_days").asInt()).isEqualTo(3);
+
+    // The rule fires for the person not on treatment, and the answer switches it off for the
+    // other.
+    var recs =
+        json(
+            mvc.perform(
+                get("/v1/tracking/recommendations")
+                    .with(seeker(untreated))
+                    .header("Accept-Language", "fr")));
+    assertThat(recs).hasSize(1);
+    assertThat(recs.get(0).path("message").asText())
+        .isEqualTo("Vos 2 dernières crises ont chacune eu au moins 2 jours forts.");
+    assertThat(json(mvc.perform(get("/v1/tracking/recommendations").with(seeker(treated)))))
+        .isEmpty();
+  }
+
+  /** Drafts, submits, has someone else approve, and publishes; the draft must be ready. */
+  private void publish(String base, String body) throws Exception {
+    String id =
+        json(send(post(base), ops, body)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.problems.length()").value(0)))
+            .path("id")
+            .asText();
+    String path = base + "/" + id;
+    mvc.perform(post(path + "/submission").with(ops)).andExpect(status().isOk());
+    send(post(path + "/review"), reviewer, "{\"approve\":true}").andExpect(status().isOk());
+    mvc.perform(post(path + "/publication").with(ops))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("PUBLISHED"));
+  }
+
+  private void syntheticHistory(String code, String recipe, String context, String en, String fr)
+      throws Exception {
+    send(
+            post("/admin/v1/tracking/synthetic-histories"),
+            reviewer,
+            """
+            {"code":"%s","labels":{"en":"%s","fr":"%s"},"recipe":%s,"context":%s}
+            """
+                .formatted(code, en, fr, recipe, context))
+        .andExpect(status().isCreated());
+  }
+
   private void history(String code, String element, String value, String en, String fr)
       throws Exception {
     send(
@@ -235,8 +449,8 @@ class PhaseGateIntegrationTest extends TrackingStackTest {
         .andExpect(status().isCreated());
   }
 
-  /** A module draft with EN/FR details, a card image, and mood plus the new element bound. */
-  private String moduleDraft(String code, String element) throws Exception {
+  /** A module draft with EN/FR details, a card image, and mood plus the new elements bound. */
+  private String moduleDraft(String code, String... elements) throws Exception {
     String id =
         json(send(
                     post("/admin/v1/tracking/modules"),
@@ -268,13 +482,15 @@ class PhaseGateIntegrationTest extends TrackingStackTest {
                     Map.entry("audienceEn", "For anyone who gets headaches"),
                     Map.entry("audienceFr", "Pour toute personne qui a des maux de tête"))))
         .andExpect(status().isOk());
-    send(
-            put("/admin/v1/tracking/versions/" + id + "/elements"),
-            ops,
-            "[{\"code\":\"mood\",\"version\":\"1\",\"required\":true},"
-                + "{\"code\":\""
-                + element
-                + "\",\"version\":\"1\",\"required\":true}]")
+    StringBuilder bound =
+        new StringBuilder("[{\"code\":\"mood\",\"version\":\"1\",\"required\":true}");
+    for (String element : elements) {
+      bound
+          .append(",{\"code\":\"")
+          .append(element)
+          .append("\",\"version\":\"1\",\"required\":true}");
+    }
+    send(put("/admin/v1/tracking/versions/" + id + "/elements"), ops, bound.append("]").toString())
         .andExpect(status().isOk());
     return id;
   }
