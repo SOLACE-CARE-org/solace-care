@@ -1812,6 +1812,69 @@
         "labels": "Names for the model and each measure in EN and FR"
       }
     },
+    "questions": {
+      "title": "Context questions",
+      "manage": "Context questions",
+      "subtitle": "Questions about the person that can switch a rule off, such as whether they are trying to conceive. Answers stay in Tracking and can be skipped. A clinical reviewer approves each version.",
+      "new": "New context question",
+      "empty": "No context questions yet.",
+      "col": {
+        "question": "Question",
+        "asked": "Asked",
+        "published": "Published",
+        "workingOn": "Working on"
+      },
+      "back": "Context questions",
+      "newTitle": "New context question",
+      "heading": "{{code}} v{{n}}",
+      "basics": "Question",
+      "code": "Code",
+      "codeHint": "Lower case letters, digits and underscores. Modules and rules read the question by its code, so it never changes.",
+      "codeTaken": "This question already has a version being worked on.",
+      "questionEn": "Question in English",
+      "questionFr": "Question in French",
+      "type": "Answer type",
+      "types": {
+        "YES_NO": "Yes or no",
+        "ONE_CHOICE": "One choice",
+        "MANY_CHOICES": "Several choices"
+      },
+      "scope": "Where it is asked",
+      "scopes": {
+        "PROFILE": "On the About you screen, where it can be changed",
+        "ENROLMENT": "When joining a module that asks it"
+      },
+      "scopeShort": {
+        "PROFILE": "About you",
+        "ENROLMENT": "On joining"
+      },
+      "options": "Choices",
+      "optionsHint": "Two to twelve choices. Rules read a choice by its code.",
+      "optionCode": "Code",
+      "optionEn": "Choice in English",
+      "optionFr": "Choice in French",
+      "addOption": "Add a choice",
+      "removeOption": "Remove {{code}}",
+      "remove": "Remove",
+      "save": "Save draft",
+      "saved": "Saved.",
+      "submit": "Submit for review",
+      "readOnly": "This version cannot change. Start a new version to change the question.",
+      "publishHint": "Publishing replaces the version in use. Answers people already gave stay.",
+      "usedBy": "{{n}} module versions ask this question or read it in a rule, so it cannot be retired yet.",
+      "preview": {
+        "title": "On the phone",
+        "yes": "Yes",
+        "no": "No",
+        "skip": "Skip"
+      },
+      "problems": {
+        "title": "Before it can be submitted",
+        "type": "The same answer type as the published version",
+        "question": "The question in EN and FR, up to 200 characters",
+        "options": "For a choice question, two to twelve choices with different codes and names in EN and FR, keeping every choice the published version has; none for yes or no"
+      }
+    },
     "wording": {
       "title": "Word list and settings",
       "subtitle": "What rule messages may not say, and the numbers Tracking runs with.",

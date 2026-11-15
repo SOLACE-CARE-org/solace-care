@@ -10,41 +10,73 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
  * The published context questions (Tracking Service Spec, Context questions; D61): the newest
- * published version of each code. They change only by migration until the admin editor arrives, so
- * they are read once at start.
+ * published version of each code. Admins publish and retire questions in the portal, so this
+ * instance reads them again after each change and every {@code
+ * solace.tracking.elements.refresh-seconds} so other instances catch up, as the element library
+ * does.
  */
 @Component
 public class ContextQuestions {
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
-  private final Map<String, ContextQuestion> byCode = new LinkedHashMap<>();
+  private final JdbcClient db;
+  private volatile Map<String, ContextQuestion> byCode;
 
   @Autowired
   ContextQuestions(JdbcClient db) {
-    this(
-        db.sql("SELECT * FROM context_question WHERE status = 'PUBLISHED' ORDER BY code, version")
-            .query(ContextQuestions::row)
-            .list());
+    this.db = db;
+    reload();
   }
 
   private ContextQuestions(Collection<ContextQuestion> questions) {
-    questions.forEach(q -> byCode.put(q.code(), q));
+    this.db = null;
+    this.byCode = index(questions);
   }
 
   /** A fixed set of questions, for tests that do not read the database. */
   public static ContextQuestions of(Collection<ContextQuestion> questions) {
     return new ContextQuestions(questions);
+  }
+
+  /**
+   * Reads the published questions again; readers keep the old set until the new one is complete.
+   */
+  @Scheduled(
+      fixedDelayString = "${solace.tracking.elements.refresh-seconds:30}",
+      initialDelayString = "${solace.tracking.elements.refresh-seconds:30}",
+      timeUnit = TimeUnit.SECONDS)
+  public void reload() {
+    if (db == null) {
+      return;
+    }
+    byCode =
+        index(
+            db.sql(
+                    "SELECT * FROM context_question WHERE status = 'PUBLISHED' ORDER BY code,"
+                        + " version")
+                .query(ContextQuestions::row)
+                .list());
+  }
+
+  private static Map<String, ContextQuestion> index(Collection<ContextQuestion> questions) {
+    Map<String, ContextQuestion> out = new LinkedHashMap<>();
+    // Ordered by version, so the newest of each code is put last and wins.
+    questions.forEach(q -> out.put(q.code(), q));
+    return Collections.unmodifiableMap(out);
   }
 
   public List<ContextQuestion> all() {
@@ -70,7 +102,7 @@ public class ContextQuestions {
         code, version, Type.valueOf(type), Scope.valueOf(scope), labels, List.copyOf(parsed));
   }
 
-  private static ContextQuestion row(ResultSet rs, int n) throws SQLException {
+  static ContextQuestion row(ResultSet rs, int n) throws SQLException {
     try {
       return parse(
           rs.getString("code"),

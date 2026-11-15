@@ -18,6 +18,8 @@ import { CrisisQueuePage } from './crisis/crisis-queue.page';
 import { environment } from '../environments/environment';
 import { HealthCheckVersionPage } from './health-check/health-check-version.page';
 import { HealthCheckPage } from './health-check/health-check.page';
+import { ContextQuestionEditorPage } from './modules/context-question-editor.page';
+import { ContextQuestionsPage } from './modules/context-questions.page';
 import { ElementEditorPage } from './modules/element-editor.page';
 import { ElementsPage } from './modules/elements.page';
 import { EpisodeModelEditorPage } from './modules/episode-model-editor.page';
@@ -138,6 +140,17 @@ export const routes: Routes = [
             {
               path: 'modules/episode-models/:id',
               component: EpisodeModelEditorPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            // Admin-defined context questions (D61), opened from the modules list.
+            {
+              path: 'modules/context-questions',
+              component: ContextQuestionsPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            {
+              path: 'modules/context-questions/:id',
+              component: ContextQuestionEditorPage,
               canActivate: [areaGuard('trackingModules')],
             },
             {
