@@ -20,6 +20,8 @@ import { HealthCheckVersionPage } from './health-check/health-check-version.page
 import { HealthCheckPage } from './health-check/health-check.page';
 import { ElementEditorPage } from './modules/element-editor.page';
 import { ElementsPage } from './modules/elements.page';
+import { EpisodeModelEditorPage } from './modules/episode-model-editor.page';
+import { EpisodeModelsPage } from './modules/episode-models.page';
 import { ModuleBuilderPage } from './modules/module-builder.page';
 import { ModuleReviewPage } from './modules/module-review.page';
 import { ModulesPage } from './modules/modules.page';
@@ -125,6 +127,17 @@ export const routes: Routes = [
             {
               path: 'modules/elements/:id',
               component: ElementEditorPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            // Admin-defined episode models (D61), opened from the modules list.
+            {
+              path: 'modules/episode-models',
+              component: EpisodeModelsPage,
+              canActivate: [areaGuard('trackingModules')],
+            },
+            {
+              path: 'modules/episode-models/:id',
+              component: EpisodeModelEditorPage,
               canActivate: [areaGuard('trackingModules')],
             },
             {

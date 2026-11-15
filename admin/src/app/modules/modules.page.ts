@@ -41,6 +41,9 @@ type Summary = NonNullable<Row['versions']>[number];
         <a class="sl-button" routerLink="/modules/elements">
           {{ 'admin.elements.manage' | transloco }}
         </a>
+        <a class="sl-button" routerLink="/modules/episode-models">
+          {{ 'admin.episodes.manage' | transloco }}
+        </a>
         @if (mayDraft()) {
           <button type="button" class="sl-button sl-button--primary" (click)="openNew()">
             {{ 'admin.modules.new' | transloco }}

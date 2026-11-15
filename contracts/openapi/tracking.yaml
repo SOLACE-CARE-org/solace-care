@@ -22,7 +22,9 @@ tags:
   - name: admin-wording
     description: The diagnostic word list and Tracking settings for staff (provisional screens; D61)
   - name: admin-elements
-    description: The element builder for staff (admin screens 32 and 33, provisional; D61)
+    description: The element builder for staff (admin screen 32, provisional; D61)
+  - name: admin-episode-models
+    description: The episode model builder for staff (admin screen 33, provisional; D61)
   - name: sync
     description: Logging from the phone, offline first, replay-safe on client_entry_id (D49)
   - name: cycles
@@ -713,6 +715,191 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/ElementVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions:
+    get:
+      operationId: adminListEpisodeModelVersions
+      summary: Every episode model version in every state, newest first within a code
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          description: The versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EpisodeModelVersion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: draftEpisodeModel
+      summary: Draft a new episode model at v1, or the next version of one
+      description: |
+        Drafted from published elements. A code with versions starts the next number. Only one
+        draft or version in review per code. Operations or a Super admin.
+      tags: [admin-episode-models]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EpisodeModelDraft"
+      responses:
+        "201":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    get:
+      operationId: adminGetEpisodeModelVersion
+      summary: One episode model version with what stops it being submitted
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: saveEpisodeModelDraft
+      summary: Save a draft; the code and version cannot change
+      tags: [admin-episode-models]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EpisodeModelDraft"
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}/test-run:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    post:
+      operationId: testEpisodeModelVersion
+      summary: The episodes this version finds in each synthetic history; nothing is stored
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          description: One row per synthetic history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EpisodeTestRun"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}/submission:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    post:
+      operationId: submitEpisodeModelVersion
+      summary: Send a complete draft for clinical review
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}/review:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    post:
+      operationId: reviewEpisodeModelVersion
+      summary: A Clinical reviewer who did not draft it approves, or returns it with comments
+      tags: [admin-episode-models]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [approve]
+              properties:
+                approve:
+                  type: boolean
+                comments:
+                  type: string
+                  maxLength: 4000
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}/publication:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    post:
+      operationId: publishEpisodeModelVersion
+      summary: Publish an approved version; it replaces the code's published one and episodes are rebuilt
+      description: |
+        The older published version of the code is retired. Everyone who logged one of the model's
+        elements and still consents has their episodes for the code rebuilt. Refused when the
+        version has problems again (an element was retired, or a metric was dropped).
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/v1/tracking/episode-model-versions/{episodeModelVersionId}/retirement:
+    parameters:
+      - $ref: "#/components/parameters/EpisodeModelVersionId"
+    post:
+      operationId: retireEpisodeModelVersion
+      summary: Stop using a published model; refused while a module version that is not retired reads it
+      tags: [admin-episode-models]
+      responses:
+        "200":
+          $ref: "#/components/responses/EpisodeModelVersionResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1503,6 +1690,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ElementVersion"
+    EpisodeModelVersionResponse:
+      description: The episode model version after the change
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EpisodeModelVersion"
     VersionResponse:
       description: The version after the change
       content:
@@ -1532,6 +1725,13 @@ components:
         format: uuid
     ElementVersionId:
       name: elementVersionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EpisodeModelVersionId:
+      name: episodeModelVersionId
       in: path
       required: true
       schema:
@@ -1806,6 +2006,167 @@ components:
         publishedAt:
           type: string
           format: date-time
+    EpisodeMetric:
+      type: object
+      additionalProperties: false
+      required: [code, kind, labels]
+      properties:
+        code:
+          description: Rules read it as the signal <model>.<code>.
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        kind:
+          type: string
+          enum: [LENGTH_DAYS, ACTIVE_DAYS, DAYS_WITH_VALUE]
+        value:
+          description: The activity value counted; DAYS_WITH_VALUE only.
+          type: string
+          maxLength: 40
+        labels:
+          $ref: "#/components/schemas/Text"
+    EpisodeModelDraft:
+      type: object
+      additionalProperties: false
+      required: [code, startElement, activeValues, gapDays, span, metrics, labels]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          maxLength: 40
+        startElement:
+          description: A published EVENT element that marks a start.
+          type: string
+          maxLength: 40
+        endElement:
+          description: An optional published EVENT element that marks an end.
+          type: string
+          maxLength: 40
+        activityElement:
+          description: An optional published DAY_STATE element with named values whose active days make up the run.
+          type: string
+          maxLength: 40
+        activeValues:
+          description: Which values of the activity element count as active; empty without one.
+          type: array
+          maxItems: 12
+          items:
+            type: string
+            maxLength: 40
+        gapDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+        span:
+          type: string
+          enum: [UNTIL_NEXT_START, UNTIL_END]
+        metrics:
+          type: array
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/EpisodeMetric"
+        labels:
+          $ref: "#/components/schemas/Text"
+    EpisodeModelVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        version:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, IN_REVIEW, PUBLISHED, RETIRED]
+        startElement:
+          type: string
+        endElement:
+          type: string
+        activityElement:
+          type: string
+        activeValues:
+          type: array
+          items:
+            type: string
+        gapDays:
+          type: integer
+        span:
+          type: string
+          enum: [UNTIL_NEXT_START, UNTIL_END]
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/EpisodeMetric"
+        signals:
+          description: Derived, never typed in.
+          type: array
+          items:
+            type: string
+        labels:
+          $ref: "#/components/schemas/Text"
+        problems:
+          description: "What stops submission: start, end, activity, activeValues, span, metrics, labels."
+          type: array
+          items:
+            type: string
+        usedBy:
+          description: How many module versions that are not retired read this model.
+          type: integer
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              reviewer:
+                type: string
+              decision:
+                type: string
+              comments:
+                type: string
+              decidedAt:
+                type: string
+                format: date-time
+        draftedBy:
+          type: string
+        approvedBy:
+          type: string
+        canApprove:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+    EpisodeTestRun:
+      type: object
+      required: [history, historyLabels, episodes]
+      properties:
+        history:
+          type: string
+        historyLabels:
+          $ref: "#/components/schemas/Text"
+        episodes:
+          description: Oldest first; the newest is never complete.
+          type: array
+          items:
+            type: object
+            required: [start, complete, metrics]
+            properties:
+              start:
+                type: string
+                format: date
+              end:
+                type: string
+                format: date
+              activeEnd:
+                type: string
+                format: date
+              complete:
+                type: boolean
+              metrics:
+                type: object
+                additionalProperties:
+                  type: integer
     WordingRuleRequest:
       type: object
       additionalProperties: false

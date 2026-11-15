@@ -40,8 +40,9 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  *       recommendation, with no migration, no restart and no app release.
  * </ol>
  *
- * Episode models and context questions have no admin authoring yet, so the gate's "new episode
- * model" is not covered here.
+ * The gate's new episode model, built only in the portal and reaching a phone without a release, is
+ * proved in {@code EpisodeModelBuilderIntegrationTest}. Context questions have no admin authoring
+ * yet.
  */
 class PhaseGateIntegrationTest extends TrackingStackTest {
 
