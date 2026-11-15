@@ -111,7 +111,7 @@ describe('Word list and settings', () => {
     page.tryText = 'A diagnostic test';
     await page.check();
     await settle();
-    expect(root.textContent).toContain('Blocked by: diagnos*');
+    expect(root.textContent).toContain('It uses: diagnos*');
     // Reviewers do not change settings.
     expect(button(root, 'Change')).toBeUndefined();
   });

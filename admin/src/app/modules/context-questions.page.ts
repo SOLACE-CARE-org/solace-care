@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { LucideDynamicIcon, LucideMessageCircleQuestion } from '@lucide/angular';
 
 import { orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
-import { BackLink } from '../shared/back-link';
+import { TrackingNav } from './tracking-nav';
 import { canDraft, stateOf, textIn } from './module-shared';
 
 type Version = TrackingSchemas['ContextQuestionVersion'];
@@ -19,21 +20,19 @@ interface Row {
 }
 
 /**
- * Admin screen 34: the context questions (D61). No design of its own yet, so copy is provisional;
- * the layout is the element library's, which is the modules list's (Modules.dc.html).
+ * Admin screen 34: the context questions (D61; design/screens/admin/png/ContextQuestions.png).
+ * Tracking setup tabs on top; the table follows the modules list (Modules.dc.html).
  */
 @Component({
   selector: 'sl-context-questions',
-  imports: [TranslocoPipe, RouterLink, BackLink],
+  imports: [TranslocoPipe, RouterLink, TrackingNav, LucideDynamicIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sl-back-link to="/modules" [label]="'admin.modules.title' | transloco" />
-    <div class="head">
+    <sl-tracking-nav />
+    <div class="sl-head">
       <div>
         <h1 class="sl-title">{{ 'admin.questions.title' | transloco }}</h1>
-        <p class="sl-muted subtitle">
-          {{ 'admin.questions.subtitle' | transloco }}
-        </p>
+        <p class="sl-head__intro">{{ 'admin.questions.subtitle' | transloco }}</p>
       </div>
       @if (mayDraft()) {
         <a class="sl-button sl-button--primary" routerLink="/modules/context-questions/new">
@@ -53,7 +52,18 @@ interface Row {
       } @else if (versions() === null) {
         <p class="state sl-muted">{{ 'common.loading' | transloco }}</p>
       } @else if (rows().length === 0) {
-        <p class="state sl-muted">{{ 'admin.questions.empty' | transloco }}</p>
+        <div class="sl-empty">
+          <span class="sl-empty__icon" aria-hidden="true">
+            <svg [lucideIcon]="emptyIcon" [size]="40" [strokeWidth]="1.6"></svg>
+          </span>
+          <h2 class="sl-empty__title">{{ 'admin.questions.empty' | transloco }}</h2>
+          <p class="sl-empty__body">{{ 'admin.questions.emptyBody' | transloco }}</p>
+          @if (mayDraft()) {
+            <a class="sl-button sl-button--primary" routerLink="/modules/context-questions/new">
+              {{ 'admin.questions.new' | transloco }}
+            </a>
+          }
+        </div>
       } @else {
         <table class="sl-table">
           <thead>
@@ -72,7 +82,11 @@ interface Row {
             @for (r of rows(); track r.code) {
               <tr>
                 <td>
-                  <span class="strong">{{ r.name }}</span>
+                  <a
+                    class="name"
+                    [routerLink]="['/modules/context-questions', (r.working ?? r.published)?.id]"
+                    >{{ r.name }}</a
+                  >
                   <span class="sl-meta code">{{ r.code }}</span>
                 </td>
                 <td>{{ 'admin.questions.scopeShort.' + r.scope | transloco }}</td>
@@ -103,17 +117,6 @@ interface Row {
     </section>
   `,
   styles: `
-    .head {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      gap: var(--space-16);
-      margin-bottom: var(--space-20);
-    }
-    .subtitle {
-      margin: var(--space-4) 0 0;
-      max-width: 80ch;
-    }
     .table-card {
       padding: 0;
       overflow-x: auto;
@@ -122,8 +125,14 @@ interface Row {
       padding: var(--space-20);
       margin: 0;
     }
-    .strong {
+    .name {
       font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .name:hover {
+      color: var(--brand);
+      text-decoration: underline;
     }
     .code {
       display: block;
@@ -131,6 +140,7 @@ interface Row {
   `,
 })
 export class ContextQuestionsPage {
+  protected readonly emptyIcon = LucideMessageCircleQuestion;
   private readonly api = inject(TrackingApi);
   private readonly staff = inject(StaffSession);
   private readonly transloco = inject(TranslocoService);

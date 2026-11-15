@@ -132,7 +132,7 @@ describe('Tracking elements', () => {
     const { root, settle } = await render(ElementEditorPage, { id: 'e1' });
     await sees(root, 'Mal de tête');
     expect(root.textContent).toContain('Fort');
-    expect(root.textContent).toContain('Shown on app 1.0.0 and later.');
+    expect(root.textContent).toContain('Shown on app 1.0.0 and later');
     button(root, 'Approve')!.click();
     await settle();
     expect(api.POST).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('Tracking elements', () => {
       { tracking: tracking({ ...headache, status: 'PUBLISHED', boundBy: 2 }) },
     );
     const { root } = await render(ElementEditorPage, { id: 'e1' });
-    await sees(root, 'This version cannot change.');
+    await sees(root, 'Published.');
     expect(button(root, 'Start a new version')).toBeDefined();
     expect(root.textContent).toContain('2 module versions use this version');
     expect(button(root, 'Retire v1')).toBeUndefined();

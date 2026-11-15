@@ -11,11 +11,14 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { LucideDynamicIcon, LucideLock } from '@lucide/angular';
 
 import { ApiProblem, orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
 import { BackLink } from '../shared/back-link';
+import { Requirements } from './requirements';
+import { VersionSteps } from './version-steps';
 import { canDraft, canReview, stateOf, textIn } from './module-shared';
 
 type Version = TrackingSchemas['EpisodeModelVersion'];
@@ -109,72 +112,77 @@ export function modelDraftOf(f: ModelForm): Draft {
 }
 
 /**
- * Admin screen 33: one episode model version (D61). No design yet, so layout and copy are
- * provisional and follow the element editor, which follows the module builder. Operations and
- * Super admins draft from published elements and run it on the test histories; a Clinical reviewer
- * who did not draft it approves or returns it; then it is published.
+ * Admin screen 33: one episode model version (D61; design/screens/admin/png/EpisodeModelEditor.png).
+ * Same layout as the element editor. Operations and Super admins draft from published elements and
+ * run it on the test histories; a Clinical reviewer who did not draft it approves or returns it;
+ * then it is published.
  */
 @Component({
   selector: 'sl-episode-model-editor',
-  imports: [TranslocoPipe, FormsModule, BackLink],
+  imports: [TranslocoPipe, FormsModule, BackLink, LucideDynamicIcon, VersionSteps, Requirements],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sl-back-link to="/modules/episode-models" [label]="'admin.episodes.back' | transloco" />
     @if (error()) {
-      <div class="sl-card">
+      <div class="sl-notice sl-notice--danger" role="alert">
         <p>{{ 'common.checkConnection' | transloco }}</p>
         <button class="sl-button" type="button" (click)="load()">
           {{ 'common.tryAgain' | transloco }}
         </button>
       </div>
     } @else if (loaded()) {
-      <div class="head">
-        <h1 class="sl-title">
+      <div class="sl-head">
+        <div>
+          <div class="sl-head__title">
+            <h1 class="sl-title">
+              @if (version()) {
+                {{ nameIn(lang()) || version()?.code }}
+              } @else {
+                {{ nameIn(lang()) || ('admin.episodes.newTitle' | transloco) }}
+              }
+            </h1>
+            @if (version(); as v) {
+              <span
+                class="sl-pill"
+                [class.sl-pill--warning]="v.status !== 'PUBLISHED'"
+                [class.sl-pill--brand]="v.status === 'PUBLISHED'"
+              >
+                {{ 'admin.modules.state.' + state(v) | transloco: { n: v.version } }}
+              </span>
+            }
+          </div>
           @if (version(); as v) {
-            {{ 'admin.episodes.heading' | transloco: { name: nameIn(lang()), n: v.version } }}
+            <p class="sl-head__intro">
+              {{ 'admin.episodes.meta' | transloco: { code: v.code, who: v.draftedBy || '' } }}
+            </p>
           } @else {
-            {{ 'admin.episodes.newTitle' | transloco }}
+            <p class="sl-head__intro">{{ 'admin.episodes.newIntro' | transloco }}</p>
           }
-        </h1>
-        @if (version(); as v) {
-          <span class="sl-pill">
-            {{ 'admin.modules.state.' + state(v) | transloco: { n: v.version } }}
-          </span>
-        }
+        </div>
+        <sl-version-steps [status]="version()?.status" />
       </div>
-      @if (!editable() && version()) {
-        <p class="sl-card notice">
-          {{ 'admin.episodes.readOnly' | transloco }}
-        </p>
+
+      @if (!editable() && version(); as v) {
+        <div class="sl-notice sl-notice--warning notice" role="status">
+          <svg [lucideIcon]="lockIcon" [size]="20" [strokeWidth]="1.8" aria-hidden="true"></svg>
+          <p>
+            <strong>{{ 'admin.versionLocked.' + v.status | transloco }}</strong>
+            {{ 'admin.episodes.readOnly' | transloco }}
+          </p>
+        </div>
       }
 
-      <div class="layout">
-        <form class="main" (ngSubmit)="save()">
+      <div class="sl-editor">
+        <form class="sl-editor__main" (ngSubmit)="save()">
           <fieldset class="sl-card" [disabled]="!editable()">
-            <legend class="sl-section">
-              {{ 'admin.episodes.basics' | transloco }}
-            </legend>
-            <label class="sl-field">
-              <span>{{ 'admin.episodes.code' | transloco }}</span>
-              <input
-                class="sl-input"
-                name="code"
-                required
-                maxlength="40"
-                pattern="[a-z][a-z0-9_]*"
-                autocomplete="off"
-                [disabled]="!!version() || !!from()"
-                [(ngModel)]="form.code"
-                (ngModelChange)="touch()"
-              />
-              <span class="sl-meta">{{ 'admin.episodes.codeHint' | transloco }}</span>
-            </label>
-            <div class="pair">
+            <legend class="sl-section">{{ 'admin.episodes.basics' | transloco }}</legend>
+            <div class="sl-fields">
               <label class="sl-field">
                 <span>{{ 'admin.episodes.nameEn' | transloco }}</span>
                 <input
                   class="sl-input"
                   name="nameEn"
+                  lang="en"
                   maxlength="60"
                   [(ngModel)]="form.nameEn"
                   (ngModelChange)="touch()"
@@ -185,78 +193,95 @@ export function modelDraftOf(f: ModelForm): Draft {
                 <input
                   class="sl-input"
                   name="nameFr"
+                  lang="fr"
                   maxlength="60"
                   [(ngModel)]="form.nameFr"
                   (ngModelChange)="touch()"
                 />
               </label>
+              <label class="sl-field sl-field--wide">
+                <span>{{ 'admin.episodes.code' | transloco }}</span>
+                <input
+                  class="sl-input code"
+                  name="code"
+                  required
+                  maxlength="40"
+                  pattern="[a-z][a-z0-9_]*"
+                  autocomplete="off"
+                  [disabled]="!!version() || !!from()"
+                  [(ngModel)]="form.code"
+                  (ngModelChange)="touch()"
+                />
+                <span class="sl-hint">{{ 'admin.episodes.codeHint' | transloco }}</span>
+              </label>
             </div>
           </fieldset>
 
           <fieldset class="sl-card" [disabled]="!editable()">
-            <legend class="sl-section">
-              {{ 'admin.episodes.finding' | transloco }}
-            </legend>
-            <label class="sl-field">
-              <span>{{ 'admin.episodes.start' | transloco }}</span>
-              <select
-                class="sl-select"
-                name="start"
-                [(ngModel)]="form.start"
-                (ngModelChange)="touch()"
-              >
-                <option value=""></option>
-                @for (e of events(); track e.code) {
-                  <option [value]="e.code">{{ elementName(e) }}</option>
-                }
-              </select>
-            </label>
-            <label class="sl-field">
-              <span>{{ 'admin.episodes.end' | transloco }}</span>
-              <select class="sl-select" name="end" [(ngModel)]="form.end" (ngModelChange)="touch()">
-                <option value="">
-                  {{ 'admin.episodes.none' | transloco }}
-                </option>
-                @for (e of events(); track e.code) {
-                  <option [value]="e.code">{{ elementName(e) }}</option>
-                }
-              </select>
-            </label>
-            <label class="sl-field">
-              <span>{{ 'admin.episodes.activity' | transloco }}</span>
-              <select
-                class="sl-select"
-                name="activity"
-                [(ngModel)]="form.activity"
-                (ngModelChange)="activityChanged()"
-              >
-                <option value="">
-                  {{ 'admin.episodes.none' | transloco }}
-                </option>
-                @for (e of states(); track e.code) {
-                  <option [value]="e.code">{{ elementName(e) }}</option>
-                }
-              </select>
-            </label>
-            @if (activityValues().length > 0) {
-              <div class="sl-field" role="group" aria-labelledby="active-label">
-                <span id="active-label">{{ 'admin.episodes.active' | transloco }}</span>
-                <div class="checks">
-                  @for (v of activityValues(); track v.code) {
-                    <label class="check">
-                      <input
-                        type="checkbox"
-                        [checked]="form.active.includes(v.code)"
-                        [disabled]="!editable()"
-                        (change)="toggleActive(v.code)"
-                      />
-                      {{ v.label }}
-                    </label>
+            <legend class="sl-section">{{ 'admin.episodes.finding' | transloco }}</legend>
+            <p class="sl-hint">{{ 'admin.episodes.findingHint' | transloco }}</p>
+            <div class="sl-fields">
+              <label class="sl-field">
+                <span>{{ 'admin.episodes.start' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="start"
+                  [(ngModel)]="form.start"
+                  (ngModelChange)="touch()"
+                >
+                  <option value="">{{ 'admin.episodes.choose' | transloco }}</option>
+                  @for (e of events(); track e.code) {
+                    <option [value]="e.code">{{ elementName(e) }}</option>
                   }
+                </select>
+              </label>
+              <label class="sl-field">
+                <span>{{ 'admin.episodes.end' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="end"
+                  [(ngModel)]="form.end"
+                  (ngModelChange)="touch()"
+                >
+                  <option value="">{{ 'admin.episodes.none' | transloco }}</option>
+                  @for (e of events(); track e.code) {
+                    <option [value]="e.code">{{ elementName(e) }}</option>
+                  }
+                </select>
+              </label>
+              <label class="sl-field sl-field--wide">
+                <span>{{ 'admin.episodes.activity' | transloco }}</span>
+                <select
+                  class="sl-select"
+                  name="activity"
+                  [(ngModel)]="form.activity"
+                  (ngModelChange)="activityChanged()"
+                >
+                  <option value="">{{ 'admin.episodes.none' | transloco }}</option>
+                  @for (e of states(); track e.code) {
+                    <option [value]="e.code">{{ elementName(e) }}</option>
+                  }
+                </select>
+              </label>
+              @if (activityValues().length > 0) {
+                <div class="sl-field sl-field--wide" role="group" aria-labelledby="active-label">
+                  <span id="active-label">{{ 'admin.episodes.active' | transloco }}</span>
+                  <div class="chips">
+                    @for (v of activityValues(); track v.code) {
+                      <label class="chip" [class.on]="form.active.includes(v.code)">
+                        <input
+                          type="checkbox"
+                          class="sl-sr-only"
+                          [checked]="form.active.includes(v.code)"
+                          [disabled]="!editable()"
+                          (change)="toggleActive(v.code)"
+                        />
+                        {{ v.label }}
+                      </label>
+                    }
+                  </div>
                 </div>
-              </div>
-            }
-            <div class="pair">
+              }
               <label class="sl-field">
                 <span>{{ 'admin.episodes.gap' | transloco }}</span>
                 <input
@@ -268,7 +293,7 @@ export function modelDraftOf(f: ModelForm): Draft {
                   [(ngModel)]="form.gapDays"
                   (ngModelChange)="touch()"
                 />
-                <span class="sl-meta">{{ 'admin.episodes.gapHint' | transloco }}</span>
+                <span class="sl-hint">{{ 'admin.episodes.gapHint' | transloco }}</span>
               </label>
               <label class="sl-field">
                 <span>{{ 'admin.episodes.span' | transloco }}</span>
@@ -279,9 +304,7 @@ export function modelDraftOf(f: ModelForm): Draft {
                   (ngModelChange)="touch()"
                 >
                   @for (s of spans; track s) {
-                    <option [value]="s">
-                      {{ 'admin.episodes.spans.' + s | transloco }}
-                    </option>
+                    <option [value]="s">{{ 'admin.episodes.spans.' + s | transloco }}</option>
                   }
                 </select>
               </label>
@@ -289,63 +312,20 @@ export function modelDraftOf(f: ModelForm): Draft {
           </fieldset>
 
           <fieldset class="sl-card" [disabled]="!editable()">
-            <legend class="sl-section">
-              {{ 'admin.episodes.metrics' | transloco }}
-            </legend>
-            <p class="sl-meta">
-              {{ 'admin.episodes.metricsHint' | transloco }}
-            </p>
-            @for (m of form.metrics; track $index; let i = $index) {
-              <div class="metric">
-                <div class="metric-row">
+            <legend class="sl-section">{{ 'admin.episodes.metrics' | transloco }}</legend>
+            <p class="sl-hint">{{ 'admin.episodes.metricsHint' | transloco }}</p>
+            <div class="sl-rows">
+              @for (m of form.metrics; track $index; let i = $index) {
+                <div
+                  class="sl-rows__row metric"
+                  role="group"
+                  [attr.aria-label]="'admin.episodes.metricN' | transloco: { n: i + 1 }"
+                >
                   <label class="sl-field">
-                    <span>{{ 'admin.episodes.metricCode' | transloco }}</span>
+                    <span class="caption">{{ 'admin.episodes.labelEn' | transloco }}</span>
                     <input
                       class="sl-input"
-                      [name]="'mcode' + i"
-                      maxlength="40"
-                      pattern="[a-z][a-z0-9_]*"
-                      [(ngModel)]="m.code"
-                      (ngModelChange)="touch()"
-                    />
-                  </label>
-                  <label class="sl-field">
-                    <span>{{ 'admin.episodes.metricKind' | transloco }}</span>
-                    <select
-                      class="sl-select"
-                      [name]="'mkind' + i"
-                      [(ngModel)]="m.kind"
-                      (ngModelChange)="touch()"
-                    >
-                      @for (k of kinds; track k) {
-                        <option [value]="k">
-                          {{ 'admin.episodes.kinds.' + k | transloco }}
-                        </option>
-                      }
-                    </select>
-                  </label>
-                  @if (m.kind === 'DAYS_WITH_VALUE') {
-                    <label class="sl-field">
-                      <span>{{ 'admin.episodes.metricValue' | transloco }}</span>
-                      <select
-                        class="sl-select"
-                        [name]="'mvalue' + i"
-                        [(ngModel)]="m.value"
-                        (ngModelChange)="touch()"
-                      >
-                        <option value=""></option>
-                        @for (v of activityValues(); track v.code) {
-                          <option [value]="v.code">{{ v.label }}</option>
-                        }
-                      </select>
-                    </label>
-                  }
-                </div>
-                <div class="metric-row">
-                  <label class="sl-field">
-                    <span>{{ 'admin.episodes.labelEn' | transloco }}</span>
-                    <input
-                      class="sl-input"
+                      lang="en"
                       [name]="'men' + i"
                       maxlength="60"
                       [(ngModel)]="m.en"
@@ -353,44 +333,91 @@ export function modelDraftOf(f: ModelForm): Draft {
                     />
                   </label>
                   <label class="sl-field">
-                    <span>{{ 'admin.episodes.labelFr' | transloco }}</span>
+                    <span class="caption">{{ 'admin.episodes.labelFr' | transloco }}</span>
                     <input
                       class="sl-input"
+                      lang="fr"
                       [name]="'mfr' + i"
                       maxlength="60"
                       [(ngModel)]="m.fr"
                       (ngModelChange)="touch()"
                     />
                   </label>
-                  @if (editable()) {
-                    <button
-                      type="button"
-                      class="sl-button sl-button--danger remove"
-                      [attr.aria-label]="
-                        'admin.episodes.removeMetric' | transloco: { code: m.code || i + 1 }
-                      "
-                      (click)="removeMetric(i)"
+                  <label class="sl-field code-field">
+                    <span class="caption">{{ 'admin.episodes.metricCode' | transloco }}</span>
+                    <input
+                      class="sl-input code"
+                      [name]="'mcode' + i"
+                      maxlength="40"
+                      pattern="[a-z][a-z0-9_]*"
+                      [(ngModel)]="m.code"
+                      (ngModelChange)="touch()"
+                    />
+                  </label>
+                  <span class="end">
+                    @if (editable()) {
+                      <button
+                        type="button"
+                        class="sl-link-button sl-link-button--danger"
+                        [attr.aria-label]="
+                          'admin.episodes.removeMetric' | transloco: { code: m.code || i + 1 }
+                        "
+                        (click)="removeMetric(i)"
+                      >
+                        {{ 'admin.episodes.remove' | transloco }}
+                      </button>
+                    }
+                  </span>
+                  <label class="sl-field">
+                    <span class="caption">{{ 'admin.episodes.metricKind' | transloco }}</span>
+                    <select
+                      class="sl-select"
+                      [name]="'mkind' + i"
+                      [(ngModel)]="m.kind"
+                      (ngModelChange)="touch()"
                     >
-                      {{ 'admin.episodes.remove' | transloco }}
-                    </button>
+                      @for (k of kinds; track k) {
+                        <option [value]="k">{{ 'admin.episodes.kinds.' + k | transloco }}</option>
+                      }
+                    </select>
+                  </label>
+                  @if (m.kind === 'DAYS_WITH_VALUE') {
+                    <label class="sl-field">
+                      <span class="caption">{{ 'admin.episodes.metricValue' | transloco }}</span>
+                      <select
+                        class="sl-select"
+                        [name]="'mvalue' + i"
+                        [(ngModel)]="m.value"
+                        (ngModelChange)="touch()"
+                      >
+                        <option value="">{{ 'admin.episodes.choose' | transloco }}</option>
+                        @for (v of activityValues(); track v.code) {
+                          <option [value]="v.code">{{ v.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  } @else {
+                    <span></span>
                   }
                 </div>
-              </div>
-            }
-            @if (editable() && form.metrics.length < 8) {
-              <button type="button" class="sl-button add" (click)="addMetric()">
-                {{ 'admin.episodes.addMetric' | transloco }}
-              </button>
-            }
+              }
+              @if (editable() && form.metrics.length < 8) {
+                <button type="button" class="sl-button sl-rows__add" (click)="addMetric()">
+                  {{ 'admin.episodes.addMetric' | transloco }}
+                </button>
+              }
+            </div>
           </fieldset>
 
           @if (editable()) {
-            <div class="actions">
+            <div class="sl-actions">
               @if (saved()) {
-                <span class="sl-meta" role="status">{{ 'admin.episodes.saved' | transloco }}</span>
+                <span class="sl-status" role="status">{{
+                  'admin.episodes.saved' | transloco
+                }}</span>
               }
               @if (problem()) {
-                <span class="error" role="alert">{{ problem()! | transloco }}</span>
+                <span class="sl-error" role="alert">{{ problem()! | transloco }}</span>
               }
               <button type="submit" class="sl-button" [disabled]="busy() || !validCode()">
                 {{ 'admin.episodes.save' | transloco }}
@@ -409,39 +436,43 @@ export function modelDraftOf(f: ModelForm): Draft {
           }
         </form>
 
-        <aside class="side">
-          @if (version(); as v) {
-            <section class="sl-card" aria-labelledby="tests-title" aria-live="polite">
-              <h2 id="tests-title" class="sl-section">
-                {{ 'admin.episodes.tests.title' | transloco }}
-              </h2>
-              <p class="sl-meta">
-                {{ 'admin.episodes.tests.hint' | transloco }}
-              </p>
+        <aside class="sl-editor__rail">
+          <section class="sl-card" aria-labelledby="tests-title" aria-live="polite">
+            <h2 id="tests-title" class="sl-section">
+              {{ 'admin.episodes.tests.title' | transloco }}
+            </h2>
+            @if (version(); as v) {
+              <p class="sl-hint">{{ 'admin.episodes.tests.hint' | transloco }}</p>
               <button
                 type="button"
-                class="sl-button"
+                class="sl-button wide"
                 [disabled]="busy() || dirty()"
                 (click)="runTests()"
               >
-                {{ 'admin.episodes.tests.run' | transloco }}
+                {{
+                  (runs() ? 'admin.episodes.tests.again' : 'admin.episodes.tests.run') | transloco
+                }}
               </button>
               @if (runs(); as rs) {
                 <ul class="runs">
                   @for (r of rs; track r.history) {
                     <li>
-                      <span class="strong">{{ historyName(r) }}</span>
-                      <span class="sl-meta">
-                        {{
-                          'admin.episodes.tests.found'
-                            | transloco: { n: r.episodes.length, c: complete(r) }
-                        }}
+                      <span class="run-head">
+                        <span class="strong">{{ historyName(r) }}</span>
+                        <span class="sl-hint">
+                          {{
+                            'admin.episodes.tests.found'
+                              | transloco: { n: r.episodes.length, c: complete(r) }
+                          }}
+                        </span>
                       </span>
-                      @for (m of v.metrics ?? []; track m.code) {
-                        @if (complete(r) > 0) {
-                          <span class="sl-meta">
-                            {{ (lang() === 'fr' ? m.labels.fr : m.labels.en) || m.code }}:
-                            {{ values(r, m.code) }}
+                      @if (complete(r) > 0) {
+                        @for (m of v.metrics ?? []; track m.code) {
+                          <span class="run-metric">
+                            <span>{{
+                              (lang() === 'fr' ? m.labels.fr : m.labels.en) || m.code
+                            }}</span>
+                            <span class="strong code">{{ values(r, m.code) }}</span>
                           </span>
                         }
                       }
@@ -449,128 +480,131 @@ export function modelDraftOf(f: ModelForm): Draft {
                   }
                 </ul>
               }
-            </section>
-
-            @if (v.status === 'DRAFT' || v.status === 'IN_REVIEW') {
-              @if ((v.problems?.length ?? 0) > 0) {
-                <section class="sl-card" aria-labelledby="problems-title">
-                  <h2 id="problems-title" class="sl-section">
-                    {{ 'admin.episodes.problems.title' | transloco }}
-                  </h2>
-                  <ul>
-                    @for (p of v.problems; track p) {
-                      <li>{{ 'admin.episodes.problems.' + p | transloco }}</li>
-                    }
-                  </ul>
-                </section>
-              }
+            } @else {
+              <p class="sl-hint">{{ 'admin.episodes.tests.afterSave' | transloco }}</p>
             }
+          </section>
 
-            @if (v.status === 'IN_REVIEW') {
+          @if (editable() || version()?.status === 'IN_REVIEW') {
+            <sl-requirements
+              [codes]="requirementCodes"
+              [problems]="version()?.problems ?? null"
+              prefix="admin.episodes.problems."
+            />
+          }
+
+          @if (version(); as v) {
+            @if (v.status === 'IN_REVIEW' || (v.reviews?.length ?? 0) > 0) {
               <section class="sl-card" aria-labelledby="review-title">
                 <h2 id="review-title" class="sl-section">
                   {{ 'admin.elements.review.title' | transloco }}
                 </h2>
-                @if (v.approvedBy) {
-                  <p>
-                    {{ 'admin.elements.review.approved' | transloco: { who: v.approvedBy } }}
-                  </p>
-                  @if (mayDraft()) {
-                    <p class="sl-meta">
-                      {{ 'admin.episodes.publishHint' | transloco }}
-                    </p>
-                    <button
-                      type="button"
-                      class="sl-button sl-button--primary"
-                      [disabled]="busy()"
-                      (click)="act('publication')"
-                    >
-                      {{ 'admin.elements.publish' | transloco: { n: v.version } }}
-                    </button>
+                @if (v.status === 'IN_REVIEW') {
+                  @if (v.approvedBy) {
+                    <p>{{ 'admin.elements.review.approved' | transloco: { who: v.approvedBy } }}</p>
+                    @if (mayDraft()) {
+                      <p class="sl-hint">{{ 'admin.episodes.publishHint' | transloco }}</p>
+                      <button
+                        type="button"
+                        class="sl-button sl-button--primary wide"
+                        [disabled]="busy()"
+                        (click)="act('publication')"
+                      >
+                        {{ 'admin.elements.publish' | transloco: { n: v.version } }}
+                      </button>
+                    }
+                  } @else if (v.canApprove) {
+                    <label class="sl-field">
+                      <span>{{ 'admin.elements.review.comments' | transloco }}</span>
+                      <textarea
+                        class="sl-textarea"
+                        name="comments"
+                        rows="3"
+                        maxlength="4000"
+                        [(ngModel)]="comments"
+                      ></textarea>
+                      <span class="sl-hint">{{
+                        'admin.elements.review.commentsHint' | transloco
+                      }}</span>
+                    </label>
+                    <div class="sl-actions review-actions">
+                      <button
+                        type="button"
+                        class="sl-button"
+                        [disabled]="busy() || !comments.trim()"
+                        (click)="review(false)"
+                      >
+                        {{ 'admin.elements.review.return' | transloco }}
+                      </button>
+                      <button
+                        type="button"
+                        class="sl-button sl-button--primary"
+                        [disabled]="busy()"
+                        (click)="review(true)"
+                      >
+                        {{ 'admin.elements.review.approve' | transloco }}
+                      </button>
+                    </div>
+                  } @else if (mayReview()) {
+                    <p class="sl-hint">{{ 'admin.elements.review.drafter' | transloco }}</p>
+                  } @else {
+                    <p class="sl-hint">{{ 'admin.elements.review.waiting' | transloco }}</p>
                   }
-                } @else if (v.canApprove) {
-                  <label class="sl-field">
-                    <span>{{ 'admin.elements.review.comments' | transloco }}</span>
-                    <textarea
-                      class="sl-input"
-                      name="comments"
-                      maxlength="4000"
-                      [(ngModel)]="comments"
-                    ></textarea>
-                  </label>
-                  <div class="actions">
-                    <button
-                      type="button"
-                      class="sl-button"
-                      [disabled]="busy() || !comments.trim()"
-                      (click)="review(false)"
-                    >
-                      {{ 'admin.elements.review.return' | transloco }}
-                    </button>
-                    <button
-                      type="button"
-                      class="sl-button sl-button--primary"
-                      [disabled]="busy()"
-                      (click)="review(true)"
-                    >
-                      {{ 'admin.elements.review.approve' | transloco }}
-                    </button>
-                  </div>
-                } @else if (mayReview()) {
-                  <p>{{ 'admin.elements.review.drafter' | transloco }}</p>
-                } @else {
-                  <p>{{ 'admin.elements.review.waiting' | transloco }}</p>
                 }
-              </section>
-            }
-
-            @if ((v.reviews?.length ?? 0) > 0) {
-              <section class="sl-card">
-                <ul class="reviews">
-                  @for (r of v.reviews; track $index) {
-                    <li>
-                      <span class="strong">
-                        {{
-                          'admin.elements.review.decision.' + r.decision
-                            | transloco: { who: r.reviewer }
-                        }}
-                      </span>
-                      @if (r.comments) {
-                        <span>{{ r.comments }}</span>
-                      }
-                    </li>
-                  }
-                </ul>
+                @if ((v.reviews?.length ?? 0) > 0) {
+                  <ul
+                    class="sl-history"
+                    [attr.aria-label]="'admin.elements.review.history' | transloco"
+                  >
+                    @for (r of v.reviews; track $index) {
+                      <li>
+                        <span class="strong">
+                          {{
+                            'admin.elements.review.decision.' + r.decision
+                              | transloco: { who: r.reviewer }
+                          }}
+                        </span>
+                        @if (r.comments) {
+                          <span class="sl-hint">{{ r.comments }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
               </section>
             }
 
             @if (v.status === 'PUBLISHED' && mayDraft()) {
-              <section class="sl-card actions-card">
-                <button type="button" class="sl-button" [disabled]="busy()" (click)="newVersion()">
-                  {{ 'admin.elements.newVersion' | transloco }}
-                </button>
-                @if ((v.usedBy ?? 0) > 0) {
-                  <p class="sl-meta">
-                    {{ 'admin.episodes.usedBy' | transloco: { n: v.usedBy } }}
-                  </p>
-                } @else {
+              <section class="sl-card" aria-labelledby="change-title">
+                <h2 id="change-title" class="sl-section">
+                  {{ 'admin.versionChange.title' | transloco }}
+                </h2>
+                <div class="stack">
                   <button
                     type="button"
                     class="sl-button"
                     [disabled]="busy()"
-                    (click)="act('retirement')"
+                    (click)="newVersion()"
                   >
-                    {{ 'admin.elements.retire' | transloco: { n: v.version } }}
+                    {{ 'admin.elements.newVersion' | transloco }}
                   </button>
-                }
+                  @if ((v.usedBy ?? 0) > 0) {
+                    <p class="sl-hint">
+                      {{ 'admin.episodes.usedBy' | transloco: { n: v.usedBy } }}
+                    </p>
+                  } @else {
+                    <button
+                      type="button"
+                      class="sl-button sl-button--danger"
+                      [disabled]="busy()"
+                      (click)="act('retirement')"
+                    >
+                      {{ 'admin.elements.retire' | transloco: { n: v.version } }}
+                    </button>
+                  }
+                </div>
               </section>
             }
-          } @else {
-            <section class="sl-card">
-              <p class="sl-meta">
-                {{ 'admin.episodes.tests.afterSave' | transloco }}
-              </p>
-            </section>
           }
         </aside>
       </div>
@@ -579,117 +613,80 @@ export function modelDraftOf(f: ModelForm): Draft {
     }
   `,
   styles: `
-    .head {
-      display: flex;
-      align-items: center;
-      gap: var(--space-12);
-    }
     .notice {
-      margin: var(--space-12) 0;
+      margin-bottom: var(--space-16);
     }
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
-      gap: var(--space-20);
-      margin-top: var(--space-16);
-    }
-    .main,
-    .side {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-16);
-    }
-    .side .sl-card {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-8);
-      align-items: start;
-    }
-    fieldset {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-14);
-      min-width: 0;
-      margin: 0;
-    }
-    /* The heading sits inside the card, as on ModuleDetails.dc.html, not on its border. */
-    legend {
-      float: left;
-      width: 100%;
-      padding: 0;
-    }
-    legend + * {
-      clear: both;
-    }
-    .pair {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-12);
-    }
-    .checks {
+    .chips {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-4) var(--space-16);
+      gap: var(--space-8);
     }
-    .check {
+    /* Chip (design-system components/Chip): the heavier border and weight carry "on". */
+    .chip {
       display: inline-flex;
       align-items: center;
-      gap: var(--space-8);
-      min-height: 44px;
+      min-height: var(--size-chip);
+      padding: 0 var(--space-14);
+      border: 1px solid var(--line-control);
+      border-radius: var(--radius-pill);
+      background: var(--surface-card);
+      font-weight: 600;
+      cursor: pointer;
     }
-    .metric {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-8);
-      padding-bottom: var(--space-12);
-      border-bottom: 1px solid var(--line);
-    }
-    .metric-row {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-8);
-      align-items: end;
-    }
-    fieldset > p,
-    .side p {
-      margin: 0;
-    }
-    .side .sl-field,
-    .side .actions {
-      align-self: stretch;
-    }
-    .remove {
-      justify-self: start;
-    }
-    .add {
-      align-self: start;
-    }
-    .actions {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      gap: var(--space-8);
-    }
-    .runs {
-      margin: 0;
-      padding-left: var(--space-16);
-    }
-    .runs li,
-    .reviews li {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: var(--space-8);
-    }
-    .reviews {
-      margin: 0;
-      padding-left: var(--space-16);
-    }
-    .strong {
+    .chip.on {
+      border: 2px solid var(--brand);
+      padding: 0 calc(var(--space-14) - 1px);
+      background: var(--brand-tint);
+      color: var(--brand-deep);
       font-weight: 700;
     }
-    .error {
-      color: var(--danger);
+    .chip:focus-within {
+      box-shadow: var(--focus-ring);
+    }
+    fieldset:disabled .chip {
+      cursor: default;
+    }
+    .metric {
+      --sl-rows-cols: 1fr 1fr 0.8fr 5.5rem;
+      row-gap: var(--space-10);
+      align-items: end;
+    }
+    .caption {
+      font-size: var(--type-meta-size);
       font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .end {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .runs {
+      list-style: none;
+      margin: var(--space-14) 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+    .runs li {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-10) var(--space-12);
+      border-radius: var(--radius-12);
+      background: var(--surface-sunken);
+    }
+    .run-head {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-8);
+    }
+    .run-metric {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-8);
+      font-size: var(--type-meta-size);
     }
   `,
 })
@@ -721,6 +718,17 @@ export class EpisodeModelEditorPage {
 
   form: ModelForm = emptyModel();
   comments = '';
+  protected readonly lockIcon = LucideLock;
+  /** What a version must meet before it goes to clinical review. */
+  readonly requirementCodes = [
+    'start',
+    'end',
+    'activity',
+    'activeValues',
+    'span',
+    'metrics',
+    'labels',
+  ] as const;
 
   readonly mayDraft = computed(() => canDraft(this.staff.roles()));
   readonly mayReview = computed(() => canReview(this.staff.roles()));

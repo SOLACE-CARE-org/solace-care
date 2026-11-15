@@ -14,6 +14,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ApiProblem, orThrow } from '../api/core-api';
 import { TrackingApi, type TrackingSchemas } from '../api/tracking-api';
 import { StaffSession } from '../auth/staff-session';
+import { TrackingNav } from './tracking-nav';
 import { ACCENTS, type Accent, canDraft, stateOf, textIn } from './module-shared';
 
 type Row = TrackingSchemas['ModuleRow'];
@@ -26,27 +27,16 @@ type Summary = NonNullable<Row['versions']>[number];
  */
 @Component({
   selector: 'sl-modules',
-  imports: [TranslocoPipe, FormsModule, RouterLink],
+  imports: [TranslocoPipe, FormsModule, RouterLink, TrackingNav],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <sl-tracking-nav />
     <div class="head">
       <div>
         <h1 class="sl-title">{{ 'admin.modules.title' | transloco }}</h1>
         <p class="sl-muted subtitle">{{ 'admin.modules.subtitle' | transloco }}</p>
       </div>
       <div class="head-actions">
-        <a class="sl-button" routerLink="/modules/wording">
-          {{ 'admin.wording.manage' | transloco }}
-        </a>
-        <a class="sl-button" routerLink="/modules/elements">
-          {{ 'admin.elements.manage' | transloco }}
-        </a>
-        <a class="sl-button" routerLink="/modules/episode-models">
-          {{ 'admin.episodes.manage' | transloco }}
-        </a>
-        <a class="sl-button" routerLink="/modules/context-questions">
-          {{ 'admin.questions.manage' | transloco }}
-        </a>
         @if (mayDraft()) {
           <button type="button" class="sl-button sl-button--primary" (click)="openNew()">
             {{ 'admin.modules.new' | transloco }}

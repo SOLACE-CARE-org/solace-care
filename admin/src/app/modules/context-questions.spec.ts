@@ -85,10 +85,10 @@ describe('Tracking context questions', () => {
     const api = tracking();
     setUp(['CLINICAL_REVIEWER'], {}, { tracking: api });
     const { root, settle } = await render(ContextQuestionEditorPage, { id: 'q1' });
-    await sees(root, 'contraception v1');
+    await sees(root, 'Which contraception do you use?');
     expect(root.textContent).toContain('Quelle contraception utilisez-vous ?');
     expect(root.textContent).toContain('Stérilet');
-    expect(root.textContent).toContain('Passer');
+    expect(root.textContent).toContain('Facultatif. On peut ne pas répondre.');
     button(root, 'Approve')!.click();
     await settle();
     expect(api.POST).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe('Tracking context questions', () => {
       { tracking: tracking({ ...contraception, status: 'PUBLISHED', usedBy: 2 }) },
     );
     const { root } = await render(ContextQuestionEditorPage, { id: 'q1' });
-    await sees(root, 'This version cannot change.');
+    await sees(root, 'Published.');
     expect(button(root, 'Start a new version')).toBeDefined();
     expect(root.textContent).toContain('2 module versions ask this question');
     expect(button(root, 'Retire v1')).toBeUndefined();
